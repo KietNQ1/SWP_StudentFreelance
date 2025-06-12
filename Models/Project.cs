@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using StudentFreelance.Models.Enums;
 
 namespace StudentFreelance.Models
 {
@@ -34,13 +35,15 @@ namespace StudentFreelance.Models
         public DateTime Deadline { get; set; }
 
         /// Trạng thái (Open, Closed,…)
-        public string Status { get; set; }
+        [ForeignKey(nameof(Status))]
+        public int StatusID { get; set; }
 
         /// Cờ nổi bật
         public bool IsHighlighted { get; set; }
 
         /// Loại hình công việc (Full-time, Part-time,…)
-        public string WorkType { get; set; }
+        [ForeignKey(nameof(Type))]
+        public int TypeID { get; set; }
 
         /// FK → Address.AddressID (nullable)
         [ForeignKey(nameof(Address))]
@@ -55,9 +58,19 @@ namespace StudentFreelance.Models
         /// Ngày cập nhật gần nhất
         public DateTime UpdatedAt { get; set; }
 
+        /// Ngày bắt đầu
+        public DateTime StartDate { get; set; }
+
+        /// Ngày kết thúc
+        public DateTime EndDate { get; set; }
+
+        public bool IsActive { get; set; } = true;
+
         public User Business { get; set; }
         public Category Category { get; set; }
         public Address Address { get; set; }
+        public ProjectStatus Status { get; set; }
+        public ProjectType Type { get; set; }
         public ICollection<ProjectSkillRequired> ProjectSkillsRequired { get; set; } = new List<ProjectSkillRequired>();
         public ICollection<ProjectAttachment> ProjectAttachments { get; set; } = new List<ProjectAttachment>();
         public ICollection<StudentApplication> StudentApplications { get; set; } = new List<StudentApplication>();

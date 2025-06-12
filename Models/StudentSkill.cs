@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using StudentFreelance.Models.Enums;
 
 namespace StudentFreelance.Models
 {
@@ -17,14 +18,15 @@ namespace StudentFreelance.Models
         [ForeignKey(nameof(Skill))]
         public int SkillID { get; set; }
 
-        /// Mức trình độ (Beginner, Intermediate, Advanced, Expert)
-        [Required]
-        public string ProficiencyLevel { get; set; }
+        /// FK → ProficiencyLevel.ProficiencyLevelID
+        [ForeignKey(nameof(ProficiencyLevel))]
+        public int ProficiencyLevelID { get; set; }
 
         /// Cờ kích hoạt (true nếu bản ghi còn hiệu lực, false nếu inactive)
         public bool IsActive { get; set; } = true;
 
         public User User { get; set; }
         public Skill Skill { get; set; }
+        public ProficiencyLevel ProficiencyLevel { get; set; }
     }
 }

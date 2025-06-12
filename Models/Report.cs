@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using StudentFreelance.Models.Enums;
 
 namespace StudentFreelance.Models
 {
@@ -22,26 +23,26 @@ namespace StudentFreelance.Models
         [ForeignKey(nameof(Project))]
         public int? ProjectID { get; set; }
 
-        /// Loại báo cáo (Spam, Fraud,…)
-        [Required]
-        public string ReportType { get; set; }
-
-        /// Trạng thái xử lý (Pending, Resolved,…)
-        [Required]
-        public string Status { get; set; }
-
         /// Ngày giờ tạo báo cáo
         public DateTime ReportDate { get; set; }
+
+        /// FK → ReportType.TypeID (nullable)
+        [ForeignKey(nameof(Type))]
+        public int TypeID { get; set; }
 
         /// Nội dung báo cáo
         [Required]
         public string Description { get; set; }
 
-        /// Phản hồi của admin
-        public string AdminResponse { get; set; }
+        /// FK → ReportStatus.StatusID (nullable)
+        [ForeignKey(nameof(Status))]
+        public int StatusID { get; set; }
 
         /// Ngày giờ hoàn thành xử lý (nullable)
         public DateTime? ResolvedAt { get; set; }
+
+        /// Phản hồi của admin (nullable)
+        public string? AdminResponse { get; set; }
 
         /// Cờ kích hoạt (true nếu bản ghi còn hiệu lực, false nếu inactive)
         public bool IsActive { get; set; } = true;
@@ -49,5 +50,7 @@ namespace StudentFreelance.Models
         public User Reporter { get; set; }
         public User ReportedUser { get; set; }
         public Project Project { get; set; }
+        public ReportType Type { get; set; }
+        public ReportStatus Status { get; set; }
     }
 }

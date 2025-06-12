@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using StudentFreelance.Models.Enums;
 
 namespace StudentFreelance.Models
 {
@@ -22,21 +23,23 @@ namespace StudentFreelance.Models
         public string Content { get; set; }
 
         /// Loại thông báo
-        [Required]
-        public string NotificationType { get; set; }
-
-        /// Cờ đã đọc chưa
-        public bool IsRead { get; set; }
-
-        /// Ngày giờ tạo thông báo
-        public DateTime NotificationDate { get; set; }
+        [ForeignKey(nameof(Type))]
+        public int TypeID { get; set; }
 
         /// ID liên quan (ProjectID, MessageID,…)
         public int? RelatedID { get; set; }
 
+        /// Ngày giờ tạo thông báo
+        public DateTime NotificationDate { get; set; }
+
+        /// Cờ đã đọc chưa
+        public bool IsRead { get; set; }
+
         /// Cờ kích hoạt (true nếu bản ghi còn hiệu lực, false nếu inactive)
         public bool IsActive { get; set; } = true;
 
+        // Navigation properties
         public User User { get; set; }
+        public NotificationType Type { get; set; }
     }
 }

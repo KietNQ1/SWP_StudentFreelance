@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using StudentFreelance.DbContext;
+using StudentFreelance.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,11 +13,13 @@ builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-// 3. Apply any pending migrations at startup (optional)
+// 3. Apply any pending migrations at startup and seed data
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate();
+    DbSeeder.SeedEnums(db);
+    DbSeeder.SeedSampleData(db);
 }
 
 // 4. Configure middleware pipeline

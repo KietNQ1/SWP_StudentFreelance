@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using StudentFreelance.Models.Enums;
 
 namespace StudentFreelance.Models
 {
@@ -17,14 +18,15 @@ namespace StudentFreelance.Models
         [ForeignKey(nameof(Skill))]
         public int SkillID { get; set; }
 
-        /// Mức độ quan trọng (Required, Important, Nice-to-have)
-        [Required]
-        public string ImportanceLevel { get; set; }
+        /// FK → ImportanceLevel.ImportanceLevelID
+        [ForeignKey(nameof(ImportanceLevel))]
+        public int ImportanceLevelID { get; set; }
 
         /// Cờ kích hoạt (true nếu bản ghi còn hiệu lực, false nếu inactive)
         public bool IsActive { get; set; } = true;
 
         public Project Project { get; set; }
         public Skill Skill { get; set; }
+        public ImportanceLevel ImportanceLevel { get; set; }
     }
 }

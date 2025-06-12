@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using StudentFreelance.Models.Enums;
 
 namespace StudentFreelance.Models
 {
@@ -23,8 +24,8 @@ namespace StudentFreelance.Models
         public decimal Amount { get; set; }
 
         /// Loại giao dịch (Payment, Refund,…)
-        [Required]
-        public string TransactionType { get; set; }
+        [ForeignKey(nameof(Type))]
+        public int TypeID { get; set; }
 
         /// Ngày giờ giao dịch
         public DateTime TransactionDate { get; set; }
@@ -33,13 +34,15 @@ namespace StudentFreelance.Models
         public string Description { get; set; }
 
         /// Trạng thái (Completed, Failed,…)
-        [Required]
-        public string Status { get; set; }
+        [ForeignKey(nameof(Status))]
+        public int StatusID { get; set; }
 
         /// Cờ kích hoạt (true nếu bản ghi còn hiệu lực, false nếu inactive)
         public bool IsActive { get; set; } = true;
 
         public User User { get; set; }
         public Project Project { get; set; }
+        public TransactionType Type { get; set; }
+        public TransactionStatus Status { get; set; }
     }
 }
