@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using StudentFreelance.Models;
-using StudentFreelance.Models.ViewModels;
+using StudentFreelance.ViewModels;
 
 namespace StudentFreelance.Controllers
 {
