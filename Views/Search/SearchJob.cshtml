@@ -7,6 +7,7 @@
     
     // Lấy các giá trị để hiển thị thông tin tìm kiếm
     var query = ViewBag.Query as string ?? string.Empty;
+    var location = ViewBag.Location as string ?? string.Empty;
     var categoryId = ViewBag.CategoryId as int? ?? null;
     var skillIds = ViewBag.SkillIds as List<int> ?? new List<int>();
     var userId = ViewBag.UserId as int? ?? null;
@@ -30,11 +31,12 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
             <p>Tìm thấy @Model.Count() dự án</p>
-            @if (!string.IsNullOrEmpty(query) || categoryId.HasValue || skillIds.Any() || userId.HasValue || provinceId.HasValue)
+            @if (!string.IsNullOrEmpty(query) || !string.IsNullOrEmpty(location) || categoryId.HasValue || skillIds.Any() || userId.HasValue || provinceId.HasValue)
             {
                 <p class="text-muted small">
                     Tiêu chí tìm kiếm: 
                     @if (!string.IsNullOrEmpty(query)) { <span class="badge bg-secondary me-1">Từ khóa: @query</span> }
+                    @if (!string.IsNullOrEmpty(location)) { <span class="badge bg-secondary me-1">Địa điểm: @location</span> }
                     @if (selectedCategory != null) { <span class="badge bg-secondary me-1">Danh mục: @selectedCategory.CategoryName</span> }
                     @if (selectedSkills.Any()) 
                     { 

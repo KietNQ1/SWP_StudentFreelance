@@ -26,7 +26,17 @@ namespace StudentFreelance.Controllers
             _roleManager = roleManager;
         }
 
-        public async Task<IActionResult> SearchJob(string query, int? categoryId, List<int> skillIds, int? userId, int? provinceId)
+        // Method to get provinces for dropdown
+        public async Task<IActionResult> GetProvinces()
+        {
+            var provinces = await _context.Provinces
+                .OrderBy(p => p.Name)
+                .ToListAsync();
+                
+            return PartialView("_ProvinceDropdown", provinces);
+        }
+
+        public async Task<IActionResult> SearchJob(string query, string location, int? categoryId, List<int> skillIds, int? userId, int? provinceId)
         {
             // Lấy danh sách dự án từ model Project
             var projects = _context.Projects
@@ -48,6 +58,23 @@ namespace StudentFreelance.Controllers
                 projects = projects.Where(p => 
                     p.Title.Contains(query) || 
                     p.Description.Contains(query));
+            }
+
+            // Tìm kiếm theo địa điểm (location)
+            if (!string.IsNullOrEmpty(location))
+            {
+                // Tìm các tỉnh/thành phố phù hợp với từ khóa location
+                var matchingProvinces = await _context.Provinces
+                    .Where(p => p.Name.Contains(location))
+                    .Select(p => p.ProvinceID)
+                    .ToListAsync();
+
+                if (matchingProvinces.Any())
+                {
+                    projects = projects.Where(p => 
+                        p.Address != null && 
+                        matchingProvinces.Contains(p.Address.ProvinceID.Value));
+                }
             }
 
             // Lọc theo danh mục dựa trên model Category
@@ -133,6 +160,7 @@ namespace StudentFreelance.Controllers
                 .ToListAsync();
 
             ViewBag.Query = query;
+            ViewBag.Location = location;
             ViewBag.CategoryId = categoryId;
             ViewBag.SkillIds = skillIds;
             ViewBag.UserId = userId;
