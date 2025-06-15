@@ -36,6 +36,6 @@ namespace StudentFreelance.Models
         public bool IsActive { get; set; } = true;
 
         public Project Project { get; set; }
-        public User User { get; set; }
+        public ApplicationUser User { get; set; }
     }
 }

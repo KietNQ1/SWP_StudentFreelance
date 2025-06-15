@@ -1,28 +1,54 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using StudentFreelance.DbContext;
+using StudentFreelance.Models;
 using StudentFreelance.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Configure EF Core to use SQL Server and your connection string
+// 1. Configure Entity Framework Core (SQL Server)
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// 2. Add MVC
+// 2. Add Identity with custom ApplicationUser and IdentityRole<int>
+builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
+{
+    options.Password.RequireDigit = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequiredLength = 6;
+})
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders();
+
+// 3. Configure Authentication Cookie
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+    options.SlidingExpiration = true;
+    options.ExpireTimeSpan = TimeSpan.FromDays(7);
+});
+
+// 4. Add MVC support
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-// 3. Apply any pending migrations at startup and seed data
+// 5. Run database migration and seed initial data
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
+
     db.Database.Migrate();
-    DbSeeder.SeedEnums(db);
-    DbSeeder.SeedSampleData(db);
+
+    DbSeeder.SeedEnums(db); // enum tables: statuses, types, etc.
+    await DbSeeder.SeedSampleDataAsync(db, userManager, roleManager); // Identity + related data
 }
 
-// 4. Configure middleware pipeline
+// 6. Configure HTTP pipeline
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -34,8 +60,10 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication(); // Identity: must come before UseAuthorization
 app.UseAuthorization();
 
+// 7. Configure default routing
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

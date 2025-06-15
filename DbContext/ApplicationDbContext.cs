@@ -3,10 +3,12 @@
 using Microsoft.EntityFrameworkCore;
 using StudentFreelance.Models;
 using StudentFreelance.Models.Enums;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace StudentFreelance.DbContext
 {
-    public class ApplicationDbContext : Microsoft.EntityFrameworkCore.DbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>, int>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -14,8 +16,8 @@ namespace StudentFreelance.DbContext
         }
 
         // DbSet declarations
-        public DbSet<User> Users { get; set; }
-        public DbSet<UserRole> UserRoles { get; set; }
+      
+      
         public DbSet<Province> Provinces { get; set; }
         public DbSet<District> Districts { get; set; }
         public DbSet<Ward> Wards { get; set; }
@@ -101,14 +103,10 @@ namespace StudentFreelance.DbContext
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Users → UserRole
-            modelBuilder.Entity<User>()
-                .HasOne(u => u.UserRole)
-                .WithMany(r => r.Users)
-                .HasForeignKey(u => u.RoleID)
-                .OnDelete(DeleteBehavior.Restrict);
+          
 
             // Users → Address
-            modelBuilder.Entity<User>()
+            modelBuilder.Entity<ApplicationUser>()
                 .HasOne(u => u.Address)
                 .WithMany()   // no Address.Users collection
                 .HasForeignKey(u => u.AddressID)
@@ -310,7 +308,7 @@ namespace StudentFreelance.DbContext
                 .HasForeignKey(n => n.TypeID)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<User>()
+            modelBuilder.Entity<ApplicationUser>()
                 .HasOne(u => u.Status)
                 .WithMany(s => s.Users)
                 .HasForeignKey(u => u.StatusID)
@@ -329,7 +327,7 @@ namespace StudentFreelance.DbContext
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Global query filters for soft-delete
-            modelBuilder.Entity<UserRole>().HasQueryFilter(r => r.IsActive);
+            
             modelBuilder.Entity<Address>().HasQueryFilter(a => a.IsActive);
             modelBuilder.Entity<Category>().HasQueryFilter(c => c.IsActive);
             modelBuilder.Entity<Skill>().HasQueryFilter(s => s.IsActive);

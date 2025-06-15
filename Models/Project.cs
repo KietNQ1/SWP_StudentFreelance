@@ -66,7 +66,7 @@ namespace StudentFreelance.Models
 
         public bool IsActive { get; set; } = true;
 
-        public User Business { get; set; }
+        public ApplicationUser Business { get; set; }
         public Category Category { get; set; }
         public Address Address { get; set; }
         public ProjectStatus Status { get; set; }

@@ -36,7 +36,7 @@ namespace StudentFreelance.Models
         public bool IsActive { get; set; } = true;
 
         public Project Project { get; set; }
-        public User Reviewer { get; set; }
-        public User Reviewee { get; set; }
+        public ApplicationUser Reviewer { get; set; }
+        public ApplicationUser Reviewee { get; set; }
     }
 }

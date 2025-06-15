@@ -14,6 +14,6 @@ namespace StudentFreelance.Models.Enums
         public bool IsActive { get; set; }
         
         // Navigation property
-        public ICollection<User> Users { get; set; } = new List<User>();
+        public ICollection<ApplicationUser> Users { get; set; } = new List<ApplicationUser>();
     }
 } 

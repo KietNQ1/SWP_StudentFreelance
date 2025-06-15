@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Identity;
 using StudentFreelance.DbContext;
 using StudentFreelance.Models;
 using StudentFreelance.Models.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace StudentFreelance.Data
 {
@@ -107,337 +109,213 @@ namespace StudentFreelance.Data
             context.SaveChanges();
         }
 
-        public static void SeedSampleData(ApplicationDbContext context)
+        public static async Task SeedSampleDataAsync(
+            ApplicationDbContext context,
+            UserManager<ApplicationUser> userManager,
+            RoleManager<IdentityRole<int>> roleManager)
         {
-            // Seed UserRoles if empty
-            if (!context.UserRoles.Any())
+            // 1. Roles
+            string[] roleNames = { "Admin", "Moderator", "Business", "Student" };
+            foreach (var role in roleNames)
             {
-                context.UserRoles.AddRange(
-                    new UserRole { RoleName = "Admin", Description = "Quản trị hệ thống", IsActive = true },
-                    new UserRole { RoleName = "Moderator", Description = "Người kiểm duyệt", IsActive = true },
-                    new UserRole { RoleName = "Business", Description = "Doanh nghiệp/Nhà tuyển dụng", IsActive = true },
-                    new UserRole { RoleName = "Student", Description = "Sinh viên", IsActive = true }
-                );
+                if (!await roleManager.RoleExistsAsync(role))
+                {
+                    await roleManager.CreateAsync(new IdentityRole<int>(role));
+                }
+            }
+
+            // 2. AccountStatus
+            var activeStatus = context.AccountStatuses.FirstOrDefault(s => s.StatusName == "Hoạt động");
+            if (activeStatus == null)
+            {
+                activeStatus = new AccountStatus { StatusName = "Hoạt động", IsActive = true };
+                context.AccountStatuses.Add(activeStatus);
                 context.SaveChanges();
             }
 
-            // Seed Categories if empty
+            // 3. Default Users
+            var usersToSeed = new List<(string Email, string Password, string Role, string FullName)>
+            {
+                ("admin@example.com", "Admin@123", "Admin", "Admin"),
+                ("moderator@example.com", "Moderator@123", "Moderator", "Moderator"),
+                ("business@example.com", "Business@123", "Business", "Công ty TNHH ABC"),
+                ("student@example.com", "Student@123", "Student", "Nguyễn Văn A")
+            };
+
+            foreach (var (email, password, role, fullName) in usersToSeed)
+            {
+                if (await userManager.FindByEmailAsync(email) == null)
+                {
+                    var user = new ApplicationUser
+                    {
+                        UserName = email,
+                        Email = email,
+                        EmailConfirmed = true,
+                        FullName = fullName,
+                        PhoneNumber = "0123456789",
+                        University = "FPT University",
+                        Major = "CNTT",
+                        CompanyName = "StudentFreelance",
+                        Industry = "Công nghệ",
+                        WalletBalance = 0,
+                        VipStatus = role == "Admin" || role == "Moderator",
+                        ProfileStatus = true,
+                        AverageRating = 5,
+                        TotalProjects = 0,
+                        TotalProjectsPosted = 0,
+                        ProfilePicturePath = "default-avatar.png",
+                        Avatar = "default-avatar.png",
+                        CreatedAt = DateTime.Now,
+                        UpdatedAt = DateTime.Now,
+                        IsActive = true,
+                        StatusID = activeStatus.StatusID
+                    };
+
+                    var result = await userManager.CreateAsync(user, password);
+                    if (result.Succeeded)
+                    {
+                        await userManager.AddToRoleAsync(user, role);
+                    }
+                    else
+                    {
+                        throw new Exception($"Không thể tạo user {email}: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                    }
+                }
+            }
+
+            // 4. Seed Categories if empty
             if (!context.Categories.Any())
             {
                 var parentCategories = new[]
                 {
-                    new Category { CategoryName = "Công nghệ thông tin", CategoryType = "Field", Description = "Lĩnh vực công nghệ thông tin", IsActive = true },
-                    new Category { CategoryName = "Marketing", CategoryType = "Field", Description = "Lĩnh vực marketing", IsActive = true },
-                    new Category { CategoryName = "Thiết kế", CategoryType = "Field", Description = "Lĩnh vực thiết kế", IsActive = true }
-                };
+        new Category { CategoryName = "Công nghệ thông tin", CategoryType = "Field", Description = "Lĩnh vực CNTT", IsActive = true },
+        new Category { CategoryName = "Marketing", CategoryType = "Field", Description = "Lĩnh vực marketing", IsActive = true }
+    };
                 context.Categories.AddRange(parentCategories);
                 context.SaveChanges();
 
                 var subCategories = new[]
                 {
-                    new Category { CategoryName = "Lập trình web", CategoryType = "Skill", Description = "Phát triển website", ParentCategoryID = parentCategories[0].CategoryID, IsActive = true },
-                    new Category { CategoryName = "Lập trình mobile", CategoryType = "Skill", Description = "Phát triển ứng dụng di động", ParentCategoryID = parentCategories[0].CategoryID, IsActive = true },
-                    new Category { CategoryName = "Digital Marketing", CategoryType = "Skill", Description = "Marketing số", ParentCategoryID = parentCategories[1].CategoryID, IsActive = true },
-                    new Category { CategoryName = "Content Marketing", CategoryType = "Skill", Description = "Sáng tạo nội dung", ParentCategoryID = parentCategories[1].CategoryID, IsActive = true },
-                    new Category { CategoryName = "UI/UX Design", CategoryType = "Skill", Description = "Thiết kế giao diện người dùng", ParentCategoryID = parentCategories[2].CategoryID, IsActive = true },
-                    new Category { CategoryName = "Graphic Design", CategoryType = "Skill", Description = "Thiết kế đồ họa", ParentCategoryID = parentCategories[2].CategoryID, IsActive = true }
-                };
+        new Category { CategoryName = "Lập trình web", CategoryType = "Skill", Description = "Phát triển website", ParentCategoryID = parentCategories[0].CategoryID, IsActive = true },
+        new Category { CategoryName = "SEO", CategoryType = "Skill", Description = "Tối ưu hóa công cụ tìm kiếm", ParentCategoryID = parentCategories[1].CategoryID, IsActive = true }
+    };
                 context.Categories.AddRange(subCategories);
                 context.SaveChanges();
             }
 
-            // Seed Skills if empty
+            // 5. Seed Skills
             if (!context.Skills.Any())
             {
                 var webDevCategory = context.Categories.First(c => c.CategoryName == "Lập trình web");
-                var mobileDevCategory = context.Categories.First(c => c.CategoryName == "Lập trình mobile");
-                var digitalMarketingCategory = context.Categories.First(c => c.CategoryName == "Digital Marketing");
-                var contentMarketingCategory = context.Categories.First(c => c.CategoryName == "Content Marketing");
-                var uiuxCategory = context.Categories.First(c => c.CategoryName == "UI/UX Design");
-                var graphicCategory = context.Categories.First(c => c.CategoryName == "Graphic Design");
+                var seoCategory = context.Categories.First(c => c.CategoryName == "SEO");
 
                 context.Skills.AddRange(
-                    // Web Development Skills
-                    new Skill { SkillName = "HTML/CSS", CategoryID = webDevCategory.CategoryID, IsActive = true },
-                    new Skill { SkillName = "JavaScript", CategoryID = webDevCategory.CategoryID, IsActive = true },
-                    new Skill { SkillName = "React", CategoryID = webDevCategory.CategoryID, IsActive = true },
-                    new Skill { SkillName = "Angular", CategoryID = webDevCategory.CategoryID, IsActive = true },
-                    new Skill { SkillName = "Node.js", CategoryID = webDevCategory.CategoryID, IsActive = true },
                     new Skill { SkillName = ".NET", CategoryID = webDevCategory.CategoryID, IsActive = true },
-
-                    // Mobile Development Skills
-                    new Skill { SkillName = "Android (Java/Kotlin)", CategoryID = mobileDevCategory.CategoryID, IsActive = true },
-                    new Skill { SkillName = "iOS (Swift)", CategoryID = mobileDevCategory.CategoryID, IsActive = true },
-                    new Skill { SkillName = "React Native", CategoryID = mobileDevCategory.CategoryID, IsActive = true },
-                    new Skill { SkillName = "Flutter", CategoryID = mobileDevCategory.CategoryID, IsActive = true },
-
-                    // Digital Marketing Skills
-                    new Skill { SkillName = "SEO", CategoryID = digitalMarketingCategory.CategoryID, IsActive = true },
-                    new Skill { SkillName = "Google Ads", CategoryID = digitalMarketingCategory.CategoryID, IsActive = true },
-                    new Skill { SkillName = "Facebook Ads", CategoryID = digitalMarketingCategory.CategoryID, IsActive = true },
-                    new Skill { SkillName = "Email Marketing", CategoryID = digitalMarketingCategory.CategoryID, IsActive = true },
-
-                    // Content Marketing Skills
-                    new Skill { SkillName = "Copywriting", CategoryID = contentMarketingCategory.CategoryID, IsActive = true },
-                    new Skill { SkillName = "Content Strategy", CategoryID = contentMarketingCategory.CategoryID, IsActive = true },
-                    new Skill { SkillName = "Social Media Content", CategoryID = contentMarketingCategory.CategoryID, IsActive = true },
-                    new Skill { SkillName = "Blog Writing", CategoryID = contentMarketingCategory.CategoryID, IsActive = true },
-
-                    // UI/UX Design Skills
-                    new Skill { SkillName = "Figma", CategoryID = uiuxCategory.CategoryID, IsActive = true },
-                    new Skill { SkillName = "Adobe XD", CategoryID = uiuxCategory.CategoryID, IsActive = true },
-                    new Skill { SkillName = "Sketch", CategoryID = uiuxCategory.CategoryID, IsActive = true },
-                    new Skill { SkillName = "Wireframing", CategoryID = uiuxCategory.CategoryID, IsActive = true },
-
-                    // Graphic Design Skills
-                    new Skill { SkillName = "Adobe Photoshop", CategoryID = graphicCategory.CategoryID, IsActive = true },
-                    new Skill { SkillName = "Adobe Illustrator", CategoryID = graphicCategory.CategoryID, IsActive = true },
-                    new Skill { SkillName = "CorelDRAW", CategoryID = graphicCategory.CategoryID, IsActive = true },
-                    new Skill { SkillName = "Logo Design", CategoryID = graphicCategory.CategoryID, IsActive = true }
+                    new Skill { SkillName = "React", CategoryID = webDevCategory.CategoryID, IsActive = true },
+                    new Skill { SkillName = "SEO", CategoryID = seoCategory.CategoryID, IsActive = true }
                 );
                 context.SaveChanges();
             }
 
-            // Seed Users if empty
-            if (!context.Users.Any())
-            {
-                var adminRole = context.UserRoles.First(r => r.RoleName == "Admin");
-                var moderatorRole = context.UserRoles.First(r => r.RoleName == "Moderator");
-                var businessRole = context.UserRoles.First(r => r.RoleName == "Business");
-                var studentRole = context.UserRoles.First(r => r.RoleName == "Student");
-                var activeStatus = context.AccountStatuses.First(s => s.StatusName == "Hoạt động");
-
-                context.Users.AddRange(
-                    new User
-                    {
-                        Email = "admin@example.com",
-                        Username = "admin",
-                        PasswordHash = "AQAAAAIAAYagAAAAEPbewIEG0gP4Zz9pC2dIGqNFWHtHEHqE5GMRHc+GiZ+tBYFVXOhOdCjXFd+TZpWXwA==", // Password: Admin@123
-                        FullName = "Admin",
-                        CompanyName = "StudentFreelance",
-                        Industry = "Công nghệ thông tin",
-                        Major = "Quản trị hệ thống",
-                        PhoneNumber = "0123456789",
-                        University = "FPT University",
-                        WalletBalance = 0,
-                        VipStatus = true,
-                        ProfileStatus = true,
-                        AverageRating = 5,
-                        TotalProjects = 0,
-                        TotalProjectsPosted = 0,
-                        ProfilePicturePath = "default-avatar.png",
-                        Avatar = "default-avatar.png",
-                        RoleID = adminRole.RoleID,
-                        StatusID = activeStatus.StatusID,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now,
-                        IsActive = true
-                    },
-                    new User
-                    {
-                        Email = "moderator@example.com",
-                        Username = "moderator",
-                        PasswordHash = "AQAAAAIAAYagAAAAEPbewIEG0gP4Zz9pC2dIGqNFWHtHEHqE5GMRHc+GiZ+tBYFVXOhOdCjXFd+TZpWXwA==", // Password: Moderator@123
-                        FullName = "Moderator",
-                        CompanyName = "StudentFreelance",
-                        Industry = "Công nghệ thông tin",
-                        Major = "Kiểm duyệt nội dung",
-                        PhoneNumber = "0123456788",
-                        University = "FPT University",
-                        WalletBalance = 0,
-                        VipStatus = true,
-                        ProfileStatus = true,
-                        AverageRating = 5,
-                        TotalProjects = 0,
-                        TotalProjectsPosted = 0,
-                        ProfilePicturePath = "default-avatar.png",
-                        Avatar = "default-avatar.png",
-                        RoleID = moderatorRole.RoleID,
-                        StatusID = activeStatus.StatusID,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now,
-                        IsActive = true
-                    },
-                    new User
-                    {
-                        Email = "business@example.com",
-                        Username = "business",
-                        PasswordHash = "AQAAAAIAAYagAAAAEPbewIEG0gP4Zz9pC2dIGqNFWHtHEHqE5GMRHc+GiZ+tBYFVXOhOdCjXFd+TZpWXwA==", // Password: Business@123
-                        FullName = "Công ty TNHH ABC",
-                        CompanyName = "Công ty TNHH ABC",
-                        Industry = "Công nghệ thông tin",
-                        Major = "Phát triển phần mềm",
-                        PhoneNumber = "0123456787",
-                        WalletBalance = 0,
-                        VipStatus = true,
-                        ProfileStatus = true,
-                        AverageRating = 0,
-                        TotalProjects = 0,
-                        TotalProjectsPosted = 0,
-                        ProfilePicturePath = "default-avatar.png",
-                        Avatar = "default-avatar.png",
-                        RoleID = businessRole.RoleID,
-                        StatusID = activeStatus.StatusID,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now,
-                        IsActive = true
-                    },
-                    new User
-                    {
-                        Email = "student@example.com",
-                        Username = "student",
-                        PasswordHash = "AQAAAAIAAYagAAAAEPbewIEG0gP4Zz9pC2dIGqNFWHtHEHqE5GMRHc+GiZ+tBYFVXOhOdCjXFd+TZpWXwA==", // Password: Student@123
-                        FullName = "Nguyễn Văn A",
-                        CompanyName = "Sinh viên",
-                        Industry = "Công nghệ thông tin",
-                        Major = "Kỹ thuật phần mềm",
-                        PhoneNumber = "0123456786",
-                        University = "FPT University",
-                        WalletBalance = 0,
-                        VipStatus = false,
-                        ProfileStatus = true,
-                        AverageRating = 0,
-                        TotalProjects = 0,
-                        TotalProjectsPosted = 0,
-                        ProfilePicturePath = "default-avatar.png",
-                        Avatar = "default-avatar.png",
-                        RoleID = studentRole.RoleID,
-                        StatusID = activeStatus.StatusID,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now,
-                        IsActive = true
-                    }
-                );
-                context.SaveChanges();
-            }
-
-            // Seed Projects if empty
+            // 6. Seed Project
             if (!context.Projects.Any())
             {
-                var business = context.Users.First(u => u.Email == "business@example.com");
-                var webDevCategory = context.Categories.First(c => c.CategoryName == "Lập trình web");
-                var openStatus = context.ProjectStatuses.First(s => s.StatusName == "Đang tuyển");
-                var fullTimeType = context.ProjectTypes.First(t => t.TypeName == "Toàn thời gian");
+                var business = await userManager.FindByEmailAsync("business@example.com");
+                var category = context.Categories.First(c => c.CategoryName == "Lập trình web");
+                var status = context.ProjectStatuses.First(s => s.StatusName == "Đang tuyển");
+                var type = context.ProjectTypes.First(t => t.TypeName == "Toàn thời gian");
 
-                context.Projects.AddRange(
-                    new Project
-                    {
-                        Title = "Phát triển website thương mại điện tử",
-                        Description = "Xây dựng website thương mại điện tử sử dụng công nghệ .NET Core và React",
-                        Budget = 50000000,
-                        StartDate = DateTime.Now.AddDays(7),
-                        EndDate = DateTime.Now.AddMonths(3),
-                        BusinessID = business.UserID,
-                        CategoryID = webDevCategory.CategoryID,
-                        StatusID = openStatus.StatusID,
-                        TypeID = fullTimeType.TypeID,
-                        IsActive = true
-                    }
-                );
+                var project = new Project
+                {
+                    Title = "Phát triển website bán hàng",
+                    Description = "Cần lập trình viên có kinh nghiệm về .NET và React",
+                    Budget = 50000000,
+                    StartDate = new DateTime(2025, 6, 22),
+                    EndDate = new DateTime(2025, 9, 13),
+                    BusinessID = business.Id,
+                    CategoryID = category.CategoryID,
+                    StatusID = status.StatusID,
+                    TypeID = type.TypeID,
+                    IsActive = true
+                };
+                context.Projects.Add(project);
                 context.SaveChanges();
             }
 
-            // Seed ProjectSkillsRequired if empty
+            // 7. Seed ProjectSkillRequired
             if (!context.ProjectSkillsRequired.Any())
             {
                 var project = context.Projects.First();
-                var dotnetSkill = context.Skills.First(s => s.SkillName == ".NET");
-                var reactSkill = context.Skills.First(s => s.SkillName == "React");
-                var requiredLevel = context.ImportanceLevels.First(l => l.LevelName == "Bắt buộc");
-                var importantLevel = context.ImportanceLevels.First(l => l.LevelName == "Quan trọng");
+                var dotnet = context.Skills.First(s => s.SkillName == ".NET");
+                var react = context.Skills.First(s => s.SkillName == "React");
+                var required = context.ImportanceLevels.First(l => l.LevelName == "Bắt buộc");
 
                 context.ProjectSkillsRequired.AddRange(
-                    new ProjectSkillRequired
-                    {
-                        ProjectID = project.ProjectID,
-                        SkillID = dotnetSkill.SkillID,
-                        ImportanceLevelID = requiredLevel.LevelID,
-                        IsActive = true
-                    },
-                    new ProjectSkillRequired
-                    {
-                        ProjectID = project.ProjectID,
-                        SkillID = reactSkill.SkillID,
-                        ImportanceLevelID = importantLevel.LevelID,
-                        IsActive = true
-                    }
+                    new ProjectSkillRequired { ProjectID = project.ProjectID, SkillID = dotnet.SkillID, ImportanceLevelID = required.LevelID, IsActive = true },
+                    new ProjectSkillRequired { ProjectID = project.ProjectID, SkillID = react.SkillID, ImportanceLevelID = required.LevelID, IsActive = true }
                 );
                 context.SaveChanges();
             }
 
-            // Seed StudentSkills if empty
+            // 8. Seed StudentSkills
             if (!context.StudentSkills.Any())
             {
-                var student = context.Users.First(u => u.Email == "student@example.com");
-                var dotnetSkill = context.Skills.First(s => s.SkillName == ".NET");
-                var reactSkill = context.Skills.First(s => s.SkillName == "React");
-                var intermediateLevel = context.ProficiencyLevels.First(l => l.LevelName == "Trung cấp");
-                var advancedLevel = context.ProficiencyLevels.First(l => l.LevelName == "Thành thạo");
+                var student = await userManager.FindByEmailAsync("student@example.com");
+                var dotnet = context.Skills.First(s => s.SkillName == ".NET");
+                var level = context.ProficiencyLevels.First(l => l.LevelName == "Thành thạo");
 
-                context.StudentSkills.AddRange(
-                    new StudentSkill
-                    {
-                        UserID = student.UserID,
-                        SkillID = dotnetSkill.SkillID,
-                        ProficiencyLevelID = advancedLevel.LevelID,
-                        IsActive = true
-                    },
-                    new StudentSkill
-                    {
-                        UserID = student.UserID,
-                        SkillID = reactSkill.SkillID,
-                        ProficiencyLevelID = intermediateLevel.LevelID,
-                        IsActive = true
-                    }
-                );
+                context.StudentSkills.Add(new StudentSkill
+                {
+                    UserID = student.Id,
+                    SkillID = dotnet.SkillID,
+                    ProficiencyLevelID = level.LevelID,
+                    IsActive = true
+                });
                 context.SaveChanges();
             }
 
-            // Seed StudentApplications if empty
+            // 9. Seed StudentApplications
             if (!context.StudentApplications.Any())
             {
-                var student = context.Users.First(u => u.Email == "student@example.com");
+                var student = await userManager.FindByEmailAsync("student@example.com");
                 var project = context.Projects.First();
 
-                context.StudentApplications.AddRange(
-                    new StudentApplication
-                    {
-                        ProjectID = project.ProjectID,
-                        UserID = student.UserID,
-                        CoverLetter = "Em rất mong muốn được tham gia dự án này...",
-                        Salary = 5000000,
-                        Status = "Pending",
-                        DateApplied = DateTime.Now,
-                        IsActive = true
-                    }
-                );
+                context.StudentApplications.Add(new StudentApplication
+                {
+                    ProjectID = project.ProjectID,
+                    UserID = student.Id,
+                    CoverLetter = "Tôi rất phù hợp dự án này.",
+                    Salary = 5000000,
+                    Status = "Pending",
+                    DateApplied = DateTime.Now,
+                    IsActive = true
+                });
                 context.SaveChanges();
             }
-
-            // Seed Messages if empty
+            // 10. Seed Messages
             if (!context.Messages.Any())
             {
-                var student = context.Users.First(u => u.Email == "student@example.com");
-                var business = context.Users.First(u => u.Email == "business@example.com");
+                var student = await userManager.FindByEmailAsync("student@example.com");
+                var business = await userManager.FindByEmailAsync("business@example.com");
                 var project = context.Projects.First();
 
                 context.Messages.AddRange(
                     new Message
                     {
-                        SenderID = student.UserID,
-                        ReceiverID = business.UserID,
+                        SenderID = student.Id,
+                        ReceiverID = business.Id,
                         ProjectID = project.ProjectID,
-                        Content = "Xin chào, tôi muốn trao đổi thêm về dự án",
+                        Content = "Em muốn trao đổi thêm về dự án",
                         SentAt = DateTime.Now,
                         IsRead = false,
                         IsActive = true
                     },
                     new Message
                     {
-                        SenderID = business.UserID,
-                        ReceiverID = student.UserID,
+                        SenderID = business.Id,
+                        ReceiverID = student.Id,
                         ProjectID = project.ProjectID,
-                        Content = "Chào bạn, bạn có thể cho biết thêm về kinh nghiệm làm việc với .NET không?",
+                        Content = "Bạn có thể cho biết thêm kinh nghiệm .NET?",
                         SentAt = DateTime.Now.AddMinutes(5),
                         IsRead = false,
                         IsActive = true
@@ -446,69 +324,67 @@ namespace StudentFreelance.Data
                 context.SaveChanges();
             }
 
-            // Seed Transactions if empty
+            // 11. Seed Transactions
             if (!context.Transactions.Any())
             {
-                var student = context.Users.First(u => u.Email == "student@example.com");
-                var business = context.Users.First(u => u.Email == "business@example.com");
+                var student = await userManager.FindByEmailAsync("student@example.com");
+                var business = await userManager.FindByEmailAsync("business@example.com");
                 var project = context.Projects.First();
-                var depositType = context.TransactionTypes.First(t => t.TypeName == "Nạp tiền");
-                var paymentType = context.TransactionTypes.First(t => t.TypeName == "Thanh toán");
-                var completedStatus = context.TransactionStatuses.First(s => s.StatusName == "Thành công");
+                var deposit = context.TransactionTypes.First(t => t.TypeName == "Nạp tiền");
+                var payment = context.TransactionTypes.First(t => t.TypeName == "Thanh toán");
+                var success = context.TransactionStatuses.First(s => s.StatusName == "Thành công");
 
                 context.Transactions.AddRange(
                     new Transaction
                     {
-                        UserID = business.UserID,
+                        UserID = business.Id,
                         Amount = 50000000,
-                        TypeID = depositType.TypeID,
+                        TypeID = deposit.TypeID,
                         TransactionDate = DateTime.Now.AddDays(-1),
                         Description = "Nạp tiền vào tài khoản",
-                        StatusID = completedStatus.StatusID,
+                        StatusID = success.StatusID,
                         IsActive = true
                     },
                     new Transaction
                     {
-                        UserID = business.UserID,
+                        UserID = business.Id,
                         ProjectID = project.ProjectID,
                         Amount = 15000000,
-                        TypeID = paymentType.TypeID,
+                        TypeID = payment.TypeID,
                         TransactionDate = DateTime.Now,
-                        Description = "Thanh toán cho sinh viên",
-                        StatusID = completedStatus.StatusID,
+                        Description = "Thanh toán cho freelancer",
+                        StatusID = success.StatusID,
                         IsActive = true
                     }
                 );
                 context.SaveChanges();
             }
 
-            // Seed Ratings if empty
+            // 12. Seed Ratings
             if (!context.Ratings.Any())
             {
-                var project1 = context.Projects.First();
-                var businessRole = context.UserRoles.First(r => r.RoleName == "Business");
-                var studentRole = context.UserRoles.First(r => r.RoleName == "Student");
-                var business1 = context.Users.First(u => u.RoleID == businessRole.RoleID);
-                var student1 = context.Users.First(u => u.RoleID == studentRole.RoleID);
+                var project = context.Projects.First();
+                var student = await userManager.FindByEmailAsync("student@example.com");
+                var business = await userManager.FindByEmailAsync("business@example.com");
 
                 context.Ratings.AddRange(
                     new Rating
                     {
-                        ProjectID = project1.ProjectID,
-                        ReviewerID = business1.UserID,
-                        RevieweeID = student1.UserID,
+                        ProjectID = project.ProjectID,
+                        ReviewerID = business.Id,
+                        RevieweeID = student.Id,
                         Score = 4.5M,
-                        Comment = "Làm việc chuyên nghiệp, đúng tiến độ",
+                        Comment = "Làm việc đúng hạn, chuyên nghiệp",
                         DateRated = DateTime.Now,
                         IsActive = true
                     },
                     new Rating
                     {
-                        ProjectID = project1.ProjectID,
-                        ReviewerID = student1.UserID,
-                        RevieweeID = business1.UserID,
+                        ProjectID = project.ProjectID,
+                        ReviewerID = student.Id,
+                        RevieweeID = business.Id,
                         Score = 5.0M,
-                        Comment = "Khách hàng dễ tính, thanh toán đúng hạn",
+                        Comment = "Khách hàng dễ tính, thanh toán nhanh",
                         DateRated = DateTime.Now,
                         IsActive = true
                     }
@@ -516,36 +392,34 @@ namespace StudentFreelance.Data
                 context.SaveChanges();
             }
 
-            // Seed Reports if empty
+            // 13. Seed Reports
             if (!context.Reports.Any())
             {
-                var student = context.Users.First(u => u.Email == "student@example.com");
-                var business = context.Users.First(u => u.Email == "business@example.com");
+                var student = await userManager.FindByEmailAsync("student@example.com");
+                var business = await userManager.FindByEmailAsync("business@example.com");
                 var project = context.Projects.First();
-                var spamType = context.ReportTypes.First(t => t.TypeName == "Spam");
-                var pendingStatus = context.ReportStatuses.First(s => s.StatusName == "Đang xử lý");
+                var spam = context.ReportTypes.First(t => t.TypeName == "Spam");
+                var pending = context.ReportStatuses.First(s => s.StatusName == "Đang xử lý");
 
-                context.Reports.AddRange(
-                    new Report
-                    {
-                        ReporterID = student.UserID,
-                        ReportedUserID = business.UserID,
-                        ProjectID = project.ProjectID,
-                        TypeID = spamType.TypeID,
-                        Description = "Doanh nghiệp gửi quá nhiều tin nhắn",
-                        StatusID = pendingStatus.StatusID,
-                        ReportDate = DateTime.Now,
-                        IsActive = true
-                    }
-                );
+                context.Reports.Add(new Report
+                {
+                    ReporterID = student.Id,
+                    ReportedUserID = business.Id,
+                    ProjectID = project.ProjectID,
+                    TypeID = spam.TypeID,
+                    Description = "Gửi quá nhiều tin nhắn rác",
+                    StatusID = pending.StatusID,
+                    ReportDate = DateTime.Now,
+                    IsActive = true
+                });
                 context.SaveChanges();
             }
 
-            // Seed Notifications if empty
+            // 14. Seed Notifications
             if (!context.Notifications.Any())
             {
-                var student = context.Users.First(u => u.Email == "student@example.com");
-                var business = context.Users.First(u => u.Email == "business@example.com");
+                var student = await userManager.FindByEmailAsync("student@example.com");
+                var business = await userManager.FindByEmailAsync("business@example.com");
                 var project = context.Projects.First();
                 var projectType = context.NotificationTypes.First(t => t.TypeName == "Dự án");
                 var messageType = context.NotificationTypes.First(t => t.TypeName == "Tin nhắn");
@@ -553,9 +427,9 @@ namespace StudentFreelance.Data
                 context.Notifications.AddRange(
                     new Notification
                     {
-                        UserID = business.UserID,
+                        UserID = business.Id,
                         Title = "Có ứng viên mới",
-                        Content = "Có sinh viên mới ứng tuyển vào dự án của bạn",
+                        Content = "Một sinh viên vừa ứng tuyển vào dự án của bạn.",
                         TypeID = projectType.TypeID,
                         RelatedID = project.ProjectID,
                         NotificationDate = DateTime.Now,
@@ -564,9 +438,9 @@ namespace StudentFreelance.Data
                     },
                     new Notification
                     {
-                        UserID = student.UserID,
+                        UserID = student.Id,
                         Title = "Tin nhắn mới",
-                        Content = "Bạn có tin nhắn mới từ doanh nghiệp",
+                        Content = "Bạn nhận được tin nhắn từ doanh nghiệp.",
                         TypeID = messageType.TypeID,
                         RelatedID = project.ProjectID,
                         NotificationDate = DateTime.Now,
@@ -576,6 +450,7 @@ namespace StudentFreelance.Data
                 );
                 context.SaveChanges();
             }
+
         }
     }
-} 
+}

@@ -39,7 +39,7 @@ namespace StudentFreelance.Models
         public bool IsActive { get; set; } = true;
 
         // Navigation properties
-        public User User { get; set; }
+        public ApplicationUser User { get; set; }
         public NotificationType Type { get; set; }
     }
 }

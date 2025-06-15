@@ -35,8 +35,8 @@ namespace StudentFreelance.Models
         /// Cờ kích hoạt (true nếu bản ghi còn hiệu lực, false nếu inactive)
         public bool IsActive { get; set; } = true;
 
-        public User Sender { get; set; }
-        public User Receiver { get; set; }
+        public ApplicationUser Sender { get; set; }
+        public ApplicationUser Receiver { get; set; }
         public Project Project { get; set; }
     }
 }

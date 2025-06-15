@@ -40,7 +40,7 @@ namespace StudentFreelance.Models
         /// Cờ kích hoạt (true nếu bản ghi còn hiệu lực, false nếu inactive)
         public bool IsActive { get; set; } = true;
 
-        public User User { get; set; }
+        public ApplicationUser User { get; set; }
         public Project Project { get; set; }
         public TransactionType Type { get; set; }
         public TransactionStatus Status { get; set; }

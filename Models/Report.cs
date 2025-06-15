@@ -47,8 +47,8 @@ namespace StudentFreelance.Models
         /// Cờ kích hoạt (true nếu bản ghi còn hiệu lực, false nếu inactive)
         public bool IsActive { get; set; } = true;
 
-        public User Reporter { get; set; }
-        public User ReportedUser { get; set; }
+        public ApplicationUser Reporter { get; set; }
+        public ApplicationUser ReportedUser { get; set; }
         public Project Project { get; set; }
         public ReportType Type { get; set; }
         public ReportStatus Status { get; set; }
