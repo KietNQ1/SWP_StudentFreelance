@@ -1,8 +1,105 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Trang chủ";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container py-5">
+    <div class="row align-items-center mb-5">
+        <div class="col-lg-6">
+            <h1 class="display-4 fw-bold">Kết nối sinh viên với cơ hội việc làm</h1>
+            <p class="lead mb-4">Nền tảng kết nối sinh viên freelancer với doanh nghiệp, giúp sinh viên tìm kiếm cơ hội việc làm phù hợp và doanh nghiệp tìm được nhân tài.</p>
+            <div class="d-grid gap-3 d-sm-flex">
+                <a asp-controller="Account" asp-action="Register" class="btn btn-primary btn-lg px-4">Đăng ký ngay</a>
+                <a href="#features" class="btn btn-outline-secondary btn-lg px-4">Tìm hiểu thêm</a>
+            </div>
+        </div>
+        <div class="col-lg-6 d-none d-lg-block">
+            <img src="https://via.placeholder.com/600x400" alt="Student Freelance" class="img-fluid rounded shadow">
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h2 class="fw-bold mb-4">Bạn đang tìm kiếm gì?</h2>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <i class="bi bi-briefcase fs-1 text-primary mb-3"></i>
+                    <h3 class="card-title">Tìm dự án</h3>
+                    <p class="card-text">Khám phá các cơ hội việc làm phù hợp với kỹ năng và sở thích của bạn.</p>
+                    <a asp-controller="Search" asp-action="SearchJob" class="btn btn-primary">Xem các dự án</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <i class="bi bi-mortarboard fs-1 text-primary mb-3"></i>
+                    <h3 class="card-title">Tìm sinh viên</h3>
+                    <p class="card-text">Kết nối với sinh viên tài năng có kỹ năng phù hợp với dự án của bạn.</p>
+                    <a asp-controller="Search" asp-action="SearchStudents" class="btn btn-primary">Tìm sinh viên</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <i class="bi bi-building fs-1 text-primary mb-3"></i>
+                    <h3 class="card-title">Tìm doanh nghiệp</h3>
+                    <p class="card-text">Khám phá các doanh nghiệp đang tìm kiếm tài năng và cơ hội hợp tác.</p>
+                    <a asp-controller="Search" asp-action="SearchBusinesses" class="btn btn-primary">Xem doanh nghiệp</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="features" class="row py-5">
+        <div class="col-12 text-center mb-4">
+            <h2 class="fw-bold">Tại sao chọn StudentFreelance?</h2>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="d-flex align-items-center">
+                <div class="me-3">
+                    <i class="bi bi-shield-check text-primary fs-1"></i>
+                </div>
+                <div>
+                    <h4>An toàn & Bảo mật</h4>
+                    <p class="text-muted">Bảo vệ thông tin và giao dịch của bạn</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="d-flex align-items-center">
+                <div class="me-3">
+                    <i class="bi bi-graph-up-arrow text-primary fs-1"></i>
+                </div>
+                <div>
+                    <h4>Cơ hội phát triển</h4>
+                    <p class="text-muted">Nâng cao kỹ năng và kinh nghiệm thực tế</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="d-flex align-items-center">
+                <div class="me-3">
+                    <i class="bi bi-cash-coin text-primary fs-1"></i>
+                </div>
+                <div>
+                    <h4>Thanh toán minh bạch</h4>
+                    <p class="text-muted">Hệ thống thanh toán an toàn và đáng tin cậy</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="d-flex align-items-center">
+                <div class="me-3">
+                    <i class="bi bi-people text-primary fs-1"></i>
+                </div>
+                <div>
+                    <h4>Cộng đồng lớn mạnh</h4>
+                    <p class="text-muted">Kết nối với cộng đồng sinh viên và doanh nghiệp</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
