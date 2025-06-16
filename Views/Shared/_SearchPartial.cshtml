@@ -1,15 +1,13 @@
-@model IEnumerable<StudentFreelance.Models.Project>
+@model dynamic
 @{
     var categories = ViewBag.Categories as List<StudentFreelance.Models.Category> ?? new List<StudentFreelance.Models.Category>();
     var skills = ViewBag.Skills as List<StudentFreelance.Models.Skill> ?? new List<StudentFreelance.Models.Skill>();
     var businessUsers = ViewBag.BusinessUsers as List<StudentFreelance.Models.ApplicationUser> ?? new List<StudentFreelance.Models.ApplicationUser>();
-    var provinces = ViewBag.Provinces as List<StudentFreelance.Models.Province> ?? new List<StudentFreelance.Models.Province>();
     
     var query = ViewBag.Query as string ?? string.Empty;
     var categoryId = ViewBag.CategoryId as int? ?? null;
     var skillIds = ViewBag.SkillIds as List<int> ?? new List<int>();
     var userId = ViewBag.UserId as int? ?? null;
-    var provinceId = ViewBag.ProvinceId as int? ?? null;
     
     // Nhóm các kỹ năng theo danh mục
     var skillsByCategory = skills
@@ -204,31 +202,99 @@
                 }
             </select>
         </div>
-        
         <div class="col-md-2">
-            <select class="form-select" name="provinceId">
-                <option value="">-- Chọn địa điểm --</option>
-                @foreach (var province in provinces.OrderBy(p => p.Name))
-                {
-                    if (provinceId == province.ProvinceID)
-                    {
-                        <option value="@province.ProvinceID" selected>@province.Name</option>
-                    }
-                    else
-                    {
-                        <option value="@province.ProvinceID">@province.Name</option>
-                    }
-                }
-            </select>
-        </div>
-        
-        <div class="col-md-12 text-end">
-            <button type="submit" class="btn btn-primary" id="searchBtn">Tìm kiếm</button>
+            <button type="submit" class="btn btn-primary w-100" id="searchBtn">Tìm kiếm</button>
         </div>
     </form>
 </div>
 
-@section Scripts {
+<style>
+.category-skills-dropdown {
+    position: relative;
+}
+
+.category-skills-container {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    display: none;
+    margin-top: 0.125rem;
+}
+
+.category-skills-container.show {
+    display: block;
+}
+
+.category-skills-container .card {
+    border-radius: 0.375rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.category-list, .subcategory-list, .skill-list {
+    height: 300px;
+    overflow-y: auto;
+    border-right: 1px solid #dee2e6;
+}
+
+.skill-list {
+    border-right: none;
+}
+
+.list-group-item.active {
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+    color: #212529;
+    font-weight: bold;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa;
+}
+
+.category-item, .subcategory-item, .skill-item {
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 0.75rem 1rem;
+}
+
+.list-group-item.fw-bold {
+    padding: 0.75rem 1rem;
+    margin-bottom: 0;
+}
+
+#dropdownCategorySkillsBtn {
+    height: 38px;
+    border-radius: 0.375rem;
+    background-color: #fff;
+}
+
+.card-footer {
+    border-top: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+}
+
+.card-footer .btn {
+    min-width: 80px;
+}
+
+.card-footer .btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.skill-item.selected {
+    background-color: #f0f9ff;
+    border-left: 3px solid #0d6efd;
+}
+
+.selected-skills-list {
+    border-bottom: 1px solid #dee2e6;
+    margin-bottom: 10px;
+}
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Các phần tử DOM
@@ -533,15 +599,6 @@ document.addEventListener('DOMContentLoaded', function() {
         dropdownBtn.classList.remove('active');
     });
     
-    // Đóng dropdown khi click ra ngoài
-    document.addEventListener('click', function() {
-        if (isDropdownOpen) {
-            isDropdownOpen = false;
-            container.classList.remove('show');
-            dropdownBtn.classList.remove('active');
-        }
-    });
-    
     // Hiển thị ban đầu nếu có giá trị được chọn
     if (selectedCategoryId) {
         // Tìm và kích hoạt danh mục được chọn
@@ -564,5 +621,4 @@ document.addEventListener('DOMContentLoaded', function() {
     // Cập nhật danh sách kỹ năng đã chọn ban đầu
     updateSelectedSkillsList();
 });
-</script>
-} 
+</script> 

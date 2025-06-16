@@ -12,25 +12,6 @@
     <link rel="stylesheet" href="~/StudentFreelance.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <style>
-        .search-container {
-            display: flex;
-            max-width: 600px;
-            width: 100%;
-        }
-        .search-input {
-            border-top-right-radius: 0;
-            border-bottom-right-radius: 0;
-        }
-        .location-input {
-            border-radius: 0;
-            border-left: none;
-        }
-        .search-button {
-            border-top-left-radius: 0;
-            border-bottom-left-radius: 0;
-        }
-    </style>
 </head>
 <body>
     <header>
@@ -61,13 +42,13 @@
                         </li>
                     </ul>
                     
-                    <form class="search-container mx-3" asp-controller="Search" asp-action="SearchJob" method="get">
-                        <input type="text" name="query" class="form-control search-input" placeholder="Nhập tên vị trí, công ty, từ khóa" aria-label="Tìm kiếm">
-                        @await Html.PartialAsync("_ProvinceDropdown", await ((ApplicationDbContext)ViewContext.HttpContext.RequestServices.GetService(typeof(ApplicationDbContext))).Provinces.OrderBy(p => p.Name).ToListAsync())
-                        <button class="btn btn-primary search-button" type="submit">
-                            <i class="bi bi-search"></i> Tìm kiếm
-                        </button>
-                    </form>
+                    @if (ViewContext.RouteData.Values["controller"]?.ToString() == "Home" || 
+                        ViewContext.RouteData.Values["controller"]?.ToString() == "Search")
+                    {
+                        <div class="w-100 px-3">
+                            @await Html.PartialAsync("_SearchPartial")
+                        </div>
+                    }
                     
                     <ul class="navbar-nav">
                         <li class="nav-item">
@@ -111,12 +92,6 @@
             // Ngăn sự kiện click trong dropdown làm đóng dropdown
             $('.dropdown-menu').on('click', function(e) {
                 e.stopPropagation();
-            });
-            
-            // Apply Select2 to province dropdown
-            $('#provinceDropdown').select2({
-                placeholder: "Chọn tỉnh/thành phố",
-                allowClear: true
             });
         });
     </script>
