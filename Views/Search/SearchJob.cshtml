@@ -23,9 +23,182 @@
     var selectedProvince = provinceId.HasValue ? provinces.FirstOrDefault(p => p.ProvinceID == provinceId) : null;
     
     var selectedSkills = skills.Where(s => skillIds.Contains(s.SkillID)).ToList();
+    
+    // Nhóm các danh mục theo loại
+    var fieldCategories = categories.Where(c => c.CategoryType == "Field" && c.ParentCategoryID == null).ToList();
+    var skillCategories = categories.Where(c => c.CategoryType == "Skill").ToList();
+    
+    // Nhóm kỹ năng theo danh mục
+    var skillsByCategory = skills
+        .GroupBy(s => s.CategoryID)
+        .ToDictionary(g => g.Key, g => g.ToList());
 }
 
 <div class="container mt-4">
+    <!-- Thanh tìm kiếm nâng cao -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <form asp-controller="Search" asp-action="SearchJob" method="get" id="advancedSearchForm">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" name="query" class="form-control border-start-0" 
+                                placeholder="Vị trí tuyển dụng, tên công ty" value="@query">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0">
+                                <i class="bi bi-geo-alt"></i>
+                            </span>
+                            <select name="provinceId" class="form-select border-start-0" id="provinceSelect">
+                                <option value="">Địa điểm</option>
+                                @foreach (var province in provinces.OrderBy(p => p.Name))
+                                {
+                                    if (provinceId == province.ProvinceID)
+                                    {
+                                        <option value="@province.ProvinceID" selected>@province.Name</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@province.ProvinceID">@province.Name</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search"></i> Tìm kiếm
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" 
+                            data-bs-target="#advancedSearch" aria-expanded="false">
+                        <i class="bi bi-sliders"></i> Tìm kiếm nâng cao
+                    </button>
+                </div>
+
+                <div class="collapse" id="advancedSearch">
+                    <div class="card card-body border-0 bg-light">
+                        <div class="row">
+                            <!-- Tìm kiếm theo nhóm nghề -->
+                            <div class="col-md-12 mb-3">
+                                <h6 class="mb-2">Chọn Nhóm nghề, Nghề hoặc Chuyên môn</h6>
+                                <div class="input-group mb-2">
+                                    <input type="text" class="form-control" id="skillSearch" 
+                                        placeholder="Nhập từ khóa tìm kiếm" aria-label="Tìm kiếm kỹ năng">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4" id="fieldCategoriesContainer">
+                                        <div class="card h-100">
+                                            <div class="card-header bg-light">
+                                                <h6 class="mb-0">NHÓM NGHỀ</h6>
+                                            </div>
+                                            <div class="card-body p-0 overflow-auto" style="max-height: 300px;">
+                                                <ul class="list-group list-group-flush field-categories">
+                                                    @foreach (var field in fieldCategories)
+                                                    {
+                                                        <li class="list-group-item d-flex align-items-center">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input field-category" type="radio" 
+                                                                    name="fieldCategory" value="@field.CategoryID" id="field_@field.CategoryID"
+                                                                    data-field-id="@field.CategoryID">
+                                                                <label class="form-check-label" for="field_@field.CategoryID">
+                                                                    @field.CategoryName
+                                                                </label>
+                                                            </div>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4" id="subCategoriesContainer" style="display: none;">
+                                        <div class="card h-100">
+                                            <div class="card-header bg-light">
+                                                <h6 class="mb-0">NGHỀ</h6>
+                                            </div>
+                                            <div class="card-body p-0 overflow-auto" style="max-height: 300px;">
+                                                <ul class="list-group list-group-flush sub-categories">
+                                                    @foreach (var field in fieldCategories)
+                                                    {
+                                                        var subCategories = categories.Where(c => c.ParentCategoryID == field.CategoryID).ToList();
+                                                        foreach (var subCategory in subCategories)
+                                                        {
+                                                            <li class="list-group-item d-flex align-items-center field-item field-@field.CategoryID" style="display: none;">
+                                                                <div class="form-check">
+                                                                    <input class="form-check-input sub-category" type="radio" 
+                                                                        name="categoryId" value="@subCategory.CategoryID" id="category_@subCategory.CategoryID"
+                                                                        data-parent-id="@field.CategoryID" 
+                                                                        data-category-id="@subCategory.CategoryID"
+                                                                        @if(categoryId == subCategory.CategoryID) { <text>checked</text> }>
+                                                                    <label class="form-check-label" for="category_@subCategory.CategoryID">
+                                                                        @subCategory.CategoryName
+                                                                    </label>
+                                                                </div>
+                                                            </li>
+                                                        }
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4" id="skillsContainer" style="display: none;">
+                                        <div class="card h-100">
+                                            <div class="card-header bg-light">
+                                                <h6 class="mb-0">VỊ TRÍ CHUYÊN MÔN</h6>
+                                            </div>
+                                            <div class="card-body p-0 overflow-auto" style="max-height: 300px;">
+                                                <div class="p-2 skill-items">
+                                                    @foreach (var skill in skills)
+                                                    {
+                                                        <div class="mb-2 skill-item category-@skill.CategoryID" style="display: none;">
+                                                            <div class="form-check">
+                                                                @if (skillIds.Contains(skill.SkillID))
+                                                                {
+                                                                    <input class="form-check-input skill" type="checkbox" 
+                                                                        name="skillIds" value="@skill.SkillID" id="skill_@skill.SkillID"
+                                                                        data-category-id="@skill.CategoryID" checked>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <input class="form-check-input skill" type="checkbox" 
+                                                                        name="skillIds" value="@skill.SkillID" id="skill_@skill.SkillID"
+                                                                        data-category-id="@skill.CategoryID">
+                                                                }
+                                                                <label class="form-check-label" for="skill_@skill.SkillID">
+                                                                    @skill.SkillName
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-12 mt-3 d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-secondary" id="clearFilters">Bỏ chọn tất cả</button>
+                                <button type="submit" class="btn btn-primary">Áp dụng</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Lưu provinceId hiện tại để tránh bị reset -->
+                <input type="hidden" id="currentProvinceId" value="@provinceId" />
+            </form>
+        </div>
+    </div>
+
     <h2>Kết quả tìm kiếm</h2>
     
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -182,5 +355,174 @@
             
             projects.forEach(project => container.appendChild(project));
         }
+        
+        // Xử lý tìm kiếm nâng cao
+        $(document).ready(function() {
+            // Tạo danh sách đơn giản hơn để tránh tham chiếu vòng tròn
+            const categoriesData = [
+                @foreach (var category in categories)
+                {
+                    <text>
+                    {
+                        categoryID: @category.CategoryID,
+                        categoryName: "@Html.Raw(Json.Serialize(category.CategoryName))",
+                        parentCategoryID: @(category.ParentCategoryID.HasValue ? category.ParentCategoryID.Value.ToString() : "null"),
+                        categoryType: "@category.CategoryType"
+                    },
+                    </text>
+                }
+            ];
+            
+            const skillsData = [
+                @foreach (var skill in skills)
+                {
+                    <text>
+                    {
+                        skillID: @skill.SkillID,
+                        skillName: "@Html.Raw(Json.Serialize(skill.SkillName))",
+                        categoryID: @skill.CategoryID
+                    },
+                    </text>
+                }
+            ];
+            
+            // Lọc và hiển thị danh mục con khi chọn danh mục chính
+            $('.field-category').on('change', function() {
+                const fieldId = $(this).data('field-id');
+                const isChecked = $(this).prop('checked');
+                
+                if (isChecked) {
+                    // Hiển thị container danh mục con
+                    $('#subCategoriesContainer').show();
+                    
+                    // Ẩn tất cả các danh mục con
+                    $('.field-item').hide();
+                    
+                    // Hiển thị danh mục con thuộc danh mục chính đã chọn
+                    $(`.field-${fieldId}`).show();
+                    
+                    // Ẩn container kỹ năng và bỏ chọn tất cả các kỹ năng
+                    $('#skillsContainer').hide();
+                    $('.skill').prop('checked', false);
+                    $('.skill-item').hide();
+                    
+                    // Bỏ chọn tất cả các danh mục con
+                    $('.sub-category').prop('checked', false);
+                }
+            });
+            
+            // Xử lý khi chọn danh mục con
+            $('.sub-category').on('change', function() {
+                const categoryId = $(this).data('category-id');
+                const isChecked = $(this).prop('checked');
+                
+                if (isChecked) {
+                    // Hiển thị container kỹ năng
+                    $('#skillsContainer').show();
+                    
+                    // Ẩn tất cả các kỹ năng
+                    $('.skill-item').hide();
+                    
+                    // Hiển thị kỹ năng thuộc danh mục con đã chọn
+                    $(`.category-${categoryId}`).show();
+                }
+            });
+            
+            // Xử lý tìm kiếm kỹ năng
+            $('#skillSearch').on('input', function() {
+                const searchTerm = $(this).val().toLowerCase();
+                
+                if (searchTerm) {
+                    // Khi có từ khóa tìm kiếm, hiển thị tất cả các container
+                    $('#fieldCategoriesContainer').show();
+                    $('#subCategoriesContainer').show();
+                    $('#skillsContainer').show();
+                    
+                    // Tìm kiếm trong danh mục chính
+                    $('.field-categories .list-group-item').each(function() {
+                        const text = $(this).text().toLowerCase().trim();
+                        $(this).toggle(text.includes(searchTerm));
+                    });
+                    
+                    // Tìm kiếm trong danh mục con
+                    $('.sub-categories .list-group-item').each(function() {
+                        const text = $(this).text().toLowerCase().trim();
+                        $(this).toggle(text.includes(searchTerm));
+                    });
+                    
+                    // Tìm kiếm trong kỹ năng
+                    $('.skill-items .skill-item').each(function() {
+                        const text = $(this).text().toLowerCase().trim();
+                        $(this).toggle(text.includes(searchTerm));
+                    });
+                } else {
+                    // Khi không có từ khóa tìm kiếm, trở về trạng thái hiển thị theo lựa chọn
+                    const hasSelectedField = $('.field-category:checked').length > 0;
+                    const hasSelectedSubCategory = $('.sub-category:checked').length > 0;
+                    
+                    // Luôn hiển thị danh mục chính
+                    $('#fieldCategoriesContainer').show();
+                    
+                    // Hiển thị danh mục con nếu đã chọn danh mục chính
+                    $('#subCategoriesContainer').toggle(hasSelectedField);
+                    
+                    // Hiển thị kỹ năng nếu đã chọn danh mục con
+                    $('#skillsContainer').toggle(hasSelectedSubCategory);
+                    
+                    if (hasSelectedField) {
+                        // Nếu đã chọn danh mục chính, chỉ hiển thị danh mục con thuộc danh mục chính đó
+                        const fieldId = $('.field-category:checked').data('field-id');
+                        $('.field-item').hide();
+                        $(`.field-${fieldId}`).show();
+                    }
+                    
+                    if (hasSelectedSubCategory) {
+                        // Nếu đã chọn danh mục con, chỉ hiển thị kỹ năng thuộc danh mục con đó
+                        const categoryId = $('.sub-category:checked').data('category-id');
+                        $('.skill-item').hide();
+                        $(`.category-${categoryId}`).show();
+                    }
+                }
+            });
+            
+            // Xử lý nút xóa bộ lọc
+            $('#clearFilters').on('click', function() {
+                // Xóa tất cả các checkbox đã chọn
+                $('input[type="checkbox"], input[type="radio"]').prop('checked', false);
+                
+                // Ẩn container danh mục con và kỹ năng
+                $('#subCategoriesContainer').hide();
+                $('#skillsContainer').hide();
+                
+                // Xóa giá trị tìm kiếm
+                $('#skillSearch').val('');
+            });
+            
+            // Khởi tạo hiển thị ban đầu nếu có danh mục đã chọn
+            if (@(categoryId.HasValue ? "true" : "false")) {
+                // Tìm danh mục đã chọn
+                const selectedCategory = categoriesData.find(c => c.categoryID == @(categoryId ?? 0));
+                if (selectedCategory && selectedCategory.parentCategoryID) {
+                    // Nếu là danh mục con, chọn danh mục cha trước
+                    $(`#field_${selectedCategory.parentCategoryID}`).prop('checked', true).trigger('change');
+                    
+                    // Sau đó chọn danh mục con
+                    setTimeout(() => {
+                        $(`#category_${selectedCategory.categoryID}`).prop('checked', true).trigger('change');
+                    }, 100);
+                }
+            }
+            
+            // Đảm bảo giá trị provinceId không bị reset khi submit form
+            $('#advancedSearchForm').on('submit', function(e) {
+                // Lấy giá trị provinceId hiện tại từ hidden field
+                const currentProvinceId = $('#currentProvinceId').val();
+                
+                // Nếu không có giá trị provinceId mới được chọn trong form và có giá trị cũ, sử dụng giá trị cũ
+                if ($('#provinceSelect').val() === "" && currentProvinceId) {
+                    $('#provinceSelect').val(currentProvinceId);
+                }
+            });
+        });
     </script>
 } 
