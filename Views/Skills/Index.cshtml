@@ -1,0 +1,35 @@
+﻿@model IEnumerable<StudentFreelance.Models.Skill>
+
+@{
+    ViewData["Title"] = "Danh sách kỹ năng";
+}
+
+<h2>Danh sách kỹ năng</h2>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Thêm kỹ năng mới</a>
+</p>
+
+<table class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>Tên kỹ năng</th>
+            <th>Thể loại</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.SkillName</td>
+                <td>@item.Category?.CategoryName</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.SkillID">Sửa</a> |
+                    <a asp-action="Details" asp-route-id="@item.SkillID">Chi tiết</a> |
+                    <a asp-action="Delete" asp-route-id="@item.SkillID">Ẩn (Không xóa)</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,28 @@
+@model StudentFreelance.Models.Category
+@{
+    ViewData["Title"] = "Category Details";
+}
+
+<h2>Category Details</h2>
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-3">Name</dt>
+        <dd class="col-sm-9">@Model.CategoryName</dd>
+
+        <dt class="col-sm-3">Type</dt>
+        <dd class="col-sm-9">@Model.CategoryType</dd>
+
+        <dt class="col-sm-3">Description</dt>
+        <dd class="col-sm-9">@Model.Description</dd>
+
+        <dt class="col-sm-3">Parent</dt>
+        <dd class="col-sm-9">@Model.ParentCategory?.CategoryName</dd>
+
+        <dt class="col-sm-3">Is Active</dt>
+        <dd class="col-sm-9">@Model.IsActive</dd>
+    </dl>
+</div>
+
+<a asp-action="Edit" asp-route-id="@Model.CategoryID" class="btn btn-warning">Edit</a>
+<a asp-action="Index" class="btn btn-secondary">Back</a>

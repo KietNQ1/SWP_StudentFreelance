@@ -1,0 +1,41 @@
+@model StudentFreelance.Models.Category
+@{
+    ViewData["Title"] = "Create Category";
+}
+
+<h2>Create Category</h2>
+
+<form asp-action="Create" method="post">
+    <div class="form-group">
+        <label asp-for="CategoryName"></label>
+        <input asp-for="CategoryName" class="form-control" />
+        <span asp-validation-for="CategoryName" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="CategoryType"></label>
+        <input asp-for="CategoryType" class="form-control" />
+        <span asp-validation-for="CategoryType" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Description"></label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="ParentCategoryID"></label>
+        <select asp-for="ParentCategoryID" class="form-control"
+                asp-items="@(new SelectList(ViewData["ParentCategoryID"] as IEnumerable<SelectListItem>, "Value", "Text"))">
+            <option value="">-- None --</option>
+        </select>
+    </div>
+
+    <div class="form-check">
+        <input asp-for="IsActive" class="form-check-input" />
+        <label asp-for="IsActive" class="form-check-label"></label>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Back</a>
+</form>

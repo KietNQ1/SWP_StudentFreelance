@@ -1,0 +1,38 @@
+@model IEnumerable<StudentFreelance.Models.Category>
+    @{
+    ViewData["Title"] = "Category List";
+    }
+
+    <h2>Category List</h2>
+
+    <a asp-action="Create" class="btn btn-success mb-2">+ Create New</a>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Category Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Parent Category</th>
+                <th>Is Active</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+    {
+            <tr>
+                <td>@item.CategoryName</td>
+                <td>@item.CategoryType</td>
+                <td>@item.Description</td>
+                <td>@item.ParentCategory?.CategoryName</td>
+                <td>@(item.IsActive ? "Yes" : "No")</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.CategoryID" class="btn btn-sm btn-warning">Edit</a>
+                    <a asp-action="Details" asp-route-id="@item.CategoryID" class="btn btn-sm btn-info">Details</a>
+                    <a asp-action="Delete" asp-route-id="@item.CategoryID" class="btn btn-sm btn-danger">Delete</a>
+                </td>
+            </tr>
+    }
+        </tbody>
+    </table>
