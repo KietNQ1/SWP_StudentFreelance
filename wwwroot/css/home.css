@@ -139,11 +139,14 @@ body {
     font-size: 0.875rem;
     cursor: pointer;
     transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-block;
 }
 
 .tag:hover {
     background: white;
     color: #333;
+    text-decoration: none;
 }
 
 .trusted-by {

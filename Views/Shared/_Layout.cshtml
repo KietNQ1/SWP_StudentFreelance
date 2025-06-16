@@ -32,16 +32,26 @@
                         <span>Find talent</span>
                         <i class="fas fa-chevron-down"></i>
                         <div class="dropdown-menu">
-                            <a href="#">Development & IT <span class="new-label">Hot</span></a>
+                            <a asp-controller="Search" asp-action="SearchJob" class="dropdown-item">Find Projects <span class="new-label">Hot</span></a>
+                            <a asp-controller="Search" asp-action="SearchStudents" class="dropdown-item">Find Students</a>
+                            <a asp-controller="Search" asp-action="SearchBusinesses" class="dropdown-item">Find Businesses</a>
                             <a href="#">Design & Creative</a>
                             <a href="#">Sales & Marketing</a>
-                            <a href="#">Writing & Translation</a>
-                            <a href="#">Engineering & Architecture</a>
                         </div>
                     </div>
                     
                     <a asp-controller="Search" asp-action="SearchJob" class="nav-link">Enterprise</a>
                 
+                    <div class="nav-item dropdown explore-dropdown">
+                        <span>Search</span>
+                        <i class="fas fa-chevron-down"></i>
+                        <div class="dropdown-menu">
+                            <a asp-controller="Search" asp-action="SearchJob" class="dropdown-item">Search Projects</a>
+                            <a asp-controller="Search" asp-action="SearchStudents" class="dropdown-item">Search Students</a>
+                            <a asp-controller="Search" asp-action="SearchBusinesses" class="dropdown-item">Search Businesses</a>
+                        </div>
+                    </div>
+                    
                     <div class="nav-item dropdown explore-dropdown" id="exploreDropdownBtn">
                         <span>Explore</span>
                         <i class="fas fa-chevron-down"></i>
