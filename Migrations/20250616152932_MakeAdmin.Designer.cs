@@ -12,8 +12,8 @@ using StudentFreelance.DbContext;
 namespace StudentFreelance.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250615164855_MakeAdminResponseNullable")]
-    partial class MakeAdminResponseNullable
+    [Migration("20250616152932_MakeAdmin")]
+    partial class MakeAdmin
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
