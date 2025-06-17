@@ -12,7 +12,7 @@ using StudentFreelance.DbContext;
 namespace StudentFreelance.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250615164855_MakeAdminResponseNullable")]
+    [Migration("20250616143629_MakeAdminResponseNullable")]
     partial class MakeAdminResponseNullable
     {
         /// <inheritdoc />
