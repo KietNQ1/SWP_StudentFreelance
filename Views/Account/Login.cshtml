@@ -57,10 +57,11 @@
 
                 <div class="or-divider">or</div>
 
-                <button class="btn-google" type="button">
+                <a href="@Url.Action("ExternalLogin", "Account", new { provider = "Google", returnUrl = "/" })" class="btn-google">
                     <img src="https://simpleicons.org/icons/google.svg" alt="Google Icon" />
                     Login with Google
-                </button>
+                </a>
+
             </form>
         </div>
     </div>

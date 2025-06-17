@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using StudentFreelance.Models;
 using StudentFreelance.Models.ViewModels;
 using StudentFreelance.ViewModels;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
 
 namespace StudentFreelance.Controllers
 {
@@ -178,7 +181,83 @@ namespace StudentFreelance.Controllers
             return View(model);
         }
 
+        [HttpGet]
+        public IActionResult ExternalLogin(string provider, string? returnUrl = null)
+        {
+            var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Account", new { returnUrl });
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            return Challenge(properties, provider);
+        }
 
+        // Xử lý callback từ Google
+        [HttpGet]
+        public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null, string? remoteError = null)
+        {
+            returnUrl = returnUrl ?? Url.Content("~/");
+
+            if (remoteError != null)
+            {
+                ModelState.AddModelError(string.Empty, $"External provider error: {remoteError}");
+                return RedirectToAction("Login");
+            }
+
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            // Đăng nhập nếu đã có tài khoản
+            var signInResult = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
+
+            if (signInResult.Succeeded)
+            {
+                return Redirect(returnUrl);
+            }
+            else
+            {
+                // Nếu chưa có, tạo mới user
+                var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+                var user = await _userManager.FindByEmailAsync(email);
+                if (user == null)
+                {
+                    // Lấy tên nếu có
+                    var name = info.Principal.FindFirstValue(ClaimTypes.Name);
+
+                    user = new ApplicationUser
+                    {
+                        UserName = email,
+                        Email = email,
+                        FullName = name,
+                        EmailConfirmed = true,
+                        CreatedAt = DateTime.Now,
+                        UpdatedAt = DateTime.Now,
+                        IsActive = true,
+                        StatusID = 1
+                    };
+                    var result = await _userManager.CreateAsync(user);
+                    if (result.Succeeded)
+                    {
+                        // Gán role mặc định
+                        await _userManager.AddToRoleAsync(user, "Student"); // hoặc "Business" tùy logic của bạn
+                        await _userManager.AddLoginAsync(user, info);
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, "Lỗi tạo tài khoản với Google.");
+                        return RedirectToAction("Login");
+                    }
+                }
+                else
+                {
+                    await _userManager.AddLoginAsync(user, info);
+                }
+
+                // Đăng nhập
+                await _signInManager.SignInAsync(user, isPersistent: false);
+                return Redirect(returnUrl);
+            }
+        }
 
     }
 }

@@ -38,10 +38,12 @@
     cursor: pointer;
     transition: background 0.3s ease;
     font-size: 14px;
+    text-decoration: none;
 }
 
     .btn-google:hover {
         background-color: #f1f1f1;
+        text-decoration: none;
     }
 
     .btn-google img {
