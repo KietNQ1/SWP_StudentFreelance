@@ -21,5 +21,9 @@ namespace StudentFreelance.ViewModels
         [Display(Name = "Xác nhận mật khẩu")]
         [DataType(DataType.Password)]
         public string ConfirmPassword { get; set; }
+
+        [Required]
+        [Display(Name = "Vai trò")]
+        public string Role { get; set; } 
     }
 }

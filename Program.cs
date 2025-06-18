@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Identity;
 using StudentFreelance.DbContext;
 using StudentFreelance.Models;
 using StudentFreelance.Data;
+using StudentFreelance.Models.Email;
+using StudentFreelance.Services.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +31,21 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
     options.ExpireTimeSpan = TimeSpan.FromDays(7);
 });
+// 3b. Add Google Authentication
+builder.Services.AddAuthentication()
+    .AddGoogle(options =>
+    {
+        IConfigurationSection googleAuthNSection = builder.Configuration.GetSection("Authentication:Google");
+        options.ClientId = googleAuthNSection["ClientId"];
+        options.ClientSecret = googleAuthNSection["ClientSecret"];
+        // N?u mu?n l?y thêm thông tin profile có th? dùng scope:
+        // options.Scope.Add("profile");
+        // options.Scope.Add("email");
+    });
+
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IEmailSender, StudentFreelance.Services.Implementations.GmailEmailSender>();
+
 
 // 4. Add MVC support
 builder.Services.AddControllersWithViews();
