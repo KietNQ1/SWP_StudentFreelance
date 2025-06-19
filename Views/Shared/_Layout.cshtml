@@ -124,6 +124,7 @@
                     <!-- About -->
                     <a href="#" class="nav-link">About STJobs</a>
 
+
                     @if (SignInManager.IsSignedIn(User))
                     {
                         <!-- Nếu đã đăng nhập -->
@@ -157,12 +158,24 @@
                                     </div>
                                 </div>
                             </div>
-
+                            @{
+                                var currentUser = await UserManager.GetUserAsync(User);
+                                var fullName = currentUser?.FullName ?? "Người dùng";
+                            }
                             <!-- Avatar + Tên -->
-                            <a asp-controller="User" asp-action="Profile" class="avatar-wrapper" title="Trang cá nhân">
-                                <img src="https://i.pravatar.cc/36" alt="Avatar" class="avatar-img" />
-                                <span class="nav-link text-dark">Xin chào, @UserManager.GetUserName(User)!</span>
-                            </a>
+                            <div class="dropdown user-dropdown">
+                                <div class="avatar-wrapper" onclick="toggleUserDropdown(event)" style="cursor: pointer;">
+                                    <img src="https://i.pravatar.cc/36" alt="Avatar" class="avatar-img" />
+                                    <span class="nav-link text-dark">Xin chào, @fullName!</span>
+                                </div>
+
+                                <div class="dropdown-menu" id="userDropdownMenu">
+                                    <a asp-controller="AdminUser" asp-action="Index" class="dropdown-item">📊 Dashboard</a>
+                                    <a asp-controller="User" asp-action="Profile" class="dropdown-item">👤 Profile</a>
+                                </div>
+                            </div>
+
+
 
                             <!-- Logout -->
                             <form asp-controller="Account" asp-action="Logout" method="post" class="form-inline d-inline">
@@ -349,6 +362,20 @@
             }
         });
     </script>
+    <script>
+        function toggleUserDropdown(event) {
+            event.stopPropagation(); // Ngăn chặn việc click lan ra ngoài
+            const menu = document.getElementById("userDropdownMenu");
+            menu.style.display = (menu.style.display === "block") ? "none" : "block";
+        }
+
+        // Đóng dropdown khi click bên ngoài
+        window.addEventListener('click', function () {
+            const menu = document.getElementById("userDropdownMenu");
+            if (menu) menu.style.display = "none";
+        });
+    </script>
+
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

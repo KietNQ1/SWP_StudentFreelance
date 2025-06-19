@@ -245,4 +245,31 @@ body {
     cursor: pointer;
     font-weight: 600;
 }
+.user-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+    .user-dropdown .dropdown-menu {
+        display: none;
+        position: absolute;
+        right: 0;
+        background-color: #ffffff;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        min-width: 160px;
+        z-index: 999;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+        .user-dropdown .dropdown-menu a {
+            padding: 10px 15px;
+            display: block;
+            text-decoration: none;
+            color: #333;
+        }
+
+            .user-dropdown .dropdown-menu a:hover {
+                background-color: #f0f0f0;
+            }
 
