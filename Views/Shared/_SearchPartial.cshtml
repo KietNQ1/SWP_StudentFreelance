@@ -76,9 +76,10 @@
                                     <div class="col-md-4 p-0 category-list">
                                         <div class="list-group list-group-flush">
                                             <div class="list-group-item fw-bold bg-light text-dark">NHÓM NGHỀ</div>
-                                            @foreach (var category in mainCategories)
+                                            @foreach (var category in categories.Where(c => c.CategoryType == "Field" && c.ParentCategoryID == null))
                                             {
-                                                <a href="#" class="list-group-item list-group-item-action category-item @(categoryId == category.CategoryID ? "active" : "")" 
+                                                string activeClass = categoryId == category.CategoryID ? "active" : "";
+                                                <a href="#" class="list-group-item list-group-item-action category-item @activeClass"
                                                    data-category-id="@category.CategoryID">
                                                     @category.CategoryName
                                                 </a>
@@ -99,8 +100,9 @@
                                                         {
                                                             foreach (var subCategory in categorySubCategories)
                                                             {
-                                                                <a href="#" class="list-group-item list-group-item-action subcategory-item @(categoryId == subCategory.CategoryID ? "active" : "")" 
-                                                                   data-subcategory-id="@subCategory.CategoryID" 
+                                                                string activeClass = categoryId == subCategory.CategoryID ? "active" : "";
+                                                                <a href="#" class="list-group-item list-group-item-action subcategory-item @activeClass"
+                                                                   data-subcategory-id="@subCategory.CategoryID"
                                                                    data-parent-id="@mainCategory.CategoryID">
                                                                     @subCategory.CategoryName
                                                                 </a>
@@ -143,12 +145,14 @@
                                                 <div class="skill-group" id="skills-@category.CategoryID" style="display: none;">
                                                     @if (skillsByCategory.ContainsKey(category.CategoryID))
                                                     {
-                                                        foreach (var skill in skillsByCategory[category.CategoryID].OrderBy(s => s.SkillName))
+                                                        var orderedSkills = skillsByCategory[category.CategoryID].OrderBy(s => s.SkillName).ToList();
+                                                        foreach (var skill in orderedSkills)
                                                         {
-                                                            <a href="#" class="list-group-item list-group-item-action skill-item @(skillIds.Contains(skill.SkillID) ? "selected" : "")" 
-                                                               data-skill-id="@skill.SkillID" 
-                                                               data-category-id="@category.CategoryID"
-                                                               data-skill-name="@skill.SkillName">
+                                                            string selectedClass = skillIds.Contains(skill.SkillID) ? "selected" : "";
+                                                            <a href="#" class="list-group-item list-group-item-action skill-item @selectedClass"
+                                                                data-skill-id="@skill.SkillID"
+                                                                data-category-id="@category.CategoryID"
+                                                                data-skill-name="@skill.SkillName">
                                                                 <div class="d-flex justify-content-between align-items-center">
                                                                     <span>@skill.SkillName</span>
                                                                     @if (skillIds.Contains(skill.SkillID))

@@ -6,24 +6,35 @@ namespace StudentFreelance.ViewModels
     {
         [Required]
         [EmailAddress]
-        public string Email { get; set; }
+        public required string Email { get; set; }
 
         [Required]
         [Display(Name = "Họ và tên")]
-        public string FullName { get; set; }
+        public required string FullName { get; set; }
 
         [Required]
-        [StringLength(100, MinimumLength = 6)]
+        [StringLength(100, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 6)]
         [DataType(DataType.Password)]
-        public string Password { get; set; }
+        public required string Password { get; set; }
 
-        [Compare("Password")]
-        [Display(Name = "Xác nhận mật khẩu")]
         [DataType(DataType.Password)]
-        public string ConfirmPassword { get; set; }
+        [Display(Name = "Xác nhận mật khẩu")]
+        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        public required string ConfirmPassword { get; set; }
 
         [Required]
         [Display(Name = "Vai trò")]
-        public string Role { get; set; } 
+        public required string Role { get; set; }
+
+        // Optional fields
+        [Display(Name = "Company/School Name")]
+        public string? CompanyOrSchoolName { get; set; }
+
+        [Display(Name = "Bio")]
+        public string? Bio { get; set; }
+
+        [Display(Name = "Phone Number")]
+        [Phone]
+        public string? PhoneNumber { get; set; }
     }
 }
