@@ -84,13 +84,17 @@
                         <span>Find talent</span>
                         <i class="fas fa-chevron-down"></i>
                         <div class="dropdown-menu">
-                            <a asp-controller="Search" asp-action="SearchJob" class="dropdown-item">Find Projects <span class="new-label">Hot</span></a>
+                            <a asp-controller="Project" asp-action="Index" class="dropdown-item">Browse Projects <span class="new-label">Hot</span></a>
+                            <a asp-controller="Search" asp-action="SearchJob" class="dropdown-item">Search Projects</a>
                             <a asp-controller="Search" asp-action="SearchStudents" class="dropdown-item">Find Students</a>
                             <a asp-controller="Search" asp-action="SearchBusinesses" class="dropdown-item">Find Businesses</a>
                             <a href="#">Design & Creative</a>
                             <a href="#">Sales & Marketing</a>
                         </div>
                     </div>
+
+                    <!-- Projects -->
+                    <a asp-controller="Project" asp-action="Index" class="nav-link">Projects</a>
 
                     <!-- Enterprise -->
                     <a asp-controller="Search" asp-action="SearchJob" class="nav-link">Enterprise</a>

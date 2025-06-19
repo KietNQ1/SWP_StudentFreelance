@@ -1,0 +1,252 @@
+@model StudentFreelance.ViewModels.ProjectViewModel
+
+@{
+    ViewData["Title"] = "Edit Project";
+}
+
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Index">Projects</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Edit Project</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Edit Project</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="ProjectID" />
+                        <input type="hidden" asp-for="BusinessID" />
+                        <input type="hidden" asp-for="IsEdit" value="true" />
+
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Title" class="control-label"></label>
+                                    <input asp-for="Title" class="form-control" />
+                                    <span asp-validation-for="Title" class="text-danger"></span>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label asp-for="Description" class="control-label"></label>
+                                    <textarea asp-for="Description" class="form-control" rows="6"></textarea>
+                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                </div>
+
+                                <!-- Existing Attachments -->
+                                @if (Model.ExistingAttachments != null && Model.ExistingAttachments.Any())
+                                {
+                                    <div class="card mb-3">
+                                        <div class="card-header">
+                                            <h6 class="mb-0">Current Attachments</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="list-group">
+                                                @foreach (var attachment in Model.ExistingAttachments)
+                                                {
+                                                    <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                                        <a href="@attachment.FilePath" download>
+                                                            <i class="bi bi-file-earmark"></i> @attachment.FileName 
+                                                            <small>(@(attachment.FileSize / 1024) KB)</small>
+                                                        </a>
+                                                        <form asp-action="DeleteAttachment" method="post" onsubmit="return confirm('Are you sure you want to delete this attachment?');">
+                                                            <input type="hidden" name="attachmentId" value="@attachment.AttachmentID" />
+                                                            <input type="hidden" name="projectId" value="@Model.ProjectID" />
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+                                <!-- Upload New Attachments -->
+                                <div class="form-group mb-3">
+                                    <label asp-for="Attachments" class="control-label">Upload New Attachments</label>
+                                    <input type="file" asp-for="Attachments" class="form-control" multiple />
+                                    <small class="form-text text-muted">You can upload multiple files (max 5MB per file)</small>
+                                </div>
+
+                                <!-- Required Skills -->
+                                <div class="form-group mb-3">
+                                    <label asp-for="SelectedSkills" class="control-label"></label>
+                                    <select asp-for="SelectedSkills" class="form-select" multiple>
+                                        @foreach (var skill in Model.Skills)
+                                        {
+                                            <option value="@skill.SkillID">@skill.SkillName</option>
+                                        }
+                                    </select>
+                                    <small class="form-text text-muted">Hold Ctrl (or Command on Mac) to select multiple skills</small>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label asp-for="CategoryID" class="control-label"></label>
+                                    <select asp-for="CategoryID" class="form-select">
+                                        <option value="">-- Select Category --</option>
+                                        @foreach (var category in Model.Categories)
+                                        {
+                                            <option value="@category.CategoryID">@category.CategoryName</option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="CategoryID" class="text-danger"></span>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label asp-for="Budget" class="control-label"></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input asp-for="Budget" class="form-control" />
+                                    </div>
+                                    <span asp-validation-for="Budget" class="text-danger"></span>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label asp-for="StartDate" class="control-label"></label>
+                                            <input asp-for="StartDate" class="form-control" type="date" />
+                                            <span asp-validation-for="StartDate" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label asp-for="EndDate" class="control-label"></label>
+                                            <input asp-for="EndDate" class="form-control" type="date" />
+                                            <span asp-validation-for="EndDate" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label asp-for="Deadline" class="control-label"></label>
+                                    <input asp-for="Deadline" class="form-control" type="date" />
+                                    <span asp-validation-for="Deadline" class="text-danger"></span>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label asp-for="StatusID" class="control-label"></label>
+                                    <select asp-for="StatusID" class="form-select">
+                                        @foreach (var status in Model.ProjectStatuses)
+                                        {
+                                            <option value="@status.StatusID">@status.StatusName</option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="StatusID" class="text-danger"></span>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label asp-for="TypeID" class="control-label"></label>
+                                    <select asp-for="TypeID" class="form-select">
+                                        @foreach (var type in Model.ProjectTypes)
+                                        {
+                                            <option value="@type.TypeID">@type.TypeName</option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="TypeID" class="text-danger"></span>
+                                </div>
+
+                                <div class="form-check mb-3">
+                                    <input asp-for="IsRemoteWork" class="form-check-input" />
+                                    <label asp-for="IsRemoteWork" class="form-check-label"></label>
+                                </div>
+
+                                <div class="form-check mb-3">
+                                    <input asp-for="IsHighlighted" class="form-check-input" />
+                                    <label asp-for="IsHighlighted" class="form-check-label"></label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <a asp-action="Details" asp-route-id="@Model.ProjectID" class="btn btn-outline-secondary ms-2">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // Add rich text editor for description if you have one
+        // For example, if you're using TinyMCE:
+        /*
+        tinymce.init({
+            selector: '#Description',
+            plugins: 'advlist autolink lists link image charmap print preview anchor',
+            toolbar_mode: 'floating',
+        });
+        */
+        
+        // Save the current selected skills for later comparison
+        var currentSelectedSkills = [];
+        
+        $(document).ready(function() {
+            // Store currently selected skills
+            $('#SelectedSkills option:selected').each(function() {
+                currentSelectedSkills.push($(this).val());
+            });
+            
+            // When category changes, load related skills
+            $('#CategoryID').change(function() {
+                var categoryId = $(this).val();
+                var skillsDropdown = $('#SelectedSkills');
+                
+                if (!categoryId) {
+                    skillsDropdown.empty();
+                    skillsDropdown.prop('disabled', true);
+                    return;
+                }
+                
+                // Enable the dropdown
+                skillsDropdown.prop('disabled', false);
+                
+                // Load skills from API
+                $.ajax({
+                    url: '/api/api/skills-by-category/' + categoryId,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        skillsDropdown.empty();
+                        
+                        if (data.length === 0) {
+                            skillsDropdown.append($('<option>').text('Không có kỹ năng nào cho danh mục này').attr('disabled', true));
+                        } else {
+                            $.each(data, function(i, skill) {
+                                var option = $('<option>')
+                                    .text(skill.skillName)
+                                    .attr('value', skill.skillID);
+                                
+                                // Check if this skill was previously selected
+                                if (currentSelectedSkills.includes(skill.skillID.toString())) {
+                                    option.prop('selected', true);
+                                }
+                                
+                                skillsDropdown.append(option);
+                            });
+                        }
+                    },
+                    error: function() {
+                        skillsDropdown.empty();
+                        skillsDropdown.append($('<option>').text('Lỗi khi tải kỹ năng').attr('disabled', true));
+                    }
+                });
+            });
+        });
+    </script>
+} 
