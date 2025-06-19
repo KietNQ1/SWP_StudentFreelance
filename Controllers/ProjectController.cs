@@ -123,6 +123,9 @@ namespace StudentFreelance.Controllers
                 StatusID = 1 // Mặc định là "Đang tuyển"
             };
 
+            // Lấy danh sách ImportanceLevel để hiển thị trong dropdown
+            ViewBag.ImportanceLevels = await _context.ImportanceLevels.Where(il => il.IsActive).ToListAsync();
+
             return View(viewModel);
         }
 
@@ -161,27 +164,44 @@ namespace StudentFreelance.Controllers
                     {
                         foreach (var skillId in viewModel.SelectedSkills)
                         {
+                            // Lấy ImportanceLevelID từ SelectedSkillImportanceLevels nếu có, nếu không thì dùng giá trị mặc định 1
+                            int importanceLevelId = 1; // Giá trị mặc định
+                            if (viewModel.SelectedSkillImportanceLevels != null && viewModel.SelectedSkillImportanceLevels.ContainsKey(skillId))
+                            {
+                                importanceLevelId = viewModel.SelectedSkillImportanceLevels[skillId];
+                            }
+
                             var projectSkill = new ProjectSkillRequired
                             {
                                 ProjectID = createdProject.ProjectID,
-                                SkillID = skillId
+                                SkillID = skillId,
+                                ImportanceLevelID = importanceLevelId
                             };
                             _context.ProjectSkillsRequired.Add(projectSkill);
                         }
                         await _context.SaveChangesAsync();
                     }
 
-                    // Upload attachments if any
+                    // Upload attachments if any (catch riêng lỗi file)
                     if (viewModel.Attachments != null && viewModel.Attachments.Any(f => f != null && f.Length > 0))
                     {
-                        await SaveAttachments(viewModel.Attachments, createdProject.ProjectID);
+                        try
+                        {
+                            await SaveAttachments(viewModel.Attachments, createdProject.ProjectID);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Error uploading attachments: {ex}");
+                            TempData["AttachmentError"] = "Project đã tạo thành công, nhưng có lỗi khi upload file đính kèm.";
+                        }
                     }
 
                     return RedirectToAction(nameof(Details), new { id = createdProject.ProjectID });
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    ModelState.AddModelError("", "An error occurred while creating the project. Please try again.");
+                    Console.WriteLine($"Error creating project: {ex}");
+                    ModelState.AddModelError("", "Đã có lỗi khi tạo dự án. Vui lòng thử lại.");
                 }
             }
 
@@ -190,6 +210,7 @@ namespace StudentFreelance.Controllers
             viewModel.ProjectStatuses = await _context.ProjectStatuses.Where(s => s.IsActive).ToListAsync();
             viewModel.ProjectTypes = await _context.ProjectTypes.Where(t => t.IsActive).ToListAsync();
             viewModel.Skills = await _context.Skills.Where(s => s.IsActive).ToListAsync();
+            ViewBag.ImportanceLevels = await _context.ImportanceLevels.Where(il => il.IsActive).ToListAsync();
             
             return View(viewModel);
         }
@@ -254,12 +275,17 @@ namespace StudentFreelance.Controllers
                 ExistingAttachments = project.ProjectAttachments,
                 ExistingSkills = project.ProjectSkillsRequired,
                 SelectedSkills = project.ProjectSkillsRequired.Select(ps => ps.SkillID).ToList(),
+                // Khởi tạo SelectedSkillImportanceLevels từ các kỹ năng hiện có
+                SelectedSkillImportanceLevels = project.ProjectSkillsRequired.ToDictionary(ps => ps.SkillID, ps => ps.ImportanceLevelID),
                 Categories = await _context.Categories.Where(c => c.IsActive).ToListAsync(),
                 ProjectStatuses = await _context.ProjectStatuses.Where(s => s.IsActive).ToListAsync(),
                 ProjectTypes = await _context.ProjectTypes.Where(t => t.IsActive).ToListAsync(),
                 Skills = await _context.Skills.Where(s => s.IsActive).ToListAsync(),
                 IsActive = project.IsActive
             };
+
+            // Lấy danh sách ImportanceLevel để hiển thị trong dropdown
+            ViewBag.ImportanceLevels = await _context.ImportanceLevels.Where(il => il.IsActive).ToListAsync();
 
             return View(viewModel);
         }
@@ -355,7 +381,6 @@ namespace StudentFreelance.Controllers
                     
                     if (project == null)
                     {
-                        // Log cho việc debugging
                         Console.WriteLine($"Không tìm thấy dự án với ID {id}");
                         return NotFound();
                     }
@@ -363,7 +388,6 @@ namespace StudentFreelance.Controllers
                     // Check if current user is the owner of the project
                     if (project.BusinessID != currentUserId && !isAdmin)
                     {
-                        // Log cho việc debugging
                         Console.WriteLine($"Không có quyền chỉnh sửa. BusinessID: {project.BusinessID}, CurrentUserId: {currentUserId}, isAdmin: {isAdmin}");
                         return Forbid();
                     }
@@ -406,22 +430,48 @@ namespace StudentFreelance.Controllers
                         {
                             if (!existingSkills.Any(ps => ps.SkillID == skillId))
                             {
+                                // Lấy ImportanceLevelID từ SelectedSkillImportanceLevels nếu có, nếu không thì dùng giá trị mặc định 1
+                                int importanceLevelId = 1; // Giá trị mặc định
+                                if (viewModel.SelectedSkillImportanceLevels != null && viewModel.SelectedSkillImportanceLevels.ContainsKey(skillId))
+                                {
+                                    importanceLevelId = viewModel.SelectedSkillImportanceLevels[skillId];
+                                }
+
                                 var projectSkill = new ProjectSkillRequired
                                 {
                                     ProjectID = id,
-                                    SkillID = skillId
+                                    SkillID = skillId,
+                                    ImportanceLevelID = importanceLevelId
                                 };
                                 _context.ProjectSkillsRequired.Add(projectSkill);
+                            }
+                            // Cập nhật ImportanceLevelID cho các kỹ năng đã tồn tại nếu có thay đổi
+                            else if (viewModel.SelectedSkillImportanceLevels != null && viewModel.SelectedSkillImportanceLevels.ContainsKey(skillId))
+                            {
+                                var existingSkill = existingSkills.FirstOrDefault(ps => ps.SkillID == skillId);
+                                if (existingSkill != null && existingSkill.ImportanceLevelID != viewModel.SelectedSkillImportanceLevels[skillId])
+                                {
+                                    existingSkill.ImportanceLevelID = viewModel.SelectedSkillImportanceLevels[skillId];
+                                    _context.ProjectSkillsRequired.Update(existingSkill);
+                                }
                             }
                         }
 
                         await _context.SaveChangesAsync();
                     }
 
-                    // Upload new attachments if any
+                    // Upload new attachments if any (catch riêng lỗi file)
                     if (viewModel.Attachments != null && viewModel.Attachments.Any(f => f != null && f.Length > 0))
                     {
-                        await SaveAttachments(viewModel.Attachments, id);
+                        try
+                        {
+                            await SaveAttachments(viewModel.Attachments, id);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Error uploading attachments: {ex}");
+                            TempData["AttachmentError"] = "Project đã cập nhật thành công, nhưng có lỗi khi upload file đính kèm.";
+                        }
                     }
 
                     return RedirectToAction(nameof(Details), new { id });
@@ -439,9 +489,8 @@ namespace StudentFreelance.Controllers
                 }
                 catch (Exception ex)
                 {
-                    // Log exception for debugging
-                    Console.WriteLine($"Error updating project: {ex.Message}");
-                    ModelState.AddModelError("", "An error occurred while updating the project. Please try again.");
+                    Console.WriteLine($"Error updating project: {ex}");
+                    ModelState.AddModelError("", "Đã có lỗi khi cập nhật dự án. Vui lòng thử lại.");
                 }
             }
 
@@ -450,6 +499,7 @@ namespace StudentFreelance.Controllers
             viewModel.ProjectStatuses = await _context.ProjectStatuses.Where(s => s.IsActive).ToListAsync();
             viewModel.ProjectTypes = await _context.ProjectTypes.Where(t => t.IsActive).ToListAsync();
             viewModel.Skills = await _context.Skills.Where(s => s.IsActive).ToListAsync();
+            ViewBag.ImportanceLevels = await _context.ImportanceLevels.Where(il => il.IsActive).ToListAsync();
             viewModel.ExistingAttachments = await _context.ProjectAttachments
                 .Where(pa => pa.ProjectID == id)
                 .ToListAsync();

@@ -14,6 +14,7 @@ namespace StudentFreelance.ViewModels
             // Initialize collections
             Attachments = null;
             SelectedSkills = new List<int>();
+            SelectedSkillImportanceLevels = new Dictionary<int, int>();
             Categories = new List<Category>();
             ProjectStatuses = new List<ProjectStatus>();
             ProjectTypes = new List<ProjectType>();
@@ -92,6 +93,10 @@ namespace StudentFreelance.ViewModels
         // For skill selection
         [Display(Name = "Required Skills")]
         public List<int> SelectedSkills { get; set; }
+
+        // For skill importance level selection (SkillID -> ImportanceLevelID)
+        [Display(Name = "Skill Importance Levels")]
+        public Dictionary<int, int> SelectedSkillImportanceLevels { get; set; }
 
         // For dropdowns/display
         public IEnumerable<Category> Categories { get; set; }
