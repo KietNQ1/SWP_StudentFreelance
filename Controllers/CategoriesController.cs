@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using StudentFreelance.Models;
-using StudentFreelance.DbContext;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿// CategoriesController.cs - Đầy đủ CRUD + Hide + Razor logic phù hợp (Không cho sửa Name, Type và Danh mục cha nếu là danh mục cha)
 
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using StudentFreelance.DbContext;
+using StudentFreelance.Models;
 
 namespace StudentFreelance.Controllers
 {
@@ -16,113 +17,206 @@ namespace StudentFreelance.Controllers
             _context = context;
         }
 
-        // GET: Categories
         public async Task<IActionResult> Index()
         {
-            var categories = await _context.Categories
-                .Include(c => c.ParentCategory)
-                .ToListAsync();
+            var categories = (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+                ? await _context.Categories.IgnoreQueryFilters().Include(c => c.ParentCategory).ToListAsync()
+                : await _context.Categories.Include(c => c.ParentCategory).ToListAsync();
+
             return View(categories);
         }
 
-        // GET: Categories/Details/5
-        public async Task<IActionResult> Details(int? id)
+        private List<SelectListItem> GetCategorySelectList(int? currentCategoryId = null, string? type = null)
         {
-            if (id == null) return NotFound();
+            var allCategories = (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+                ? _context.Categories.IgnoreQueryFilters().ToList()
+                : _context.Categories.ToList();
 
-            var category = await _context.Categories
-                .Include(c => c.ParentCategory)
-                .FirstOrDefaultAsync(m => m.CategoryID == id);
-            if (category == null) return NotFound();
+            var parentCandidates = allCategories
+                .Where(c => c.CategoryID != currentCategoryId)
+                .ToList();
 
-            return View(category);
+            if (type == "skill")
+            {
+                parentCandidates = parentCandidates
+                    .Where(c => c.ParentCategoryID == null)
+                    .ToList();
+            }
+            else if (type == "field")
+            {
+                parentCandidates = new List<Category>(); // Không có danh mục cha nào được chọn nếu là field
+            }
+
+            return parentCandidates.Select(c => new SelectListItem
+            {
+                Value = c.CategoryID.ToString(),
+                Text = c.CategoryName + (c.IsActive ? "" : " (ẩn)")
+            }).ToList();
         }
 
-        // GET: Categories/Create
+        [HttpGet]
+        public IActionResult GetParentCategories(string type, int? currentCategoryId)
+        {
+            var list = GetCategorySelectList(currentCategoryId, type);
+            return Json(list);
+        }
+
         public IActionResult Create()
         {
-            ViewData["ParentCategoryID"] = new SelectList(_context.Categories, "CategoryID", "CategoryName");
-            return View();
+            ViewData["ParentCategoryID"] = GetCategorySelectList(null, null);
+            return View(new Category());
         }
 
-        // POST: Categories/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Category category)
         {
+            if (category.CategoryType == "field")
+            {
+                category.ParentCategoryID = null;
+            }
+            else if (category.CategoryType == "skill" && category.ParentCategoryID == null)
+            {
+                ModelState.AddModelError("ParentCategoryID", "Danh mục con bắt buộc phải chọn danh mục cha.");
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(category);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ParentCategoryID"] = new SelectList(_context.Categories, "CategoryID", "CategoryName", category.ParentCategoryID);
+
+            ViewData["ParentCategoryID"] = GetCategorySelectList(null, category.CategoryType);
             return View(category);
         }
 
-        // GET: Categories/Edit/5
+        [HttpGet]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
 
-            var category = await _context.Categories.FindAsync(id);
+            var category = await _context.Categories.IgnoreQueryFilters().FirstOrDefaultAsync(c => c.CategoryID == id);
             if (category == null) return NotFound();
 
-            ViewData["ParentCategoryID"] = new SelectList(_context.Categories, "CategoryID", "CategoryName", category.ParentCategoryID);
+            bool isParent = await _context.Categories.AnyAsync(c => c.ParentCategoryID == id);
+            bool isChild = category.ParentCategoryID != null && !isParent;
+
+            ViewBag.IsParent = isParent;
+            ViewBag.IsChild = isChild;
+            ViewData["ParentCategoryID"] = GetCategorySelectList(category.CategoryID, category.CategoryType);
+
             return View(category);
         }
 
-        // POST: Categories/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Category category)
+        public async Task<IActionResult> Edit(int id, [Bind("CategoryID,Description,CategoryType,ParentCategoryID,CategoryName")] Category category, string confirm)
         {
             if (id != category.CategoryID) return NotFound();
 
+            var original = await _context.Categories.IgnoreQueryFilters().FirstOrDefaultAsync(c => c.CategoryID == id);
+            if (original == null) return NotFound();
+
+            bool isParent = await _context.Categories.AnyAsync(c => c.ParentCategoryID == id);
+            bool isChild = original.ParentCategoryID != null && !isParent;
+
+            if (confirm != "yes")
+            {
+                TempData["ShowConfirm"] = true;
+                TempData["EditData"] = System.Text.Json.JsonSerializer.Serialize(category);
+                ViewBag.IsParent = isParent;
+                ViewBag.IsChild = isChild;
+                ViewData["ParentCategoryID"] = GetCategorySelectList(category.CategoryID, category.CategoryType);
+                return View(category);
+            }
+
+            if (string.IsNullOrWhiteSpace(category.CategoryName))
+            {
+                ModelState.AddModelError("CategoryName", "Tên danh mục không được để trống.");
+            }
+
+            if (string.IsNullOrWhiteSpace(category.Description))
+            {
+                ModelState.AddModelError("Description", "Mô tả không được để trống.");
+            }
+
             if (ModelState.IsValid)
             {
-                try
+                original.Description = category.Description;
+                original.CategoryName = category.CategoryName;
+
+                if (!isParent)
                 {
-                    _context.Update(category);
+                    original.CategoryType = category.CategoryType;
+
+                    if (category.CategoryType == "field")
+                    {
+                        original.ParentCategoryID = null;
+                    }
+                    else if (category.CategoryType == "skill")
+                    {
+                        if (category.ParentCategoryID == null)
+                        {
+                            ModelState.AddModelError("ParentCategoryID", "Danh mục con bắt buộc phải chọn danh mục cha.");
+                        }
+                        else
+                        {
+                            original.ParentCategoryID = category.ParentCategoryID;
+                        }
+                    }
+                }
+
+                if (ModelState.IsValid)
+                {
+                    _context.Categories.Update(original);
                     await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
                 }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!_context.Categories.Any(e => e.CategoryID == id))
-                        return NotFound();
-                    else throw;
-                }
-                return RedirectToAction(nameof(Index));
             }
-            ViewData["ParentCategoryID"] = new SelectList(_context.Categories, "CategoryID", "CategoryName", category.ParentCategoryID);
+
+            ViewBag.IsParent = isParent;
+            ViewBag.IsChild = isChild;
+            ViewData["ParentCategoryID"] = GetCategorySelectList(category.CategoryID, category.CategoryType);
             return View(category);
         }
 
-        // GET: Categories/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+
+        public async Task<IActionResult> Hide(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var category = await _context.Categories.IgnoreQueryFilters().FirstOrDefaultAsync(c => c.CategoryID == id);
+            if (category == null) return NotFound();
+
+            return View(category);
+        }
+
+        [HttpPost, ActionName("Hide")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> HideConfirmed(int id)
+        {
+            var category = await _context.Categories.IgnoreQueryFilters().FirstOrDefaultAsync(c => c.CategoryID == id);
+            if (category != null)
+            {
+                category.IsActive = false;
+                _context.Update(category);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
 
             var category = await _context.Categories
                 .Include(c => c.ParentCategory)
-                .FirstOrDefaultAsync(m => m.CategoryID == id);
+                .FirstOrDefaultAsync(c => c.CategoryID == id);
+
             if (category == null) return NotFound();
 
             return View(category);
-        }
-
-        // POST: Categories/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var category = await _context.Categories.FindAsync(id);
-            if (category != null)
-            {
-                _context.Categories.Remove(category);
-                await _context.SaveChangesAsync();
-            }
-            return RedirectToAction(nameof(Index));
         }
     }
 }

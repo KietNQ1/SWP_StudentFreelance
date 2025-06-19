@@ -21,7 +21,8 @@
         <tbody>
             @foreach (var item in Model)
     {
-            <tr>
+            <tr class="@(item.IsActive ? "" : "text-muted")">
+
                 <td>@item.CategoryName</td>
                 <td>@item.CategoryType</td>
                 <td>@item.Description</td>
@@ -30,7 +31,8 @@
                 <td>
                     <a asp-action="Edit" asp-route-id="@item.CategoryID" class="btn btn-sm btn-warning">Edit</a>
                     <a asp-action="Details" asp-route-id="@item.CategoryID" class="btn btn-sm btn-info">Details</a>
-                    <a asp-action="Delete" asp-route-id="@item.CategoryID" class="btn btn-sm btn-danger">Delete</a>
+                    <a asp-action="Hide" asp-route-id="@item.CategoryID" class="btn btn-sm btn-danger">Hide</a>
+                        @(item.IsActive ? "Hide" : "Hidden")
                 </td>
             </tr>
     }

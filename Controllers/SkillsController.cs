@@ -13,7 +13,6 @@ public class SkillsController : Controller
         _context = context;
     }
 
-    // GET: Skills
     public async Task<IActionResult> Index()
     {
         var skills = await _context.Skills
@@ -23,7 +22,6 @@ public class SkillsController : Controller
         return View(skills);
     }
 
-    // GET: Skills/Details/5
     public async Task<IActionResult> Details(int? id)
     {
         if (id == null) return NotFound();
@@ -36,29 +34,27 @@ public class SkillsController : Controller
         return View(skill);
     }
 
-    // GET: Skills/Create
     public IActionResult Create()
     {
-        ViewData["CategoryID"] = new SelectList(_context.Categories, "CategoryID", "CategoryName");
+        ViewData["CategoryID"] = new SelectList(_context.Categories.Where(c => c.IsActive), "CategoryID", "CategoryName");
         return View();
     }
 
-    // POST: Skills/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create([Bind("SkillName,CategoryID")] Skill skill)
     {
         if (ModelState.IsValid)
         {
+            skill.IsActive = true;
             _context.Add(skill);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
-        ViewData["CategoryID"] = new SelectList(_context.Categories, "CategoryID", "CategoryName", skill.CategoryID);
+        ViewData["CategoryID"] = new SelectList(_context.Categories.Where(c => c.IsActive), "CategoryID", "CategoryName", skill.CategoryID);
         return View(skill);
     }
 
-    // GET: Skills/Edit/5
     public async Task<IActionResult> Edit(int? id)
     {
         if (id == null) return NotFound();
@@ -66,11 +62,10 @@ public class SkillsController : Controller
         var skill = await _context.Skills.FindAsync(id);
         if (skill == null || !skill.IsActive) return NotFound();
 
-        ViewData["CategoryID"] = new SelectList(_context.Categories, "CategoryID", "CategoryName", skill.CategoryID);
+        ViewData["CategoryID"] = new SelectList(_context.Categories.Where(c => c.IsActive), "CategoryID", "CategoryName", skill.CategoryID);
         return View(skill);
     }
 
-    // POST: Skills/Edit/5
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, [Bind("SkillID,SkillName,CategoryID,IsActive")] Skill skill)
@@ -79,24 +74,23 @@ public class SkillsController : Controller
 
         if (ModelState.IsValid)
         {
-            try
-            {
-                _context.Update(skill);
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!SkillExists(skill.SkillID)) return NotFound();
-                else throw;
-            }
+            var existing = await _context.Skills.FindAsync(id);
+            if (existing == null || !existing.IsActive) return NotFound();
+
+            existing.SkillName = skill.SkillName;
+            existing.CategoryID = skill.CategoryID;
+            existing.IsActive = skill.IsActive;
+
+            _context.Update(existing);
+            await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
 
-        ViewData["CategoryID"] = new SelectList(_context.Categories, "CategoryID", "CategoryName", skill.CategoryID);
+        ViewData["CategoryID"] = new SelectList(_context.Categories.Where(c => c.IsActive), "CategoryID", "CategoryName", skill.CategoryID);
         return View(skill);
     }
 
-    // GET: Skills/Delete/5
     public async Task<IActionResult> Delete(int? id)
     {
         if (id == null) return NotFound();
@@ -109,7 +103,6 @@ public class SkillsController : Controller
         return View(skill);
     }
 
-    // POST: Skills/Delete/5 (soft delete)
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)

@@ -1,26 +1,31 @@
 ﻿@model StudentFreelance.Models.Skill
-
 @{
-    ViewData["Title"] = "Tạo kỹ năng mới";
+    ViewData["Title"] = "Tạo kỹ năng";
 }
 
 <h2>@ViewData["Title"]</h2>
 
-<form asp-action="Create" method="post">
+@using (Html.BeginForm("Create", "Skills", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
     <div class="form-group">
-        <label asp-for="SkillName" class="control-label"></label>
-        <input asp-for="SkillName" class="form-control" />
-        <span asp-validation-for="SkillName" class="text-danger"></span>
+        @Html.LabelFor(model => model.SkillName)
+        @Html.TextBoxFor(model => model.SkillName, new { @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.SkillName, "", new { @class = "text-danger" })
     </div>
 
     <div class="form-group">
-        <label asp-for="CategoryID" class="control-label">Thể loại</label>
-        <select asp-for="CategoryID" asp-items="ViewBag.CategoryID" class="form-control">
-            <option value="">-- Chọn thể loại --</option>
-        </select>
-        <span asp-validation-for="CategoryID" class="text-danger"></span>
+        @Html.LabelFor(model => model.CategoryID, "Thể loại")
+        @Html.DropDownList("CategoryID", ViewData["CategoryID"] as SelectList, "-- chọn thể loại --", new { @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.CategoryID, "", new { @class = "text-danger" })
     </div>
 
-    <button type="submit" class="btn btn-primary">Tạo mới</button>
-    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
-</form>
+    <div class="form-check">
+        @Html.CheckBoxFor(model => model.IsActive, new { @class = "form-check-input" })
+        @Html.LabelFor(model => model.IsActive, new { @class = "form-check-label" })
+    </div>
+
+    <button type="submit" class="btn btn-success">Lưu thay đổi</button>
+    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+}

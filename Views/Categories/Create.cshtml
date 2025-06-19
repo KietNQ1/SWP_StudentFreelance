@@ -1,41 +1,96 @@
-@model StudentFreelance.Models.Category
+﻿@model StudentFreelance.Models.Category
+
 @{
-    ViewData["Title"] = "Create Category";
+    ViewData["Title"] = "Tạo danh mục";
 }
 
-<h2>Create Category</h2>
+<h2>@ViewData["Title"]</h2>
 
-<form asp-action="Create" method="post">
-    <div class="form-group">
-        <label asp-for="CategoryName"></label>
-        <input asp-for="CategoryName" class="form-control" />
-        <span asp-validation-for="CategoryName" class="text-danger"></span>
-    </div>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
 
     <div class="form-group">
-        <label asp-for="CategoryType"></label>
-        <input asp-for="CategoryType" class="form-control" />
-        <span asp-validation-for="CategoryType" class="text-danger"></span>
+        @Html.LabelFor(m => m.CategoryName)
+        @Html.TextBoxFor(m => m.CategoryName, new { @class = "form-control" })
+        @Html.ValidationMessageFor(m => m.CategoryName, "", new { @class = "text-danger" })
     </div>
 
     <div class="form-group">
-        <label asp-for="Description"></label>
-        <textarea asp-for="Description" class="form-control"></textarea>
+        @Html.LabelFor(m => m.CategoryType)
+        @Html.DropDownListFor(m => m.CategoryType,
+                new SelectList(new[] {
+    new { Value = "field", Text = "Field (Cha)" },
+    new { Value = "skill", Text = "Skill (Con)" }
+    }, "Value", "Text", Model.CategoryType),
+                "-- chọn loại --",
+                new { @class = "form-control", id = "categoryTypeSelect" })
+        @Html.ValidationMessageFor(m => m.CategoryType, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group" id="parentCategoryGroup">
+        @Html.Label("ParentCategoryID", "Danh mục cha")
+        @Html.DropDownList("ParentCategoryID", ViewData["ParentCategoryID"] as List<SelectListItem>, "-- chọn danh mục cha --", new { @class = "form-control", id = "parentSelect" })
+        @Html.ValidationMessageFor(m => m.ParentCategoryID, "", new { @class = "text-danger" })
     </div>
 
     <div class="form-group">
-        <label asp-for="ParentCategoryID"></label>
-        <select asp-for="ParentCategoryID" class="form-control"
-                asp-items="@(new SelectList(ViewData["ParentCategoryID"] as IEnumerable<SelectListItem>, "Value", "Text"))">
-            <option value="">-- None --</option>
-        </select>
+        @Html.LabelFor(m => m.Description)
+        @Html.TextAreaFor(m => m.Description, new { @class = "form-control" })
+        @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-danger" })
     </div>
 
-    <div class="form-check">
-        <input asp-for="IsActive" class="form-check-input" />
-        <label asp-for="IsActive" class="form-check-label"></label>
-    </div>
+    <button type="submit" class="btn btn-primary">Tạo mới</button>
+    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+}
 
-    <button type="submit" class="btn btn-primary">Save</button>
-    <a asp-action="Index" class="btn btn-secondary">Back</a>
-</form>
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const typeSelect = document.getElementById("categoryTypeSelect");
+            const parentGroup = document.getElementById("parentCategoryGroup");
+            const parentSelect = document.getElementById("parentSelect");
+
+            function toggleParentVisibility(type) {
+                if (type === "field") {
+                    parentGroup.style.display = "none";
+                    parentSelect.value = "";
+                    parentSelect.disabled = true;
+                } else {
+                    parentGroup.style.display = "block";
+                    parentSelect.disabled = false;
+                }
+            }
+
+            function updateParentCategoryOptions(type) {
+                fetch(`/Categories/GetParentCategories?type=${type}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        parentSelect.innerHTML = "";
+                        const defaultOption = document.createElement("option");
+                        defaultOption.value = "";
+                        defaultOption.text = type === "skill" ? "-- chọn danh mục cha --" : "-- không cần chọn --";
+                        parentSelect.appendChild(defaultOption);
+
+                        if (type === "skill") {
+                            data.forEach(item => {
+                                const option = document.createElement("option");
+                                option.value = item.value;
+                                option.text = item.text;
+                                parentSelect.appendChild(option);
+                            });
+                        }
+                    });
+            }
+
+            function onTypeChanged() {
+                const selectedType = typeSelect.value;
+                toggleParentVisibility(selectedType);
+                updateParentCategoryOptions(selectedType);
+            }
+
+            typeSelect.addEventListener("change", onTypeChanged);
+            onTypeChanged(); // Gọi khi trang load lần đầu
+        });
+    </script>
+}
