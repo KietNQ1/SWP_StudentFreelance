@@ -39,7 +39,7 @@ namespace StudentFreelance.Controllers
         // GET: Report/List
         [HttpGet]
         [Authorize(Roles = "Admin,Moderator")] // Chỉ Admin và Moderator mới có thể xem danh sách báo cáo
-        public async Task<IActionResult> List(ReportListViewModel model)
+        public async Task<IActionResult> ListReport(ReportListViewModel model)
         {
             try
             {
@@ -201,7 +201,7 @@ namespace StudentFreelance.Controllers
                 if (report == null)
                 {
                     TempData["ErrorMessage"] = "Không tìm thấy báo cáo.";
-                    return RedirectToAction("List");
+                    return RedirectToAction("ListReport");
                 }
 
                 var model = new ReportDetailViewModel
@@ -241,7 +241,7 @@ namespace StudentFreelance.Controllers
             {
                 _logger.LogError(ex, $"Lỗi khi xem chi tiết báo cáo ID={id}");
                 TempData["ErrorMessage"] = "Đã xảy ra lỗi khi tải chi tiết báo cáo.";
-                return RedirectToAction("List");
+                return RedirectToAction("ListReport");
             }
         }
         
@@ -464,7 +464,7 @@ namespace StudentFreelance.Controllers
                 if (report == null)
                 {
                     TempData["ErrorMessage"] = "Không tìm thấy báo cáo.";
-                    return RedirectToAction("List");
+                    return RedirectToAction("ListReport");
                 }
 
                 // Kiểm tra xem trạng thái có tồn tại không
