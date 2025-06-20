@@ -162,6 +162,20 @@ namespace StudentFreelance.Data
             {
                 if (await userManager.FindByEmailAsync(email) == null)
                 {
+                    // Create address for user with default values
+                    var address = new Address
+                    {
+                        ProvinceID = 1,
+                        DistrictID = 1,
+                        WardID = 1,
+                        DetailAddress = "Số nhà mặc định",
+                        FullAddress = "Địa chỉ mặc định",
+                        IsActive = true
+                    };
+                    
+                    context.Addresses.Add(address);
+                    context.SaveChanges();
+                    
                     var user = new ApplicationUser
                     {
                         UserName = email,
@@ -184,7 +198,8 @@ namespace StudentFreelance.Data
                         CreatedAt = DateTime.Now.AddDays(-new Random().Next(1, 365)), // Random registration date within last year
                         UpdatedAt = DateTime.Now,
                         IsActive = true,
-                        StatusID = activeStatus.StatusID
+                        StatusID = activeStatus.StatusID,
+                        AddressID = address.AddressID // Link to the created address
                     };
 
                     var result = await userManager.CreateAsync(user, password);

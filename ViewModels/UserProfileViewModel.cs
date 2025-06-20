@@ -20,9 +20,20 @@ namespace StudentFreelance.ViewModels
         public int? DistrictID { get; set; }
         public int? WardID { get; set; }
         public string? DetailAddress { get; set; }
+        public string? FullAddress { get; set; }
+        
+        // Location names for display
+        public string? ProvinceName { get; set; }
+        public string? DistrictName { get; set; }
+        public string? WardName { get; set; }
 
         public string? AvatarPath { get; set; }
         public IFormFile? AvatarImage { get; set; }
+
+        // User information
+        public string? Email { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
 
         public List<SkillItem> Skills { get; set; } = new();
         public List<OptionItem> AvailableSkills { get; set; } = new();
@@ -36,6 +47,8 @@ namespace StudentFreelance.ViewModels
     {
         public int SkillID { get; set; }
         public int ProficiencyLevelID { get; set; }
+        public string? SkillName { get; set; }
+        public string? ProficiencyLevelName { get; set; }
     }
 
     public class OptionItem

@@ -31,6 +31,75 @@ namespace StudentFreelance.Controllers
 
                 var skills = await _context.StudentSkills
                     .Where(s => s.UserID == userId && s.IsActive)
+                    .Include(s => s.Skill)
+                    .Include(s => s.ProficiencyLevel)
+                    .ToListAsync();
+
+                var viewModel = new UserProfileViewModel
+                {
+                    FullName = user.FullName,
+                    PhoneNumber = user.PhoneNumber,
+                    University = user.University,
+                    Major = user.Major,
+                    CompanyName = user.CompanyName,
+                    Industry = user.Industry,
+                    ProvinceID = user.Address?.ProvinceID,
+                    DistrictID = user.Address?.DistrictID,
+                    WardID = user.Address?.WardID,
+                    DetailAddress = user.Address?.DetailAddress,
+                    FullAddress = user.Address?.FullAddress,
+                    AvatarPath = user.Avatar,
+                    Skills = skills.Select(s => new SkillItem
+                    {
+                        SkillID = s.SkillID,
+                        ProficiencyLevelID = s.ProficiencyLevelID,
+                        SkillName = s.Skill.SkillName,
+                        ProficiencyLevelName = s.ProficiencyLevel.LevelName
+                    }).ToList(),
+                    CreatedAt = user.CreatedAt,
+                    UpdatedAt = user.UpdatedAt,
+                    Email = user.Email
+                };
+
+                // Get province, district, ward names
+                if (user.Address?.ProvinceID != null)
+                {
+                    var province = await _context.Provinces.FirstOrDefaultAsync(p => p.ProvinceID == user.Address.ProvinceID);
+                    viewModel.ProvinceName = province?.Name;
+                }
+
+                if (user.Address?.DistrictID != null)
+                {
+                    var district = await _context.Districts.FirstOrDefaultAsync(d => d.DistrictID == user.Address.DistrictID);
+                    viewModel.DistrictName = district?.Name;
+                }
+
+                if (user.Address?.WardID != null)
+                {
+                    var ward = await _context.Wards.FirstOrDefaultAsync(w => w.WardID == user.Address.WardID);
+                    viewModel.WardName = ward?.Name;
+                }
+
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] GET Profile: {ex.Message}");
+                return StatusCode(500);
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Edit()
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var user = await _context.Users.Include(u => u.Address).FirstOrDefaultAsync(u => u.Id == userId);
+                if (user == null) return NotFound();
+
+                var skills = await _context.StudentSkills
+                    .Where(s => s.UserID == userId && s.IsActive)
                     .ToListAsync();
 
                 var viewModel = new UserProfileViewModel
@@ -76,13 +145,13 @@ namespace StudentFreelance.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] GET Profile: {ex.Message}");
+                Console.WriteLine($"[ERROR] GET Edit: {ex.Message}");
                 return StatusCode(500);
             }
         }
 
         [HttpPost]
-        public async Task<IActionResult> Profile(UserProfileViewModel model)
+        public async Task<IActionResult> Edit(UserProfileViewModel model)
         {
             try
             {
@@ -113,7 +182,8 @@ namespace StudentFreelance.Controllers
                     user.ProfilePicturePath = imagePath;
                 }
 
-                if (user.Address == null)
+                // Xử lý địa chỉ
+                if (user.Address == null || user.AddressID == null)
                 {
                     var newAddress = new Address
                     {
@@ -121,6 +191,7 @@ namespace StudentFreelance.Controllers
                         DistrictID = model.DistrictID,
                         WardID = model.WardID,
                         DetailAddress = model.DetailAddress,
+                        FullAddress = GetFullAddress(model.ProvinceID, model.DistrictID, model.WardID, model.DetailAddress),
                         IsActive = true
                     };
                     _context.Addresses.Add(newAddress);
@@ -133,6 +204,7 @@ namespace StudentFreelance.Controllers
                     user.Address.DistrictID = model.DistrictID;
                     user.Address.WardID = model.WardID;
                     user.Address.DetailAddress = model.DetailAddress;
+                    user.Address.FullAddress = GetFullAddress(model.ProvinceID, model.DistrictID, model.WardID, model.DetailAddress);
                     _context.Addresses.Update(user.Address);
                 }
 
@@ -159,8 +231,44 @@ namespace StudentFreelance.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] POST Profile: {ex.Message}");
+                Console.WriteLine($"[ERROR] POST Edit: {ex.Message}");
                 return StatusCode(500);
+            }
+        }
+
+        // Helper method to generate full address string
+        private string GetFullAddress(int? provinceID, int? districtID, int? wardID, string detailAddress)
+        {
+            try
+            {
+                string fullAddress = detailAddress ?? "";
+                
+                if (wardID.HasValue)
+                {
+                    var ward = _context.Wards.FirstOrDefault(w => w.WardID == wardID);
+                    if (ward != null)
+                        fullAddress += $", {ward.Name}";
+                }
+                
+                if (districtID.HasValue)
+                {
+                    var district = _context.Districts.FirstOrDefault(d => d.DistrictID == districtID);
+                    if (district != null)
+                        fullAddress += $", {district.Name}";
+                }
+                
+                if (provinceID.HasValue)
+                {
+                    var province = _context.Provinces.FirstOrDefault(p => p.ProvinceID == provinceID);
+                    if (province != null)
+                        fullAddress += $", {province.Name}";
+                }
+                
+                return fullAddress;
+            }
+            catch
+            {
+                return detailAddress ?? "";
             }
         }
 
