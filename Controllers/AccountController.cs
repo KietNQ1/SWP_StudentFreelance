@@ -6,6 +6,7 @@ using StudentFreelance.Models;
 using StudentFreelance.ViewModels;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
+using StudentFreelance.DbContext;
 
 namespace StudentFreelance.Controllers
 {
@@ -14,12 +15,14 @@ namespace StudentFreelance.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly StudentFreelance.Services.Interfaces.IEmailSender _emailSender;
+        private readonly ApplicationDbContext _context;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, StudentFreelance.Services.Interfaces.IEmailSender emailSender)
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, StudentFreelance.Services.Interfaces.IEmailSender emailSender, ApplicationDbContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
+            _context = context;
         }
 
         // GET: /Account/Register
@@ -37,6 +40,20 @@ namespace StudentFreelance.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
+            // Create address for user with default values
+            var address = new Address
+            {
+                ProvinceID = 1,
+                DistrictID = 1,
+                WardID = 1,
+                DetailAddress = "Số nhà mặc định",
+                FullAddress = "Số nhà mặc định, Phường/Xã mặc định, Quận/Huyện mặc định, Tỉnh/Thành phố mặc định",
+                IsActive = true
+            };
+            
+            _context.Addresses.Add(address);
+            await _context.SaveChangesAsync();
+
             var user = new ApplicationUser
             {
                 UserName = model.Email,
@@ -45,7 +62,8 @@ namespace StudentFreelance.Controllers
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,
                 IsActive = true,
-                StatusID = 1 // Mặc định trạng thái "Hoạt động"
+                StatusID = 1, // Mặc định trạng thái "Hoạt động"
+                AddressID = address.AddressID
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -250,6 +268,26 @@ namespace StudentFreelance.Controllers
                 else
                 {
                     await _userManager.AddLoginAsync(user, info);
+                }
+
+                // Kiểm tra và tạo địa chỉ nếu chưa có
+                if (user.AddressID == null)
+                {
+                    var address = new Address
+                    {
+                        ProvinceID = 1,
+                        DistrictID = 1,
+                        WardID = 1,
+                        DetailAddress = "Số nhà mặc định",
+                        FullAddress = "Số nhà mặc định, Phường/Xã mặc định, Quận/Huyện mặc định, Tỉnh/Thành phố mặc định",
+                        IsActive = true
+                    };
+                    
+                    _context.Addresses.Add(address);
+                    await _context.SaveChangesAsync();
+                    
+                    user.AddressID = address.AddressID;
+                    await _userManager.UpdateAsync(user);
                 }
 
                 // Đăng nhập
