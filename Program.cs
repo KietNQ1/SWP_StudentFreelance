@@ -48,6 +48,7 @@ builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IEmailSender, St
 
 // Register application services
 builder.Services.AddScoped<StudentFreelance.Interfaces.IProjectService, StudentFreelance.Services.Implementations.ProjectService>();
+builder.Services.AddScoped<StudentFreelance.Interfaces.IReportService, StudentFreelance.Services.Implementations.ReportService>();
 
 // 4. Add MVC support
 builder.Services.AddControllersWithViews();
