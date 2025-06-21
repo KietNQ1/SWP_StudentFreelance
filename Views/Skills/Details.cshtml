@@ -1,0 +1,40 @@
+﻿@model StudentFreelance.Models.Skill
+
+@{
+    ViewData["Title"] = "Chi tiết kỹ năng";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div class="card">
+    <div class="card-body">
+
+        <dl class="row">
+            <dt class="col-sm-3">Mã kỹ năng</dt>
+            <dd class="col-sm-9">@Model.SkillID</dd>
+
+            <dt class="col-sm-3">Tên kỹ năng</dt>
+            <dd class="col-sm-9">@Model.SkillName</dd>
+
+            <dt class="col-sm-3">Danh mục</dt>
+            <dd class="col-sm-9">@Model.Category?.CategoryName</dd>
+
+            <dt class="col-sm-3">Trạng thái</dt>
+            <dd class="col-sm-9">
+                @if (Model.IsActive)
+                {
+                    <span class="badge bg-success">Đang hoạt động</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">Đã bị ẩn</span>
+                }
+            </dd>
+        </dl>
+
+        <div class="mt-3">
+            <a asp-action="Edit" asp-route-id="@Model.SkillID" class="btn btn-primary">Chỉnh sửa</a>
+            <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>
+        </div>
+    </div>
+</div>

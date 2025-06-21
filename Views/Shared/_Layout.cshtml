@@ -1,6 +1,13 @@
+
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+
 ﻿@using Microsoft.EntityFrameworkCore
 @using StudentFreelance.DbContext
 @using StudentFreelance.Models
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,7 +15,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - STJobs</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/header.css" asp-append-version="true" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -18,30 +25,81 @@
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
+@* <<<<<<< HEAD *@
+@*     <header> *@
+@*         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3"> *@
+@*             <div class="container-fluid"> *@
+@*                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">StudentFreelance</a> *@
+@*                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent" *@
+@*                         aria-expanded="false" aria-label="Toggle navigation"> *@
+@*                     <span class="navbar-toggler-icon"></span> *@
+@*                 </button> *@
+@*                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between"> *@
+@*                     <ul class="navbar-nav flex-grow-1"> *@
+@*                         <li class="nav-item"> *@
+@*                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a> *@
+@*                         </li> *@
+@*                         <li class="nav-item"> *@
+@*                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a> *@
+@*                         </li> *@
+@*                     </ul> *@
+@*                     <ul class="navbar-nav"> *@
+@*                         @if (SignInManager.IsSignedIn(User)) *@
+@*                         { *@
+@*                             <li class="nav-item"> *@
+@*                                 <span class="nav-link text-dark">Xin chào, @UserManager.GetUserName(User)!</span> *@
+@*                             </li> *@
+@*                             <li class="nav-item"> *@
+@*                                 <form asp-controller="Account" asp-action="Logout" method="post" class="form-inline"> *@
+@*                                     <button type="submit" class="nav-link btn btn-link text-dark" style="border: none;">Logout</button> *@
+@*                                 </form> *@
+@*                             </li> *@
+@*                         } *@
+@*                         else *@
+@*                         { *@
+@*                             <li class="nav-item"> *@
+@*                                 <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Đăng Kí</a> *@
+@*                             </li> *@
+@*                             <li class="nav-item"> *@
+@*                                 <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Login</a> *@
+@*                             </li> *@
+@*                         } *@
+@*                     </ul> *@
+
+  
     <header class="header">
         <nav class="nav">
             <div class="nav-container">
+                <!-- Logo -->
                 <div class="logo">
                     <a asp-area="" asp-controller="Home" asp-action="Index" class="logo-link">
                         STJobs<span class="logo-dot">.</span>
                     </a>
                 </div>
 
+                <!-- Menu chính -->
                 <div class="nav-menu">
+                    <!-- Find Talent -->
                     <div class="nav-item dropdown explore-dropdown">
                         <span>Find talent</span>
                         <i class="fas fa-chevron-down"></i>
                         <div class="dropdown-menu">
-                            <a asp-controller="Search" asp-action="SearchJob" class="dropdown-item">Find Projects <span class="new-label">Hot</span></a>
+                            <a asp-controller="Project" asp-action="Index" class="dropdown-item">Browse Projects <span class="new-label">Hot</span></a>
+                            <a asp-controller="Search" asp-action="SearchJob" class="dropdown-item">Search Projects</a>
                             <a asp-controller="Search" asp-action="SearchStudents" class="dropdown-item">Find Students</a>
                             <a asp-controller="Search" asp-action="SearchBusinesses" class="dropdown-item">Find Businesses</a>
                             <a href="#">Design & Creative</a>
                             <a href="#">Sales & Marketing</a>
                         </div>
                     </div>
-                    
+
+                    <!-- Projects -->
+                    <a asp-controller="Project" asp-action="Index" class="nav-link">Projects</a>
+
+                    <!-- Enterprise -->
                     <a asp-controller="Search" asp-action="SearchJob" class="nav-link">Enterprise</a>
-                
+
+                    <!-- Search -->
                     <div class="nav-item dropdown explore-dropdown">
                         <span>Search</span>
                         <i class="fas fa-chevron-down"></i>
@@ -51,11 +109,12 @@
                             <a asp-controller="Search" asp-action="SearchBusinesses" class="dropdown-item">Search Businesses</a>
                         </div>
                     </div>
-                    
-                    <div class="nav-item dropdown explore-dropdown" id="exploreDropdownBtn">
+
+                    <!-- Explore -->
+                    <div class="nav-item dropdown explore-dropdown">
                         <span>Explore</span>
                         <i class="fas fa-chevron-down"></i>
-                        <div class="dropdown-menu" id="exploreDropdownMenu">
+                        <div class="dropdown-menu">
                             <a href="#">STJobs VIP <span class="new-label">New</span></a>
                             <a href="#">Answers</a>
                             <a href="#">Community</a>
@@ -65,27 +124,23 @@
                             <a href="#">Blog</a>
                         </div>
                     </div>
-                    
-                    <a href="#" class="nav-link">About STJobs</a>
-                    <a asp-controller="Account" asp-action="Login" class="nav-link">Sign in</a>
-                    <a asp-controller="Account" asp-action="Register" class="btn btn-primary">Join</a>
 
-                    <!-- User Actions (conditionally shown when logged in) -->
-                    @if (User.Identity.IsAuthenticated)
+                    <!-- About -->
+                    <a href="#" class="nav-link">About STJobs</a>
+
+
+                    @if (SignInManager.IsSignedIn(User))
                     {
+                        <!-- Nếu đã đăng nhập -->
                         <div class="nav-user-actions">
-                            <!-- Notification Bell -->
+                            <!-- Notification -->
                             <div class="notification-wrapper">
                                 <div class="notification-icon" id="notificationBell">
                                     <i class="fas fa-bell"></i>
                                     <span class="notification-dot" id="notificationDot"></span>
                                 </div>
-
-                                <!-- Dropdown Notification -->
                                 <div class="notification-dropdown" id="notificationDropdown">
-                                    <div class="notification-header">
-                                        <strong>Thông báo</strong>
-                                    </div>
+                                    <div class="notification-header"><strong>Thông báo</strong></div>
                                     <div class="notification-list">
                                         <div class="notification-item">
                                             <img src="https://i.pravatar.cc/40" alt="Avatar" />
@@ -107,17 +162,42 @@
                                     </div>
                                 </div>
                             </div>
+                            @{
+                                var currentUser = await UserManager.GetUserAsync(User);
+                                var fullName = currentUser?.FullName ?? "Người dùng";
+                            }
+                            <!-- Avatar + Tên -->
+                            <div class="dropdown user-dropdown">
+                                <div class="avatar-wrapper" onclick="toggleUserDropdown(event)" style="cursor: pointer;">
+                                    <img src="https://i.pravatar.cc/36" alt="Avatar" class="avatar-img" />
+                                    <span class="nav-link text-dark">Xin chào, @fullName!</span>
+                                </div>
 
-                            <!-- User Avatar -->
-                            <a asp-controller="User" asp-action="Profile" class="avatar-wrapper">
-                                <img src="https://i.pravatar.cc/36" alt="Avatar" class="avatar-img" />
-                            </a>
+                                <div class="dropdown-menu" id="userDropdownMenu">
+                                    <a asp-controller="AdminUser" asp-action="Index" class="dropdown-item">📊 Dashboard</a>
+                                    <a asp-controller="User" asp-action="Profile" class="dropdown-item">👤 Profile</a>
+                                </div>
+                            </div>
+
+
+
+                            <!-- Logout -->
+                            <form asp-controller="Account" asp-action="Logout" method="post" class="form-inline d-inline">
+                                <button type="submit" class="nav-link btn btn-link text-dark" style="border: none;">Logout</button>
+                            </form>
                         </div>
+                    }
+                    else
+                    {
+                        <!-- Nếu chưa đăng nhập -->
+                        <a asp-controller="Account" asp-action="Login" class="nav-link">Sign in</a>
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-primary">Join</a>
                     }
                 </div>
             </div>
         </nav>
     </header>
+
 
     <main role="main">
         @RenderBody()
@@ -286,6 +366,20 @@
             }
         });
     </script>
+    <script>
+        function toggleUserDropdown(event) {
+            event.stopPropagation(); // Ngăn chặn việc click lan ra ngoài
+            const menu = document.getElementById("userDropdownMenu");
+            menu.style.display = (menu.style.display === "block") ? "none" : "block";
+        }
+
+        // Đóng dropdown khi click bên ngoài
+        window.addEventListener('click', function () {
+            const menu = document.getElementById("userDropdownMenu");
+            if (menu) menu.style.display = "none";
+        });
+    </script>
+
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

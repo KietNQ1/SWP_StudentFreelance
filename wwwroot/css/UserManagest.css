@@ -1,0 +1,223 @@
+﻿/* user-management.css */
+
+
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.layout {
+    display: flex;
+    height: 100vh;
+}
+
+.sidebar {
+    background-color: #031F4A;
+    color: white;
+    width: 250px;
+    padding: 1rem;
+}
+
+.sidebar-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 2rem;
+}
+
+.logo {
+    display: inline-block;
+    background-color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    line-height: 1;
+}
+
+.logo-link {
+    text-decoration: none;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #031F4A;
+}
+
+.logo-dot {
+    color: #D3D6DD;
+}
+
+.sidebar-menu a {
+    display: flex;
+    margin-bottom: 1rem;
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem;
+    border-radius: 4px;
+    flex-direction: column;
+    align-items: center;
+}
+
+    .sidebar-menu a:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+.dropdown-toggle {
+    all: unset; /* Reset toàn bộ kiểu mặc định của button */
+    display: block;
+    margin-bottom: 1rem;
+    color: white;
+    font-weight: bold;
+    padding: 0.5rem;
+    border-radius: 4px;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+}
+
+    .dropdown-toggle:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+.sidebar-menu a,
+.dropdown-toggle {
+    display: block;
+    margin-bottom: 1rem;
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem;
+    border-radius: 4px;
+    font-weight: bold;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.dropdown-menu {
+    display: none;
+    flex-direction: column;
+    padding-left: 1rem;
+}
+
+    .dropdown-menu a {
+        font-weight: normal;
+        padding: 0.25rem 0;
+        color: #cbd5e1;
+    }
+
+        .dropdown-menu a:hover {
+            color: white;
+        }
+
+.dropdown.open .dropdown-menu {
+    display: flex;
+}
+
+.main {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+    .topbar input, select {
+        border: 1px solid #d1d5db;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        width: 250px;
+    }
+
+.breadcrumb {
+    font-size: 0.9rem;
+    color: #9ca3af;
+}
+
+    .breadcrumb .current {
+        color: #5FD0AB; /* Màu xanh nổi bật */
+        font-weight: bold;
+    }
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-name {
+    font-weight: bold;
+    margin: 0;
+}
+
+.user-role {
+    font-size: 0.875rem;
+    color: gray;
+    margin: 0;
+}
+
+.avatar {
+    border-radius: 9999px;
+    border: 2px solid var(--primary-color);
+}
+
+.styled-table {
+    width: 90%;
+    max-width: 85%;
+    margin: 0 auto;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+}
+
+    .styled-table thead {
+        background-color: #1e3a8a;
+        color: white;
+    }
+
+    .styled-table th,
+    .styled-table td {
+        padding: 12px 16px;
+        text-align: left;
+    }
+
+    .styled-table tbody tr {
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+        .styled-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+.status-active {
+    color: green;
+}
+
+.status-inactive {
+    color: gray;
+}
+
+button.action-btn {
+    padding: 6px 10px;
+    margin-right: 6px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: white;
+    font-size: 0.9rem;
+}
+
+button.edit {
+    background-color: #10b981;
+}
+
+button.delete {
+    background-color: #ef4444;
+}

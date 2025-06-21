@@ -1,0 +1,199 @@
+@model StudentFreelance.Models.Project
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Index">Projects</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Title</li>
+        </ol>
+    </nav>
+
+    @if (ViewBag.InactiveMessage != null)
+    {
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @ViewBag.InactiveMessage
+        </div>
+    }
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="mb-3">
+                @if (Model.IsHighlighted)
+                {
+                    <span class="badge bg-warning me-2">Featured</span>
+                }
+                @if (!Model.IsActive)
+                {
+                    <span class="badge bg-danger me-2">Đã ẩn</span>
+                }
+                @Model.Title
+            </h1>
+            <div class="d-flex flex-wrap mb-3 gap-2">
+                <span class="badge bg-primary">@Model.Category.CategoryName</span>
+                <span class="badge @(Model.StatusID == 1 ? "bg-success" : Model.StatusID == 2 ? "bg-warning" : "bg-danger")">
+                    @Model.Status.StatusName
+                </span>
+                <span class="badge bg-info">@Model.Type.TypeName</span>
+                @if (Model.IsRemoteWork)
+                {
+                    <span class="badge bg-secondary">Remote Work</span>
+                }
+            </div>
+            <div class="d-flex gap-4 text-muted mb-4">
+                <div>
+                    <i class="bi bi-calendar-date"></i> Posted: @Model.CreatedAt.ToString("dd/MM/yyyy")
+                </div>
+                <div>
+                    <i class="bi bi-hourglass-split"></i> Deadline: @Model.Deadline.ToString("dd/MM/yyyy")
+                </div>
+                <div>
+                    <i class="bi bi-currency-dollar"></i> Budget: @Model.Budget.ToString("C")
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 text-end">
+            @if (User.Identity != null && User.Identity.IsAuthenticated && 
+                (User.IsInRole("Admin") || 
+                User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == Model.BusinessID.ToString()))
+            {
+                <div class="btn-group">
+                    <a asp-action="Edit" asp-route-id="@Model.ProjectID" class="btn btn-outline-primary">
+                        <i class="bi bi-pencil"></i> Edit Project
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@Model.ProjectID" class="btn btn-outline-danger">
+                        <i class="bi bi-trash"></i> Delete
+                    </a>
+                </div>
+            }
+            else if (User.Identity != null && User.Identity.IsAuthenticated && 
+                    User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value != Model.BusinessID.ToString())
+            {
+                <a href="#" class="btn btn-success">Apply for this Project</a>
+            }
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Project Description</h5>
+                </div>
+                <div class="card-body">
+                    <div class="formatted-content">
+                        @Html.Raw(Model.Description)
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.ProjectSkillsRequired.Any())
+            {
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Required Skills</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach (var skill in Model.ProjectSkillsRequired)
+                            {
+                                <span class="badge bg-secondary">@skill.Skill.SkillName</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (Model.ProjectAttachments.Any())
+            {
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Project Attachments</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            @foreach (var attachment in Model.ProjectAttachments)
+                            {
+                                <a href="@attachment.FilePath" class="list-group-item list-group-item-action" download>
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">@attachment.FileName</h6>
+                                        <small>@(attachment.FileSize / 1024) KB</small>
+                                    </div>
+                                    <small class="text-muted">
+                                        Uploaded @attachment.UploadedAt.ToString("dd/MM/yyyy HH:mm")
+                                    </small>
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Business Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="avatar me-3">
+                            <div class="avatar-placeholder">
+                                @(Model.Business.UserName != null ? Model.Business.UserName.Substring(0, 1).ToUpper() : "U")
+                            </div>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">@Model.Business.FullName</h6>
+                            <small class="text-muted">Member since @(Model.Business.CreatedAt.ToString("MMM yyyy"))</small>
+                        </div>
+                    </div>
+                    
+                    @if (Model.Address != null)
+                    {
+                        <div class="mb-2">
+                            <i class="bi bi-geo-alt"></i> 
+                            @Model.Address.DetailAddress, @Model.Address.Ward.Name, 
+                            @Model.Address.District.Name, @Model.Address.Province.Name
+                        </div>
+                    }
+                    
+                    <div class="mt-3">
+                        <a href="#" class="btn btn-outline-secondary btn-sm w-100">
+                            <i class="bi bi-person"></i> View Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Project Details</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Start Date</span>
+                            <span>@Model.StartDate.ToString("dd/MM/yyyy")</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>End Date</span>
+                            <span>@Model.EndDate.ToString("dd/MM/yyyy")</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Duration</span>
+                            <span>@((Model.EndDate - Model.StartDate).Days) days</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Applications</span>
+                            <span class="badge bg-primary rounded-pill">@Model.StudentApplications.Count</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

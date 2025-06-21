@@ -20,8 +20,8 @@
         @Html.LabelFor(m => m.CategoryType)
         @Html.DropDownListFor(m => m.CategoryType,
                 new SelectList(new[] {
-    new { Value = "field", Text = "Field (Cha)" },
-    new { Value = "skill", Text = "Skill (Con)" }
+    new { Value = "field", Text = "Field" },
+    new { Value = "skill", Text = "Skill" }
     }, "Value", "Text", Model.CategoryType),
                 "-- chọn loại --",
                 new { @class = "form-control", id = "categoryTypeSelect" })

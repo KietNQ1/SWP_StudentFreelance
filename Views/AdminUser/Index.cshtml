@@ -1,0 +1,145 @@
+﻿@model IEnumerable<StudentFreelance.Models.ApplicationUser>
+@{
+    ViewData["Title"] = "User Management";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="~/css/userManagest.css" />
+
+<div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <nav class="sidebar-menu">
+            <a href="#">Dashboard</a>
+            <a href="#">Calendar</a>
+            <div class="dropdown">
+                <button class="dropdown-toggle" onclick="toggleDropdown(this)">Profile</button>
+                <div class="dropdown-menu">
+                    <a href="#">My Profile</a>
+                    <a href="#">Freelancers</a>
+                    <a href="#">Companies</a>
+                </div>
+            </div>
+            <div class="dropdown">
+                <button class="dropdown-toggle" onclick="toggleDropdown(this)">Customer Management</button>
+                <div class="dropdown-menu">
+                    <a href="#">Freelancers</a>
+                    <a href="#">Companies</a>
+                </div>
+            </div>
+            <a href="#">Project Management</a>
+            <a href="#">Applications</a>
+            <a href="#">Payments</a>
+            <a href="#">Reviews & Reports</a>
+            <a href="#">System Settings</a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+        <form asp-action="Index" method="get" class="topbar">
+            <h1>Freelancer Management</h1>
+
+            <input type="text" name="searchTerm" placeholder="Search freelancer..."
+                   value="@Context.Request.Query["searchTerm"]" />
+
+            <select name="selectedRole">
+                <option value="">Roles</option>
+                @foreach (var role in (ViewBag.AllRoles as List<string> ?? new List<string>()))
+                {
+                    if (role == Context.Request.Query["selectedRole"])
+                    {
+                        <option value="@role" selected>@role</option>
+                    }
+                    else
+                    {
+                        <option value="@role">@role</option>
+                    }
+                }
+            </select>
+
+            <select name="status">
+                <option value="">Status</option>
+
+                @if (Context.Request.Query["status"] == "Active")
+                {
+                    <option value="Active" selected>Active</option>
+                }
+                else
+                {
+                    <option value="Active">Active</option>
+                }
+
+                @if (Context.Request.Query["status"] == "Inactive")
+                {
+                    <option value="Inactive" selected>Inactive</option>
+                }
+                else
+                {
+                    <option value="Inactive">Inactive</option>
+                }
+            </select>
+
+
+            <button type="submit">Filter</button>
+        </form>
+
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    int index = 1;
+                    foreach (var user in Model)
+                    {
+                        var statusClass = user.IsActive ? "status-active" : "status-inactive";
+                        var rowClass = user.IsActive ? "" : "text-muted";
+                        <tr class="@rowClass">
+                            <td>@index</td>
+                            <td>@(string.IsNullOrEmpty(user.FullName) ? user.Email : user.FullName)</td>
+                            <td>@user.Email</td>
+                            <td>@user.PhoneNumber</td>
+                            <td class="@statusClass">@(user.IsActive ? "Active" : "Inactive")</td>
+                            <td>
+                                <a href="@Url.Action("Edit", "AdminUser", new { id = user.Id })" class="action-btn edit">✏️ Edit</a>
+                                @if (user.IsActive)
+                                {
+                                    <form asp-action="Deactivate" asp-route-id="@user.Id" method="post" style="display:inline;">
+                                        <button type="submit" class="action-btn delete" onclick="return confirm('Bạn có chắc chắn muốn ẩn người dùng này?');">❌ Delete</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form asp-action="Restore" asp-route-id="@user.Id" method="post" style="display:inline;">
+                                        <button type="submit" class="action-btn restore" onclick="return confirm('Khôi phục người dùng này?');">♻️ Restore</button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                        index++;
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="6">No users found.</td></tr>
+                }
+            </tbody>
+        </table>
+    </main>
+</div>
+
+<script>
+    function toggleDropdown(button) {
+        const dropdown = button.closest(".dropdown");
+        dropdown.classList.toggle("open");
+    }
+</script>

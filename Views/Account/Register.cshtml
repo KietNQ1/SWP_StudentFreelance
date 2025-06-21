@@ -50,6 +50,15 @@
                     <span class="icon"><i class="fas fa-lock"></i></span>
                 </div>
                 <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                <div class="input-group account">
+                    <select asp-for="Role" required>
+                        <option value="" disabled selected>Chọn vai trò</option>
+                        <option value="Student">Student</option>
+                        <option value="Business">Business</option>
+                    </select>
+                    <span class="icon"><i class="fas fa-user-tag"></i></span>
+                </div>
+                <span asp-validation-for="Role" class="text-danger"></span>
 
                 <button type="submit" class="btn-login">Register</button>
 

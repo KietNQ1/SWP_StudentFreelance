@@ -20,7 +20,8 @@
         <dd class="col-sm-9">@Model.Category?.CategoryName</dd>
     </dl>
 
-    <form asp-action="Delete">
+    <form asp-action="Delete" method="post">
+        @Html.AntiForgeryToken()
         <input type="hidden" asp-for="SkillID" />
         <button type="submit" class="btn btn-danger">Xác nhận ngừng sử dụng</button>
         <a asp-action="Index" class="btn btn-secondary">Hủy</a>
