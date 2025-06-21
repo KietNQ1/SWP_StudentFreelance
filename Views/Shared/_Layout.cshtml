@@ -1,10 +1,9 @@
-
-﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Identity
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
 
-﻿@using Microsoft.EntityFrameworkCore
+@using Microsoft.EntityFrameworkCore
 @using StudentFreelance.DbContext
 @using StudentFreelance.Models
 
@@ -22,6 +21,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="stylesheet" href="~/css/header.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/footer.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
@@ -119,7 +120,8 @@
                             <a href="#">Answers</a>
                             <a href="#">Community</a>
                             <a href="#">Guides</a>
-                            <a href="#">Report</a>
+                            <a asp-controller="Report" asp-action="ListReport" class="dropdown-item">Report Management</a>
+                            <a asp-controller="Report" asp-action="Create" class="dropdown-item">Submit Report </a>
                             <a href="#">Learn</a>
                             <a href="#">Blog</a>
                         </div>
