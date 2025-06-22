@@ -1,0 +1,29 @@
+﻿@model StudentFreelance.Models.Skill
+
+@{
+    ViewData["Title"] = "Ngừng sử dụng kỹ năng";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<h4>Bạn có chắc muốn ngừng sử dụng kỹ năng này không?</h4>
+<p>
+    Kỹ năng sẽ không bị xóa khỏi hệ thống nhưng sẽ không thể được sử dụng trong tuyển dụng, tạo dự án hoặc gán cho sinh viên nữa.
+</p>
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-3">Tên kỹ năng</dt>
+        <dd class="col-sm-9">@Model.SkillName</dd>
+
+        <dt class="col-sm-3">Thể loại</dt>
+        <dd class="col-sm-9">@Model.Category?.CategoryName</dd>
+    </dl>
+
+    <form asp-action="Delete" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="SkillID" />
+        <button type="submit" class="btn btn-danger">Xác nhận ngừng sử dụng</button>
+        <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+    </form>
+</div>

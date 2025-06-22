@@ -1,0 +1,137 @@
+﻿@model StudentFreelance.Models.Category
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+@{
+    ViewData["Title"] = "Chỉnh sửa danh mục";
+    bool isParent = ViewBag.IsParent as bool? ?? false;
+    bool isChild = ViewBag.IsChild as bool? ?? false;
+    bool isEditable = isChild;
+
+    var typeItems = new List<SelectListItem> {
+        new SelectListItem("Lĩnh vực", "field"),
+        new SelectListItem("Kỹ năng", "skill")
+    };
+    var parentItems = ViewData["ParentCategoryID"] as List<SelectListItem> ?? new List<SelectListItem>();
+}
+
+<h2 class="text-center">@ViewData["Title"]</h2>
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" asp-for="CategoryID" />
+                    <input type="hidden" name="confirm" value="yes" />
+
+                    <!-- Tên -->
+                    <div class="row mb-3">
+                        <label class="col-sm-4 col-form-label fw-bold text-end">Tên danh mục</label>
+                        <div class="col-sm-8">
+                            @if (isParent)
+                            {
+                                <p class="form-control-plaintext">@Model.CategoryName</p>
+                                <input type="hidden" asp-for="CategoryName" />
+                                <small class="text-muted">Không thể sửa tên của danh mục cha.</small>
+                            }
+                            else
+                            {
+                                <input asp-for="CategoryName" class="form-control" />
+                            }
+                            <span asp-validation-for="CategoryName" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Loại -->
+                    <div class="row mb-3">
+                        <label class="col-sm-4 col-form-label fw-bold text-end">Loại danh mục</label>
+                        <div class="col-sm-8">
+                            @if (!isEditable)
+                            {
+                                <p class="form-control-plaintext">
+                                    @(Model.CategoryType == "field" ? "Lĩnh vực" : "Kỹ năng")
+                                </p>
+                                <input type="hidden" asp-for="CategoryType" />
+                                <small class="text-muted">Không thể sửa loại danh mục.</small>
+                            }
+                            else
+                            {
+                                <select asp-for="CategoryType" asp-items="typeItems" class="form-select" id="categoryTypeSelect"></select>
+                            }
+                            <span asp-validation-for="CategoryType" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Danh mục cha -->
+                    <div class="row mb-3" id="parentCategoryGroup">
+                        <label class="col-sm-4 col-form-label fw-bold text-end">Danh mục cha</label>
+                        <div class="col-sm-8">
+                            @if (isParent || Model.CategoryType == "field")
+                            {
+                                <p class="form-control-plaintext">
+                                    @(parentItems.FirstOrDefault(x => x.Value == Model.ParentCategoryID?.ToString())?.Text ?? "-")
+                                </p>
+                                <input type="hidden" asp-for="ParentCategoryID" />
+                                <small class="text-muted">Danh mục cha không áp dụng với loại “Lĩnh vực”.</small>
+                            }
+                            else
+                            {
+                                <select asp-for="ParentCategoryID" asp-items="parentItems" class="form-select" ></select>
+
+                            }
+                            <span asp-validation-for="ParentCategoryID" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Mô tả -->
+                    <div class="row mb-3">
+                        <label asp-for="Description" class="col-sm-4 col-form-label fw-bold text-end">Mô tả</label>
+                        <div class="col-sm-8">
+                            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Nút -->
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="bi bi-save"></i> Lưu thay đổi
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Quay về
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleParent() {
+            var ct = document.getElementById("categoryTypeSelect");
+            var group = document.getElementById("parentCategoryGroup");
+            if (!ct || !group) return;
+            var val = ct.tagName === 'P' ? ct.textContent.trim() : ct.value;
+            group.style.display = (val === "skill") ? "block" : "none";
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            var ct = document.getElementById("categoryTypeSelect");
+            if (ct) {
+                ct.addEventListener("change", toggleParent);
+                toggleParent();
+            }
+        });
+    </script>
+    <style>
+        select.form-control {
+            height: calc(2.375rem + 2px) !important; /* = 38px */
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+    </style>
+
+}
