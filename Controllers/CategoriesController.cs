@@ -71,7 +71,6 @@ namespace StudentFreelance.Controllers
             ViewData["ParentCategoryID"] = GetCategorySelectList(c.CategoryID, c.CategoryType);
             return View(c);
         }
-
         [HttpPost, Authorize(Roles = "Admin,Moderator")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id,
@@ -81,19 +80,28 @@ namespace StudentFreelance.Controllers
             if (id != category.CategoryID) return NotFound();
 
             var original = await _context.Categories.IgnoreQueryFilters()
-                                     .FirstOrDefaultAsync(x => x.CategoryID == id);
+                                         .FirstOrDefaultAsync(x => x.CategoryID == id);
             if (original == null) return NotFound();
 
+            // ✅ Thêm đoạn cập nhật giá trị:
+            original.CategoryName = category.CategoryName;
+            original.Description = category.Description;
+
+            // ✅ Chỉ cho sửa CategoryType/Parent nếu là child (Skill)
             bool isParent = await _context.Categories.AnyAsync(x => x.ParentCategoryID == id);
             bool isChild = original.ParentCategoryID != null && !isParent;
 
-            // confirm flow omitted for brevity...
-            // sau confirm thì gán và SaveChanges như bạn đã có
+            if (isChild)
+            {
+                original.CategoryType = category.CategoryType;
+                original.ParentCategoryID = category.CategoryType == "skill" ? category.ParentCategoryID : null;
+            }
 
-            // … phần Update như cũ …
+            await _context.SaveChangesAsync(); // Lưu thay đổi
 
             return RedirectToAction(nameof(Index));
         }
+
 
         // GET: /Categories/Hide/5
         [Authorize(Roles = "Admin,Moderator")]
@@ -150,6 +158,28 @@ namespace StudentFreelance.Controllers
             }
             return RedirectToAction(nameof(Index));
         }
+
+
+        // GET: /Categories/Details/5
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            var category = await _context.Categories
+                .Include(c => c.ParentCategory)
+                .FirstOrDefaultAsync(c => c.CategoryID == id);
+
+            if (category == null)
+                return NotFound();
+
+            // Chặn người dùng thường xem danh mục đã bị ẩn
+            if (!category.IsActive && !(User.IsInRole("Admin") || User.IsInRole("Moderator")))
+                return NotFound();
+
+            return View(category); // sẽ render Views/Categories/Details.cshtml
+        }
+
 
         // Helper tạo select list
         private List<SelectListItem> GetCategorySelectList(int? currentId, string? type)
