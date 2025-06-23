@@ -38,7 +38,7 @@ builder.Services.AddAuthentication()
         IConfigurationSection googleAuthNSection = builder.Configuration.GetSection("Authentication:Google");
         options.ClientId = googleAuthNSection["ClientId"];
         options.ClientSecret = googleAuthNSection["ClientSecret"];
-        // N?u mu?n l?y th�m th�ng tin profile c� th? d�ng scope:
+        // N?u mu?n l?y th�ng tin profile c th? dng scope:
         // options.Scope.Add("profile");
         // options.Scope.Add("email");
     });
@@ -49,6 +49,7 @@ builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IEmailSender, St
 // Register application services
 builder.Services.AddScoped<StudentFreelance.Interfaces.IProjectService, StudentFreelance.Services.Implementations.ProjectService>();
 builder.Services.AddScoped<StudentFreelance.Interfaces.IReportService, StudentFreelance.Services.Implementations.ReportService>();
+builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IApplicationService, StudentFreelance.Services.Implementations.ApplicationService>();
 
 // 4. Add MVC support
 builder.Services.AddControllersWithViews();
