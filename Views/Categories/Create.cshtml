@@ -1,0 +1,96 @@
+﻿@model StudentFreelance.Models.Category
+
+@{
+    ViewData["Title"] = "Tạo danh mục";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.CategoryName)
+        @Html.TextBoxFor(m => m.CategoryName, new { @class = "form-control" })
+        @Html.ValidationMessageFor(m => m.CategoryName, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.CategoryType)
+        @Html.DropDownListFor(m => m.CategoryType,
+                new SelectList(new[] {
+    new { Value = "field", Text = "Field" },
+    new { Value = "skill", Text = "Skill" }
+    }, "Value", "Text", Model.CategoryType),
+                "-- chọn loại --",
+                new { @class = "form-control", id = "categoryTypeSelect" })
+        @Html.ValidationMessageFor(m => m.CategoryType, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group" id="parentCategoryGroup">
+        @Html.Label("ParentCategoryID", "Danh mục cha")
+        @Html.DropDownList("ParentCategoryID", ViewData["ParentCategoryID"] as List<SelectListItem>, "-- chọn danh mục cha --", new { @class = "form-control", id = "parentSelect" })
+        @Html.ValidationMessageFor(m => m.ParentCategoryID, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.Description)
+        @Html.TextAreaFor(m => m.Description, new { @class = "form-control" })
+        @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-danger" })
+    </div>
+
+    <button type="submit" class="btn btn-primary">Tạo mới</button>
+    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const typeSelect = document.getElementById("categoryTypeSelect");
+            const parentGroup = document.getElementById("parentCategoryGroup");
+            const parentSelect = document.getElementById("parentSelect");
+
+            function toggleParentVisibility(type) {
+                if (type === "field") {
+                    parentGroup.style.display = "none";
+                    parentSelect.value = "";
+                    parentSelect.disabled = true;
+                } else {
+                    parentGroup.style.display = "block";
+                    parentSelect.disabled = false;
+                }
+            }
+
+            function updateParentCategoryOptions(type) {
+                fetch(`/Categories/GetParentCategories?type=${type}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        parentSelect.innerHTML = "";
+                        const defaultOption = document.createElement("option");
+                        defaultOption.value = "";
+                        defaultOption.text = type === "skill" ? "-- chọn danh mục cha --" : "-- không cần chọn --";
+                        parentSelect.appendChild(defaultOption);
+
+                        if (type === "skill") {
+                            data.forEach(item => {
+                                const option = document.createElement("option");
+                                option.value = item.value;
+                                option.text = item.text;
+                                parentSelect.appendChild(option);
+                            });
+                        }
+                    });
+            }
+
+            function onTypeChanged() {
+                const selectedType = typeSelect.value;
+                toggleParentVisibility(selectedType);
+                updateParentCategoryOptions(selectedType);
+            }
+
+            typeSelect.addEventListener("change", onTypeChanged);
+            onTypeChanged(); // Gọi khi trang load lần đầu
+        });
+    </script>
+}

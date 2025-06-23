@@ -1,0 +1,42 @@
+﻿@model List<StudentFreelance.Models.Skill>
+
+<table class="table table-bordered text-center">
+    <thead>
+        <tr>
+            <th>Tên kỹ năng</th>
+            <th>Thể loại</th>
+            @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+            {
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var skill in Model)
+        {
+            string rowClass = skill.IsActive ? "" : "text-muted"; // Màu mờ cho kỹ năng ẩn
+            <tr class="@rowClass">
+                <td>@skill.SkillName</td>
+                <td>@skill.Category?.CategoryName</td>
+
+                @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+                {
+                    <td>@(skill.IsActive ? "Hoạt động" : "Không hoạt động")</td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@skill.SkillID">Sửa</a> |
+                        <a asp-action="Details" asp-route-id="@skill.SkillID">Chi tiết</a> |
+                        @if (skill.IsActive)
+                        {
+                            <a asp-action="Delete" asp-route-id="@skill.SkillID">Ẩn</a>
+                        }
+                        else
+                        {
+                            <a asp-action="Unhide" asp-route-id="@skill.SkillID">Hiện</a>
+                        }
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>

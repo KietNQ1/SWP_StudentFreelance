@@ -1,0 +1,55 @@
+﻿@model StudentFreelance.Models.Skill
+@Html.HiddenFor(model => model.SkillID)
+
+@{
+    ViewData["Title"] = "Tạo kỹ năng";
+    Layout = "_Layout";
+}
+
+<div class="card mt-4 shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">@ViewData["Title"]</h3>
+    </div>
+    <div class="card-body">
+        @* Hiển thị validation summary nếu có lỗi *@
+        @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+
+        <form asp-action="Create" asp-controller="Skills" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="form-group">
+                <label asp-for="SkillName" class="control-label"></label>
+                <input asp-for="SkillName" class="form-control" placeholder="Nhập tên kỹ năng..." />
+                <span asp-validation-for="SkillName" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="CategoryID" class="control-label">Thể loại</label>
+                <select asp-for="CategoryID"
+                        asp-items="@(ViewData["CategoryID"] as SelectList)"
+                        asp-option-label="-- Chọn thể loại --"
+                        class="form-control">
+                </select>
+                <span asp-validation-for="CategoryID" class="text-danger"></span>
+            </div>
+
+            <div class="form-group form-check">
+                <input asp-for="IsActive" class="form-check-input" />
+                <label asp-for="IsActive" class="form-check-label">Kích hoạt</label>
+            </div>
+
+            <div class="text-right">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save mr-1"></i> Lưu thay đổi
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fas fa-times mr-1"></i> Hủy
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
