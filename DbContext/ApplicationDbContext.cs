@@ -332,7 +332,6 @@ namespace StudentFreelance.DbContext
             modelBuilder.Entity<Category>().HasQueryFilter(c => c.IsActive);
             modelBuilder.Entity<Skill>().HasQueryFilter(s => s.IsActive);
             modelBuilder.Entity<StudentSkill>().HasQueryFilter(ss => ss.IsActive);
-            modelBuilder.Entity<StudentApplication>().HasQueryFilter(sa => sa.IsActive);
             modelBuilder.Entity<ProjectSkillRequired>().HasQueryFilter(ps => ps.IsActive);
             modelBuilder.Entity<ProjectAttachment>().HasQueryFilter(pa => pa.IsActive);
             modelBuilder.Entity<Transaction>().HasQueryFilter(t => t.IsActive);

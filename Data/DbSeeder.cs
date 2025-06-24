@@ -779,35 +779,41 @@ namespace StudentFreelance.Data
                 var projects = context.Projects.ToList();
                 var random = new Random();
                 
-                var applications = new List<StudentApplication>();
-                
-                // Application status options
-                string[] statuses = { "Pending", "Accepted", "Rejected", "Withdrawn" };
-                
-                // Generate 15-20 applications
-                int numApplications = random.Next(15, 21);
-                
-                for (int i = 0; i < numApplications; i++)
+                var applications = new List<StudentApplication>
                 {
-                    var student = students[random.Next(students.Count)];
-                    var project = projects[random.Next(projects.Count)];
-                    var status = statuses[random.Next(statuses.Length)];
-                    
-                    // Skip if this student has already applied to this project
-                    if (applications.Any(a => a.ProjectID == project.ProjectID && a.UserID == student.Id))
-                        continue;
-                    
-                    applications.Add(new StudentApplication
+                    new StudentApplication
                     {
-                        ProjectID = project.ProjectID,
-                        UserID = student.Id,
-                        CoverLetter = GetRandomCoverLetter(),
-                        Salary = random.Next(3, 20) * 1000000, // 3-20 million VND
-                        Status = status,
-                        DateApplied = DateTime.Now.AddDays(-random.Next(1, 30)),
-                        IsActive = true
-                    });
-                }
+                        UserID = students[0].Id,
+                        ProjectID = projects[0].ProjectID,
+                        Status = "Pending",
+                        CoverLetter = "Tôi rất quan tâm đến dự án của bạn và có kinh nghiệm trong lĩnh vực này.",
+                        Salary = 5000000,
+                        DateApplied = DateTime.Now.AddDays(-5),
+                        LastStatusUpdate = DateTime.Now.AddDays(-5)
+                    },
+                    new StudentApplication
+                    {
+                        UserID = students[1].Id,
+                        ProjectID = projects[0].ProjectID,
+                        Status = "Accepted",
+                        CoverLetter = "Tôi có nhiều kinh nghiệm với các dự án tương tự và mong muốn được hợp tác.",
+                        Salary = 5500000,
+                        DateApplied = DateTime.Now.AddDays(-4),
+                        LastStatusUpdate = DateTime.Now.AddDays(-2),
+                        BusinessNotes = "Ứng viên có kinh nghiệm tốt, phù hợp với yêu cầu dự án."
+                    },
+                    new StudentApplication
+                    {
+                        UserID = students[0].Id,
+                        ProjectID = projects[1].ProjectID,
+                        Status = "Rejected",
+                        CoverLetter = "Tôi muốn ứng tuyển vào vị trí này để phát triển kỹ năng của mình.",
+                        Salary = 4800000,
+                        DateApplied = DateTime.Now.AddDays(-3),
+                        LastStatusUpdate = DateTime.Now.AddDays(-1),
+                        BusinessNotes = "Ứng viên chưa đáp ứng đủ yêu cầu kỹ năng cho dự án."
+                    }
+                };
                 
                 context.StudentApplications.AddRange(applications);
                 context.SaveChanges();
@@ -827,6 +833,38 @@ namespace StudentFreelance.Data
                 };
                 
                 return coverLetters[new Random().Next(coverLetters.Length)];
+            }
+            
+            // Helper method for generating portfolio links
+            string GetRandomPortfolioLink()
+            {
+                string[] portfolioLinks = new[]
+                {
+                    "https://github.com/student-portfolio",
+                    "https://behance.net/student-design",
+                    "https://dribbble.com/student-ui",
+                    "https://student-portfolio.vercel.app",
+                    "https://linkedin.com/in/student-profile",
+                    "https://codepen.io/student-demos"
+                };
+                
+                return portfolioLinks[new Random().Next(portfolioLinks.Length)];
+            }
+            
+            // Helper method for generating resume links
+            string GetRandomResumeLink()
+            {
+                string[] resumeLinks = new[]
+                {
+                    "https://drive.google.com/file/d/abc123/view",
+                    "https://dropbox.com/s/cv-student.pdf",
+                    "https://onedrive.live.com/cv-student.pdf",
+                    "https://docs.google.com/document/d/123abc/edit",
+                    "https://resume.io/r/student-cv",
+                    "https://cv.student-portfolio.com/resume.pdf"
+                };
+                
+                return resumeLinks[new Random().Next(resumeLinks.Length)];
             }
 
             // 10. Seed Messages

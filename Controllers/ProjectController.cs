@@ -97,6 +97,14 @@ namespace StudentFreelance.Controllers
             if (project == null)
                 return NotFound();
 
+            // Check if there's an error message that needs to be displayed
+            if (TempData["ErrorMessage"] != null)
+            {
+                ViewBag.ErrorMessage = TempData["ErrorMessage"].ToString();
+                // Clear TempData to prevent it from persisting
+                TempData.Remove("ErrorMessage");
+            }
+
             // Hiển thị thông báo nếu dự án không hoạt động
             if (!project.IsActive)
             {
