@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using StudentFreelance.Models;
 
 namespace StudentFreelance.ViewModels
 {
@@ -22,6 +23,12 @@ namespace StudentFreelance.ViewModels
         [Range(1, 1000000000, ErrorMessage = "Mức lương đề xuất phải lớn hơn 0")]
         [Display(Name = "Mức lương đề xuất (VNĐ)")]
         public decimal Salary { get; set; }
+        
+        [Display(Name = "Đường dẫn đến portfolio")]
+        public string PortfolioLink { get; set; }
+        
+        [Display(Name = "CV đính kèm")]
+        public string ResumeAttachment { get; set; }
     }
     
     // ViewModel cho đơn ứng tuyển của sinh viên (sử dụng trong danh sách đơn ứng tuyển)
@@ -45,12 +52,13 @@ namespace StudentFreelance.ViewModels
         public List<ApplicationDetailViewModel> Applications { get; set; }
     }
     
-    // ViewModel chi tiết cho mỗi đơn ứng tuyển
+    // ViewModel cho xem chi tiết đơn ứng tuyển
     public class ApplicationDetailViewModel
     {
         public int ApplicationID { get; set; }
         public int ProjectID { get; set; }
         public string ProjectTitle { get; set; }
+        
         public int UserID { get; set; }
         public string UserName { get; set; }
         public string UserFullName { get; set; }
@@ -58,12 +66,21 @@ namespace StudentFreelance.ViewModels
         public string UserPhone { get; set; }
         public string UserAvatar { get; set; }
         public decimal? UserAverageRating { get; set; }
+        
         public string CoverLetter { get; set; }
         public decimal Salary { get; set; }
         public string Status { get; set; }
-        public DateTime DateApplied { get; set; }
         public string TimeAgo { get; set; }
         public List<SkillViewModel> StudentSkills { get; set; }
+        
+        public string? BusinessNotes { get; set; }
+        public string? ResumeAttachment { get; set; }
+        public string? PortfolioLink { get; set; }
+        
+        public DateTime DateApplied { get; set; }
+        public DateTime? LastStatusUpdate { get; set; }
+        
+        public Project Project { get; set; }
     }
     
     // ViewModel cho cập nhật trạng thái đơn ứng tuyển
@@ -75,6 +92,28 @@ namespace StudentFreelance.ViewModels
         public string Status { get; set; }
         
         public List<SelectListItem> StatusOptions { get; set; }
+        
+        [Display(Name = "Ghi chú")]
+        public string? BusinessNotes { get; set; }
+    }
+    
+    // ViewModel cho lên lịch phỏng vấn
+    public class ScheduleInterviewViewModel
+    {
+        public int ApplicationID { get; set; }
+        
+        [Display(Name = "Tên sinh viên")]
+        public string StudentName { get; set; }
+        
+        [Display(Name = "Tên dự án")]
+        public string ProjectTitle { get; set; }
+        
+        [Required(ErrorMessage = "Vui lòng chọn thời gian phỏng vấn")]
+        [Display(Name = "Thời gian phỏng vấn")]
+        public DateTime InterviewDateTime { get; set; }
+        
+        [Display(Name = "Ghi chú phỏng vấn")]
+        public string Notes { get; set; }
     }
     
     // ViewModel đơn giản cho kỹ năng

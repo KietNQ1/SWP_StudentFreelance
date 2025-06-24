@@ -39,10 +39,18 @@ namespace StudentFreelance.Controllers
             // Kiểm tra dự án có tồn tại không
             var project = await _context.Projects
                 .Include(p => p.Business)
+                .Include(p => p.Status)
                 .FirstOrDefaultAsync(p => p.ProjectID == projectId && p.IsActive);
                 
             if (project == null)
                 return NotFound();
+                
+            // Kiểm tra xem dự án có đang mở không
+            if (project.StatusID != 1) // Assuming 1 is the ID for "Open" status
+            {
+                TempData["ErrorMessage"] = "Dự án này không còn nhận đơn ứng tuyển.";
+                return RedirectToAction("Details", "Project", new { id = projectId });
+            }
 
             // Lấy thông tin người dùng hiện tại
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
@@ -74,21 +82,30 @@ namespace StudentFreelance.Controllers
         [Authorize(Roles = "Student")]
         public async Task<IActionResult> Apply(CreateApplicationViewModel model)
         {
+            // Chỉ kiểm tra các trường bắt buộc cho việc tạo đơn ứng tuyển
             if (!ModelState.IsValid)
             {
-                // Lấy lại thông tin dự án nếu model không hợp lệ
-                var project = await _context.Projects
-                    .Include(p => p.Business)
-                    .FirstOrDefaultAsync(p => p.ProjectID == model.ProjectID && p.IsActive);
+                // Xóa các lỗi không liên quan đến việc tạo đơn ứng tuyển
+                ModelState.Remove("ProjectTitle");
+                ModelState.Remove("BusinessName");
                 
-                if (project != null)
+                // Nếu vẫn còn lỗi sau khi xóa các trường hiển thị
+                if (!ModelState.IsValid)
                 {
-                    model.ProjectTitle = project.Title;
-                    model.BusinessName = project.Business?.FullName ?? project.Business?.CompanyName ?? "Không xác định";
-                    model.ProjectBudget = project.Budget;
+                    // Lấy lại thông tin dự án nếu model không hợp lệ
+                    var project = await _context.Projects
+                        .Include(p => p.Business)
+                        .FirstOrDefaultAsync(p => p.ProjectID == model.ProjectID && p.IsActive);
+                    
+                    if (project != null)
+                    {
+                        model.ProjectTitle = project.Title;
+                        model.BusinessName = project.Business?.FullName ?? project.Business?.CompanyName ?? "Không xác định";
+                        model.ProjectBudget = project.Budget;
+                    }
+                    
+                    return View(model);
                 }
-                
-                return View(model);
             }
 
             // Lấy thông tin người dùng hiện tại
@@ -105,11 +122,21 @@ namespace StudentFreelance.Controllers
                 }
                 
                 // Kiểm tra xem dự án có tồn tại không
-                var project = await _context.Projects.FindAsync(model.ProjectID);
+                var project = await _context.Projects
+                    .Include(p => p.Status)
+                    .FirstOrDefaultAsync(p => p.ProjectID == model.ProjectID);
+                    
                 if (project == null)
                 {
                     TempData["ErrorMessage"] = "Dự án không tồn tại.";
                     return RedirectToAction("Index", "Project");
+                }
+                
+                // Kiểm tra xem dự án có đang mở không
+                if (project.StatusID != 1) // Assuming 1 is the ID for "Open" status
+                {
+                    TempData["ErrorMessage"] = "Dự án này không còn nhận đơn ứng tuyển.";
+                    return RedirectToAction("Details", "Project", new { id = model.ProjectID });
                 }
                 
                 // Sử dụng service để tạo đơn ứng tuyển
@@ -121,7 +148,9 @@ namespace StudentFreelance.Controllers
                     Salary = model.Salary,
                     DateApplied = DateTime.Now,
                     Status = "Pending",
-                    IsActive = true
+                    PortfolioLink = model.PortfolioLink,
+                    ResumeAttachment = model.ResumeAttachment,
+                    LastStatusUpdate = DateTime.Now
                 };
 
                 // Gọi service để tạo đơn ứng tuyển
@@ -170,7 +199,8 @@ namespace StudentFreelance.Controllers
                     Status = a.Status,
                     Salary = a.Salary,
                     DateApplied = a.DateApplied,
-                    TimeAgo = GetTimeAgo(a.DateApplied)
+                    TimeAgo = GetTimeAgo(a.DateApplied),
+                    LastStatusUpdate = a.LastStatusUpdate
                 }).ToList()
             };
             
@@ -195,7 +225,7 @@ namespace StudentFreelance.Controllers
             
             // Kiểm tra trực tiếp trạng thái trong database để gỡ lỗi
             var rawApplications = await _context.StudentApplications
-                .Where(a => a.ProjectID == projectId && a.IsActive)
+                .Where(a => a.ProjectID == projectId)
                 .ToListAsync();
                 
             // Tạo thông báo gỡ lỗi
@@ -239,7 +269,6 @@ namespace StudentFreelance.Controllers
             var statusOptions = new List<SelectListItem>
             {
                 new SelectListItem { Value = "Pending", Text = "Đang chờ xử lý", Selected = (application.Status == "Pending") },
-                new SelectListItem { Value = "Shortlisted", Text = "Đã lọt vào vòng trong", Selected = (application.Status == "Shortlisted") },
                 new SelectListItem { Value = "Accepted", Text = "Đã được chấp nhận", Selected = (application.Status == "Accepted") },
                 new SelectListItem { Value = "Rejected", Text = "Đã từ chối", Selected = (application.Status == "Rejected") }
             };
@@ -248,7 +277,8 @@ namespace StudentFreelance.Controllers
             {
                 ApplicationID = application.ApplicationID,
                 Status = application.Status,
-                StatusOptions = statusOptions
+                StatusOptions = statusOptions,
+                BusinessNotes = application.BusinessNotes
             };
             
             // Lưu ProjectID vào ViewBag để sử dụng trong view
@@ -263,13 +293,15 @@ namespace StudentFreelance.Controllers
         [Authorize(Roles = "Business,Admin,Moderator")]
         public async Task<IActionResult> UpdateStatus(UpdateApplicationStatusViewModel model, int? projectId)
         {
+            // Xóa lỗi cho trường StatusOptions vì đây chỉ là trường hiển thị
+            ModelState.Remove("StatusOptions");
+            
             if (!ModelState.IsValid)
             {
                 // Tạo lại danh sách trạng thái nếu ModelState không hợp lệ
                 model.StatusOptions = new List<SelectListItem>
                 {
                     new SelectListItem { Value = "Pending", Text = "Đang chờ xử lý", Selected = (model.Status == "Pending") },
-                    new SelectListItem { Value = "Shortlisted", Text = "Đã lọt vào vòng trong", Selected = (model.Status == "Shortlisted") },
                     new SelectListItem { Value = "Accepted", Text = "Đã được chấp nhận", Selected = (model.Status == "Accepted") },
                     new SelectListItem { Value = "Rejected", Text = "Đã từ chối", Selected = (model.Status == "Rejected") }
                 };
@@ -286,7 +318,7 @@ namespace StudentFreelance.Controllers
             // Lấy ứng dụng từ cơ sở dữ liệu
             var application = await _context.StudentApplications
                 .Include(a => a.Project)
-                .FirstOrDefaultAsync(a => a.ApplicationID == model.ApplicationID && a.IsActive);
+                .FirstOrDefaultAsync(a => a.ApplicationID == model.ApplicationID);
                 
             if (application == null)
                 return NotFound();
@@ -311,9 +343,15 @@ namespace StudentFreelance.Controllers
                 }
                 else
                 {
-                    TempData["SuccessMessage"] = "Trạng thái đơn ứng tuyển đã được cập nhật thành công.";
-                    // Lưu debug info để xác nhận
-                    TempData["DebugInfo"] = $"Đã cập nhật ứng dụng ID: {model.ApplicationID}, Trạng thái mới: {model.Status}";
+                    // Cập nhật thêm các thông tin khác
+                    if (!string.IsNullOrEmpty(model.BusinessNotes))
+                    {
+                        await _applicationService.UpdateBusinessFeedbackAsync(
+                            model.ApplicationID, 
+                            model.BusinessNotes);
+                    }
+                    
+                    TempData["SuccessMessage"] = "Thông tin đơn ứng tuyển đã được cập nhật thành công.";
                 }
             }
             catch (Exception ex) {
@@ -321,6 +359,82 @@ namespace StudentFreelance.Controllers
             }
             
             return RedirectToAction("ProjectApplications", new { projectId = projectIdValue });
+        }
+        
+        // GET: /Application/ScheduleInterview/{id}
+        [Authorize(Roles = "Business,Admin,Moderator")]
+        public async Task<IActionResult> ScheduleInterview(int id)
+        {
+            var application = await _applicationService.GetApplicationByIdAsync(id);
+            if (application == null)
+                return NotFound();
+            
+            // Kiểm tra người dùng có phải là chủ dự án hoặc admin/moderator
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            bool isAdmin = User.IsInRole("Admin") || User.IsInRole("Moderator");
+            
+            if (application.Project.BusinessID != userId && !isAdmin)
+                return Forbid();
+            
+            var model = new ScheduleInterviewViewModel
+            {
+                ApplicationID = application.ApplicationID,
+                StudentName = application.User.FullName,
+                ProjectTitle = application.Project.Title,
+                InterviewDateTime = DateTime.Now.AddDays(1),
+                Notes = ""
+            };
+            
+            // Lưu ProjectID vào ViewBag để sử dụng trong view
+            ViewBag.ProjectID = application.ProjectID;
+            
+            return View(model);
+        }
+        
+        // POST: /Application/ScheduleInterview
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Business,Admin,Moderator")]
+        public async Task<IActionResult> ScheduleInterview(ScheduleInterviewViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+            
+            try {
+                var result = await _applicationService.ScheduleInterviewAsync(model.ApplicationID, model.InterviewDateTime);
+                
+                if (result == null)
+                {
+                    TempData["ErrorMessage"] = "Không thể lên lịch phỏng vấn.";
+                    return View(model);
+                }
+                
+                TempData["SuccessMessage"] = "Đã lên lịch phỏng vấn thành công.";
+                return RedirectToAction("ProjectApplications", new { projectId = result.ProjectID });
+            }
+            catch (Exception ex) {
+                TempData["ErrorMessage"] = $"Lỗi khi lên lịch phỏng vấn: {ex.Message}";
+                return View(model);
+            }
+        }
+        
+        // GET: /Application/ViewApplication/{id}
+        [Authorize(Roles = "Business")]
+        public async Task<IActionResult> ViewApplication(int id)
+        {
+            // Kiểm tra xem đơn ứng tuyển có tồn tại không
+            var application = await _applicationService.GetApplicationDetailAsync(id);
+            if (application == null)
+                return NotFound();
+                
+            // Kiểm tra xem người dùng hiện tại có phải là chủ dự án không
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            if (application.Project.BusinessID != userId)
+                return Forbid();
+                
+            return View(application);
         }
         
         // Helper method to format time ago

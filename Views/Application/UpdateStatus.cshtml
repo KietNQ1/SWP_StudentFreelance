@@ -16,10 +16,16 @@
                         <input type="hidden" asp-for="ApplicationID" />
                         <input type="hidden" name="projectId" value="@ViewBag.ProjectID" />
                         
-                        <div class="mb-4">
+                        <div class="mb-3">
                             <label asp-for="Status" class="form-label">Trạng thái</label>
                             <select asp-for="Status" class="form-select" asp-items="Model.StatusOptions"></select>
                             <span asp-validation-for="Status" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="BusinessNotes" class="form-label">Ghi chú</label>
+                            <textarea asp-for="BusinessNotes" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="BusinessNotes" class="text-danger"></span>
                         </div>
                         
                         <div class="d-flex justify-content-between mt-4">

@@ -38,14 +38,6 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
-    
-    @if (TempData["DebugInfo"] != null)
-    {
-        <div class="alert alert-info alert-dismissible fade show" role="alert">
-            <strong>Debug:</strong> @TempData["DebugInfo"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
 
     @if (Model.Applications.Any())
     {
@@ -165,6 +157,11 @@
                                         }
                                         
                                         <div class="action-buttons mt-4">
+                                            <a asp-action="ViewApplication" asp-route-id="@application.ApplicationID" 
+                                               class="btn btn-info w-100 mb-2">
+                                                <i class="bi bi-eye"></i> Xem chi tiết
+                                            </a>
+                                            
                                             <a asp-action="UpdateStatus" asp-route-id="@application.ApplicationID" 
                                                class="btn btn-primary w-100 mb-2">
                                                 <i class="bi bi-pencil-square"></i> Cập nhật trạng thái

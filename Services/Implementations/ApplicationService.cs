@@ -24,7 +24,6 @@ namespace StudentFreelance.Services.Implementations
             return await _context.StudentApplications
                 .Include(a => a.User)
                 .Include(a => a.Project)
-                .Where(a => a.IsActive)
                 .OrderByDescending(a => a.DateApplied)
                 .ToListAsync();
         }
@@ -34,7 +33,7 @@ namespace StudentFreelance.Services.Implementations
             return await _context.StudentApplications
                 .Include(a => a.User)
                 .Include(a => a.Project)
-                .FirstOrDefaultAsync(a => a.ApplicationID == id && a.IsActive);
+                .FirstOrDefaultAsync(a => a.ApplicationID == id);
         }
 
         public async Task<List<ApplicationDetailViewModel>> GetApplicationsByProjectIdAsync(int projectId)
@@ -42,7 +41,7 @@ namespace StudentFreelance.Services.Implementations
             var applications = await _context.StudentApplications
                 .Include(a => a.User)
                 .Include(a => a.Project)
-                .Where(a => a.ProjectID == projectId && a.IsActive)
+                .Where(a => a.ProjectID == projectId)
                 .OrderByDescending(a => a.DateApplied)
                 .AsNoTracking()
                 .ToListAsync();
@@ -99,7 +98,11 @@ namespace StudentFreelance.Services.Implementations
                     Status = app.Status,
                     DateApplied = app.DateApplied,
                     TimeAgo = timeAgo,
-                    StudentSkills = studentSkills
+                    StudentSkills = studentSkills,
+                    BusinessNotes = app.BusinessNotes,
+                    ResumeAttachment = app.ResumeAttachment,
+                    PortfolioLink = app.PortfolioLink,
+                    LastStatusUpdate = app.LastStatusUpdate
                 };
                 
                 result.Add(viewModel);
@@ -114,7 +117,7 @@ namespace StudentFreelance.Services.Implementations
                 .Include(a => a.User)
                 .Include(a => a.Project)
                     .ThenInclude(p => p.Business)
-                .Where(a => a.UserID == studentId && a.IsActive)
+                .Where(a => a.UserID == studentId)
                 .OrderByDescending(a => a.DateApplied)
                 .ToListAsync();
         }
@@ -126,7 +129,7 @@ namespace StudentFreelance.Services.Implementations
                 // Đảm bảo các giá trị mặc định được thiết lập
                 application.DateApplied = DateTime.Now;
                 application.Status = "Pending";
-                application.IsActive = true;
+                application.LastStatusUpdate = DateTime.Now;
 
                 // Debug info
                 Console.WriteLine($"Thêm đơn ứng tuyển: ProjectID={application.ProjectID}, UserID={application.UserID}");
@@ -185,7 +188,7 @@ namespace StudentFreelance.Services.Implementations
                     Salary = salary,
                     DateApplied = DateTime.Now,
                     Status = "Pending",
-                    IsActive = true
+                    LastStatusUpdate = DateTime.Now
                 };
                 
                 // Debug info
@@ -227,6 +230,7 @@ namespace StudentFreelance.Services.Implementations
             {
                 // Cập nhật trạng thái
                 application.Status = status;
+                application.LastStatusUpdate = DateTime.Now;
                 
                 // Thực hiện lưu trực tiếp thay đổi vào database
                 _context.StudentApplications.Update(application);
@@ -253,45 +257,184 @@ namespace StudentFreelance.Services.Implementations
 
         public async Task<bool> DeleteApplicationAsync(int id)
         {
-            var application = await _context.StudentApplications.FindAsync(id);
-            
+            try
+            {
+                var application = await _context.StudentApplications.FindAsync(id);
+                if (application == null)
+                    return false;
+
+                _context.StudentApplications.Remove(application);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Lỗi khi xóa đơn ứng tuyển: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<bool> HasStudentAppliedAsync(int projectId, int studentId)
+        {
+            return await _context.StudentApplications
+                .AnyAsync(a => a.ProjectID == projectId && a.UserID == studentId);
+        }
+        
+        /// <summary>
+        /// Cập nhật thông tin phỏng vấn cho đơn ứng tuyển
+        /// </summary>
+        public async Task<StudentApplication> ScheduleInterviewAsync(int applicationId, DateTime interviewTime)
+        {
+            var application = await _context.StudentApplications
+                .FirstOrDefaultAsync(a => a.ApplicationID == applicationId);
+
+            if (application == null)
+                return null;
+
+            try
+            {
+                application.InterviewSchedule = interviewTime;
+                application.Status = "Interview";
+                application.LastStatusUpdate = DateTime.Now;
+                
+                _context.StudentApplications.Update(application);
+                await _context.SaveChangesAsync();
+                
+                return await _context.StudentApplications
+                    .AsNoTracking()
+                    .Include(a => a.User)
+                    .Include(a => a.Project)
+                    .FirstOrDefaultAsync(a => a.ApplicationID == applicationId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Lỗi khi lên lịch phỏng vấn: {ex.Message}");
+                return null;
+            }
+        }
+        
+        /// <summary>
+        /// Cập nhật đánh giá và ghi chú của doanh nghiệp
+        /// </summary>
+        public async Task<bool> UpdateBusinessFeedbackAsync(int applicationId, string notes)
+        {
+            var application = await _context.StudentApplications.FindAsync(applicationId);
             if (application == null)
                 return false;
-
-            // Soft delete
-            application.IsActive = false;
+                
+            application.BusinessNotes = notes;
+            application.LastStatusUpdate = DateTime.Now;
             
             await _context.SaveChangesAsync();
             return true;
         }
         
-        public async Task<bool> HasStudentAppliedAsync(int projectId, int studentId)
+        /// <summary>
+        /// Cập nhật kết quả phỏng vấn
+        /// </summary>
+        public async Task<StudentApplication> UpdateInterviewResultAsync(int applicationId, string result)
         {
-            return await _context.StudentApplications
-                .AnyAsync(a => a.ProjectID == projectId && a.UserID == studentId && a.IsActive);
+            var application = await _context.StudentApplications
+                .FirstOrDefaultAsync(a => a.ApplicationID == applicationId);
+
+            if (application == null)
+                return null;
+
+            try
+            {
+                application.InterviewResult = result;
+                application.LastStatusUpdate = DateTime.Now;
+                
+                _context.StudentApplications.Update(application);
+                await _context.SaveChangesAsync();
+                
+                return await _context.StudentApplications
+                    .AsNoTracking()
+                    .Include(a => a.User)
+                    .Include(a => a.Project)
+                    .FirstOrDefaultAsync(a => a.ApplicationID == applicationId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Lỗi khi cập nhật kết quả phỏng vấn: {ex.Message}");
+                return null;
+            }
         }
-        
-        // Helper method để hiển thị thời gian đã trôi qua
+
         private string GetTimeAgo(DateTime dateTime)
         {
-            TimeSpan timeSince = DateTime.Now.Subtract(dateTime);
+            var span = DateTime.Now - dateTime;
             
-            if (timeSince.TotalDays > 30)
-                return $"{(int)Math.Floor(timeSince.TotalDays / 30)} tháng trước";
+            if (span.TotalDays > 30)
+                return $"{Math.Floor(span.TotalDays / 30)} tháng trước";
+            if (span.TotalDays > 1)
+                return $"{Math.Floor(span.TotalDays)} ngày trước";
+            if (span.TotalHours > 1)
+                return $"{Math.Floor(span.TotalHours)} giờ trước";
+            if (span.TotalMinutes > 1)
+                return $"{Math.Floor(span.TotalMinutes)} phút trước";
             
-            if (timeSince.TotalDays > 7)
-                return $"{(int)Math.Floor(timeSince.TotalDays / 7)} tuần trước";
+            return "Vừa xong";
+        }
+
+        // Lấy chi tiết đơn ứng tuyển
+        public async Task<ApplicationDetailViewModel> GetApplicationDetailAsync(int applicationId)
+        {
+            var application = await _context.StudentApplications
+                .Include(a => a.User)
+                .Include(a => a.Project)
+                    .ThenInclude(p => p.Business)
+                .FirstOrDefaultAsync(a => a.ApplicationID == applicationId);
+                
+            if (application == null)
+                return null;
+                
+            // Lấy danh sách kỹ năng của sinh viên
+            var studentSkills = await _context.StudentSkills
+                .Include(ss => ss.Skill)
+                .Include(ss => ss.ProficiencyLevel)
+                .Where(ss => ss.UserID == application.UserID && ss.IsActive)
+                .ToListAsync();
+                
+            var skillViewModels = studentSkills.Select(ss => new SkillViewModel
+            {
+                SkillID = ss.SkillID,
+                SkillName = ss.Skill.SkillName,
+                ProficiencyLevelName = ss.ProficiencyLevel.LevelName
+            }).ToList();
             
-            if (timeSince.TotalDays >= 1)
-                return $"{(int)Math.Floor(timeSince.TotalDays)} ngày trước";
+            // Tính thời gian đã trôi qua từ khi ứng tuyển
+            var timeAgo = GetTimeAgo(application.DateApplied);
             
-            if (timeSince.TotalHours >= 1)
-                return $"{(int)Math.Floor(timeSince.TotalHours)} giờ trước";
-            
-            if (timeSince.TotalMinutes >= 1)
-                return $"{(int)Math.Floor(timeSince.TotalMinutes)} phút trước";
-            
-            return "vừa xong";
+            return new ApplicationDetailViewModel
+            {
+                ApplicationID = application.ApplicationID,
+                ProjectID = application.ProjectID,
+                ProjectTitle = application.Project.Title,
+                
+                UserID = application.UserID,
+                UserName = application.User.UserName,
+                UserFullName = application.User.FullName,
+                UserEmail = application.User.Email,
+                UserPhone = application.User.PhoneNumber,
+                UserAvatar = application.User.Avatar ?? "/img/default-avatar.png",
+                UserAverageRating = application.User.AverageRating,
+                
+                CoverLetter = application.CoverLetter,
+                Salary = application.Salary,
+                Status = application.Status,
+                TimeAgo = timeAgo,
+                StudentSkills = skillViewModels,
+                
+                BusinessNotes = application.BusinessNotes,
+                ResumeAttachment = application.ResumeAttachment,
+                PortfolioLink = application.PortfolioLink,
+                
+                DateApplied = application.DateApplied,
+                LastStatusUpdate = application.LastStatusUpdate,
+                
+                Project = application.Project
+            };
         }
     }
 } 

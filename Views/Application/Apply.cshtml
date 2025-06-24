@@ -46,13 +46,31 @@
                             </div>
                         </div>
                         
-                        <div class="mb-4">
+                        <div class="mb-3">
                             <label asp-for="CoverLetter" class="form-label">Thư ứng tuyển</label>
                             <textarea asp-for="CoverLetter" class="form-control" rows="8" 
                                       placeholder="Hãy giới thiệu bản thân và nêu rõ lý do bạn là người phù hợp với dự án này..."></textarea>
                             <span asp-validation-for="CoverLetter" class="text-danger"></span>
                             <div class="form-text">
                                 <i class="bi bi-info-circle"></i> Thư ứng tuyển ít nhất 50 ký tự. Hãy thể hiện kỹ năng và kinh nghiệm của bạn.
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="PortfolioLink" class="form-label">Đường dẫn đến portfolio của bạn (không bắt buộc)</label>
+                            <input asp-for="PortfolioLink" class="form-control" placeholder="https://..." />
+                            <span asp-validation-for="PortfolioLink" class="text-danger"></span>
+                            <div class="form-text">
+                                <i class="bi bi-link"></i> Nhập đường dẫn đến portfolio, GitHub, Behance hoặc trang web cá nhân của bạn.
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label asp-for="ResumeAttachment" class="form-label">Đường dẫn đến CV của bạn (không bắt buộc)</label>
+                            <input asp-for="ResumeAttachment" class="form-control" placeholder="https://drive.google.com/..." />
+                            <span asp-validation-for="ResumeAttachment" class="text-danger"></span>
+                            <div class="form-text">
+                                <i class="bi bi-file-earmark-pdf"></i> Nhập đường dẫn đến CV của bạn (Google Drive, Dropbox, OneDrive...).
                             </div>
                         </div>
                         
