@@ -34,6 +34,7 @@ namespace StudentFreelance.DbContext
         public DbSet<Report> Reports { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<UserNotification> UserNotifications { get; set; }
         public DbSet<UserAccountHistory> UserAccountHistories { get; set; }
 
         // Enum DbSets
@@ -253,10 +254,28 @@ namespace StudentFreelance.DbContext
 
             // Notification
             modelBuilder.Entity<Notification>()
-                .HasOne(n => n.User)
-                .WithMany()   // no User.Notifications collection
-                .HasForeignKey(n => n.UserID)
+                .HasOne(n => n.Sender)
+                .WithMany(u => u.SentNotifications)
+                .HasForeignKey(n => n.SenderID)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // UserNotification
+            modelBuilder.Entity<UserNotification>()
+                .HasOne(un => un.User)
+                .WithMany(u => u.UserNotifications)
+                .HasForeignKey(un => un.UserID)
+                .OnDelete(DeleteBehavior.Restrict);
+                
+            modelBuilder.Entity<UserNotification>()
+                .HasOne(un => un.Notification)
+                .WithMany(n => n.UserNotifications)
+                .HasForeignKey(un => un.NotificationID)
+                .OnDelete(DeleteBehavior.Restrict);
+                
+            // Create a unique index for UserID and NotificationID combination
+            modelBuilder.Entity<UserNotification>()
+                .HasIndex(un => new { un.UserID, un.NotificationID })
+                .IsUnique();
 
             // UserAccountHistory
             modelBuilder.Entity<UserAccountHistory>()

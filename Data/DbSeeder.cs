@@ -1094,33 +1094,56 @@ namespace StudentFreelance.Data
                 var transactionType = context.NotificationTypes.First(t => t.TypeName == "Giao dịch");
                 
                 var notifications = new List<Notification>();
+                var userNotifications = new List<UserNotification>();
                 
                 // Generate system notifications for all users
                 foreach (var student in students)
                 {
-                    notifications.Add(new Notification
+                    var notification = new Notification
                     {
-                        UserID = student.Id,
                         Title = "Chào mừng bạn đến với FreelanceStudent",
                         Content = "Cảm ơn bạn đã tham gia cộng đồng FreelanceStudent. Hãy cập nhật hồ sơ để bắt đầu nhận dự án.",
                         TypeID = systemType.TypeID,
                         NotificationDate = student.CreatedAt.AddMinutes(5),
-                        IsRead = true,
                         IsActive = true
+                    };
+                    
+                    notifications.Add(notification);
+                    
+                    // After adding to the list, we'll need to have an ID for relationships
+                    context.Notifications.Add(notification);
+                    context.SaveChanges();
+                    
+                    userNotifications.Add(new UserNotification
+                    {
+                        UserID = student.Id,
+                        NotificationID = notification.NotificationID,
+                        IsRead = true
                     });
                 }
                 
                 foreach (var business in businesses)
                 {
-                    notifications.Add(new Notification
+                    var notification = new Notification
                     {
-                        UserID = business.Id,
                         Title = "Chào mừng đến với FreelanceStudent",
                         Content = "Cảm ơn doanh nghiệp đã tham gia cộng đồng FreelanceStudent. Hãy đăng dự án để kết nối với sinh viên tài năng.",
                         TypeID = systemType.TypeID,
                         NotificationDate = business.CreatedAt.AddMinutes(5),
-                        IsRead = true,
                         IsActive = true
+                    };
+                    
+                    notifications.Add(notification);
+                    
+                    // After adding to the list, we'll need to have an ID for relationships
+                    context.Notifications.Add(notification);
+                    context.SaveChanges();
+                    
+                    userNotifications.Add(new UserNotification
+                    {
+                        UserID = business.Id,
+                        NotificationID = notification.NotificationID,
+                        IsRead = true
                     });
                 }
                 
@@ -1128,30 +1151,52 @@ namespace StudentFreelance.Data
                 foreach (var project in projects.Take(5))
                 {
                     // For businesses
-                    notifications.Add(new Notification
+                    var businessNotification = new Notification
                     {
-                        UserID = project.BusinessID,
                         Title = "Có ứng viên mới cho dự án",
                         Content = "Một sinh viên vừa ứng tuyển vào dự án '" + project.Title + "' của bạn.",
                         TypeID = projectType.TypeID,
                         RelatedID = project.ProjectID,
                         NotificationDate = DateTime.Now.AddDays(-random.Next(1, 10)),
-                        IsRead = random.Next(0, 2) == 1,
                         IsActive = true
+                    };
+                    
+                    notifications.Add(businessNotification);
+                    
+                    // After adding to the list, we'll need to have an ID for relationships
+                    context.Notifications.Add(businessNotification);
+                    context.SaveChanges();
+                    
+                    userNotifications.Add(new UserNotification
+                    {
+                        UserID = project.BusinessID,
+                        NotificationID = businessNotification.NotificationID,
+                        IsRead = random.Next(0, 2) == 1
                     });
                     
                     // For students
                     var student = students[random.Next(students.Count)];
-                    notifications.Add(new Notification
+                    var studentNotification = new Notification
                     {
-                        UserID = student.Id,
                         Title = "Cập nhật trạng thái ứng tuyển",
                         Content = "Đơn ứng tuyển của bạn cho dự án '" + project.Title + "' đã được chấp nhận.",
                         TypeID = projectType.TypeID,
                         RelatedID = project.ProjectID,
                         NotificationDate = DateTime.Now.AddDays(-random.Next(1, 5)),
-                        IsRead = random.Next(0, 2) == 1,
                         IsActive = true
+                    };
+                    
+                    notifications.Add(studentNotification);
+                    
+                    // After adding to the list, we'll need to have an ID for relationships
+                    context.Notifications.Add(studentNotification);
+                    context.SaveChanges();
+                    
+                    userNotifications.Add(new UserNotification
+                    {
+                        UserID = student.Id,
+                        NotificationID = studentNotification.NotificationID,
+                        IsRead = random.Next(0, 2) == 1
                     });
                 }
                 
@@ -1165,31 +1210,55 @@ namespace StudentFreelance.Data
                     if (random.Next(0, 2) == 0)
                     {
                         // Student receives message
-                        notifications.Add(new Notification
+                        var messageNotification = new Notification
                         {
-                            UserID = student.Id,
                             Title = "Tin nhắn mới",
                             Content = "Bạn nhận được tin nhắn mới từ '" + business.FullName + "' về dự án '" + project.Title + "'.",
                             TypeID = messageType.TypeID,
+                            SenderID = business.Id,
                             RelatedID = project.ProjectID,
                             NotificationDate = DateTime.Now.AddDays(-random.Next(0, 14)),
-                            IsRead = random.Next(0, 2) == 1,
                             IsActive = true
+                        };
+                        
+                        notifications.Add(messageNotification);
+                        
+                        // After adding to the list, we'll need to have an ID for relationships
+                        context.Notifications.Add(messageNotification);
+                        context.SaveChanges();
+                        
+                        userNotifications.Add(new UserNotification
+                        {
+                            UserID = student.Id,
+                            NotificationID = messageNotification.NotificationID,
+                            IsRead = random.Next(0, 2) == 1
                         });
                     }
                     else
                     {
                         // Business receives message
-                        notifications.Add(new Notification
+                        var messageNotification = new Notification
                         {
-                            UserID = business.Id,
                             Title = "Tin nhắn mới",
                             Content = "Bạn nhận được tin nhắn mới từ '" + student.FullName + "' về dự án '" + project.Title + "'.",
                             TypeID = messageType.TypeID,
+                            SenderID = student.Id,
                             RelatedID = project.ProjectID,
                             NotificationDate = DateTime.Now.AddDays(-random.Next(0, 14)),
-                            IsRead = random.Next(0, 2) == 1,
                             IsActive = true
+                        };
+                        
+                        notifications.Add(messageNotification);
+                        
+                        // After adding to the list, we'll need to have an ID for relationships
+                        context.Notifications.Add(messageNotification);
+                        context.SaveChanges();
+                        
+                        userNotifications.Add(new UserNotification
+                        {
+                            UserID = business.Id,
+                            NotificationID = messageNotification.NotificationID,
+                            IsRead = random.Next(0, 2) == 1
                         });
                     }
                 }
@@ -1197,33 +1266,82 @@ namespace StudentFreelance.Data
                 // Generate transaction notifications
                 foreach (var business in businesses.Take(3))
                 {
-                    notifications.Add(new Notification
+                    var transactionNotification = new Notification
                     {
-                        UserID = business.Id,
                         Title = "Giao dịch thành công",
                         Content = "Bạn đã nạp " + (random.Next(10, 50) * 1000000).ToString("N0") + " VND vào tài khoản thành công.",
                         TypeID = transactionType.TypeID,
                         NotificationDate = DateTime.Now.AddDays(-random.Next(1, 30)),
-                        IsRead = random.Next(0, 2) == 1,
                         IsActive = true
+                    };
+                    
+                    notifications.Add(transactionNotification);
+                    
+                    // After adding to the list, we'll need to have an ID for relationships
+                    context.Notifications.Add(transactionNotification);
+                    context.SaveChanges();
+                    
+                    userNotifications.Add(new UserNotification
+                    {
+                        UserID = business.Id,
+                        NotificationID = transactionNotification.NotificationID,
+                        IsRead = random.Next(0, 2) == 1
                     });
                 }
                 
                 foreach (var student in students.Take(2))
                 {
-                    notifications.Add(new Notification
+                    var transactionNotification = new Notification
                     {
-                        UserID = student.Id,
                         Title = "Đã nhận thanh toán",
                         Content = "Bạn đã nhận được " + (random.Next(5, 30) * 1000000).ToString("N0") + " VND từ một dự án đã hoàn thành.",
                         TypeID = transactionType.TypeID,
                         NotificationDate = DateTime.Now.AddDays(-random.Next(1, 15)),
-                        IsRead = random.Next(0, 2) == 1,
                         IsActive = true
+                    };
+                    
+                    notifications.Add(transactionNotification);
+                    
+                    // After adding to the list, we'll need to have an ID for relationships
+                    context.Notifications.Add(transactionNotification);
+                    context.SaveChanges();
+                    
+                    userNotifications.Add(new UserNotification
+                    {
+                        UserID = student.Id,
+                        NotificationID = transactionNotification.NotificationID,
+                        IsRead = random.Next(0, 2) == 1
                     });
                 }
                 
-                context.Notifications.AddRange(notifications);
+                // Add a broadcast notification
+                var broadcastNotification = new Notification
+                {
+                    Title = "Nâng cấp hệ thống",
+                    Content = "Hệ thống sẽ bảo trì vào ngày 15/08/2025 từ 0h-2h. Mong quý khách thông cảm.",
+                    TypeID = systemType.TypeID,
+                    NotificationDate = DateTime.Now.AddDays(-3),
+                    IsBroadcast = true,
+                    IsActive = true
+                };
+                
+                notifications.Add(broadcastNotification);
+                context.Notifications.Add(broadcastNotification);
+                context.SaveChanges();
+                
+                // Add UserNotifications with Read status for some users
+                foreach (var user in students.Take(3).Concat(businesses.Take(2)))
+                {
+                    userNotifications.Add(new UserNotification
+                    {
+                        UserID = user.Id,
+                        NotificationID = broadcastNotification.NotificationID,
+                        IsRead = true,
+                        ReadDate = DateTime.Now.AddDays(-2)
+                    });
+                }
+                
+                context.UserNotifications.AddRange(userNotifications);
                 context.SaveChanges();
             }
 

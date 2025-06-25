@@ -470,21 +470,21 @@ namespace StudentFreelance.Migrations
                 {
                     NotificationID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserID = table.Column<int>(type: "int", nullable: false),
+                    SenderID = table.Column<int>(type: "int", nullable: true),
                     Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TypeID = table.Column<int>(type: "int", nullable: false),
                     RelatedID = table.Column<int>(type: "int", nullable: true),
                     NotificationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsRead = table.Column<bool>(type: "bit", nullable: false),
+                    IsBroadcast = table.Column<bool>(type: "bit", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Notifications", x => x.NotificationID);
                     table.ForeignKey(
-                        name: "FK_Notifications_AspNetUsers_UserID",
-                        column: x => x.UserID,
+                        name: "FK_Notifications_AspNetUsers_SenderID",
+                        column: x => x.SenderID,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -612,6 +612,34 @@ namespace StudentFreelance.Migrations
                         column: x => x.UserID,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserNotifications",
+                columns: table => new
+                {
+                    UserNotificationID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserID = table.Column<int>(type: "int", nullable: false),
+                    NotificationID = table.Column<int>(type: "int", nullable: false),
+                    IsRead = table.Column<bool>(type: "bit", nullable: false),
+                    ReadDate = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserNotifications", x => x.UserNotificationID);
+                    table.ForeignKey(
+                        name: "FK_UserNotifications_AspNetUsers_UserID",
+                        column: x => x.UserID,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_UserNotifications_Notifications_NotificationID",
+                        column: x => x.NotificationID,
+                        principalTable: "Notifications",
+                        principalColumn: "NotificationID",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -985,14 +1013,14 @@ namespace StudentFreelance.Migrations
                 column: "SenderID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Notifications_SenderID",
+                table: "Notifications",
+                column: "SenderID");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Notifications_TypeID",
                 table: "Notifications",
                 column: "TypeID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Notifications_UserID",
-                table: "Notifications",
-                column: "UserID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProjectAttachments_ProjectID",
@@ -1144,6 +1172,17 @@ namespace StudentFreelance.Migrations
                 column: "UserID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_UserNotifications_NotificationID",
+                table: "UserNotifications",
+                column: "NotificationID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserNotifications_UserID_NotificationID",
+                table: "UserNotifications",
+                columns: new[] { "UserID", "NotificationID" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Wards_DistrictID",
                 table: "Wards",
                 column: "DistrictID");
@@ -1171,9 +1210,6 @@ namespace StudentFreelance.Migrations
                 name: "Messages");
 
             migrationBuilder.DropTable(
-                name: "Notifications");
-
-            migrationBuilder.DropTable(
                 name: "ProjectAttachments");
 
             migrationBuilder.DropTable(
@@ -1198,10 +1234,10 @@ namespace StudentFreelance.Migrations
                 name: "UserAccountHistories");
 
             migrationBuilder.DropTable(
-                name: "AspNetRoles");
+                name: "UserNotifications");
 
             migrationBuilder.DropTable(
-                name: "NotificationTypes");
+                name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "ImportanceLevels");
@@ -1228,7 +1264,7 @@ namespace StudentFreelance.Migrations
                 name: "TransactionTypes");
 
             migrationBuilder.DropTable(
-                name: "AspNetUsers");
+                name: "Notifications");
 
             migrationBuilder.DropTable(
                 name: "Categories");
@@ -1238,6 +1274,12 @@ namespace StudentFreelance.Migrations
 
             migrationBuilder.DropTable(
                 name: "ProjectTypes");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "NotificationTypes");
 
             migrationBuilder.DropTable(
                 name: "AccountStatuses");
