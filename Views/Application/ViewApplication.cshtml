@@ -1,0 +1,198 @@
+@model StudentFreelance.ViewModels.ApplicationDetailViewModel
+
+@{
+    ViewData["Title"] = "Chi tiết đơn ứng tuyển";
+}
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Index">Dự án</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Details" asp-route-id="@Model.ProjectID">Chi tiết dự án</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Application" asp-action="ProjectApplications" asp-route-projectId="@Model.ProjectID">Danh sách ứng viên</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Chi tiết đơn ứng tuyển</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Chi tiết đơn ứng tuyển</h2>
+        <a asp-controller="Application" asp-action="ProjectApplications" asp-route-projectId="@Model.ProjectID" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Quay lại danh sách ứng viên
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Thông tin ứng viên</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="@Model.UserAvatar" alt="Avatar" class="rounded-circle me-3" style="width: 64px; height: 64px;" />
+                        <div>
+                            <h4 class="mb-1">@Model.UserFullName</h4>
+                            <div class="text-muted">@Model.UserEmail</div>
+                            @if (!string.IsNullOrEmpty(Model.UserPhone))
+                            {
+                                <div class="text-muted">@Model.UserPhone</div>
+                            }
+                        </div>
+                    </div>
+
+                    @if (Model.UserAverageRating.HasValue)
+                    {
+                        <div class="mb-3">
+                            <h6 class="fw-bold">Đánh giá trung bình:</h6>
+                            <div class="rating">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    if (i <= Math.Round(Model.UserAverageRating.Value))
+                                    {
+                                        <i class="bi bi-star-fill text-warning"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-star text-warning"></i>
+                                    }
+                                }
+                                <span class="ms-2">(@Model.UserAverageRating.Value.ToString("0.0"))</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Thư ứng tuyển</h5>
+                </div>
+                <div class="card-body">
+                    <div class="cover-letter p-3 bg-light rounded">
+                        @Model.CoverLetter
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.StudentSkills != null && Model.StudentSkills.Any())
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Kỹ năng</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="skills">
+                            @foreach (var skill in Model.StudentSkills)
+                            {
+                                <span class="badge bg-secondary me-1 mb-1">
+                                    @skill.SkillName (@skill.ProficiencyLevelName)
+                                </span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.PortfolioLink) || !string.IsNullOrEmpty(Model.ResumeAttachment))
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Tài liệu đính kèm</h5>
+                    </div>
+                    <div class="card-body">
+                        @if (!string.IsNullOrEmpty(Model.PortfolioLink))
+                        {
+                            <div class="mb-3">
+                                <h6 class="fw-bold">Portfolio:</h6>
+                                <a href="@Model.PortfolioLink" target="_blank" class="btn btn-outline-primary">
+                                    <i class="bi bi-link"></i> Xem portfolio
+                                </a>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.ResumeAttachment))
+                        {
+                            <div>
+                                <h6 class="fw-bold">CV đính kèm:</h6>
+                                <a href="@Model.ResumeAttachment" target="_blank" class="btn btn-outline-primary">
+                                    <i class="bi bi-file-earmark-pdf"></i> Xem CV
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Thông tin đơn ứng tuyển</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="fw-bold">Trạng thái:</h6>
+                        @{
+                            string badgeClass = "bg-warning";
+                            string statusText = "Đang chờ xử lý";
+                            
+                            if (Model.Status == "Accepted")
+                            {
+                                badgeClass = "bg-success";
+                                statusText = "Đã chấp nhận";
+                            }
+                            else if (Model.Status == "Rejected")
+                            {
+                                badgeClass = "bg-danger";
+                                statusText = "Đã từ chối";
+                            }
+                        }
+                        <span class="badge @badgeClass">@statusText</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="fw-bold">Mức lương đề xuất:</h6>
+                        <div class="text-success fw-bold">@Model.Salary.ToString("N0") VNĐ</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="fw-bold">Ngày ứng tuyển:</h6>
+                        <div>@Model.DateApplied.ToString("dd/MM/yyyy HH:mm")</div>
+                        <div class="text-muted small">@Model.TimeAgo</div>
+                    </div>
+
+                    @if (Model.LastStatusUpdate.HasValue)
+                    {
+                        <div class="mb-3">
+                            <h6 class="fw-bold">Cập nhật trạng thái gần nhất:</h6>
+                            <div>@Model.LastStatusUpdate.Value.ToString("dd/MM/yyyy HH:mm")</div>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.BusinessNotes))
+                    {
+                        <div class="mb-3">
+                            <h6 class="fw-bold">Ghi chú:</h6>
+                            <div class="p-2 bg-light rounded">@Model.BusinessNotes</div>
+                        </div>
+                    }
+
+                    <div class="action-buttons mt-4">
+                        <a asp-action="UpdateStatus" asp-route-id="@Model.ApplicationID" 
+                           class="btn btn-primary w-100 mb-2">
+                            <i class="bi bi-pencil-square"></i> Cập nhật trạng thái
+                        </a>
+                        
+                        <a href="mailto:@Model.UserEmail" class="btn btn-outline-primary w-100 mb-2">
+                            <i class="bi bi-envelope"></i> Liên hệ qua email
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

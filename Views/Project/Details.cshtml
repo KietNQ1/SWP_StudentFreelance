@@ -20,6 +20,22 @@
         </div>
     }
 
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Lỗi!</strong> @ViewBag.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>Thành công!</strong> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="row mb-4">
         <div class="col-md-8">
             <h1 class="mb-3">
@@ -68,12 +84,22 @@
                     <a asp-action="Delete" asp-route-id="@Model.ProjectID" class="btn btn-outline-danger">
                         <i class="bi bi-trash"></i> Delete
                     </a>
+                    <a asp-controller="Application" asp-action="ProjectApplications" asp-route-projectId="@Model.ProjectID" 
+                       class="btn btn-outline-success">
+                        <i class="bi bi-people"></i> Xem ứng viên (@Model.StudentApplications.Count)
+                    </a>
                 </div>
             }
             else if (User.Identity != null && User.Identity.IsAuthenticated && 
                     User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value != Model.BusinessID.ToString())
             {
-                <a href="#" class="btn btn-success">Apply for this Project</a>
+                @if (User.IsInRole("Student"))
+                {
+                    <a asp-controller="Application" asp-action="Apply" asp-route-projectId="@Model.ProjectID" 
+                       class="btn btn-success">
+                        <i class="bi bi-send"></i> Ứng tuyển vào dự án
+                    </a>
+                }
             }
         </div>
     </div>
