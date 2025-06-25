@@ -12,7 +12,7 @@ using StudentFreelance.DbContext;
 namespace StudentFreelance.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250624190144_Create")]
+    [Migration("20250625074559_Create")]
     partial class Create
     {
         /// <inheritdoc />
@@ -648,13 +648,16 @@ namespace StudentFreelance.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsRead")
+                    b.Property<bool>("IsBroadcast")
                         .HasColumnType("bit");
 
                     b.Property<DateTime>("NotificationDate")
                         .HasColumnType("datetime2");
 
                     b.Property<int?>("RelatedID")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SenderID")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
@@ -665,14 +668,11 @@ namespace StudentFreelance.Migrations
                     b.Property<int>("TypeID")
                         .HasColumnType("int");
 
-                    b.Property<int>("UserID")
-                        .HasColumnType("int");
-
                     b.HasKey("NotificationID");
 
-                    b.HasIndex("TypeID");
+                    b.HasIndex("SenderID");
 
-                    b.HasIndex("UserID");
+                    b.HasIndex("TypeID");
 
                     b.ToTable("Notifications");
                 });
@@ -1161,6 +1161,36 @@ namespace StudentFreelance.Migrations
                     b.ToTable("UserAccountHistories");
                 });
 
+            modelBuilder.Entity("StudentFreelance.Models.UserNotification", b =>
+                {
+                    b.Property<int>("UserNotificationID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserNotificationID"));
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("NotificationID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ReadDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserID")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserNotificationID");
+
+                    b.HasIndex("NotificationID");
+
+                    b.HasIndex("UserID", "NotificationID")
+                        .IsUnique();
+
+                    b.ToTable("UserNotifications");
+                });
+
             modelBuilder.Entity("StudentFreelance.Models.Ward", b =>
                 {
                     b.Property<int>("WardID")
@@ -1331,21 +1361,20 @@ namespace StudentFreelance.Migrations
 
             modelBuilder.Entity("StudentFreelance.Models.Notification", b =>
                 {
+                    b.HasOne("StudentFreelance.Models.ApplicationUser", "Sender")
+                        .WithMany("SentNotifications")
+                        .HasForeignKey("SenderID")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("StudentFreelance.Models.Enums.NotificationType", "Type")
                         .WithMany("Notifications")
                         .HasForeignKey("TypeID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("StudentFreelance.Models.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                    b.Navigation("Sender");
 
                     b.Navigation("Type");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("StudentFreelance.Models.Project", b =>
@@ -1607,6 +1636,25 @@ namespace StudentFreelance.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("StudentFreelance.Models.UserNotification", b =>
+                {
+                    b.HasOne("StudentFreelance.Models.Notification", "Notification")
+                        .WithMany("UserNotifications")
+                        .HasForeignKey("NotificationID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("StudentFreelance.Models.ApplicationUser", "User")
+                        .WithMany("UserNotifications")
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Notification");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("StudentFreelance.Models.Ward", b =>
                 {
                     b.HasOne("StudentFreelance.Models.District", "District")
@@ -1616,6 +1664,13 @@ namespace StudentFreelance.Migrations
                         .IsRequired();
 
                     b.Navigation("District");
+                });
+
+            modelBuilder.Entity("StudentFreelance.Models.ApplicationUser", b =>
+                {
+                    b.Navigation("SentNotifications");
+
+                    b.Navigation("UserNotifications");
                 });
 
             modelBuilder.Entity("StudentFreelance.Models.Category", b =>
@@ -1682,6 +1737,11 @@ namespace StudentFreelance.Migrations
             modelBuilder.Entity("StudentFreelance.Models.Enums.TransactionType", b =>
                 {
                     b.Navigation("Transactions");
+                });
+
+            modelBuilder.Entity("StudentFreelance.Models.Notification", b =>
+                {
+                    b.Navigation("UserNotifications");
                 });
 
             modelBuilder.Entity("StudentFreelance.Models.Project", b =>

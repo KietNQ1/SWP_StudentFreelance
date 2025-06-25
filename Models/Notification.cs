@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
 using StudentFreelance.Models.Enums;
 
 namespace StudentFreelance.Models
@@ -11,9 +12,9 @@ namespace StudentFreelance.Models
         [Key]
         public int NotificationID { get; set; }
 
-        /// FK → User.UserID (người nhận)
-        [ForeignKey(nameof(User))]
-        public int UserID { get; set; }
+        /// FK → User.UserID (người gửi)
+        [ForeignKey(nameof(Sender))]
+        public int? SenderID { get; set; }
 
         /// Tiêu đề thông báo
         [Required, StringLength(200)]
@@ -32,14 +33,15 @@ namespace StudentFreelance.Models
         /// Ngày giờ tạo thông báo
         public DateTime NotificationDate { get; set; }
 
-        /// Cờ đã đọc chưa
-        public bool IsRead { get; set; }
+        /// Cờ thông báo toàn hệ thống (broadcast)
+        public bool IsBroadcast { get; set; } = false;
 
         /// Cờ kích hoạt (true nếu bản ghi còn hiệu lực, false nếu inactive)
         public bool IsActive { get; set; } = true;
 
         // Navigation properties
-        public ApplicationUser User { get; set; }
+        public ApplicationUser Sender { get; set; }
         public NotificationType Type { get; set; }
+        public ICollection<UserNotification> UserNotifications { get; set; } = new List<UserNotification>();
     }
 }

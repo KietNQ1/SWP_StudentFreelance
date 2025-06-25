@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using StudentFreelance.Models.Enums;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
+using System;
 
 namespace StudentFreelance.Models
 {
@@ -35,5 +37,9 @@ namespace StudentFreelance.Models
 
         [ForeignKey(nameof(StatusID))]
         public AccountStatus Status { get; set; }
+        
+        // Notification collections
+        public ICollection<UserNotification> UserNotifications { get; set; } = new List<UserNotification>();
+        public ICollection<Notification> SentNotifications { get; set; } = new List<Notification>();
     }
 }
