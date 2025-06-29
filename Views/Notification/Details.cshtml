@@ -1,0 +1,28 @@
+﻿@model StudentFreelance.Models.Notification
+
+@{
+    ViewData["Title"] = "Chi tiết thông báo";
+}
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h4 class="mb-0">@Model.Title</h4>
+    </div>
+
+    <div class="card-body">
+        <p class="text-muted">
+            📅 Gửi lúc: @Model.NotificationDate.ToString("dd/MM/yyyy HH:mm")<br />
+            👤 Bởi: @Model.Sender?.FullName ?? "Hệ thống"<br />
+            🏷️ Loại: @Model.Type?.TypeName
+        </p>
+
+        <hr />
+        <div class="fs-5">
+            @Html.Raw(Model.Content?.Replace("\n", "<br />"))
+        </div>
+    </div>
+
+    <div class="card-footer text-end">
+        <a asp-action="Index" class="btn btn-secondary">← Quay lại danh sách</a>
+    </div>
+</div>

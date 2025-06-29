@@ -1,0 +1,48 @@
+﻿@model IEnumerable<StudentFreelance.Models.Notification>
+
+@{
+    ViewData["Title"] = "Thông báo của tôi";
+}
+
+<h2 class="mb-3">🔔 Thông báo của bạn</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Bạn chưa có thông báo nào.</div>
+}
+else
+{
+    <form asp-action="MarkAllAsRead" method="post">
+        <button class="btn btn-sm btn-outline-primary mb-3" type="submit">✔ Đánh dấu tất cả là đã đọc</button>
+    </form>
+
+    <ul class="list-group">
+        @foreach (var item in Model)
+        {
+            var userNotification = item.UserNotifications.FirstOrDefault();
+            var isRead = userNotification?.IsRead ?? false;
+
+            <li class="list-group-item d-flex justify-content-between align-items-start @(isRead ? "" : "list-group-item-warning")">
+                <div class="ms-2 me-auto">
+                    <div class="fw-bold">
+                        <a asp-action="Details" asp-route-id="@item.NotificationID">
+                            @item.Title
+                        </a>
+                    </div>
+                    <div class="text-muted small">
+                        📅 @item.NotificationDate.ToString("dd/MM/yyyy HH:mm")
+                        | 👤 @item.Sender?.FullName ?? "Hệ thống"
+                        | 🏷️ @item.Type?.TypeName
+                    </div>
+                </div>
+
+                @if (!isRead)
+                {
+                    <form asp-action="MarkAsRead" method="post" asp-route-id="@item.NotificationID" class="ms-2">
+                        <button class="btn btn-sm btn-outline-secondary">✔ Đã đọc</button>
+                    </form>
+                }
+            </li>
+        }
+    </ul>
+}
