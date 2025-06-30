@@ -51,6 +51,7 @@ builder.Services.AddScoped<StudentFreelance.Interfaces.IProjectService, StudentF
 builder.Services.AddScoped<StudentFreelance.Interfaces.IReportService, StudentFreelance.Services.Implementations.ReportService>();
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IApplicationService, StudentFreelance.Services.Implementations.ApplicationService>();
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.INotificationService, StudentFreelance.Services.Implementations.NotificationService>();
+builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IProjectSubmissionService, StudentFreelance.Services.Implementations.ProjectSubmissionService>();
 
 // 4. Add MVC support
 builder.Services.AddControllersWithViews();

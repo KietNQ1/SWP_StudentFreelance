@@ -49,6 +49,9 @@ namespace StudentFreelance.DbContext
         public DbSet<ProficiencyLevel> ProficiencyLevels { get; set; }
         public DbSet<ImportanceLevel> ImportanceLevels { get; set; }
 
+        public DbSet<ProjectSubmission> ProjectSubmissions { get; set; }
+        public DbSet<ProjectSubmissionAttachment> ProjectSubmissionAttachments { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

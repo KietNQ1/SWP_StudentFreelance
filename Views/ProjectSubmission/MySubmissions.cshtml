@@ -1,0 +1,96 @@
+@model StudentFreelance.ViewModels.ProjectSubmissionListViewModel
+
+@{
+    ViewData["Title"] = "Kết quả dự án đã nộp";
+}
+
+<div class="container mt-4">
+    <h2>Kết quả dự án đã nộp</h2>
+    <hr />
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Thông tin dự án</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Tên dự án:</strong> @Model.ProjectTitle</p>
+                    <p><strong>Sinh viên:</strong> @Model.StudentName</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Trạng thái đơn ứng tuyển:</strong> <span class="badge @(Model.ApplicationStatus == "Completed" ? "bg-success" : Model.ApplicationStatus == "Rejected" ? "bg-danger" : "bg-primary")">@Model.ApplicationStatus</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Danh sách kết quả đã nộp</h5>
+            @if (Model.ApplicationStatus == "Accepted" || Model.ApplicationStatus == "InProgress")
+            {
+                <a asp-action="Create" asp-route-applicationId="@Model.ApplicationID" class="btn btn-sm btn-light">Nộp kết quả mới</a>
+            }
+        </div>
+        <div class="card-body">
+            @if (Model.Submissions != null && Model.Submissions.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Tiêu đề</th>
+                                <th>Ngày nộp</th>
+                                <th>Trạng thái</th>
+                                <th>Phản hồi</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var submission in Model.Submissions)
+                            {
+                                <tr>
+                                    <td>@submission.Title</td>
+                                    <td>@submission.SubmittedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        <span class="badge @(submission.Status == "Approved" ? "bg-success" : submission.Status == "Rejected" ? "bg-danger" : "bg-warning")">
+                                            @submission.Status
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(submission.BusinessFeedback))
+                                        {
+                                            <span>@(submission.BusinessFeedback.Length > 30 ? submission.BusinessFeedback.Substring(0, 30) + "..." : submission.BusinessFeedback)</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Chưa có phản hồi</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <a asp-action="Details" asp-route-id="@submission.SubmissionID" class="btn btn-sm btn-info">Chi tiết</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    Bạn chưa nộp kết quả nào cho dự án này.
+                    @if (Model.ApplicationStatus == "Accepted" || Model.ApplicationStatus == "InProgress")
+                    {
+                        <a asp-action="Create" asp-route-applicationId="@Model.ApplicationID" class="alert-link">Nộp kết quả ngay</a>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a asp-controller="Project" asp-action="Details" asp-route-id="@ViewBag.ProjectId" class="btn btn-secondary">Quay lại trang dự án</a>
+    </div>
+</div> 

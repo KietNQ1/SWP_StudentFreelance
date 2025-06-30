@@ -1,0 +1,113 @@
+@model StudentFreelance.ViewModels.ProjectSubmissionViewModel
+
+@{
+    ViewData["Title"] = "Chi tiết kết quả dự án";
+}
+
+<div class="container mt-4">
+    <h2>Chi tiết kết quả dự án</h2>
+    <hr />
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Thông tin dự án</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Tên dự án:</strong> @Model.ProjectTitle</p>
+                    <p><strong>Sinh viên:</strong> @Model.StudentName</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Doanh nghiệp:</strong> @Model.BusinessName</p>
+                    <p><strong>Trạng thái:</strong> <span class="badge @(Model.Status == "Approved" ? "bg-success" : Model.Status == "Rejected" ? "bg-danger" : "bg-warning")">@Model.Status</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Nội dung kết quả</h5>
+        </div>
+        <div class="card-body">
+            <h4>@Model.Title</h4>
+            <p class="text-muted">Nộp ngày: @Model.SubmittedAt.ToString("dd/MM/yyyy HH:mm")</p>
+            
+            <div class="mt-3">
+                <h5>Mô tả:</h5>
+                <div class="border p-3 bg-light">
+                    @Html.Raw(Model.Description.Replace("\n", "<br />"))
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.ExistingAttachments != null && Model.ExistingAttachments.Any())
+    {
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">File đính kèm</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Tên file</th>
+                                <th>Kích thước</th>
+                                <th>Loại file</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var attachment in Model.ExistingAttachments)
+                            {
+                                <tr>
+                                    <td>@attachment.FileName</td>
+                                    <td>@(attachment.FileSize / 1024) KB</td>
+                                    <td>@attachment.ContentType</td>
+                                    <td>
+                                        <a href="@attachment.FilePath" class="btn btn-sm btn-primary" target="_blank">Tải xuống</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(Model.BusinessFeedback))
+    {
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Phản hồi từ doanh nghiệp</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Ngày phản hồi: @(Model.FeedbackDate?.ToString("dd/MM/yyyy HH:mm") ?? "Không có")</p>
+                <div class="border p-3 bg-light">
+                    @Html.Raw(Model.BusinessFeedback.Replace("\n", "<br />"))
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="mt-3">
+        @if (User.IsInRole("Student"))
+        {
+            <a asp-action="MySubmissions" asp-route-applicationId="@Model.ApplicationID" class="btn btn-secondary me-2">Quay lại danh sách kết quả</a>
+            <a asp-controller="Project" asp-action="Details" asp-route-id="@ViewBag.ProjectId" class="btn btn-info">Quay lại trang dự án</a>
+        }
+        else if (User.IsInRole("Business") || User.IsInRole("Admin") || User.IsInRole("Moderator"))
+        {
+            <a asp-action="ProjectSubmissions" asp-route-applicationId="@Model.ApplicationID" class="btn btn-secondary me-2">Quay lại danh sách kết quả</a>
+            <a asp-controller="Project" asp-action="Details" asp-route-id="@ViewBag.ProjectId" class="btn btn-info">Quay lại trang dự án</a>
+            @if (Model.Status == "Pending")
+            {
+                <a asp-action="Feedback" asp-route-id="@Model.SubmissionID" class="btn btn-primary">Phản hồi</a>
+            }
+        }
+    </div>
+</div> 
