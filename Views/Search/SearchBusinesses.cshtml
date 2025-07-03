@@ -4,9 +4,12 @@
 }
 
 <div class="container mt-4">
-    <h2 class="mb-4">Tìm kiếm doanh nghiệp</h2>
+    <h2 class="mb-4 text-primary">Tìm kiếm doanh nghiệp</h2>
 
-    <div class="card mb-4">
+    <div class="card mb-4 search-card">
+        <div class="card-header bg-secondary">
+            <h5 class="mb-0 text-white">Bộ lọc tìm kiếm</h5>
+        </div>
         <div class="card-body">
             <form asp-action="SearchBusinesses" method="get" class="row g-3">
                 <div class="col-md-6">
@@ -57,7 +60,7 @@
                                 }
                             </div>
                             <div class="col-md-5">
-                                <h5 class="mb-0">@business.CompanyName</h5>
+                                <h5 class="mb-0 business-name">@business.CompanyName</h5>
                                 <p class="text-muted mb-2">@business.Industry</p>
                                 <p class="mb-0">
                                     <i class="bi bi-person"></i> @business.FullName
@@ -89,11 +92,11 @@
                                 </p>
                             </div>
                             <div class="col-md-2">
-                                <div class="d-flex align-items-center mb-2">
+                                <div class="info-badge mb-2">
                                     <i class="bi bi-star-fill rating-stars me-1"></i>
                                     <span>@business.AverageRating</span>
                                 </div>
-                                <div class="d-flex align-items-center">
+                                <div class="info-badge">
                                     <i class="bi bi-briefcase-fill me-1"></i>
                                     <span>@(ViewBag.ProjectCounts != null && ViewBag.ProjectCounts.ContainsKey(business.Id) 
                                         ? ViewBag.ProjectCounts[business.Id] 
@@ -101,7 +104,7 @@
                                 </div>
                             </div>
                             <div class="col-md-1 text-end">
-                                <a href="#" class="btn btn-outline-primary">Xem hồ sơ</a>
+                                <a href="#" class="btn btn-view-profile">Xem hồ sơ</a>
                             </div>
                         </div>
                     </div>
@@ -111,28 +114,82 @@
     }
     else
     {
-        <div class="alert alert-info">
+        <div class="alert alert-warning">
             Không tìm thấy doanh nghiệp nào phù hợp với tiêu chí tìm kiếm.
         </div>
     }
 </div>
 
 <style>
+    /* Palette color variables */
+    :root {
+        --primary-color: #89AC46;
+        --secondary-color: #D3E671;
+        --accent-color: #F8ED8C;
+        --highlight-color: #FF8989;
+    }
+    
+    /* General styles */
+    body {
+        background-color: #f9fcf4;
+    }
+    
+    .container {
+        background-color: white;
+        padding: 25px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .text-primary {
+        color: var(--primary-color) !important;
+    }
+    
+    .btn-primary {
+        background-color: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+    }
+    
+    .btn-primary:hover, .btn-primary:focus {
+        background-color: #7b9b3d !important;
+        border-color: #7b9b3d !important;
+    }
+    
+    .search-card {
+        background-color: white;
+        border-color: #eaeaea;
+    }
+    
+    .card-header.bg-secondary {
+        background-color: var(--secondary-color) !important;
+        border-bottom: none;
+        color: #444;
+    }
+    
     .business-list .card {
         transition: transform 0.2s, box-shadow 0.2s;
-        border-left: 4px solid #0d6efd;
+        border-left: 4px solid var(--primary-color);
+        border-radius: 8px;
+        overflow: hidden;
     }
     
     .business-list .card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        border-color: var(--secondary-color);
+        background-color: #f7fbed;
+    }
+    
+    .business-name {
+        color: var(--primary-color);
+        font-weight: 600;
     }
     
     .profile-avatar-placeholder {
         width: 60px;
         height: 60px;
-        background-color: #0d6efd;
-        color: white;
+        background-color: var(--secondary-color);
+        color: #556b29;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -142,7 +199,68 @@
     }
     
     .rating-stars {
-        color: #ffc107;
+        color: var(--accent-color);
+    }
+    
+    .btn-view-profile {
+        background-color: var(--secondary-color);
+        color: #4e5e2d;
+        border: none;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+    
+    .btn-view-profile:hover, .btn-view-profile:focus {
+        background-color: var(--primary-color);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .alert-warning {
+        background-color: var(--accent-color);
+        border-color: #e0d87d;
+        color: #6b6219;
+    }
+    
+    /* Form controls styling */
+    .form-control, .form-select {
+        border: 1px solid #dbe8c6;
+        padding: 10px;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: var(--secondary-color);
+        box-shadow: 0 0 0 0.25rem rgba(211, 230, 113, 0.25);
+    }
+    
+    .form-label {
+        color: var(--primary-color);
+        font-weight: 500;
+    }
+    
+    /* Additional styles with secondary color */
+    .info-badge {
+        background-color: var(--secondary-color);
+        color: #4e5e2d;
+        border-radius: 20px;
+        padding: 5px 10px;
+        display: inline-block;
+        font-size: 0.9rem;
+    }
+    
+    /* Icons styling */
+    .bi {
+        color: var(--primary-color);
+    }
+    
+    /* Select2 custom styling */
+    .select2-container--default .select2-selection--single {
+        border-color: #dbe8c6;
+    }
+    
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background-color: var(--secondary-color);
+        color: #4e5e2d;
     }
 </style>
 
