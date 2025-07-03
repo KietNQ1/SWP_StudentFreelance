@@ -714,6 +714,153 @@ namespace StudentFreelance.Controllers
             return RedirectToAction(nameof(Details), new { id = projectId });
         }
 
+        // POST: Projects/CancelConfirmation
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public async Task<IActionResult> CancelConfirmation(int projectId, int applicationId)
+        {
+            if (projectId <= 0 || applicationId <= 0)
+                return NotFound();
+
+            // Get current user ID
+            var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            
+            // Get project and application
+            var project = await _context.Projects.FindAsync(projectId);
+            var application = await _context.StudentApplications.FindAsync(applicationId);
+            
+            if (project == null || application == null)
+                return NotFound();
+            
+            if (application.ProjectID != projectId)
+                return NotFound();
+            
+            // Check if user is authorized (either business owner or the student)
+            bool isBusinessCancellation = false;
+            
+            if (project.BusinessID == currentUserId)
+            {
+                isBusinessCancellation = true;
+                
+                // Check if business had confirmed
+                if (!application.BusinessConfirmedCompletion)
+                {
+                    TempData["ErrorMessage"] = "Bạn chưa xác nhận hoàn thành dự án.";
+                    return RedirectToAction(nameof(Details), new { id = projectId });
+                }
+                
+                // Cancel business confirmation
+                application.BusinessConfirmedCompletion = false;
+            }
+            else if (application.UserID == currentUserId)
+            {
+                isBusinessCancellation = false;
+                
+                // Check if student had confirmed
+                if (!application.StudentConfirmedCompletion)
+                {
+                    TempData["ErrorMessage"] = "Bạn chưa xác nhận hoàn thành dự án.";
+                    return RedirectToAction(nameof(Details), new { id = projectId });
+                }
+                
+                // Cancel student confirmation
+                application.StudentConfirmedCompletion = false;
+            }
+            else
+            {
+                // User is neither the business owner nor the student
+                return Forbid();
+            }
+            
+            // Nếu cả hai bên đều chưa xác nhận và trạng thái là PendingReview, chuyển lại thành InProgress
+            // Không thay đổi trạng thái nếu đã là Completed
+            if (!application.BusinessConfirmedCompletion && !application.StudentConfirmedCompletion && 
+                application.Status == "PendingReview")
+            {
+                application.Status = "InProgress";
+            }
+            
+            try
+            {
+                await _context.SaveChangesAsync();
+                
+                if (isBusinessCancellation)
+                {
+                    TempData["SuccessMessage"] = "Bạn đã huỷ xác nhận hoàn thành dự án.";
+                }
+                else
+                {
+                    TempData["SuccessMessage"] = "Bạn đã huỷ xác nhận hoàn thành dự án.";
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Lỗi: " + ex.Message;
+            }
+            
+            return RedirectToAction(nameof(Details), new { id = projectId });
+        }
+        
+        // POST: Projects/TransferPayment
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Business,Admin")]
+        public async Task<IActionResult> TransferPayment(int projectId, int applicationId)
+        {
+            if (projectId <= 0 || applicationId <= 0)
+                return NotFound();
+
+            // Get current user ID
+            var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            
+            // Get project and application
+            var project = await _context.Projects.FindAsync(projectId);
+            var application = await _context.StudentApplications
+                .Include(a => a.User)
+                .FirstOrDefaultAsync(a => a.ApplicationID == applicationId);
+            
+            if (project == null || application == null)
+                return NotFound();
+            
+            if (application.ProjectID != projectId)
+                return NotFound();
+            
+            // Check if user is authorized (business owner or admin)
+            if (project.BusinessID != currentUserId && !User.IsInRole("Admin"))
+            {
+                return Forbid();
+            }
+            
+            // Check if both parties have confirmed completion
+            if (!application.BusinessConfirmedCompletion || !application.StudentConfirmedCompletion)
+            {
+                TempData["ErrorMessage"] = "Cả hai bên phải xác nhận hoàn thành dự án trước khi thanh toán.";
+                return RedirectToAction(nameof(Details), new { id = projectId });
+            }
+            
+            try
+            {
+                // Complete the project and transfer funds
+                var result = await _projectService.CompleteProjectAndTransferFundsAsync(projectId, applicationId);
+                
+                if (result)
+                {
+                    TempData["SuccessMessage"] = "Thanh toán đã được chuyển thành công cho sinh viên.";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Có lỗi xảy ra khi chuyển thanh toán.";
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Lỗi: " + ex.Message;
+            }
+            
+            return RedirectToAction(nameof(Details), new { id = projectId });
+        }
+
         // Helper methods
         private async Task<bool> ProjectExists(int id)
         {

@@ -64,6 +64,22 @@ namespace StudentFreelance.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Conversations",
+                columns: table => new
+                {
+                    ConversationID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ProjectID = table.Column<int>(type: "int", nullable: false),
+                    ParticipantAID = table.Column<int>(type: "int", nullable: false),
+                    ParticipantBID = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Conversations", x => x.ConversationID);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ImportanceLevels",
                 columns: table => new
                 {
@@ -652,6 +668,7 @@ namespace StudentFreelance.Migrations
                     SenderID = table.Column<int>(type: "int", nullable: false),
                     ReceiverID = table.Column<int>(type: "int", nullable: false),
                     ProjectID = table.Column<int>(type: "int", nullable: true),
+                    ConversationID = table.Column<int>(type: "int", nullable: false),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IsRead = table.Column<bool>(type: "bit", nullable: false),
                     SentAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -672,6 +689,12 @@ namespace StudentFreelance.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Messages_Conversations_ConversationID",
+                        column: x => x.ConversationID,
+                        principalTable: "Conversations",
+                        principalColumn: "ConversationID",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Messages_Projects_ProjectID",
                         column: x => x.ProjectID,
@@ -856,7 +879,13 @@ namespace StudentFreelance.Migrations
                     InterviewSchedule = table.Column<DateTime>(type: "datetime2", nullable: true),
                     InterviewResult = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsPaid = table.Column<bool>(type: "bit", nullable: false),
-                    CompletionDate = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    CompletionDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    InterviewDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ResumeLink = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BusinessConfirmedCompletion = table.Column<bool>(type: "bit", nullable: false),
+                    StudentConfirmedCompletion = table.Column<bool>(type: "bit", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -932,7 +961,8 @@ namespace StudentFreelance.Migrations
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     BusinessFeedback = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     FeedbackDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    StudentApplicationApplicationID = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -942,7 +972,12 @@ namespace StudentFreelance.Migrations
                         column: x => x.ApplicationID,
                         principalTable: "StudentApplications",
                         principalColumn: "ApplicationID",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ProjectSubmissions_StudentApplications_StudentApplicationApplicationID",
+                        column: x => x.StudentApplicationApplicationID,
+                        principalTable: "StudentApplications",
+                        principalColumn: "ApplicationID");
                 });
 
             migrationBuilder.CreateTable(
@@ -956,7 +991,7 @@ namespace StudentFreelance.Migrations
                     FilePath = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FileSize = table.Column<long>(type: "bigint", nullable: false),
                     ContentType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UploadedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UploadedBy = table.Column<int>(type: "int", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false)
@@ -969,13 +1004,13 @@ namespace StudentFreelance.Migrations
                         column: x => x.UploadedBy,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_ProjectSubmissionAttachments_ProjectSubmissions_SubmissionID",
                         column: x => x.SubmissionID,
                         principalTable: "ProjectSubmissions",
                         principalColumn: "SubmissionID",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -1057,6 +1092,11 @@ namespace StudentFreelance.Migrations
                 name: "IX_Districts_ProvinceID",
                 table: "Districts",
                 column: "ProvinceID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Messages_ConversationID",
+                table: "Messages",
+                column: "ConversationID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Messages_ProjectID",
@@ -1148,6 +1188,11 @@ namespace StudentFreelance.Migrations
                 name: "IX_ProjectSubmissions_ApplicationID",
                 table: "ProjectSubmissions",
                 column: "ApplicationID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProjectSubmissions_StudentApplicationApplicationID",
+                table: "ProjectSubmissions",
+                column: "StudentApplicationApplicationID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Ratings_ProjectID_ReviewerID_RevieweeID",
@@ -1314,6 +1359,9 @@ namespace StudentFreelance.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Conversations");
 
             migrationBuilder.DropTable(
                 name: "ImportanceLevels");

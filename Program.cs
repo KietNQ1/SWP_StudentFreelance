@@ -7,7 +7,7 @@ using StudentFreelance.Models.Email;
 using StudentFreelance.Services.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddSignalR();              // Đăng ký SignalR
 // 1. Configure Entity Framework Core (SQL Server)
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -91,5 +91,6 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-
+// Route cho SignalR hub
+app.MapHub<StudentFreelance.Hubs.ChatHub>("/chathub");
 app.Run();

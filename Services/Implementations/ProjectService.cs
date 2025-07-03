@@ -209,6 +209,13 @@ namespace StudentFreelance.Services.Implementations
             if (application.ProjectID != projectId)
                 return false;
             
+            // Nếu application đang ở trạng thái InProgress, chuyển sang PendingReview
+            // Nếu đang ở trạng thái Completed, giữ nguyên trạng thái
+            if (application.Status == "InProgress")
+            {
+                application.Status = "PendingReview";
+            }
+            
             if (isBusinessConfirmation)
             {
                 application.BusinessConfirmedCompletion = true;

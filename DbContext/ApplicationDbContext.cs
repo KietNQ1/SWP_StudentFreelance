@@ -32,6 +32,7 @@ namespace StudentFreelance.DbContext
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<Rating> Ratings { get; set; }
         public DbSet<Report> Reports { get; set; }
+        public DbSet<Conversation> Conversations { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<UserNotification> UserNotifications { get; set; }

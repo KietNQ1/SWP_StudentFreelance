@@ -1,0 +1,193 @@
+﻿@model StudentFreelance.ViewModels.ChatRoomViewModel
+@{
+    ViewData["Title"] = "Cuộc trò chuyện";
+    var conversationId = Model.ConversationID.ToString();
+    var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier).Value; 
+}
+
+<style>
+    .message-box {
+        border-radius: 20px;
+        padding: 10px 15px;
+        max-width: 70%;
+ 
+    }
+
+    .message-left {
+        background-color: #f1f0f0;
+    }
+
+    .message-right {
+        background-color: #5f4b8b;
+        color: white;
+    }
+
+    .chat-body {
+        background-color: #dcdcdc;
+    }
+
+    .message-meta {
+        font-size: 0.8rem;
+        color: gray;
+        margin-top: 4px;
+    }
+
+    .message-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 8px;
+    }
+
+    .btn.btn-link.mt-3{
+        color: #354f6c !important;
+        border-color: #354f6c !important;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .btn.btn-link.mt-3:hover{
+        background-color: white;
+        color: #354f6c !important;
+        border-color: #354f6c !important;
+        border: 2px solid #354f6c;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+</style>
+
+<div class="chat-area border rounded shadow-sm mt-3" style="max-width: 800px; margin: auto;">
+    <!-- Header -->
+    <div class="chat-header p-3 border-bottom" style="background-color: #333; color: white;">
+        <h5 class="mb-0">@Model.OtherUserName</h5>
+    </div>
+
+    <!-- Body -->
+    <div class="chat-body p-3" id="chatWindow" style="height:400px; overflow-y:auto;">
+        @foreach (var m in Model.Messages)
+        {
+            if (m.IsMine)
+            {
+                <!-- Tin nhắn của bạn -->
+                <div class="d-flex justify-content-end mb-2">
+                    <div class="message-box message-right">
+                        @m.Content
+                        <div class="message-meta text-end">@m.SentAt.ToLocalTime().ToString("HH:mm dd/MM")</div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- Tin nhắn đối phương -->
+                <div class="d-flex justify-content-start mb-2">
+                    @* <img src="@Model.OtherUserAvatar ?? " /images/default-avatar.png"" class="message-avatar" /> *@               
+                        <div class="message-box message-left">
+                            @m.Content
+                            <div class="message-meta">@m.SentAt.ToLocalTime().ToString("HH:mm dd/MM")</div>
+                        </div>                                        
+                </div>
+            }
+        }
+    </div>
+
+    <!-- Footer -->
+    <div class="chat-footer border-top p-3 bg-white">
+        <form id="chatForm" class="d-flex w-100">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="conversationId" name="conversationID" value="@Model.ConversationID" />
+            <input type="text" id="messageInput" name="content" class="form-control me-2"
+                   placeholder="Type something..." autocomplete="off" />
+            <button id="sendBtn" type="button" class="btn btn-outline-secondary">
+                <i class="bi bi-send-fill"></i> 
+            </button>
+        </form>
+    </div>
+</div>
+
+
+<a asp-action="Index" asp-controller="Chat" class="btn btn-link mt-3">← Quay lại danh sách</a>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script>
+        const convId = '@Model.ConversationID';
+        const currentUserId = parseInt('@userId', 10);
+        const chatWin = document.getElementById("chatWindow");
+
+        function scrollToBottom() {
+            chatWin.scrollTop = chatWin.scrollHeight;
+        }
+
+        scrollToBottom();
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chathub")
+            .build();
+
+               connection.on("ReceiveMessage", msg => {
+            if (msg.conversationID !== convId) return;
+
+            const isMine = msg.senderId === currentUserId;
+
+            const div = document.createElement("div");
+            div.className = "mb-2 d-flex " + (isMine ? "justify-content-end" : "justify-content-start");
+
+            div.innerHTML = `
+                <div class="message-box ${isMine ? "message-right text-end" : "message-left"}">
+                    ${msg.content}
+                    <div class="message-meta">${new Date(msg.sentAt).toLocaleString()}</div>
+                </div>
+            `;
+
+            chatWin.appendChild(div);
+            scrollToBottom();
+        });
+
+
+        (async function () {
+            try {
+                await connection.start();
+                await connection.invoke("JoinConversation", convId);
+            } catch (err) {
+                console.error("SignalR error:", err);
+            }
+        })();
+
+        document.getElementById("sendBtn").addEventListener("click", sendMessage);
+
+        document.getElementById("messageInput").addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        async function sendMessage() {
+            const input = document.getElementById("messageInput");
+            const text = input.value.trim();
+            if (!text) return;
+
+            try {
+                await connection.invoke("SendMessage", convId, currentUserId, text);
+            } catch (err) {
+                console.error("❌ Hub error:", err.toString());
+            }
+
+            try {
+                await fetch('@Url.Action("Send", "Chat")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: `conversationID=${encodeURIComponent(convId)}&content=${encodeURIComponent(text)}`
+                });
+            } catch (err) {
+                console.error("❌ HTTP error:", err);
+            }
+
+            input.value = "";
+            input.focus();
+        }
+    </script>
+}

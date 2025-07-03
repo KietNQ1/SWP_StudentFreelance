@@ -14,7 +14,7 @@ namespace StudentFreelance.Data
             {
                 context.ProjectStatuses.AddRange(
                     new ProjectStatus { StatusName = "Đang tuyển", IsActive = true },
-                    new ProjectStatus { StatusName = "Đã đóng", IsActive = true },
+                    new ProjectStatus { StatusName = "Đang tiến hành", IsActive = true },
                     new ProjectStatus { StatusName = "Đã hoàn thành", IsActive = true },
                     new ProjectStatus { StatusName = "Đã hủy", IsActive = true }
                 );
@@ -419,7 +419,7 @@ namespace StudentFreelance.Data
                 
                 // Get project statuses
                 var recruitingStatus = context.ProjectStatuses.First(s => s.StatusName == "Đang tuyển");
-                var closedStatus = context.ProjectStatuses.First(s => s.StatusName == "Đã đóng");
+                var inProgressStatus = context.ProjectStatuses.First(s => s.StatusName == "Đang tiến hành");
                 var completedStatus = context.ProjectStatuses.First(s => s.StatusName == "Đã hoàn thành");
                 var cancelledStatus = context.ProjectStatuses.First(s => s.StatusName == "Đã hủy");
                 
@@ -453,7 +453,7 @@ namespace StudentFreelance.Data
                         EndDate = new DateTime(2025, 7, 30),
                         BusinessID = businesses[1].Id,
                         CategoryID = webCategory.CategoryID,
-                        StatusID = closedStatus.StatusID,
+                        StatusID = inProgressStatus.StatusID,
                         TypeID = projectBasedType.TypeID,
                         IsActive = true
                     },
@@ -524,7 +524,7 @@ namespace StudentFreelance.Data
                         EndDate = new DateTime(2025, 7, 25),
                         BusinessID = businesses[1].Id,
                         CategoryID = uiuxCategory.CategoryID,
-                        StatusID = closedStatus.StatusID,
+                        StatusID = inProgressStatus.StatusID,
                         TypeID = partTimeType.TypeID,
                         IsActive = true
                     },
@@ -789,7 +789,12 @@ namespace StudentFreelance.Data
                         CoverLetter = "Tôi rất quan tâm đến dự án của bạn và có kinh nghiệm trong lĩnh vực này.",
                         Salary = 5000000,
                         DateApplied = DateTime.Now.AddDays(-5),
-                        LastStatusUpdate = DateTime.Now.AddDays(-5)
+                        LastStatusUpdate = DateTime.Now.AddDays(-5),
+                        Notes = "Ghi chú ban đầu",
+                        ResumeLink = "https://example.com/resume1.pdf",
+                        BusinessConfirmedCompletion = false,
+                        StudentConfirmedCompletion = false,
+                        IsActive = true
                     },
                     new StudentApplication
                     {
@@ -800,7 +805,12 @@ namespace StudentFreelance.Data
                         Salary = 5500000,
                         DateApplied = DateTime.Now.AddDays(-4),
                         LastStatusUpdate = DateTime.Now.AddDays(-2),
-                        BusinessNotes = "Ứng viên có kinh nghiệm tốt, phù hợp với yêu cầu dự án."
+                        BusinessNotes = "Ứng viên có kinh nghiệm tốt, phù hợp với yêu cầu dự án.",
+                        Notes = "Đã được chấp nhận",
+                        ResumeLink = "https://example.com/resume2.pdf",
+                        BusinessConfirmedCompletion = false,
+                        StudentConfirmedCompletion = false,
+                        IsActive = true
                     },
                     new StudentApplication
                     {
@@ -811,7 +821,12 @@ namespace StudentFreelance.Data
                         Salary = 4800000,
                         DateApplied = DateTime.Now.AddDays(-3),
                         LastStatusUpdate = DateTime.Now.AddDays(-1),
-                        BusinessNotes = "Ứng viên chưa đáp ứng đủ yêu cầu kỹ năng cho dự án."
+                        BusinessNotes = "Ứng viên chưa đáp ứng đủ yêu cầu kỹ năng cho dự án.",
+                        Notes = "Đã bị từ chối",
+                        ResumeLink = "https://example.com/resume3.pdf",
+                        BusinessConfirmedCompletion = false,
+                        StudentConfirmedCompletion = false,
+                        IsActive = true
                     }
                 };
                 
@@ -874,12 +889,25 @@ namespace StudentFreelance.Data
                 var business = await userManager.FindByEmailAsync("business@example.com");
                 var project = context.Projects.First();
 
+                // Tạo Conversation trước
+                var conversation = new Conversation
+                {                   
+                    ProjectID = project.ProjectID,
+                    ParticipantAID = student.Id,
+                    ParticipantBID = business.Id,
+                    CreatedAt = DateTime.UtcNow
+                };
+                context.Conversations.Add(conversation);
+                await context.SaveChangesAsync(); // Đảm bảo ConversationID được tạo
+
+                // Tạo các message có liên kết ConversationID
                 context.Messages.AddRange(
                     new Message
                     {
                         SenderID = student.Id,
                         ReceiverID = business.Id,
                         ProjectID = project.ProjectID,
+                        ConversationID = conversation.ConversationID, // Gán đúng ConversationID
                         Content = "Em muốn trao đổi thêm về dự án",
                         SentAt = DateTime.Now,
                         IsRead = false,
@@ -890,14 +918,17 @@ namespace StudentFreelance.Data
                         SenderID = business.Id,
                         ReceiverID = student.Id,
                         ProjectID = project.ProjectID,
+                        ConversationID = conversation.ConversationID, // Gán đúng ConversationID
                         Content = "Bạn có thể cho biết thêm kinh nghiệm .NET?",
                         SentAt = DateTime.Now.AddMinutes(5),
                         IsRead = false,
                         IsActive = true
                     }
                 );
-                context.SaveChanges();
+
+                await context.SaveChangesAsync();
             }
+
 
             // 11. Seed Transactions
             if (!context.Transactions.Any())
