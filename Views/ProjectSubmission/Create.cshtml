@@ -1,0 +1,89 @@
+@model StudentFreelance.ViewModels.ProjectSubmissionViewModel
+
+@{
+    ViewData["Title"] = "Nộp kết quả dự án";
+}
+
+<div class="container mt-4">
+    <h2>Nộp kết quả dự án</h2>
+    <hr />
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Thông tin dự án</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Tên dự án:</strong> @Model.ProjectTitle</p>
+                    <p><strong>Sinh viên:</strong> @Model.StudentName</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Doanh nghiệp:</strong> @Model.BusinessName</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (ViewBag.ResubmitMessage != null)
+    {
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @ViewBag.ResubmitMessage
+        </div>
+    }
+
+    @if (ViewBag.PreviousFeedback != null)
+    {
+        <div class="card mb-4">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">Phản hồi từ doanh nghiệp</h5>
+            </div>
+            <div class="card-body">
+                <p>@ViewBag.PreviousFeedback</p>
+            </div>
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Nộp kết quả</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="ApplicationID" />
+                
+                <!-- Thêm các trường ẩn để tránh lỗi validation -->
+                <input type="hidden" asp-for="Status" value="Pending" />
+                <input type="hidden" asp-for="BusinessFeedback" value="" />
+
+                <div class="form-group mb-3">
+                    <label asp-for="Title" class="control-label"></label>
+                    <input asp-for="Title" class="form-control" />
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Description" class="control-label"></label>
+                    <textarea asp-for="Description" class="form-control" rows="6"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="fileAttachments" class="control-label">File đính kèm</label>
+                    <input type="file" id="fileAttachments" name="Attachments" multiple class="form-control" />
+                    <small class="form-text text-muted">Bạn có thể chọn nhiều file cùng lúc.</small>
+                </div>
+
+                <div class="form-group mt-4">
+                    <button type="submit" class="btn btn-primary">@(ViewBag.ResubmitMessage != null ? "Nộp lại kết quả" : "Nộp kết quả")</button>
+                    <a asp-controller="Project" asp-action="Details" asp-route-id="@ViewBag.ProjectId" class="btn btn-secondary">Quay lại</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 
