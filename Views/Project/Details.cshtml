@@ -165,6 +165,12 @@
                         <a href="#" class="btn btn-outline-secondary btn-sm w-100">
                             <i class="bi bi-person"></i> View Profile
                         </a>
+                        <form asp-controller="Chat" asp-action="StartProjectChat" method="post">
+                            <input type="hidden" name="projectId" value="@Model.ProjectID" />
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-chat-dots"></i> Nhắn tin với chủ dự án
+                            </button>
+                        </form>    
                     </div>
                 </div>
             </div>

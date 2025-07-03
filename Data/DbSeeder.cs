@@ -836,12 +836,25 @@ namespace StudentFreelance.Data
                 var business = await userManager.FindByEmailAsync("business@example.com");
                 var project = context.Projects.First();
 
+                // Tạo Conversation trước
+                var conversation = new Conversation
+                {                   
+                    ProjectID = project.ProjectID,
+                    ParticipantAID = student.Id,
+                    ParticipantBID = business.Id,
+                    CreatedAt = DateTime.UtcNow
+                };
+                context.Conversations.Add(conversation);
+                await context.SaveChangesAsync(); // Đảm bảo ConversationID được tạo
+
+                // Tạo các message có liên kết ConversationID
                 context.Messages.AddRange(
                     new Message
                     {
                         SenderID = student.Id,
                         ReceiverID = business.Id,
                         ProjectID = project.ProjectID,
+                        ConversationID = conversation.ConversationID, // Gán đúng ConversationID
                         Content = "Em muốn trao đổi thêm về dự án",
                         SentAt = DateTime.Now,
                         IsRead = false,
@@ -852,14 +865,17 @@ namespace StudentFreelance.Data
                         SenderID = business.Id,
                         ReceiverID = student.Id,
                         ProjectID = project.ProjectID,
+                        ConversationID = conversation.ConversationID, // Gán đúng ConversationID
                         Content = "Bạn có thể cho biết thêm kinh nghiệm .NET?",
                         SentAt = DateTime.Now.AddMinutes(5),
                         IsRead = false,
                         IsActive = true
                     }
                 );
-                context.SaveChanges();
+
+                await context.SaveChangesAsync();
             }
+
 
             // 11. Seed Transactions
             if (!context.Transactions.Any())

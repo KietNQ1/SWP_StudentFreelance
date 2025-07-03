@@ -1,0 +1,133 @@
+﻿<style>
+    .conversation-list {
+        max-width: 800px;
+        margin: auto;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .conversation-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        padding: 16px 20px;
+        margin-bottom: 16px;
+        transition: all 0.2s ease-in-out;
+        cursor: pointer;
+    }
+
+        .conversation-card:hover {
+            transform: translateY(-2px);
+            background-color: #f9f9f9;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+        }
+
+    .conversation-avatar {
+        width: 48px;
+        height: 48px;
+        object-fit: cover;
+        border-radius: 50%;
+        margin-right: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .conversation-title {
+        font-weight: 600;
+        font-size: 1rem;
+        color: #333;
+    }
+
+    .conversation-meta {
+        font-size: 0.875rem;
+        color: #888;
+        margin-top: 4px;
+    }
+
+    .conversation-project {
+        font-size: 0.9rem;
+        color: #555;
+        margin-top: 2px;
+    }
+
+    .conversation-badge {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+        margin-left: 6px;
+        border-radius: 12px;
+        background-color: #dc3545;
+        color: white;
+        font-weight: 500;
+    }
+
+    .btn-outline-primary {
+        color: #354f6c !important;
+        border-color: #354f6c !important;
+        transition: all 0.2s ease-in-out;
+    }
+      .btn-outline-primary:hover {
+            background-color: white;
+            color: #354f6c !important;
+            border-color: #354f6c !important;
+            border: 2px solid #354f6c;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+</style>
+
+@model StudentFreelance.ViewModels.ConversationListViewModel
+@{
+    ViewData["Title"] = "Tin nhắn";
+}
+
+<div class="conversation-list mt-4">
+    <h3 class="mb-4">Tin nhắn</h3>
+
+    <form method="get" asp-action="Index" class="mb-3">
+        <select name="projectId" class="form-select w-auto d-inline-block"
+                onchange="this.form.submit()">
+            <option value="">Tất cả dự án</option>
+            @foreach (var p in Model.Projects)
+            {
+                <option value="@p.ProjectID" selected="@(Model.SelectedProjectID == p.ProjectID)">
+                    @p.Title
+                </option>
+            }
+        </select>
+    </form>
+
+    @foreach (var c in Model.Items)
+    {
+        <div class="conversation-card d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <img src="@(c.OtherUserAvatar ?? "/images/default-avatar.png")"
+                     class="conversation-avatar" />
+                <div>
+                    <div class="d-flex align-items-center">
+                        <span class="conversation-title me-2">@c.OtherUserName</span>
+
+                        @* Hiển thị badge số chưa đọc *@
+                        @if (c.UnreadCount > 0)
+                        {
+                            <span class="badge bg-danger conversation-badge">
+                                @c.UnreadCount
+                            </span>
+                        }
+                    </div>
+
+                    <div class="conversation-project">@c.ProjectTitle</div>
+
+                    <div class="conversation-meta">
+                        @c.LastMessageAt.ToLocalTime().ToString("g") – @c.LastMessage
+                    </div>
+                </div>
+            </div>
+
+            <a asp-action="Room" asp-route-id="@c.ConversationID"
+               class="btn btn-sm btn-outline-primary">
+                Mở
+            </a>
+        </div>
+    }
+</div>
