@@ -49,36 +49,33 @@
         </div>
     </div>
 
-    <div class="row">
-        @if (Model.Any())
-        {
-            foreach (var student in Model)
+    @if (Model.Any())
+    {
+        <div class="student-list">
+            @foreach (var student in Model)
             {
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100 search-card">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="flex-shrink-0">
-                                    @if (!string.IsNullOrEmpty(student.ProfilePicturePath))
-                                    {
-                                        <img src="@student.ProfilePicturePath" class="rounded-circle profile-avatar" alt="@student.FullName">
-                                    }
-                                    else
-                                    {
-                                        <div class="profile-avatar-placeholder">
-                                            <span>@student.FullName.Substring(0, 1)</span>
-                                        </div>
-                                    }
-                                </div>
-                                <div class="flex-grow-1 ms-3">
-                                    <h5 class="mb-0">@student.FullName</h5>
-                                    <p class="text-muted mb-0">@student.University</p>
-                                    <p class="text-muted mb-0">@student.Major</p>
-                                </div>
+                <div class="card mb-3 search-card">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-1 text-center">
+                                @if (!string.IsNullOrEmpty(student.ProfilePicturePath))
+                                {
+                                    <img src="@student.ProfilePicturePath" class="rounded-circle profile-avatar" alt="@student.FullName" style="width: 60px; height: 60px;">
+                                }
+                                else
+                                {
+                                    <div class="profile-avatar-placeholder" style="width: 60px; height: 60px;">
+                                        <span>@student.FullName.Substring(0, 1)</span>
+                                    </div>
+                                }
                             </div>
-
-                            <div class="mb-3">
-                                <h6>Kỹ năng:</h6>
+                            <div class="col-md-3">
+                                <h5 class="mb-0">@student.FullName</h5>
+                                <p class="text-muted mb-1">@student.University</p>
+                                <p class="text-muted mb-0">@student.Major</p>
+                            </div>
+                            <div class="col-md-5">
+                                <h6 class="mb-2">Kỹ năng:</h6>
                                 <div class="d-flex flex-wrap gap-1">
                                     @if (ViewBag.StudentSkills != null && ViewBag.StudentSkills.ContainsKey(student.Id))
                                     {
@@ -95,47 +92,87 @@
                                     }
                                 </div>
                             </div>
-
-                            <div class="mb-3">
-                                <h6>Địa chỉ:</h6>
-                                <p class="mb-0">
+                            <div class="col-md-2">
+                                <p class="mb-2">
+                                    <i class="bi bi-geo-alt"></i>
                                     @if (student.Address != null && student.Address.Province != null)
                                     {
                                         @student.Address.Province.Name
                                     }
                                     else
                                     {
-                                        <span class="text-muted">Chưa có thông tin địa chỉ</span>
+                                        <span class="text-muted">Chưa có địa chỉ</span>
                                     }
                                 </p>
-                            </div>
-
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <span class="me-2">
-                                        <i class="bi bi-star-fill rating-stars"></i> @student.AverageRating
-                                    </span>
-                                    <span>
-                                        <i class="bi bi-briefcase-fill"></i> @student.TotalProjects dự án
-                                    </span>
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="bi bi-star-fill rating-stars me-1"></i>
+                                    <span>@student.AverageRating</span>
                                 </div>
-                                <a href="#" class="btn btn-outline-primary btn-sm">Xem hồ sơ</a>
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-briefcase-fill me-1"></i>
+                                    <span>@student.TotalProjects dự án</span>
+                                </div>
+                            </div>
+                            <div class="col-md-1 text-end">
+                                <a href="#" class="btn btn-outline-primary">Xem hồ sơ</a>
                             </div>
                         </div>
                     </div>
                 </div>
             }
-        }
-        else
-        {
-            <div class="col-12">
-                <div class="alert alert-info">
-                    Không tìm thấy sinh viên nào phù hợp với tiêu chí tìm kiếm.
-                </div>
-            </div>
-        }
-    </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            Không tìm thấy sinh viên nào phù hợp với tiêu chí tìm kiếm.
+        </div>
+    }
 </div>
+
+<style>
+    .student-list .card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border-left: 4px solid #198754;
+    }
+    
+    .student-list .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .profile-avatar-placeholder {
+        width: 60px;
+        height: 60px;
+        background-color: #198754;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: bold;
+        border-radius: 50%;
+    }
+    
+    .rating-stars {
+        color: #ffc107;
+    }
+    
+    .skill-tag {
+        background-color: #e9ecef;
+        border-radius: 4px;
+        padding: 2px 8px;
+        font-size: 0.85rem;
+        margin-right: 4px;
+        margin-bottom: 4px;
+        display: inline-block;
+    }
+    
+    .skill-level {
+        font-size: 0.75rem;
+        color: #6c757d;
+    }
+</style>
 
 @section Scripts {
     <script>

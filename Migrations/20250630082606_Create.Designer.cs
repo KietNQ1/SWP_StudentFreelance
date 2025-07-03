@@ -12,7 +12,7 @@ using StudentFreelance.DbContext;
 namespace StudentFreelance.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250625140400_Create")]
+    [Migration("20250630082606_Create")]
     partial class Create
     {
         /// <inheritdoc />

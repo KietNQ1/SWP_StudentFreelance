@@ -284,85 +284,99 @@
     }
     else
     {
-        <div class="row mt-3" id="projects-container">
+        <div class="job-list" id="projects-container">
             @foreach (var project in Model)
             {
-                <div class="col-md-6 col-lg-4 mb-4 project-card" 
+                <div class="card mb-3 project-card" 
                      data-created="@project.CreatedAt.Ticks" 
                      data-budget="@project.Budget" 
                      data-deadline="@project.Deadline.Ticks">
-                    <div class="card h-100">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <span class="badge bg-primary">@project.Budget.ToString("N0") VNĐ</span>
-                            <span class="badge bg-@(project.Status.StatusName == "Đang tuyển" ? "success" : "secondary")">
-                                @project.Status.StatusName
-                            </span>
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title">@project.Title</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">
-                                <i class="bi bi-folder"></i> @project.Category.CategoryName
-                                <span class="ms-2"><i class="bi bi-clock"></i> @project.Type.TypeName</span>
-                            </h6>
-                            
-                            @if (project.Address?.Province != null)
-                            {
-                                <p class="card-text mb-2">
-                                    <i class="bi bi-geo-alt"></i> @project.Address.Province.Name
-                                    @if (!string.IsNullOrEmpty(project.Address.DetailAddress))
-                                    {
-                                        <span class="text-muted"> - @project.Address.DetailAddress</span>
-                                    }
-                                </p>
-                            }
-                            else if (project.IsRemoteWork)
-                            {
-                                <p class="card-text mb-2">
-                                    <i class="bi bi-laptop"></i> <span class="badge bg-info text-dark">Làm việc từ xa</span>
-                                </p>
-                            }
-                            
-                            <p class="card-text">
-                                @(project.Description?.Length > 100 
-                                    ? project.Description.Substring(0, 100) + "..." 
-                                    : project.Description)
-                            </p>
-                            
-                            @if (project.ProjectSkillsRequired.Any())
-                            {
-                                <div class="mb-2">
-                                    <small class="text-muted">Kỹ năng yêu cầu:</small>
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-7">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <h5 class="card-title mb-0">@project.Title</h5>
                                     <div>
-                                        @foreach (var skill in project.ProjectSkillsRequired.Take(3))
+                                        <span class="badge bg-primary me-1">@project.Budget.ToString("N0") VNĐ</span>
+                                        <span class="badge bg-@(project.Status.StatusName == "Đang tuyển" ? "success" : "secondary")">
+                                            @project.Status.StatusName
+                                        </span>
+                                    </div>
+                                </div>
+                                <h6 class="card-subtitle mb-2 text-muted">
+                                    <i class="bi bi-folder"></i> @project.Category.CategoryName
+                                    <span class="ms-2"><i class="bi bi-clock"></i> @project.Type.TypeName</span>
+                                </h6>
+                                
+                                <p class="card-text">
+                                    @(project.Description?.Length > 100 
+                                        ? project.Description.Substring(0, 100) + "..." 
+                                        : project.Description)
+                                </p>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    @if (project.Address?.Province != null)
+                                    {
+                                        <p class="mb-2">
+                                            <i class="bi bi-geo-alt"></i> @project.Address.Province.Name
+                                            @if (!string.IsNullOrEmpty(project.Address.DetailAddress))
+                                            {
+                                                <span class="text-muted"> - @project.Address.DetailAddress</span>
+                                            }
+                                        </p>
+                                    }
+                                    else if (project.IsRemoteWork)
+                                    {
+                                        <p class="mb-2">
+                                            <i class="bi bi-laptop"></i> <span class="badge bg-info text-dark">Làm việc từ xa</span>
+                                        </p>
+                                    }
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <p class="mb-1"><small class="text-muted">Kỹ năng yêu cầu:</small></p>
+                                    <div>
+                                        @if (project.ProjectSkillsRequired.Any())
                                         {
-                                            <span class="badge rounded-pill bg-light text-dark me-1">
-                                                @skill.Skill.SkillName
-                                                @if (skill.ImportanceLevel != null)
-                                                {
-                                                    <small class="text-@(skill.ImportanceLevel.LevelName == "Bắt buộc" ? "danger" : "primary")">
-                                                        (@skill.ImportanceLevel.LevelName)
-                                                    </small>
-                                                }
-                                            </span>
+                                            foreach (var skill in project.ProjectSkillsRequired.Take(3))
+                                            {
+                                                <span class="badge rounded-pill bg-light text-dark me-1 mb-1">
+                                                    @skill.Skill.SkillName
+                                                    @if (skill.ImportanceLevel != null)
+                                                    {
+                                                        <small class="text-@(skill.ImportanceLevel.LevelName == "Bắt buộc" ? "danger" : "primary")">
+                                                            (@skill.ImportanceLevel.LevelName)
+                                                        </small>
+                                                    }
+                                                </span>
+                                            }
+                                            if (project.ProjectSkillsRequired.Count() > 3)
+                                            {
+                                                <span class="badge rounded-pill bg-light text-dark">+@(project.ProjectSkillsRequired.Count() - 3)</span>
+                                            }
                                         }
-                                        @if (project.ProjectSkillsRequired.Count() > 3)
+                                        else
                                         {
-                                            <span class="badge rounded-pill bg-light text-dark">+@(project.ProjectSkillsRequired.Count() - 3)</span>
+                                            <span class="text-muted">Không có kỹ năng yêu cầu</span>
                                         }
                                     </div>
                                 </div>
-                            }
-                            
-                            <div class="d-flex justify-content-between align-items-center">
-                                <small class="text-muted">Hạn nộp: @project.Deadline.ToString("dd/MM/yyyy")</small>
                             </div>
-                        </div>
-                        <div class="card-footer">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <small class="text-muted">
-                                    <i class="bi bi-building"></i> @project.Business.CompanyName
-                                </small>
-                                <a href="@Url.Action("Details", "Project", new { id = project.ProjectID })" class="btn btn-sm btn-outline-primary">Chi tiết</a>
+                            
+                            <div class="col-md-2">
+                                <div class="d-flex flex-column align-items-end">
+                                    <p class="mb-2">
+                                        <small class="text-muted">Hạn nộp: @project.Deadline.ToString("dd/MM/yyyy")</small>
+                                    </p>
+                                    <p class="mb-2">
+                                        <small class="text-muted">
+                                            <i class="bi bi-building"></i> @project.Business.CompanyName
+                                        </small>
+                                    </p>
+                                    <a href="@Url.Action("Details", "Project", new { id = project.ProjectID })" class="btn btn-outline-primary">Chi tiết</a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -456,6 +470,29 @@
 .selected-skills-list {
     border-bottom: 1px solid #dee2e6;
     margin-bottom: 10px;
+}
+
+/* Thêm style mới cho layout ngang */
+.job-list .card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-left: 4px solid #0d6efd;
+}
+
+.job-list .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.job-list .card-title {
+    font-weight: 600;
+}
+
+.job-list .badge {
+    font-weight: 500;
+}
+
+.job-list .btn-outline-primary {
+    min-width: 100px;
 }
 </style>
 
