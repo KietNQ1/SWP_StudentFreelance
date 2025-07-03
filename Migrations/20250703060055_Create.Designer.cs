@@ -12,7 +12,7 @@ using StudentFreelance.DbContext;
 namespace StudentFreelance.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250625140400_Create")]
+    [Migration("20250703060055_Create")]
     partial class Create
     {
         /// <inheritdoc />
@@ -364,6 +364,31 @@ namespace StudentFreelance.Migrations
                     b.ToTable("Categories");
                 });
 
+            modelBuilder.Entity("StudentFreelance.Models.Conversation", b =>
+                {
+                    b.Property<int>("ConversationID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ConversationID"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ParticipantAID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ParticipantBID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProjectID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ConversationID");
+
+                    b.ToTable("Conversations");
+                });
+
             modelBuilder.Entity("StudentFreelance.Models.District", b =>
                 {
                     b.Property<int>("DistrictID")
@@ -604,6 +629,9 @@ namespace StudentFreelance.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("ConversationID")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -623,6 +651,8 @@ namespace StudentFreelance.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("MessageID");
+
+                    b.HasIndex("ConversationID");
 
                     b.HasIndex("ProjectID");
 
@@ -1335,6 +1365,12 @@ namespace StudentFreelance.Migrations
 
             modelBuilder.Entity("StudentFreelance.Models.Message", b =>
                 {
+                    b.HasOne("StudentFreelance.Models.Conversation", "Conversation")
+                        .WithMany("Messages")
+                        .HasForeignKey("ConversationID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("StudentFreelance.Models.Project", "Project")
                         .WithMany("Messages")
                         .HasForeignKey("ProjectID")
@@ -1351,6 +1387,8 @@ namespace StudentFreelance.Migrations
                         .HasForeignKey("SenderID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Conversation");
 
                     b.Navigation("Project");
 
@@ -1680,6 +1718,11 @@ namespace StudentFreelance.Migrations
                     b.Navigation("Skills");
 
                     b.Navigation("SubCategories");
+                });
+
+            modelBuilder.Entity("StudentFreelance.Models.Conversation", b =>
+                {
+                    b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("StudentFreelance.Models.District", b =>
