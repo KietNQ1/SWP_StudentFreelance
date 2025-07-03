@@ -1,9 +1,9 @@
-@using Microsoft.AspNetCore.Identity
+﻿﻿@using Microsoft.AspNetCore.Identity
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
 
-@using Microsoft.EntityFrameworkCore
+﻿@using Microsoft.EntityFrameworkCore
 @using StudentFreelance.DbContext
 @using StudentFreelance.Models
 
@@ -186,6 +186,12 @@
                                     <a class="nav-link text-warning" asp-controller="" asp-action="">
                                         <i class="bi bi-flag"></i> Báo cáo
                                     </a>
+                                    @if (User.IsInRole("Student"))
+                                    {
+                                        <a asp-controller="Application" asp-action="MyApplications" class="dropdown-item">
+                                            📝 Đơn ứng tuyển của tôi
+                                        </a>
+                                    }
                                 </div>
                             </div>
 

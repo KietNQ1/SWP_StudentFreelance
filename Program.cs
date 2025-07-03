@@ -38,7 +38,7 @@ builder.Services.AddAuthentication()
         IConfigurationSection googleAuthNSection = builder.Configuration.GetSection("Authentication:Google");
         options.ClientId = googleAuthNSection["ClientId"];
         options.ClientSecret = googleAuthNSection["ClientSecret"];
-        // N?u mu?n l?y th�m th�ng tin profile c� th? d�ng scope:
+        // N?u mu?n l?y th�ng tin profile c th? dng scope:
         // options.Scope.Add("profile");
         // options.Scope.Add("email");
     });
@@ -49,6 +49,8 @@ builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IEmailSender, St
 // Register application services
 builder.Services.AddScoped<StudentFreelance.Interfaces.IProjectService, StudentFreelance.Services.Implementations.ProjectService>();
 builder.Services.AddScoped<StudentFreelance.Interfaces.IReportService, StudentFreelance.Services.Implementations.ReportService>();
+builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IApplicationService, StudentFreelance.Services.Implementations.ApplicationService>();
+builder.Services.AddScoped<StudentFreelance.Services.Interfaces.INotificationService, StudentFreelance.Services.Implementations.NotificationService>();
 
 // 4. Add MVC support
 builder.Services.AddControllersWithViews();
@@ -62,7 +64,7 @@ using (var scope = app.Services.CreateScope())
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
 
-    //db.Database.Migrate();
+    db.Database.Migrate();
 
     DbSeeder.SeedEnums(db); // enum tables: statuses, types, etc.
     await DbSeeder.SeedSampleDataAsync(db, userManager, roleManager); // Identity + related data
