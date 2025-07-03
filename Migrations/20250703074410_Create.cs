@@ -64,6 +64,22 @@ namespace StudentFreelance.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Conversations",
+                columns: table => new
+                {
+                    ConversationID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ProjectID = table.Column<int>(type: "int", nullable: false),
+                    ParticipantAID = table.Column<int>(type: "int", nullable: false),
+                    ParticipantBID = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Conversations", x => x.ConversationID);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ImportanceLevels",
                 columns: table => new
                 {
@@ -652,6 +668,7 @@ namespace StudentFreelance.Migrations
                     SenderID = table.Column<int>(type: "int", nullable: false),
                     ReceiverID = table.Column<int>(type: "int", nullable: false),
                     ProjectID = table.Column<int>(type: "int", nullable: true),
+                    ConversationID = table.Column<int>(type: "int", nullable: false),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IsRead = table.Column<bool>(type: "bit", nullable: false),
                     SentAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -672,6 +689,12 @@ namespace StudentFreelance.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Messages_Conversations_ConversationID",
+                        column: x => x.ConversationID,
+                        principalTable: "Conversations",
+                        principalColumn: "ConversationID",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Messages_Projects_ProjectID",
                         column: x => x.ProjectID,
@@ -998,6 +1021,11 @@ namespace StudentFreelance.Migrations
                 column: "ProvinceID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Messages_ConversationID",
+                table: "Messages",
+                column: "ConversationID");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Messages_ProjectID",
                 table: "Messages",
                 column: "ProjectID");
@@ -1238,6 +1266,9 @@ namespace StudentFreelance.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Conversations");
 
             migrationBuilder.DropTable(
                 name: "ImportanceLevels");
