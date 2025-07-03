@@ -25,14 +25,37 @@
         </div>
     </div>
 
+    @if (ViewBag.ResubmitMessage != null)
+    {
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @ViewBag.ResubmitMessage
+        </div>
+    }
+
+    @if (ViewBag.PreviousFeedback != null)
+    {
+        <div class="card mb-4">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">Phản hồi từ doanh nghiệp</h5>
+            </div>
+            <div class="card-body">
+                <p>@ViewBag.PreviousFeedback</p>
+            </div>
+        </div>
+    }
+
     <div class="card">
         <div class="card-header bg-primary text-white">
             <h5 class="mb-0">Nộp kết quả</h5>
         </div>
         <div class="card-body">
-            <form asp-action="Create" enctype="multipart/form-data" method="post">
+            <form asp-action="Create" method="post" enctype="multipart/form-data">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <input type="hidden" asp-for="ApplicationID" />
+                
+                <!-- Thêm các trường ẩn để tránh lỗi validation -->
+                <input type="hidden" asp-for="Status" value="Pending" />
+                <input type="hidden" asp-for="BusinessFeedback" value="" />
 
                 <div class="form-group mb-3">
                     <label asp-for="Title" class="control-label"></label>
@@ -47,13 +70,13 @@
                 </div>
 
                 <div class="form-group mb-3">
-                    <label asp-for="Attachments" class="control-label"></label>
-                    <input type="file" name="Attachments" multiple class="form-control" />
+                    <label for="fileAttachments" class="control-label">File đính kèm</label>
+                    <input type="file" id="fileAttachments" name="Attachments" multiple class="form-control" />
                     <small class="form-text text-muted">Bạn có thể chọn nhiều file cùng lúc.</small>
                 </div>
 
                 <div class="form-group mt-4">
-                    <button type="submit" class="btn btn-primary">Nộp kết quả</button>
+                    <button type="submit" class="btn btn-primary">@(ViewBag.ResubmitMessage != null ? "Nộp lại kết quả" : "Nộp kết quả")</button>
                     <a asp-controller="Project" asp-action="Details" asp-route-id="@ViewBag.ProjectId" class="btn btn-secondary">Quay lại</a>
                 </div>
             </form>

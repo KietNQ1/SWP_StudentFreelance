@@ -29,7 +29,7 @@ namespace StudentFreelance.Models
         public string ContentType { get; set; }
 
         /// Mô tả file đính kèm
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         /// Ngày giờ upload
         public DateTime UploadedAt { get; set; }

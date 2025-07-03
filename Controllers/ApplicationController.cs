@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace StudentFreelance.Controllers
 {
@@ -82,30 +83,54 @@ namespace StudentFreelance.Controllers
         [Authorize(Roles = "Student")]
         public async Task<IActionResult> Apply(CreateApplicationViewModel model)
         {
-            // Chỉ kiểm tra các trường bắt buộc cho việc tạo đơn ứng tuyển
+            // Debug: Kiểm tra ModelState trước khi xóa các lỗi
+            var initialErrors = ModelState.Where(x => x.Value.Errors.Count > 0)
+                .ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToList()
+                );
+            
+            TempData["DebugInitialErrors"] = JsonSerializer.Serialize(initialErrors);
+            
+            // Xóa các lỗi không liên quan đến việc tạo đơn ứng tuyển
+            ModelState.Remove("ProjectTitle");
+            ModelState.Remove("BusinessName");
+            
+            // Xóa các lỗi validation cho các trường mới thêm vào model
+            ModelState.Remove("BusinessConfirmedCompletion");
+            ModelState.Remove("StudentConfirmedCompletion");
+            ModelState.Remove("Notes");
+            ModelState.Remove("ResumeLink");
+            ModelState.Remove("ResumeAttachment");
+            ModelState.Remove("PortfolioLink");
+            ModelState.Remove("InterviewDate");
+            ModelState.Remove("IsActive");
+            
+            // Debug: Kiểm tra ModelState sau khi xóa các lỗi
+            var remainingErrors = ModelState.Where(x => x.Value.Errors.Count > 0)
+                .ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToList()
+                );
+            
+            TempData["DebugRemainingErrors"] = JsonSerializer.Serialize(remainingErrors);
+            
+            // Kiểm tra ModelState sau khi đã loại bỏ các trường không cần thiết
             if (!ModelState.IsValid)
             {
-                // Xóa các lỗi không liên quan đến việc tạo đơn ứng tuyển
-                ModelState.Remove("ProjectTitle");
-                ModelState.Remove("BusinessName");
+                // Lấy lại thông tin dự án nếu model không hợp lệ
+                var project = await _context.Projects
+                    .Include(p => p.Business)
+                    .FirstOrDefaultAsync(p => p.ProjectID == model.ProjectID && p.IsActive);
                 
-                // Nếu vẫn còn lỗi sau khi xóa các trường hiển thị
-                if (!ModelState.IsValid)
+                if (project != null)
                 {
-                    // Lấy lại thông tin dự án nếu model không hợp lệ
-                    var project = await _context.Projects
-                        .Include(p => p.Business)
-                        .FirstOrDefaultAsync(p => p.ProjectID == model.ProjectID && p.IsActive);
-                    
-                    if (project != null)
-                    {
-                        model.ProjectTitle = project.Title;
-                        model.BusinessName = project.Business?.FullName ?? project.Business?.CompanyName ?? "Không xác định";
-                        model.ProjectBudget = project.Budget;
-                    }
-                    
-                    return View(model);
+                    model.ProjectTitle = project.Title;
+                    model.BusinessName = project.Business?.FullName ?? project.Business?.CompanyName ?? "Không xác định";
+                    model.ProjectBudget = project.Budget;
                 }
+                
+                return View(model);
             }
 
             // Lấy thông tin người dùng hiện tại
@@ -150,7 +175,9 @@ namespace StudentFreelance.Controllers
                     Status = "Pending",
                     PortfolioLink = model.PortfolioLink,
                     ResumeAttachment = model.ResumeAttachment,
-                    LastStatusUpdate = DateTime.Now
+                    LastStatusUpdate = DateTime.Now,
+                    BusinessConfirmedCompletion = false,
+                    StudentConfirmedCompletion = false
                 };
 
                 // Gọi service để tạo đơn ứng tuyển

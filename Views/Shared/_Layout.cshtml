@@ -178,6 +178,7 @@
                                 <div class="dropdown-menu" id="userDropdownMenu">
                                     <a asp-controller="AdminUser" asp-action="Index" class="dropdown-item">📊 Dashboard</a>
                                     <a asp-controller="User" asp-action="Profile" class="dropdown-item">👤 Profile</a>
+                                    <a asp-controller="Wallet" asp-action="Index" class="dropdown-item">💰 My Wallet</a>
                                     @if (User.IsInRole("Student"))
                                     {
                                         <a asp-controller="Application" asp-action="MyApplications" class="dropdown-item">

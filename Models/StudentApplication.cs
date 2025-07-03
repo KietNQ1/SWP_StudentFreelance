@@ -63,6 +63,13 @@ namespace StudentFreelance.Models
         /// Ngày hoàn thành dự án
         public DateTime? CompletionDate { get; set; }
 
+        public string? Notes { get; set; }
+        public DateTime? InterviewDate { get; set; }
+        public string? ResumeLink { get; set; }
+        public bool BusinessConfirmedCompletion { get; set; } = false;
+        public bool StudentConfirmedCompletion { get; set; } = false;
+        public bool IsActive { get; set; } = true;
+
         public Project Project { get; set; }
         public ApplicationUser User { get; set; }
         public ICollection<ProjectSubmission> Submissions { get; set; } = new List<ProjectSubmission>();

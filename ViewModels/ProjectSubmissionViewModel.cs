@@ -23,7 +23,7 @@ namespace StudentFreelance.ViewModels
         
         [Display(Name = "Ngày nộp")]
         public DateTime SubmittedAt { get; set; }
-        
+        #nullable enable
         [Display(Name = "Trạng thái")]
         public string Status { get; set; }
         
@@ -34,27 +34,27 @@ namespace StudentFreelance.ViewModels
         public DateTime? FeedbackDate { get; set; }
         
         [Display(Name = "File đính kèm")]
-        public List<IFormFile> Attachments { get; set; }
+        public List<IFormFile> Attachments { get; set; } = new List<IFormFile>();
         
         public List<ProjectSubmissionAttachment> ExistingAttachments { get; set; } = new List<ProjectSubmissionAttachment>();
         
-        // Thông tin bổ sung
+        // Thông tin bổ sung - chỉ dùng để hiển thị, không cần validate
         [Display(Name = "Tên dự án")]
-        public string ProjectTitle { get; set; }
+        public string ProjectTitle { get; set; } = "Không xác định";
         
         [Display(Name = "Tên sinh viên")]
-        public string StudentName { get; set; }
+        public string StudentName { get; set; } = "Không xác định";
         
         [Display(Name = "Tên doanh nghiệp")]
-        public string BusinessName { get; set; }
+        public string BusinessName { get; set; } = "Không xác định";
     }
     
     public class ProjectSubmissionListViewModel
     {
         public int ApplicationID { get; set; }
-        public string ProjectTitle { get; set; }
-        public string StudentName { get; set; }
-        public string ApplicationStatus { get; set; }
+        public string ProjectTitle { get; set; } = "Không xác định";
+        public string StudentName { get; set; } = "Không xác định";
+        public string ApplicationStatus { get; set; } = "Không xác định";
         public List<ProjectSubmissionViewModel> Submissions { get; set; } = new List<ProjectSubmissionViewModel>();
     }
     

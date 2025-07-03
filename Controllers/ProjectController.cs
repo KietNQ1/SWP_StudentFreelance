@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using StudentFreelance.DbContext;
-using StudentFreelance.Interfaces;
+using StudentFreelance.Services.Interfaces;
 using StudentFreelance.Models;
 using StudentFreelance.Models.Enums;
 using StudentFreelance.ViewModels;
@@ -640,6 +640,78 @@ namespace StudentFreelance.Controllers
             };
             
             return Json(result);
+        }
+
+        // POST: Projects/ConfirmCompletion
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public async Task<IActionResult> ConfirmCompletion(int projectId, int applicationId)
+        {
+            if (projectId <= 0 || applicationId <= 0)
+                return NotFound();
+
+            // Get current user ID
+            var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            
+            // Get project and application
+            var project = await _context.Projects.FindAsync(projectId);
+            var application = await _context.StudentApplications.FindAsync(applicationId);
+            
+            if (project == null || application == null)
+                return NotFound();
+            
+            if (application.ProjectID != projectId)
+                return NotFound();
+            
+            // Check if user is authorized (either business owner or the student)
+            bool isBusinessConfirmation = false;
+            
+            if (project.BusinessID == currentUserId)
+            {
+                isBusinessConfirmation = true;
+            }
+            else if (application.UserID == currentUserId)
+            {
+                isBusinessConfirmation = false;
+            }
+            else
+            {
+                // User is neither the business owner nor the student
+                return Forbid();
+            }
+            
+            try
+            {
+                // Call the service to confirm completion
+                var result = await _projectService.ConfirmProjectCompletionAsync(projectId, applicationId, isBusinessConfirmation);
+                
+                if (result)
+                {
+                    if (application.BusinessConfirmedCompletion && application.StudentConfirmedCompletion)
+                    {
+                        TempData["SuccessMessage"] = "Dự án đã được xác nhận hoàn thành bởi cả hai bên. Thanh toán đã được chuyển.";
+                    }
+                    else if (isBusinessConfirmation)
+                    {
+                        TempData["SuccessMessage"] = "Bạn đã xác nhận hoàn thành dự án. Đang chờ xác nhận từ sinh viên.";
+                    }
+                    else
+                    {
+                        TempData["SuccessMessage"] = "Bạn đã xác nhận hoàn thành dự án. Đang chờ xác nhận từ doanh nghiệp.";
+                    }
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Có lỗi xảy ra khi xác nhận hoàn thành dự án.";
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Lỗi: " + ex.Message;
+            }
+            
+            return RedirectToAction(nameof(Details), new { id = projectId });
         }
 
         // Helper methods

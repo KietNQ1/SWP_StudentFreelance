@@ -49,6 +49,7 @@ namespace StudentFreelance.Controllers
             // Kiểm tra xem đơn ứng tuyển có tồn tại không
             var application = await _context.StudentApplications
                 .Include(a => a.Project)
+                    .ThenInclude(p => p.Business)
                 .Include(a => a.User)
                 .FirstOrDefaultAsync(a => a.ApplicationID == applicationId);
 
@@ -61,19 +62,45 @@ namespace StudentFreelance.Controllers
                 return Forbid();
 
             // Kiểm tra xem trạng thái đơn ứng tuyển có cho phép nộp kết quả không
-            if (application.Status != "Accepted" && application.Status != "InProgress")
+            // Cho phép nộp lại nếu application không ở trạng thái đã kết thúc
+            if (application.Status == "Rejected" || application.Status == "Cancelled" || application.Status == "Completed")
             {
                 TempData["ErrorMessage"] = "Bạn không thể nộp kết quả dự án ở trạng thái hiện tại.";
                 return RedirectToAction("MyApplications", "Application");
             }
 
+            // Lấy submission gần nhất của application này để hiển thị thông tin mặc định
+            var lastSubmission = await _context.ProjectSubmissions
+                .Where(s => s.ApplicationID == applicationId && s.IsActive)
+                .OrderByDescending(s => s.SubmittedAt)
+                .FirstOrDefaultAsync();
+
             var model = new ProjectSubmissionViewModel
             {
                 ApplicationID = applicationId,
-                ProjectTitle = application.Project.Title,
-                StudentName = application.User.FullName,
-                BusinessName = application.Project.Business?.FullName ?? application.Project.Business?.CompanyName ?? "Không xác định"
+                ProjectTitle = application.Project?.Title ?? "Không xác định",
+                StudentName = application.User?.FullName ?? "Không xác định",
+                BusinessName = application.Project?.Business?.FullName ?? application.Project?.Business?.CompanyName ?? "Không xác định"
             };
+
+            // Nếu có submission trước đó và đang ở trạng thái Pending hoặc Rejected, 
+            // pre-fill thông tin từ submission cũ để sinh viên có thể chỉnh sửa
+            if (lastSubmission != null && (lastSubmission.Status == "Pending" || lastSubmission.Status == "Rejected"))
+            {
+                model.Title = lastSubmission.Title;
+                model.Description = lastSubmission.Description;
+                
+                // Thông báo cho sinh viên biết họ đang nộp lại
+                if (lastSubmission.Status == "Pending")
+                {
+                    ViewBag.ResubmitMessage = "Bạn đang nộp lại kết quả đang chờ duyệt. Kết quả mới sẽ thay thế kết quả cũ.";
+                }
+                else if (lastSubmission.Status == "Rejected")
+                {
+                    ViewBag.ResubmitMessage = "Bạn đang nộp lại kết quả đã bị từ chối. Hãy xem xét phản hồi từ doanh nghiệp để cải thiện bài nộp.";
+                    ViewBag.PreviousFeedback = lastSubmission.BusinessFeedback;
+                }
+            }
 
             ViewBag.ProjectId = application.ProjectID;
             return View(model);
@@ -85,71 +112,124 @@ namespace StudentFreelance.Controllers
         [Authorize(Roles = "Student")]
         public async Task<IActionResult> Create(ProjectSubmissionViewModel model)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                // Lấy lại thông tin application nếu model không hợp lệ
-                var application = await _context.StudentApplications
+                // Loại bỏ các trường không cần thiết khỏi ModelState validation
+                ModelState.Remove("Status");
+                ModelState.Remove("BusinessFeedback");
+                ModelState.Remove("FeedbackDate");
+                ModelState.Remove("SubmittedAt");
+                ModelState.Remove("ProjectTitle");
+                ModelState.Remove("StudentName");
+                ModelState.Remove("BusinessName");
+
+                if (!ModelState.IsValid)
+                {
+                    // Lấy lại thông tin application nếu model không hợp lệ
+                    var application = await _context.StudentApplications
+                        .Include(a => a.Project)
+                            .ThenInclude(p => p.Business)
+                        .Include(a => a.User)
+                        .FirstOrDefaultAsync(a => a.ApplicationID == model.ApplicationID);
+
+                    if (application != null)
+                    {
+                        model.ProjectTitle = application.Project?.Title ?? "Không xác định";
+                        model.StudentName = application.User?.FullName ?? "Không xác định";
+                        model.BusinessName = application.Project?.Business?.FullName ?? application.Project?.Business?.CompanyName ?? "Không xác định";
+                        ViewBag.ProjectId = application.ProjectID;
+                    }
+
+                    return View(model);
+                }
+
+                // Kiểm tra xem đơn ứng tuyển có tồn tại không
+                var app = await _context.StudentApplications
                     .Include(a => a.Project)
+                        .ThenInclude(p => p.Business)
                     .Include(a => a.User)
                     .FirstOrDefaultAsync(a => a.ApplicationID == model.ApplicationID);
 
-                if (application != null)
+                if (app == null)
                 {
-                    model.ProjectTitle = application.Project.Title;
-                    model.StudentName = application.User.FullName;
-                    model.BusinessName = application.Project.Business?.FullName ?? application.Project.Business?.CompanyName ?? "Không xác định";
-                    ViewBag.ProjectId = application.ProjectID;
+                    return NotFound("Không tìm thấy đơn ứng tuyển.");
                 }
 
-                return View(model);
+                // Kiểm tra xem người dùng hiện tại có phải là người sở hữu đơn ứng tuyển này không
+                var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                if (app.UserID != currentUserId)
+                {
+                    return Forbid();
+                }
+
+                // Kiểm tra xem trạng thái đơn ứng tuyển có cho phép nộp kết quả không
+                if (app.Status == "Rejected" || app.Status == "Cancelled" || app.Status == "Completed")
+                {
+                    TempData["ErrorMessage"] = "Bạn không thể nộp kết quả dự án ở trạng thái hiện tại.";
+                    return RedirectToAction("MyApplications", "Application");
+                }
+
+                // Tạo đối tượng ProjectSubmission
+                var submission = new ProjectSubmission
+                {
+                    ApplicationID = model.ApplicationID,
+                    Title = model.Title,
+                    Description = model.Description,
+                    Status = "Pending", // Mặc định là đang chờ duyệt
+                    SubmittedAt = DateTime.Now,
+                    IsActive = true
+                };
+
+                // Lưu submission vào database
+                var createdSubmission = await _submissionService.CreateSubmissionAsync(submission);
+                if (createdSubmission == null)
+                {
+                    TempData["ErrorMessage"] = "Có lỗi xảy ra khi nộp kết quả dự án.";
+                    return RedirectToAction("MyApplications", "Application");
+                }
+
+                // Xử lý file đính kèm nếu có
+                if (model.Attachments != null && model.Attachments.Count > 0)
+                {
+                    var files = model.Attachments.Where(f => f != null && f.Length > 0).ToList();
+                    if (files.Count > 0)
+                    {
+                        // Lưu file đính kèm
+                        await SaveAttachments(files, createdSubmission.SubmissionID, currentUserId);
+                    }
+                }
+                // Fallback nếu model.Attachments không chứa file, nhưng files được gửi trong form
+                else if (Request.Form.Files.Count > 0)
+                {
+                    var files = new List<IFormFile>();
+                    foreach (var file in Request.Form.Files)
+                    {
+                        files.Add(file);
+                    }
+                    if (files.Count > 0)
+                    {
+                        // Lưu file đính kèm
+                        await SaveAttachments(files, createdSubmission.SubmissionID, currentUserId);
+                    }
+                }
+
+                // Cập nhật trạng thái application sang PendingReview
+                if (app.Status == "Accepted")
+                {
+                    app.Status = "PendingReview";
+                    app.LastStatusUpdate = DateTime.Now;
+                    _context.StudentApplications.Update(app);
+                    await _context.SaveChangesAsync();
+                }
+
+                TempData["SuccessMessage"] = "Nộp kết quả dự án thành công.";
+                return RedirectToAction("Details", "Project", new { id = app.ProjectID });
             }
-
-            // Kiểm tra xem đơn ứng tuyển có tồn tại không
-            var app = await _context.StudentApplications
-                .Include(a => a.Project)
-                .FirstOrDefaultAsync(a => a.ApplicationID == model.ApplicationID);
-
-            if (app == null)
-                return NotFound();
-
-            // Kiểm tra xem người dùng hiện tại có phải là người sở hữu đơn ứng tuyển này không
-            var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            if (app.UserID != currentUserId)
-                return Forbid();
-
-            // Tạo submission mới
-            var submission = new ProjectSubmission
+            catch (Exception ex)
             {
-                ApplicationID = model.ApplicationID,
-                Title = model.Title,
-                Description = model.Description,
-                SubmittedAt = DateTime.Now,
-                Status = "Pending",
-                IsActive = true
-            };
-
-            // Lưu submission
-            var createdSubmission = await _submissionService.CreateSubmissionAsync(submission);
-
-            // Xử lý file đính kèm
-            if (model.Attachments != null && model.Attachments.Any(f => f != null && f.Length > 0))
-            {
-                try
-                {
-                    await SaveAttachments(model.Attachments, createdSubmission.SubmissionID, currentUserId);
-                }
-                catch (Exception ex)
-                {
-                    TempData["AttachmentError"] = "Kết quả dự án đã được nộp, nhưng có lỗi khi upload file đính kèm.";
-                    Console.WriteLine($"Error uploading attachments: {ex}");
-                }
+                TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
+                return RedirectToAction("MyApplications", "Application");
             }
-
-            TempData["SuccessMessage"] = "Kết quả dự án đã được nộp thành công!";
-            
-            // Chuyển hướng về trang Project Details
-            var projectId = app.ProjectID;
-            return RedirectToAction("Details", "Project", new { id = projectId });
         }
 
         // GET: /ProjectSubmission/MySubmissions/{applicationId}
@@ -159,6 +239,7 @@ namespace StudentFreelance.Controllers
             // Kiểm tra xem đơn ứng tuyển có tồn tại không
             var application = await _context.StudentApplications
                 .Include(a => a.Project)
+                    .ThenInclude(p => p.Business)
                 .Include(a => a.User)
                 .FirstOrDefaultAsync(a => a.ApplicationID == applicationId);
 
@@ -176,20 +257,20 @@ namespace StudentFreelance.Controllers
             var model = new ProjectSubmissionListViewModel
             {
                 ApplicationID = applicationId,
-                ProjectTitle = application.Project.Title,
-                StudentName = application.User.FullName,
-                ApplicationStatus = application.Status,
+                ProjectTitle = application.Project?.Title ?? "Không xác định",
+                StudentName = application.User?.FullName ?? "Không xác định",
+                ApplicationStatus = application.Status ?? "Không xác định",
                 Submissions = submissions.Select(s => new ProjectSubmissionViewModel
                 {
                     SubmissionID = s.SubmissionID,
                     ApplicationID = s.ApplicationID,
-                    Title = s.Title,
-                    Description = s.Description,
+                    Title = s.Title ?? "Không xác định",
+                    Description = s.Description ?? "Không xác định",
                     SubmittedAt = s.SubmittedAt,
-                    Status = s.Status,
-                    BusinessFeedback = s.BusinessFeedback,
+                    Status = s.Status ?? "Không xác định",
+                    BusinessFeedback = s.BusinessFeedback ?? "",
                     FeedbackDate = s.FeedbackDate,
-                    ExistingAttachments = s.Attachments.ToList()
+                    ExistingAttachments = s.Attachments?.ToList() ?? new List<ProjectSubmissionAttachment>()
                 }).ToList()
             };
 
@@ -204,6 +285,7 @@ namespace StudentFreelance.Controllers
             // Kiểm tra xem đơn ứng tuyển có tồn tại không
             var application = await _context.StudentApplications
                 .Include(a => a.Project)
+                    .ThenInclude(p => p.Business)
                 .Include(a => a.User)
                 .FirstOrDefaultAsync(a => a.ApplicationID == applicationId);
 
@@ -214,7 +296,7 @@ namespace StudentFreelance.Controllers
             var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             bool isAdmin = User.IsInRole("Admin") || User.IsInRole("Moderator");
 
-            if (application.Project.BusinessID != currentUserId && !isAdmin)
+            if (application.Project?.BusinessID != currentUserId && !isAdmin)
                 return Forbid();
 
             // Lấy danh sách submission
@@ -223,20 +305,20 @@ namespace StudentFreelance.Controllers
             var model = new ProjectSubmissionListViewModel
             {
                 ApplicationID = applicationId,
-                ProjectTitle = application.Project.Title,
-                StudentName = application.User.FullName,
-                ApplicationStatus = application.Status,
+                ProjectTitle = application.Project?.Title ?? "Không xác định",
+                StudentName = application.User?.FullName ?? "Không xác định",
+                ApplicationStatus = application.Status ?? "Không xác định",
                 Submissions = submissions.Select(s => new ProjectSubmissionViewModel
                 {
                     SubmissionID = s.SubmissionID,
                     ApplicationID = s.ApplicationID,
-                    Title = s.Title,
-                    Description = s.Description,
+                    Title = s.Title ?? "Không xác định",
+                    Description = s.Description ?? "Không xác định",
                     SubmittedAt = s.SubmittedAt,
-                    Status = s.Status,
-                    BusinessFeedback = s.BusinessFeedback,
+                    Status = s.Status ?? "Không xác định",
+                    BusinessFeedback = s.BusinessFeedback ?? "",
                     FeedbackDate = s.FeedbackDate,
-                    ExistingAttachments = s.Attachments.ToList()
+                    ExistingAttachments = s.Attachments?.ToList() ?? new List<ProjectSubmissionAttachment>()
                 }).ToList()
             };
 
@@ -258,10 +340,10 @@ namespace StudentFreelance.Controllers
             bool isStudent = User.IsInRole("Student");
             bool isBusiness = User.IsInRole("Business");
 
-            if (isStudent && submission.Application.UserID != currentUserId)
+            if (isStudent && submission.Application?.UserID != currentUserId)
                 return Forbid();
 
-            if (isBusiness && submission.Application.Project.BusinessID != currentUserId)
+            if (isBusiness && submission.Application?.Project?.BusinessID != currentUserId)
                 return Forbid();
 
             if (!isAdmin && !isStudent && !isBusiness)
@@ -271,19 +353,19 @@ namespace StudentFreelance.Controllers
             {
                 SubmissionID = submission.SubmissionID,
                 ApplicationID = submission.ApplicationID,
-                Title = submission.Title,
-                Description = submission.Description,
+                Title = submission.Title ?? "Không xác định",
+                Description = submission.Description ?? "Không xác định",
                 SubmittedAt = submission.SubmittedAt,
-                Status = submission.Status,
-                BusinessFeedback = submission.BusinessFeedback,
+                Status = submission.Status ?? "Không xác định",
+                BusinessFeedback = submission.BusinessFeedback ?? "",
                 FeedbackDate = submission.FeedbackDate,
-                ExistingAttachments = submission.Attachments.ToList(),
-                ProjectTitle = submission.Application.Project.Title,
-                StudentName = submission.Application.User.FullName,
-                BusinessName = submission.Application.Project.Business?.FullName ?? submission.Application.Project.Business?.CompanyName ?? "Không xác định"
+                ExistingAttachments = submission.Attachments?.ToList() ?? new List<ProjectSubmissionAttachment>(),
+                ProjectTitle = submission.Application?.Project?.Title ?? "Không xác định",
+                StudentName = submission.Application?.User?.FullName ?? "Không xác định",
+                BusinessName = submission.Application?.Project?.Business?.FullName ?? submission.Application?.Project?.Business?.CompanyName ?? "Không xác định"
             };
 
-            ViewBag.ProjectId = submission.Application.ProjectID;
+            ViewBag.ProjectId = submission.Application?.ProjectID;
             return View(model);
         }
 
@@ -318,6 +400,9 @@ namespace StudentFreelance.Controllers
         [Authorize(Roles = "Business,Admin,Moderator")]
         public async Task<IActionResult> Feedback(ProjectSubmissionFeedbackViewModel model)
         {
+            // Loại bỏ các trường không cần thiết khỏi ModelState validation
+            ModelState.Remove("SubmissionID");
+            
             if (!ModelState.IsValid)
                 return View(model);
 
@@ -329,7 +414,7 @@ namespace StudentFreelance.Controllers
             var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             bool isAdmin = User.IsInRole("Admin") || User.IsInRole("Moderator");
 
-            if (submission.Application.Project.BusinessID != currentUserId && !isAdmin)
+            if (submission.Application?.Project?.BusinessID != currentUserId && !isAdmin)
                 return Forbid();
 
             // Xử lý phản hồi
@@ -345,7 +430,7 @@ namespace StudentFreelance.Controllers
             }
 
             // Chuyển hướng về trang Project Details
-            var projectId = submission.Application.ProjectID;
+            var projectId = submission.Application?.ProjectID;
             return RedirectToAction("Details", "Project", new { id = projectId });
         }
 
@@ -406,7 +491,7 @@ namespace StudentFreelance.Controllers
             var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             bool isAdmin = User.IsInRole("Admin") || User.IsInRole("Moderator");
 
-            if (application.Project.BusinessID != currentUserId && !isAdmin)
+            if (application.Project?.BusinessID != currentUserId && !isAdmin)
                 return Forbid();
 
             // Kiểm tra xem đơn ứng tuyển có ở trạng thái "Completed" không
@@ -442,42 +527,50 @@ namespace StudentFreelance.Controllers
         // Helper method to save attachments
         private async Task SaveAttachments(List<IFormFile> files, int submissionId, int uploaderId)
         {
-            var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "submissions");
+            if (files == null || files.Count == 0)
+                return;
+
+            // Kiểm tra thư mục uploads có tồn tại không
+            string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "submissions");
             if (!Directory.Exists(uploadsFolder))
             {
                 Directory.CreateDirectory(uploadsFolder);
             }
 
+            // Xử lý từng file
             foreach (var file in files)
             {
-                if (file != null && file.Length > 0)
+                if (file == null || file.Length == 0)
+                    continue;
+
+                // Tạo tên file duy nhất để tránh trùng lặp
+                string uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                // Lưu file vào ổ đĩa
+                using (var stream = new FileStream(filePath, FileMode.Create))
                 {
-                    // Generate unique filename
-                    var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(file.FileName);
-                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                    // Save file to disk
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await file.CopyToAsync(stream);
-                    }
-
-                    // Create attachment record
-                    var attachment = new ProjectSubmissionAttachment
-                    {
-                        SubmissionID = submissionId,
-                        FileName = Path.GetFileName(file.FileName),
-                        FilePath = "/uploads/submissions/" + uniqueFileName,
-                        FileSize = file.Length,
-                        ContentType = file.ContentType,
-                        UploadedAt = DateTime.Now,
-                        UploadedBy = uploaderId,
-                        IsActive = true
-                    };
-
-                    await _submissionService.SaveSubmissionAttachmentAsync(attachment);
+                    await file.CopyToAsync(stream);
                 }
+
+                // Create attachment record
+                var attachment = new ProjectSubmissionAttachment
+                {
+                    SubmissionID = submissionId,
+                    FileName = Path.GetFileName(file.FileName),
+                    FilePath = "/uploads/submissions/" + uniqueFileName,
+                    FileSize = file.Length,
+                    ContentType = file.ContentType,
+                    Description = "File đính kèm cho kết quả dự án",
+                    UploadedAt = DateTime.Now,
+                    UploadedBy = uploaderId,
+                    IsActive = true
+                };
+
+                // Lưu thông tin file vào database
+                await _submissionService.SaveSubmissionAttachmentAsync(attachment);
             }
         }
     }
 }
+ 

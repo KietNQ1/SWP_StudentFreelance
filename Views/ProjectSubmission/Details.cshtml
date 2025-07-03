@@ -68,7 +68,7 @@
                                     <td>@(attachment.FileSize / 1024) KB</td>
                                     <td>@attachment.ContentType</td>
                                     <td>
-                                        <a href="@attachment.FilePath" class="btn btn-sm btn-primary" target="_blank">Tải xuống</a>
+                                        <a href="@Url.Content(attachment.FilePath)" class="btn btn-sm btn-primary" target="_blank">Tải xuống</a>
                                     </td>
                                 </tr>
                             }

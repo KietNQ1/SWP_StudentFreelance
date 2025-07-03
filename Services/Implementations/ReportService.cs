@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using StudentFreelance.DbContext;
-using StudentFreelance.Interfaces;
+using StudentFreelance.Services.Interfaces;
 using StudentFreelance.Models;
 using System;
 using System.Collections.Generic;

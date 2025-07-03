@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StudentFreelance.DbContext;
 
@@ -11,9 +12,11 @@ using StudentFreelance.DbContext;
 namespace StudentFreelance.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250630172311_Create")]
+    partial class Create
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -856,9 +859,6 @@ namespace StudentFreelance.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("StudentApplicationApplicationID")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("SubmittedAt")
                         .HasColumnType("datetime2");
 
@@ -870,8 +870,6 @@ namespace StudentFreelance.Migrations
                     b.HasKey("SubmissionID");
 
                     b.HasIndex("ApplicationID");
-
-                    b.HasIndex("StudentApplicationApplicationID");
 
                     b.ToTable("ProjectSubmissions");
                 });
@@ -889,6 +887,7 @@ namespace StudentFreelance.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FileName")
@@ -1076,9 +1075,6 @@ namespace StudentFreelance.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ApplicationID"));
 
-                    b.Property<bool>("BusinessConfirmedCompletion")
-                        .HasColumnType("bit");
-
                     b.Property<string>("BusinessNotes")
                         .HasColumnType("nvarchar(max)");
 
@@ -1095,26 +1091,17 @@ namespace StudentFreelance.Migrations
                     b.Property<DateTime>("DateApplied")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("InterviewDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("InterviewResult")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("InterviewSchedule")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
                     b.Property<bool>("IsPaid")
                         .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastStatusUpdate")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PortfolioLink")
                         .HasColumnType("nvarchar(max)");
@@ -1125,18 +1112,12 @@ namespace StudentFreelance.Migrations
                     b.Property<string>("ResumeAttachment")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ResumeLink")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<decimal>("Salary")
                         .HasColumnType("decimal(15,2)");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("StudentConfirmedCompletion")
-                        .HasColumnType("bit");
 
                     b.Property<int>("UserID")
                         .HasColumnType("int");
@@ -1584,14 +1565,10 @@ namespace StudentFreelance.Migrations
             modelBuilder.Entity("StudentFreelance.Models.ProjectSubmission", b =>
                 {
                     b.HasOne("StudentFreelance.Models.StudentApplication", "Application")
-                        .WithMany()
-                        .HasForeignKey("ApplicationID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("StudentFreelance.Models.StudentApplication", null)
                         .WithMany("Submissions")
-                        .HasForeignKey("StudentApplicationApplicationID");
+                        .HasForeignKey("ApplicationID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Application");
                 });
@@ -1601,13 +1578,13 @@ namespace StudentFreelance.Migrations
                     b.HasOne("StudentFreelance.Models.ProjectSubmission", "Submission")
                         .WithMany("Attachments")
                         .HasForeignKey("SubmissionID")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("StudentFreelance.Models.ApplicationUser", "UploadedByUser")
                         .WithMany()
                         .HasForeignKey("UploadedBy")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Submission");

@@ -27,6 +27,7 @@ namespace StudentFreelance.Services.Implementations
             return await _context.ProjectSubmissions
                 .Include(s => s.Application)
                     .ThenInclude(a => a.Project)
+                        .ThenInclude(p => p.Business)
                 .Include(s => s.Application)
                     .ThenInclude(a => a.User)
                 .Include(s => s.Attachments)
@@ -176,9 +177,24 @@ namespace StudentFreelance.Services.Implementations
 
         public async Task<bool> SaveSubmissionAttachmentAsync(ProjectSubmissionAttachment attachment)
         {
-            _context.ProjectSubmissionAttachments.Add(attachment);
-            await _context.SaveChangesAsync();
-            return true;
+            try
+            {
+                // Check if submission exists
+                var submission = await _context.ProjectSubmissions.FindAsync(attachment.SubmissionID);
+                if (submission == null)
+                {
+                    return false;
+                }
+                
+                _context.ProjectSubmissionAttachments.Add(attachment);
+                await _context.SaveChangesAsync();
+                
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         public async Task<bool> DeleteSubmissionAttachmentAsync(int attachmentId)
