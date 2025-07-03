@@ -127,6 +127,8 @@
         --secondary-color: #D3E671;
         --accent-color: #F8ED8C;
         --highlight-color: #FF8989;
+        --orange-accent: #FF9800;
+        --blue-accent: #2196F3;
     }
     
     /* General styles */
@@ -139,20 +141,40 @@
         padding: 25px;
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        border-top: 4px solid var(--primary-color);
     }
     
     .text-primary {
         color: var(--primary-color) !important;
     }
     
+    h2.mb-4.text-primary {
+        border-bottom: 2px solid var(--primary-color);
+        padding-bottom: 10px;
+        display: inline-block;
+    }
+    
+    /* Search button styling */
     .btn-primary {
-        background-color: var(--primary-color) !important;
+        background: linear-gradient(to right, var(--primary-color), #6d8a38) !important;
         border-color: var(--primary-color) !important;
+        box-shadow: 0 2px 4px rgba(137, 172, 70, 0.3);
+        color: white;
+        font-weight: 500;
+        padding: 10px 20px;
+        border-radius: 4px;
     }
     
     .btn-primary:hover, .btn-primary:focus {
-        background-color: #7b9b3d !important;
-        border-color: #7b9b3d !important;
+        background: linear-gradient(to right, #6d8a38, var(--primary-color)) !important;
+        border-color: #6d8a38 !important;
+        box-shadow: 0 4px 8px rgba(137, 172, 70, 0.4);
+        transform: translateY(-1px);
+    }
+    
+    .btn-primary .bi {
+        color: white;
+        margin-right: 5px;
     }
     
     .search-card {
@@ -161,9 +183,9 @@
     }
     
     .card-header.bg-secondary {
-        background-color: var(--secondary-color) !important;
+        background: linear-gradient(to right, var(--primary-color), #a1c95a) !important;
         border-bottom: none;
-        color: #444;
+        color: white;
     }
     
     .business-list .card {
@@ -175,8 +197,8 @@
     
     .business-list .card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        border-color: var(--secondary-color);
+        box-shadow: 0 4px 12px rgba(137, 172, 70, 0.2);
+        border-color: var(--primary-color);
         background-color: #f7fbed;
     }
     
@@ -188,8 +210,8 @@
     .profile-avatar-placeholder {
         width: 60px;
         height: 60px;
-        background-color: var(--secondary-color);
-        color: #556b29;
+        background-color: var(--primary-color);
+        color: white;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -199,38 +221,53 @@
     }
     
     .rating-stars {
-        color: var(--accent-color);
+        color: #FFD700;
     }
     
+    /* View profile button styling */
     .btn-view-profile {
-        background-color: var(--secondary-color);
-        color: #4e5e2d;
+        background: linear-gradient(to right, var(--primary-color), #a1c95a);
+        color: white;
         border: none;
         transition: all 0.3s ease;
         font-weight: 500;
+        padding: 8px 12px;
+        border-radius: 20px;
     }
     
     .btn-view-profile:hover, .btn-view-profile:focus {
-        background-color: var(--primary-color);
+        background: linear-gradient(to right, #6d8a38, var(--primary-color));
         color: white;
         transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(137, 172, 70, 0.3);
     }
     
     .alert-warning {
         background-color: var(--accent-color);
         border-color: #e0d87d;
         color: #6b6219;
+        border-left: 4px solid var(--primary-color);
     }
     
     /* Form controls styling */
     .form-control, .form-select {
         border: 1px solid #dbe8c6;
         padding: 10px;
+        border-radius: 4px;
+    }
+    
+    .input-group .form-control {
+        border-right: none;
+    }
+    
+    .input-group .btn {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
     }
     
     .form-control:focus, .form-select:focus {
-        border-color: var(--secondary-color);
-        box-shadow: 0 0 0 0.25rem rgba(211, 230, 113, 0.25);
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(137, 172, 70, 0.25);
     }
     
     .form-label {
@@ -238,14 +275,32 @@
         font-weight: 500;
     }
     
-    /* Additional styles with secondary color */
+    /* Additional styles with primary color */
     .info-badge {
-        background-color: var(--secondary-color);
-        color: #4e5e2d;
+        background-color: var(--primary-color);
+        color: white;
         border-radius: 20px;
         padding: 5px 10px;
         display: inline-block;
         font-size: 0.9rem;
+    }
+    
+    /* Rating badge specific styling */
+    .info-badge:first-child {
+        background: linear-gradient(to right, var(--orange-accent), #FFB74D);
+    }
+    
+    .info-badge:first-child .bi-star-fill {
+        color: #FFD700;
+    }
+    
+    /* Project count badge specific styling */
+    .info-badge:last-child {
+        background: linear-gradient(to right, var(--blue-accent), #64B5F6);
+    }
+    
+    .info-badge:last-child .bi-briefcase-fill {
+        color: #E1F5FE;
     }
     
     /* Icons styling */
@@ -253,14 +308,25 @@
         color: var(--primary-color);
     }
     
+    /* Icons inside info badges should be white */
+    .info-badge .bi {
+        color: white;
+    }
+    
     /* Select2 custom styling */
     .select2-container--default .select2-selection--single {
         border-color: #dbe8c6;
+        height: 42px;
+        padding: 6px;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 42px;
     }
     
     .select2-container--default .select2-results__option--highlighted[aria-selected] {
-        background-color: var(--secondary-color);
-        color: #4e5e2d;
+        background-color: var(--primary-color);
+        color: white;
     }
 </style>
 

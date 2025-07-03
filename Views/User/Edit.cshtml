@@ -1,81 +1,296 @@
-@model IEnumerable<StudentFreelance.Models.ApplicationUser>
+@model StudentFreelance.ViewModels.UserProfileViewModel
 @{
-    ViewData["Title"] = "User Management";
-    Layout = "~/Views/Shared/_Dashboard.cshtml";
+    ViewData["Title"] = "Edit Profile";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<link rel="stylesheet" href="~/css/userManagest.css" />
+<div class="container mt-4">
+    <h2>Edit Profile</h2>
+    
+    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Personal Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="FullName" class="form-label">Full Name</label>
+                            <input asp-for="FullName" class="form-control" />
+                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        </div>
 
-<form asp-action="Index" method="get" class="topbar">
-    <h1>Freelancer Management</h1>
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label">Email</label>
+                            <input asp-for="Email" class="form-control" disabled />
+                        </div>
 
-    <input type="text" name="searchTerm" placeholder="Search freelancer..."
-           value="@Context.Request.Query["searchTerm"]" />
+                        <div class="mb-3">
+                            <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
+                            <input asp-for="PhoneNumber" class="form-control" />
+                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                        </div>
 
-    <select name="selectedRole">
-        <option value="">Roles</option>
-        @foreach (var role in (ViewBag.AllRoles as List<string> ?? new List<string>()))
-        {
-            <option value="@role" selected="@(role == Context.Request.Query["selectedRole"])">@role</option>
-        }
-    </select>
-
-    <select name="status">
-        <option value="">Status</option>
-        <option value="Active" selected="@(Context.Request.Query["status"] == "Active")">Active</option>
-        <option value="Inactive" selected="@(Context.Request.Query["status"] == "Inactive")">Inactive</option>
-    </select>
-
-    <button type="submit">Filter</button>
-</form>
-
-<table class="styled-table">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Full Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Status</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model.Any())
-        {
-            int index = 1;
-            foreach (var user in Model)
-            {
-                var statusClass = user.IsActive ? "status-active" : "status-inactive";
-                var rowClass = user.IsActive ? "" : "text-muted";
-                <tr class="@rowClass">
-                    <td>@index</td>
-                    <td>@(string.IsNullOrEmpty(user.FullName) ? user.Email : user.FullName)</td>
-                    <td>@user.Email</td>
-                    <td>@user.PhoneNumber</td>
-                    <td class="@statusClass">@(user.IsActive ? "Active" : "Inactive")</td>
-                    <td>
-                        <a href="@Url.Action("Edit", "AdminUser", new { id = user.Id })" class="action-btn edit">✏️ Edit</a>
-                        @if (user.IsActive)
+                        @if (User.IsInRole("Student"))
                         {
-                            <form asp-action="Deactivate" asp-route-id="@user.Id" method="post" style="display:inline;">
-                                <button type="submit" class="action-btn delete" onclick="return confirm('Bạn có chắc chắn muốn ẩn người dùng này?');">❌ Delete</button>
-                            </form>
+                            <div class="mb-3">
+                                <label asp-for="University" class="form-label">University</label>
+                                <input asp-for="University" class="form-control" />
+                                <span asp-validation-for="University" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="Major" class="form-label">Major</label>
+                                <input asp-for="Major" class="form-control" />
+                                <span asp-validation-for="Major" class="text-danger"></span>
+                            </div>
                         }
-                        else
+
+                        @if (User.IsInRole("Business"))
                         {
-                            <form asp-action="Restore" asp-route-id="@user.Id" method="post" style="display:inline;">
-                                <button type="submit" class="action-btn restore" onclick="return confirm('Khôi phục người dùng này?');">♻️ Restore</button>
-                            </form>
+                            <div class="mb-3">
+                                <label asp-for="CompanyName" class="form-label">Company Name</label>
+                                <input asp-for="CompanyName" class="form-control" />
+                                <span asp-validation-for="CompanyName" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="Industry" class="form-label">Industry</label>
+                                <input asp-for="Industry" class="form-control" />
+                                <span asp-validation-for="Industry" class="text-danger"></span>
+                            </div>
                         }
-                    </td>
-                </tr>
-                index++;
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Address</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="ProvinceID" class="form-label">Province</label>
+                            <select asp-for="ProvinceID" class="form-select" id="provinceSelect">
+                                <option value="">-- Select Province --</option>
+                                @foreach (var province in Model.Provinces)
+                                {
+                                    <option value="@province.ID">@province.Name</option>
+                                }
+                            </select>
+                            <span asp-validation-for="ProvinceID" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="DistrictID" class="form-label">District</label>
+                            <select asp-for="DistrictID" class="form-select" id="districtSelect">
+                                <option value="">-- Select District --</option>
+                                @foreach (var district in Model.Districts)
+                                {
+                                    <option value="@district.ID">@district.Name</option>
+                                }
+                            </select>
+                            <span asp-validation-for="DistrictID" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="WardID" class="form-label">Ward</label>
+                            <select asp-for="WardID" class="form-select" id="wardSelect">
+                                <option value="">-- Select Ward --</option>
+                                @foreach (var ward in Model.Wards)
+                                {
+                                    <option value="@ward.ID">@ward.Name</option>
+                                }
+                            </select>
+                            <span asp-validation-for="WardID" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="DetailAddress" class="form-label">Detail Address</label>
+                            <input asp-for="DetailAddress" class="form-control" />
+                            <span asp-validation-for="DetailAddress" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                @if (User.IsInRole("Student"))
+                {
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5>Skills</h5>
+                            <button type="button" class="btn btn-sm btn-primary" id="addSkillBtn">Add Skill</button>
+                        </div>
+                        <div class="card-body">
+                            <div id="skillsContainer">
+                                @for (int i = 0; i < Model.Skills.Count; i++)
+                                {
+                                    <div class="skill-item mb-3 border p-3 rounded">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h6>Skill #@(i + 1)</h6>
+                                            <button type="button" class="btn btn-sm btn-danger remove-skill">Remove</button>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Skill</label>
+                                                <select name="Skills[@i].SkillID" class="form-select skill-select">
+                                                    <option value="">-- Select Skill --</option>
+                                                    @foreach (var skill in Model.AvailableSkills)
+                                                    {
+                                                        <option value="@skill.ID" selected="@(Model.Skills[i].SkillID == skill.ID)">@skill.Name</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Proficiency Level</label>
+                                                <select name="Skills[@i].ProficiencyLevelID" class="form-select level-select">
+                                                    <option value="">-- Select Level --</option>
+                                                    @foreach (var level in Model.AvailableProficiencyLevels)
+                                                    {
+                                                        <option value="@level.ID" selected="@(Model.Skills[i].ProficiencyLevelID == level.ID)">@level.Name</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Profile Picture</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-3">
+                            @if (!string.IsNullOrEmpty(Model.AvatarPath))
+                            {
+                                <img src="@Model.AvatarPath" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;" />
+                            }
+                            else
+                            {
+                                <img src="/images/default-avatar.png" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;" />
+                            }
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="AvatarImage" class="form-label">Upload New Image</label>
+                            <input asp-for="AvatarImage" type="file" class="form-control" accept="image/*" />
+                            <span asp-validation-for="AvatarImage" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-end mt-3 mb-5">
+            <a asp-action="Profile" class="btn btn-secondary me-2">Cancel</a>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Province, district, ward cascading dropdowns
+            $('#provinceSelect').change(function () {
+                var provinceId = $(this).val();
+                if (provinceId) {
+                    $.getJSON('/User/GetDistricts?provinceId=' + provinceId, function (data) {
+                        var districtSelect = $('#districtSelect');
+                        districtSelect.empty();
+                        districtSelect.append('<option value="">-- Select District --</option>');
+                        $.each(data, function (i, district) {
+                            districtSelect.append('<option value="' + district.id + '">' + district.name + '</option>');
+                        });
+                        $('#wardSelect').empty().append('<option value="">-- Select Ward --</option>');
+                    });
+                } else {
+                    $('#districtSelect').empty().append('<option value="">-- Select District --</option>');
+                    $('#wardSelect').empty().append('<option value="">-- Select Ward --</option>');
+                }
+            });
+
+            $('#districtSelect').change(function () {
+                var districtId = $(this).val();
+                if (districtId) {
+                    $.getJSON('/User/GetWards?districtId=' + districtId, function (data) {
+                        var wardSelect = $('#wardSelect');
+                        wardSelect.empty();
+                        wardSelect.append('<option value="">-- Select Ward --</option>');
+                        $.each(data, function (i, ward) {
+                            wardSelect.append('<option value="' + ward.id + '">' + ward.name + '</option>');
+                        });
+                    });
+                } else {
+                    $('#wardSelect').empty().append('<option value="">-- Select Ward --</option>');
+                }
+            });
+
+            // Set selected values
+            if (@Json.Serialize(Model.ProvinceID) != null) {
+                $('#provinceSelect').val(@Json.Serialize(Model.ProvinceID));
             }
-        }
-        else
-        {
-            <tr><td colspan="6">No users found.</td></tr>
-        }
-    </tbody>
-</table>
+            if (@Json.Serialize(Model.DistrictID) != null) {
+                $('#districtSelect').val(@Json.Serialize(Model.DistrictID));
+            }
+            if (@Json.Serialize(Model.WardID) != null) {
+                $('#wardSelect').val(@Json.Serialize(Model.WardID));
+            }
+
+            // Skills management
+            var skillTemplate = function(index) {
+                return `
+                <div class="skill-item mb-3 border p-3 rounded">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6>Skill #${index + 1}</h6>
+                        <button type="button" class="btn btn-sm btn-danger remove-skill">Remove</button>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Skill</label>
+                            <select name="Skills[${index}].SkillID" class="form-select skill-select">
+                                <option value="">-- Select Skill --</option>
+                                @foreach (var skill in Model.AvailableSkills)
+                                {
+                                    <option value="@skill.ID">@skill.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Proficiency Level</label>
+                            <select name="Skills[${index}].ProficiencyLevelID" class="form-select level-select">
+                                <option value="">-- Select Level --</option>
+                                @foreach (var level in Model.AvailableProficiencyLevels)
+                                {
+                                    <option value="@level.ID">@level.Name</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                `;
+            };
+
+            $('#addSkillBtn').click(function() {
+                var index = $('.skill-item').length;
+                $('#skillsContainer').append(skillTemplate(index));
+                updateSkillNumbers();
+            });
+
+            $(document).on('click', '.remove-skill', function() {
+                $(this).closest('.skill-item').remove();
+                updateSkillNumbers();
+            });
+
+            function updateSkillNumbers() {
+                $('.skill-item').each(function(i) {
+                    $(this).find('h6').text('Skill #' + (i + 1));
+                    $(this).find('.skill-select').attr('name', 'Skills[' + i + '].SkillID');
+                    $(this).find('.level-select').attr('name', 'Skills[' + i + '].ProficiencyLevelID');
+                });
+            }
+        });
+    </script>
+}

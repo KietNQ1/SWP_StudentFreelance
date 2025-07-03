@@ -1,6 +1,6 @@
 using StudentFreelance.Models;
 
-namespace StudentFreelance.Interfaces
+namespace StudentFreelance.Services.Interfaces
 {
     public interface IReportService
     {
