@@ -1,394 +1,333 @@
-@model IEnumerable<StudentFreelance.Models.ApplicationUser>
+@model StudentFreelance.ViewModels.SearchStudentsViewModel
+@using System.Linq
 @{
     ViewData["Title"] = "Tìm kiếm sinh viên";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    var students = Model.Students;
+    var skills = Model.Skills;
+    var categories = Model.Categories;
+    var selectedSkillIds = Model.SelectedSkillIds;
+    
+    // Create a list of selected skills for display purposes
+    var selectedSkills = new List<dynamic>();
+    foreach (var skillId in selectedSkillIds)
+    {
+        var skill = skills.FirstOrDefault(s => s.SkillID == skillId);
+        if (skill != null)
+        {
+            selectedSkills.Add(new { SkillID = skill.SkillID, SkillName = skill.SkillName });
+        }
+    }
 }
 
-<div class="container mt-4">
-    <h2 class="mb-4 text-primary">Tìm kiếm sinh viên</h2>
+@section Styles {
+    <link rel="stylesheet" href="~/css/search/searchStudents.css" asp-append-version="true" />
+}
+
+<div class="container my-5">
+    <div class="mb-4">
+        <h2 class="mb-4 text-primary">Tìm kiếm sinh viên</h2>
+    </div>
 
     <div class="card mb-4 search-card">
-        <div class="card-header bg-secondary">
-            <h5 class="mb-0 text-white">Bộ lọc tìm kiếm</h5>
+        <div class="card-header bg-secondary text-white">
+            <i class="bi bi-funnel-fill me-2"></i>Bộ lọc tìm kiếm
         </div>
         <div class="card-body">
-            <form asp-action="SearchStudents" method="get" class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label">Tìm kiếm theo tên/trường/chuyên ngành</label>
-                    <div class="input-group">
-                        <input type="text" name="query" value="@ViewBag.Query" class="form-control" placeholder="Nhập tên, trường học hoặc chuyên ngành...">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-search"></i> Tìm kiếm
-                        </button>
+            <form method="get" asp-action="SearchStudents">
+                <div class="row mb-4">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Tên, Email hoặc Trường</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" name="query" value="@ViewBag.Query" class="form-control" placeholder="Nhập từ khóa tìm kiếm...">
+                        </div>
                     </div>
-                </div>
 
-                <div class="col-md-4">
-                    <label class="form-label">Kỹ năng</label>
-                    <select name="skillIds" class="form-select" multiple>
-                        @foreach (var skill in ViewBag.Skills)
-                        {
-                            var selected = ViewBag.SkillIds != null && ViewBag.SkillIds.Contains(skill.SkillID);
-                            <option value="@skill.SkillID" selected="@selected">
-                                @skill.Category.CategoryName - @skill.SkillName
-                            </option>
-                        }
-                    </select>
-                </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Kỹ năng</label>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start" type="button" id="skillDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span id="selectedSkillsText">
+                                    @if (selectedSkillIds.Any())
+                                    {
+                                        <span>@selectedSkillIds.Count kỹ năng đã chọn</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Chọn kỹ năng...</span>
+                                    }
+                                </span>
+                            </button>
+                            <div class="dropdown-menu skill-dropdown-menu p-0 w-100" aria-labelledby="skillDropdown" data-bs-popper="static">
+                                <div class="skill-search p-2 border-bottom">
+                                    <input type="text" class="form-control form-control-sm" id="skillSearchInput" placeholder="Tìm kiếm kỹ năng...">
+                                </div>
+                                <div class="skill-categories" style="max-height: 300px; overflow-y: auto;">
+                                    @foreach (var category in categories)
+                                    {
+                                        <div class="skill-category">
+                                            <div class="dropdown-header fw-bold">@category.CategoryName</div>
+                                            @foreach (var skill in skills.Where(s => s.CategoryID == category.CategoryID))
+                                            {
+                                                <div class="dropdown-item">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input skill-checkbox" type="checkbox" value="@skill.SkillID" 
+                                                               id="skill_@skill.SkillID" name="skillIds" 
+                                                               @(selectedSkillIds.Contains(skill.SkillID) ? "checked" : "")>
+                                                        <label class="form-check-label w-100" for="skill_@skill.SkillID">
+                                                            @skill.SkillName
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                                <div class="dropdown-divider m-0"></div>
+                                <div class="p-2 d-flex justify-content-between">
+                                    <a href="@Url.Action("SearchStudents", "Search", new { query = ViewBag.Query, provinceId = ViewBag.ProvinceId })" 
+                                       class="btn btn-sm btn-outline-danger" id="clearSkills">Hủy chọn</a>
+                                    <button type="submit" class="btn btn-sm btn-primary">Áp dụng</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                <div class="col-md-4">
-                    <label class="form-label">Tỉnh/Thành phố</label>
-                    <select name="provinceId" class="form-select">
-                        <option value="">-- Tất cả --</option>
-                        @foreach (var province in ViewBag.Provinces)
-                        {
-                            var selected = ViewBag.ProvinceId != null && ViewBag.ProvinceId == province.ProvinceID;
-                            <option value="@province.ProvinceID" selected="@selected">
-                                @province.Name
-                            </option>
-                        }
-                    </select>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Tỉnh/Thành phố</label>
+                        <select name="provinceId" class="form-select">
+                            <option value="">-- Tất cả --</option>
+                            @foreach (var province in ViewBag.Provinces)
+                            {
+                                var selected = ViewBag.ProvinceId != null && ViewBag.ProvinceId == province.ProvinceID;
+                                <option value="@province.ProvinceID" selected="@selected">
+                                    @province.Name
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-12 mt-2 text-center">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-search me-2"></i>Tìm kiếm
+                        </button>
+                        <a href="@Url.Action("SearchStudents", "Search")" class="btn btn-outline-secondary ms-2">
+                            <i class="bi bi-x-circle me-2"></i>Xóa bộ lọc
+                        </a>
+                    </div>
                 </div>
             </form>
         </div>
     </div>
 
-    @if (Model.Any())
-    {
-        <div class="student-list">
-            @foreach (var student in Model)
+    <div class="row student-list mt-4">
+        @if (students.Any())
+        {
+            foreach (var student in students)
             {
-                <div class="card mb-3 search-card">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col-md-1 text-center">
-                                @if (!string.IsNullOrEmpty(student.ProfilePicturePath))
-                                {
-                                    <img src="@student.ProfilePicturePath" class="rounded-circle profile-avatar" alt="@student.FullName" style="width: 60px; height: 60px;">
-                                }
-                                else
-                                {
-                                    <div class="profile-avatar-placeholder" style="width: 60px; height: 60px;">
-                                        <span>@student.FullName.Substring(0, 1)</span>
-                                    </div>
-                                }
-                            </div>
-                            <div class="col-md-3">
-                                <h5 class="mb-0 student-name">@student.FullName</h5>
-                                <p class="text-muted mb-1">@student.University</p>
-                                <p class="text-muted mb-0">@student.Major</p>
-                            </div>
-                            <div class="col-md-5">
-                                <h6 class="mb-2 skills-title">Kỹ năng:</h6>
-                                <div class="d-flex flex-wrap gap-1">
-                                    @if (ViewBag.StudentSkills != null && ViewBag.StudentSkills.ContainsKey(student.Id))
+                var studentSkills = ViewBag.StudentSkills.ContainsKey(student.Id)
+                    ? ViewBag.StudentSkills[student.Id]
+                    : new List<StudentFreelance.Models.StudentSkill>();
+                
+                <div class="col-md-12 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-2 text-center">
+                                    @if (!string.IsNullOrEmpty(student.ProfilePicturePath))
                                     {
-                                        foreach (var skill in ViewBag.StudentSkills[student.Id])
+                                        <img src="@student.ProfilePicturePath" alt="@student.FullName" class="img-fluid rounded-circle mb-2" style="width: 100px; height: 100px; object-fit: cover;">
+                                    }
+                                    else if (!string.IsNullOrEmpty(student.Avatar))
+                                    {
+                                        <img src="@student.Avatar" alt="@student.FullName" class="img-fluid rounded-circle mb-2" style="width: 100px; height: 100px; object-fit: cover;">
+                                    }
+                                    else
+                                    {
+                                        <div class="profile-avatar-placeholder mb-2" style="width: 100px; height: 100px; font-size: 36px;">
+                                            @(student.FullName?.Length > 0 ? student.FullName[0].ToString() : "?")
+                                        </div>
+                                    }
+                                </div>
+                                <div class="col-md-7">
+                                    <h5 class="student-name">@student.FullName</h5>
+                                    
+                                    <div class="mb-2">
+                                        @if (!string.IsNullOrEmpty(student.University))
                                         {
-                                            <span class="skill-tag">
-                                                @skill.Skill.SkillName <span class="skill-level">(@skill.ProficiencyLevel.LevelName)</span>
-                                            </span>
+                                            <div><i class="bi bi-mortarboard-fill me-2"></i>@student.University</div>
                                         }
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">Chưa có thông tin kỹ năng</span>
-                                    }
+                                        @if (!string.IsNullOrEmpty(student.Major))
+                                        {
+                                            <div><i class="bi bi-journal-bookmark-fill me-2"></i>@student.Major</div>
+                                        }
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <div class="info-badge rating-badge me-2">
+                                            <i class="bi bi-star-fill me-1"></i>
+                                            @(student.AverageRating > 0 ? student.AverageRating.ToString("F1") : "Chưa có đánh giá")
+                                        </div>
+                                        <div class="info-badge project-badge">
+                                            <i class="bi bi-briefcase-fill me-1"></i>
+                                            @student.TotalProjects hoàn thành
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-3">
+                                        <h6 class="skills-title">Kỹ năng</h6>
+                                        <div>
+                                            @if (studentSkills != null && studentSkills.Count > 0)
+                                            {
+                                                var skillCounter = 0;
+                                                var maxSkillsToShow = 5;
+                                                
+                                                @foreach (var ss in studentSkills)
+                                                {
+                                                    if (skillCounter < maxSkillsToShow)
+                                                    {
+                                                        <span class="skill-tag">
+                                                            @ss.Skill.SkillName
+                                                            <span class="skill-level">(@ss.ProficiencyLevel.LevelName)</span>
+                                                        </span>
+                                                        skillCounter++;
+                                                    }
+                                                }
+                                                
+                                                @if (studentSkills.Count > maxSkillsToShow)
+                                                {
+                                                    <span class="skill-tag">+@(studentSkills.Count - maxSkillsToShow) khác</span>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Chưa có kỹ năng</span>
+                                            }
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-md-2">
-                                <p class="mb-2">
-                                    <i class="bi bi-geo-alt"></i>
-                                    @if (student.Address != null && student.Address.Province != null)
-                                    {
-                                        @student.Address.Province.Name
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">Chưa có địa chỉ</span>
-                                    }
-                                </p>
-                                <div class="d-flex align-items-center mb-2 info-badge rating-badge">
-                                    <i class="bi bi-star-fill rating-stars me-1"></i>
-                                    <span>@student.AverageRating</span>
+                                <div class="col-md-3 d-flex align-items-center justify-content-center">
+                                    <a href="@Url.Action("Profile", "User", new { id = student.Id })" class="btn btn-view-profile btn-lg">
+                                        <i class="bi bi-person-badge me-1"></i>Xem hồ sơ
+                                    </a>
                                 </div>
-                                <div class="d-flex align-items-center info-badge project-badge">
-                                    <i class="bi bi-briefcase-fill me-1"></i>
-                                    <span>@student.TotalProjects dự án</span>
-                                </div>
-                            </div>
-                            <div class="col-md-1 text-end">
-                                <a href="#" class="btn btn-view-profile">Xem hồ sơ</a>
                             </div>
                         </div>
                     </div>
                 </div>
             }
-        </div>
-    }
-    else
-    {
-        <div class="alert alert-warning">
-            Không tìm thấy sinh viên nào phù hợp với tiêu chí tìm kiếm.
-        </div>
-    }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Không tìm thấy sinh viên nào phù hợp. Vui lòng thử lại với tiêu chí khác.
+                </div>
+            </div>
+        }
+    </div>
 </div>
-
-<style>
-    /* Palette color variables */
-    :root {
-        --primary-color: #89AC46;
-        --secondary-color: #D3E671;
-        --accent-color: #F8ED8C;
-        --highlight-color: #FF8989;
-        --orange-accent: #FF9800;
-        --blue-accent: #2196F3;
-    }
-    
-    /* General styles */
-    body {
-        background-color: #f9fcf4;
-    }
-    
-    .container {
-        background-color: white;
-        padding: 25px;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        border-top: 4px solid var(--primary-color);
-    }
-    
-    .text-primary {
-        color: var(--primary-color) !important;
-    }
-    
-    h2.mb-4.text-primary {
-        border-bottom: 2px solid var(--primary-color);
-        padding-bottom: 10px;
-        display: inline-block;
-    }
-    
-    /* Search button styling */
-    .btn-primary {
-        background: linear-gradient(to right, var(--primary-color), #6d8a38) !important;
-        border-color: var(--primary-color) !important;
-        box-shadow: 0 2px 4px rgba(137, 172, 70, 0.3);
-        color: white;
-        font-weight: 500;
-        padding: 10px 20px;
-        border-radius: 4px;
-    }
-    
-    .btn-primary:hover, .btn-primary:focus {
-        background: linear-gradient(to right, #6d8a38, var(--primary-color)) !important;
-        border-color: #6d8a38 !important;
-        box-shadow: 0 4px 8px rgba(137, 172, 70, 0.4);
-        transform: translateY(-1px);
-    }
-    
-    .btn-primary .bi {
-        color: white;
-        margin-right: 5px;
-    }
-    
-    .search-card {
-        background-color: white;
-        border-color: #eaeaea;
-    }
-    
-    .card-header.bg-secondary {
-        background: linear-gradient(to right, var(--primary-color), #a1c95a) !important;
-        border-bottom: none;
-        color: white;
-    }
-    
-    .student-list .card {
-        transition: transform 0.2s, box-shadow 0.2s;
-        border-left: 4px solid var(--primary-color);
-        border-radius: 8px;
-        overflow: hidden;
-    }
-    
-    .student-list .card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(137, 172, 70, 0.2);
-        border-color: var(--primary-color);
-        background-color: #f7fbed;
-    }
-    
-    .student-name {
-        color: var(--primary-color);
-        font-weight: 600;
-    }
-    
-    .skills-title {
-        color: var(--primary-color);
-    }
-    
-    .profile-avatar-placeholder {
-        width: 60px;
-        height: 60px;
-        background-color: var(--primary-color);
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        font-weight: bold;
-        border-radius: 50%;
-    }
-    
-    .rating-stars {
-        color: #FFD700;
-    }
-    
-    /* View profile button styling */
-    .btn-view-profile {
-        background: linear-gradient(to right, var(--primary-color), #a1c95a);
-        color: white;
-        border: none;
-        transition: all 0.3s ease;
-        font-weight: 500;
-        padding: 8px 12px;
-        border-radius: 20px;
-    }
-    
-    .btn-view-profile:hover, .btn-view-profile:focus {
-        background: linear-gradient(to right, #6d8a38, var(--primary-color));
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(137, 172, 70, 0.3);
-    }
-    
-    .alert-warning {
-        background-color: var(--accent-color);
-        border-color: #e0d87d;
-        color: #6b6219;
-        border-left: 4px solid var(--primary-color);
-    }
-    
-    /* Form controls styling */
-    .form-control, .form-select {
-        border: 1px solid #dbe8c6;
-        padding: 10px;
-        border-radius: 4px;
-    }
-    
-    .input-group .form-control {
-        border-right: none;
-    }
-    
-    .input-group .btn {
-        border-top-left-radius: 0;
-        border-bottom-left-radius: 0;
-    }
-    
-    .form-control:focus, .form-select:focus {
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 0.25rem rgba(137, 172, 70, 0.25);
-    }
-    
-    .form-label {
-        color: var(--primary-color);
-        font-weight: 500;
-    }
-    
-    /* Info badges styling */
-    .info-badge {
-        background-color: var(--primary-color);
-        color: white;
-        border-radius: 20px;
-        padding: 5px 10px;
-        display: inline-block;
-        font-size: 0.9rem;
-        margin-bottom: 5px;
-    }
-    
-    /* Rating badge specific styling */
-    .rating-badge {
-        background: linear-gradient(to right, var(--orange-accent), #FFB74D);
-    }
-    
-    .rating-badge .bi-star-fill {
-        color: #FFD700;
-    }
-    
-    /* Project count badge specific styling */
-    .project-badge {
-        background: linear-gradient(to right, var(--blue-accent), #64B5F6);
-    }
-    
-    .project-badge .bi-briefcase-fill {
-        color: #E1F5FE;
-    }
-    
-    /* Icons styling */
-    .bi {
-        color: var(--primary-color);
-    }
-    
-    /* Icons inside info badges should be white */
-    .info-badge .bi {
-        color: white;
-    }
-    
-    /* Skill tags styling */
-    .skill-tag {
-        background-color: #e9f0dc;
-        border: 1px solid #d0e2b0;
-        border-radius: 4px;
-        padding: 3px 8px;
-        font-size: 0.85rem;
-        margin-right: 4px;
-        margin-bottom: 4px;
-        display: inline-block;
-        color: #556b29;
-    }
-    
-    .skill-level {
-        font-size: 0.75rem;
-        color: #6c757d;
-    }
-    
-    /* Select2 custom styling */
-    .select2-container--default .select2-selection--single,
-    .select2-container--default .select2-selection--multiple {
-        border-color: #dbe8c6;
-        height: 42px;
-        padding: 6px;
-    }
-    
-    .select2-container--default .select2-selection--multiple {
-        height: auto;
-    }
-    
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 42px;
-    }
-    
-    .select2-container--default .select2-results__option--highlighted[aria-selected] {
-        background-color: var(--primary-color);
-        color: white;
-    }
-    
-    .select2-container--default .select2-selection__choice {
-        background-color: var(--secondary-color) !important;
-        border-color: var(--primary-color) !important;
-        color: #556b29 !important;
-    }
-</style>
 
 @section Scripts {
     <script>
         $(document).ready(function() {
-            $('select[name="skillIds"]').select2({
-                placeholder: "Chọn kỹ năng...",
-                allowClear: true
-            });
-
+            // Province dropdown using Select2
             $('select[name="provinceId"]').select2({
                 placeholder: "Chọn tỉnh/thành phố...",
                 allowClear: true
             });
+            
+            // Prevent dropdown from closing when clicking inside
+            $(document).on('click', '.skill-dropdown-menu', function (e) {
+                e.stopPropagation();
+            });
+            
+            // Fix dropdown positioning
+            $('#skillDropdown').on('click', function() {
+                setTimeout(function() {
+                    var dropdownMenu = $('.skill-dropdown-menu');
+                    var dropdownButton = $('#skillDropdown');
+                    var buttonWidth = dropdownButton.outerWidth();
+                    
+                    dropdownMenu.css({
+                        'width': buttonWidth + 'px',
+                        'min-width': buttonWidth + 'px',
+                        'left': '0',
+                        'right': 'auto',
+                        'transform': 'translate(0, 42px)'
+                    });
+                }, 0);
+            });
+            
+            // Ensure dropdown is positioned correctly when shown
+            $('.dropdown').on('shown.bs.dropdown', function () {
+                var dropdownMenu = $(this).find('.skill-dropdown-menu');
+                var dropdownButton = $(this).find('.dropdown-toggle');
+                var buttonWidth = dropdownButton.outerWidth();
+                
+                dropdownMenu.css({
+                    'width': buttonWidth + 'px',
+                    'min-width': buttonWidth + 'px',
+                    'left': '0',
+                    'right': 'auto',
+                    'transform': 'translate(0, 42px)'
+                });
+            });
+            
+            // Update selected skills count
+            function updateSelectedSkillsText() {
+                var checkedCount = $('.skill-checkbox:checked').length;
+                if (checkedCount > 0) {
+                    $('#selectedSkillsText').html('<span>' + checkedCount + ' kỹ năng đã chọn</span>');
+                } else {
+                    $('#selectedSkillsText').html('<span>Chọn kỹ năng...</span>');
+                }
+            }
+            
+            // Prevent dropdown from closing when clicking on clearSkills link
+            $('#clearSkills').on('click', function(e) {
+                e.stopPropagation();
+            });
+            
+            // Search functionality
+            $('#skillSearchInput').on('input', function() {
+                var searchText = $(this).val().toLowerCase();
+                
+                $('.skill-category').each(function() {
+                    var category = $(this);
+                    var header = category.find('.dropdown-header');
+                    var items = category.find('.dropdown-item');
+                    var hasVisibleItems = false;
+                    
+                    items.each(function() {
+                        var skillName = $(this).find('label').text().toLowerCase();
+                        if (skillName.includes(searchText)) {
+                            $(this).show();
+                            hasVisibleItems = true;
+                        } else {
+                            $(this).hide();
+                        }
+                    });
+                    
+                    // Show/hide category header based on visible items
+                    if (hasVisibleItems) {
+                        header.show();
+                    } else {
+                        header.hide();
+                    }
+                });
+            });
+            
+            // Update count when checkbox changes
+            $('.skill-checkbox').on('change', function() {
+                updateSelectedSkillsText();
+            });
+            
+            // Initialize
+            updateSelectedSkillsText();
         });
     </script>
 } 
