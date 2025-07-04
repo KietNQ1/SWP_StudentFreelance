@@ -1,5 +1,105 @@
 ﻿@model StudentFreelance.ViewModels.UserProfileViewModel
 
+<style>
+    :root {
+        --primary: #89AC46;
+        --accent1: #D3E671;
+        --accent2: #F8ED8C;
+        --accent3: #FF8989;
+        --bs-primary: #89AC46; /* override bootstrap primary */
+    }
+
+    body {
+        background-color: #f9fafb;
+    }
+
+    .card {
+        border-radius: 10px;
+        border-left: 5px solid var(--primary);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .card-header.bg-primary {
+        background-color: var(--primary) !important;
+        color: white;
+        font-weight: 600;
+    }
+
+    .card-header.bg-light {
+        background-color: var(--accent1) !important;
+        color: #333;
+        font-weight: 600;
+    }
+
+    .btn-primary {
+        background-color: var(--accent3);
+        border-color: var(--accent3);
+        font-weight: 600;
+    }
+
+        .btn-primary:hover {
+            background-color: #e35a5a;
+            border-color: #e35a5a;
+        }
+
+    .badge.bg-primary {
+        background-color: var(--accent2) !important;
+        color: #222;
+        font-weight: 500;
+        font-size: 0.9rem;
+        padding: 6px 12px;
+        border-radius: 20px;
+    }
+
+    .badge.bg-secondary {
+        background-color: var(--accent1) !important;
+        color: #333;
+        font-size: 0.85rem;
+        border-radius: 20px;
+    }
+
+    .alert-success {
+        background-color: var(--accent1);
+        color: #333;
+        border: 1px solid var(--primary);
+    }
+
+    .text-muted i {
+        color: var(--primary);
+        margin-right: 6px;
+    }
+
+    img.rounded-circle {
+        border: 5px solid var(--accent1);
+    }
+
+    .btn-lg {
+        padding: 12px 30px;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    @@media (max-width: 768px) {
+        .btn-lg
+
+    {
+        width: 100%;
+    }
+
+    img.rounded-circle {
+        width: 120px !important;
+        height: 120px !important;
+    }
+
+    .card-header h5, .card-header h4 {
+        font-size: 1.2rem;
+    }
+
+    }
+</style>
+
+
+
 @{
     ViewData["Title"] = "Thông tin cá nhân";
 }

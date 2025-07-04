@@ -1,0 +1,219 @@
+﻿@model StudentFreelance.ViewModels.AdminDashboardViewModel
+@using System.Text.Json
+
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    :root {
+        --primary: #89AC46;
+        --accent1: #D3E671;
+        --accent2: #F8ED8C;
+        --accent3: #FF8989;
+    }
+
+    .dashboard-header {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 1.5rem;
+    }
+
+    .card-metric {
+        background-color: white;
+        border-left: 5px solid var(--primary);
+        border-radius: 8px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+        .card-metric h5 {
+            font-size: 1rem;
+            color: #555;
+        }
+
+        .card-metric .value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+    .section-title {
+        margin-top: 2rem;
+        font-weight: 600;
+        color: var(--primary);
+        font-size: 1.2rem;
+    }
+
+    .list-group-item strong {
+        color: var(--primary);
+    }
+
+    canvas {
+        background-color: white;
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="dashboard-header">📊 Admin Dashboard</div>
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card-metric">
+                <h5>👥 Tổng người dùng</h5>
+                <div class="value">@Model.TotalUsers</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-metric">
+                <h5>🎓 Sinh viên</h5>
+                <div class="value">@Model.TotalStudents</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-metric">
+                <h5>🏢 Doanh nghiệp</h5>
+                <div class="value">@Model.TotalBusiness</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-metric">
+                <h5>💰 Doanh thu (VNĐ)</h5>
+                <div class="value">@Model.TotalRevenue.ToString("N0")</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card-metric">
+                <h5>📁 Tổng dự án</h5>
+                <div class="value">@Model.TotalProjects</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card-metric">
+                <h5>✅ Hoàn thành</h5>
+                <div class="value text-success">@Model.CompletedProjects</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card-metric">
+                <h5>📌 Đang tuyển</h5>
+                <div class="value text-warning">@Model.OngoingProjects</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-title">🆕 Người dùng mới</div>
+    <ul class="list-group mb-4">
+        @foreach (var user in Model.RecentUsers)
+        {
+            <li class="list-group-item d-flex justify-content-between">
+                <strong>@(user.FullName ?? user.Email)</strong>
+                <span class="text-muted">@user.CreatedAt.ToString("dd/MM/yyyy")</span>
+            </li>
+        }
+    </ul>
+
+    <div class="section-title">📁 Dự án gần đây</div>
+    <ul class="list-group mb-5">
+        @foreach (var project in Model.RecentProjects)
+        {
+            <li class="list-group-item d-flex justify-content-between">
+                <strong>@project.Title</strong>
+                <span class="text-muted">@project.CreatedAt.ToString("dd/MM/yyyy")</span>
+            </li>
+        }
+    </ul>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <h5 class="section-title">📊 Dự án theo trạng thái</h5>
+            <canvas id="projectStatusChart" height="220"></canvas>
+        </div>
+        <div class="col-md-4">
+            <h5 class="section-title">🍩 Người dùng theo vai trò</h5>
+            <canvas id="userRoleChart" height="220"></canvas>
+        </div>
+        <div class="col-md-4">
+            <h5 class="section-title">📈 Doanh thu theo tháng</h5>
+            <canvas id="revenueChart" height="220"></canvas>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        const palette = ['#89AC46', '#D3E671', '#F8ED8C', '#FF8989'];
+
+        function generateColors(count) {
+            const colors = [];
+            for (let i = 0; i < count; i++) {
+                colors.push(palette[i % palette.length]);
+            }
+            return colors;
+        }
+
+        const projectLabels = @Html.Raw(JsonSerializer.Serialize(Model.ProjectStatusCounts.Keys));
+        const projectData = @Html.Raw(JsonSerializer.Serialize(Model.ProjectStatusCounts.Values));
+        const projectColors = generateColors(projectLabels.length);
+
+        new Chart(document.getElementById('projectStatusChart'), {
+            type: 'bar',
+            data: {
+                labels: projectLabels,
+                datasets: [{
+                    label: 'Số lượng dự án',
+                    data: projectData,
+                    backgroundColor: projectColors
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        const roleLabels = @Html.Raw(JsonSerializer.Serialize(Model.UserRoleCounts.Keys));
+        const roleData = @Html.Raw(JsonSerializer.Serialize(Model.UserRoleCounts.Values));
+        const roleColors = generateColors(roleLabels.length);
+
+        new Chart(document.getElementById('userRoleChart'), {
+            type: 'doughnut',
+            data: {
+                labels: roleLabels,
+                datasets: [{
+                    data: roleData,
+                    backgroundColor: roleColors
+                }]
+            }
+        });
+
+        new Chart(document.getElementById('revenueChart'), {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(JsonSerializer.Serialize(Model.MonthlyRevenue.Keys)),
+                datasets: [{
+                    label: 'Doanh thu theo tháng',
+                    data: @Html.Raw(JsonSerializer.Serialize(Model.MonthlyRevenue.Values)),
+                    borderColor: '#FF8989',
+                    backgroundColor: 'rgba(255,137,137,0.2)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true
+            }
+        });
+    </script>
+}

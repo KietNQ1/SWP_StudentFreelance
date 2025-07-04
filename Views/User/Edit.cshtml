@@ -1,5 +1,115 @@
 @model StudentFreelance.ViewModels.UserProfileViewModel
 
+<style>
+    :root {
+        --primary: #89AC46;
+        --accent1: #D3E671;
+        --accent2: #F8ED8C;
+        --accent3: #FF8989;
+    }
+
+    .card {
+        border-radius: 10px;
+        border-left: 5px solid var(--primary);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .card-header.bg-primary {
+        background-color: var(--primary) !important;
+        color: white;
+        font-weight: 600;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .form-control {
+        border-radius: 6px;
+    }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(137, 172, 70, 0.25);
+        }
+
+    .btn-primary {
+        background-color: var(--accent3);
+        border-color: var(--accent3);
+        font-weight: 600;
+    }
+
+        .btn-primary:hover {
+            background-color: #e55c5c;
+            border-color: #e55c5c;
+        }
+
+    .btn-outline-secondary {
+        border-color: var(--accent1);
+        color: var(--primary);
+    }
+
+        .btn-outline-secondary:hover {
+            background-color: var(--accent1);
+            color: black;
+        }
+
+    .btn-danger {
+        background-color: var(--accent3);
+        border-color: var(--accent3);
+    }
+
+        .btn-danger:hover {
+            background-color: #e35a5a;
+            border-color: #e35a5a;
+        }
+
+    .avatar-preview img {
+        border: 4px solid var(--accent1);
+        border-radius: 50%;
+        object-fit: cover;
+        width: 200px;
+        height: 200px;
+    }
+
+    .alert-success {
+        background-color: var(--accent1);
+        color: #333;
+        border: 1px solid var(--primary);
+    }
+
+    .skill-item select {
+        flex: 1;
+        margin-right: 0.5rem;
+    }
+
+    .w-45 {
+        width: 45%;
+    }
+
+    @@media screen and (max-width: 768px) {
+        .skill-item
+
+    {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+
+    .skill-item select {
+        width: 100% !important;
+        margin-bottom: 0.5rem;
+    }
+
+    .avatar-preview img {
+        width: 120px;
+        height: 120px;
+    }
+
+    }
+</style>
+
+
 @{
     ViewData["Title"] = "Chỉnh sửa thông tin cá nhân";
 }

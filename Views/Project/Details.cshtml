@@ -1,5 +1,176 @@
 @model StudentFreelance.Models.Project
 
+<style>
+    :root {
+        --primary: #89AC46;
+        --accent1: #D3E671;
+        --accent2: #F8ED8C;
+        --accent3: #FF8989;
+        --bs-primary: #89AC46;
+    }
+
+    body {
+        background-color: #f8f9fa;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    h1, h5, h6 {
+        font-weight: 600;
+    }
+
+    .breadcrumb {
+        background-color: transparent;
+        font-size: 0.95rem;
+    }
+
+    .card {
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        border-left: 4px solid var(--primary);
+    }
+
+    .card-header {
+        background-color: var(--accent1);
+        color: #333;
+        font-weight: 600;
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+    }
+
+    .badge {
+        font-size: 0.85rem;
+        padding: 0.4em 0.7em;
+        border-radius: 20px;
+        font-weight: 500;
+    }
+
+        .badge.bg-primary {
+            background-color: var(--primary) !important;
+            color: white;
+        }
+
+        .badge.bg-warning {
+            background-color: var(--accent2);
+            color: #222;
+        }
+
+        .badge.bg-info {
+            background-color: #9ad0ec;
+            color: #222;
+        }
+
+        .badge.bg-secondary {
+            background-color: var(--accent1);
+            color: #222;
+        }
+
+        .badge.bg-danger {
+            background-color: var(--accent3);
+            color: white;
+        }
+
+        .badge.bg-success {
+            background-color: #6fcf97;
+            color: white;
+        }
+
+    .list-group-item {
+        background-color: #fff;
+        border: none;
+        padding: 12px 0;
+    }
+
+    .btn-outline-primary {
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+    .btn-outline-secondary {
+        border-color: var(--accent1);
+        color: #333;
+    }
+
+        .btn-outline-secondary:hover {
+            background-color: var(--accent1);
+            color: #111;
+        }
+
+    .btn-outline-success {
+        border-color: #6fcf97;
+        color: #6fcf97;
+    }
+
+        .btn-outline-success:hover {
+            background-color: #6fcf97;
+            color: white;
+        }
+
+    .btn-success {
+        background-color: var(--primary);
+        border-color: var(--primary);
+        font-weight: 600;
+    }
+
+        .btn-success:hover {
+            background-color: #6d9138;
+            border-color: #6d9138;
+        }
+
+    .avatar-placeholder {
+        background-color: var(--accent1);
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        color: #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 1.2rem;
+    }
+
+    .formatted-content p {
+        margin-bottom: 1rem;
+    }
+
+    .formatted-content ul {
+        padding-left: 1.2rem;
+    }
+
+    .formatted-content li {
+        margin-bottom: 0.5rem;
+    }
+
+    .list-group-item .badge {
+        font-size: 0.8rem;
+    }
+
+    .btn-group .btn {
+        font-size: 0.9rem;
+    }
+
+    @@media (max-width: 768px) {
+        .btn-group
+
+    {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn-group .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    }
+</style>
+
+
 @{
     ViewData["Title"] = Model.Title;
 }
