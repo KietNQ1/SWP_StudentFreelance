@@ -1,0 +1,19 @@
+﻿@{
+    ViewBag.Title = "Nạp tiền vào ví";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2 class="mb-3">Nạp tiền vào ví</h2>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success">@TempData["Message"]</div>
+}
+
+<form method="post" asp-action="CreateDeposit">
+    <div class="form-group">
+        <label for="amount">Số tiền muốn nạp (VNĐ):</label>
+        <input type="number" class="form-control" name="amount" min="1000" required />
+    </div>
+    <button type="submit" class="btn btn-primary mt-3">Nạp tiền</button>
+</form>

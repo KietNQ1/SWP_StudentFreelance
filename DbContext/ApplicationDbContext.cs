@@ -36,12 +36,12 @@ namespace StudentFreelance.DbContext
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<UserNotification> UserNotifications { get; set; }
         public DbSet<UserAccountHistory> UserAccountHistories { get; set; }
+        public DbSet<BankAccount> BankAccounts { get; set; }
+
 
         // Enum DbSets
         public DbSet<ProjectStatus> ProjectStatuses { get; set; }
         public DbSet<ProjectType> ProjectTypes { get; set; }
-        public DbSet<TransactionType> TransactionTypes { get; set; }
-        public DbSet<TransactionStatus> TransactionStatuses { get; set; }
         public DbSet<ReportType> ReportTypes { get; set; }
         public DbSet<ReportStatus> ReportStatuses { get; set; }
         public DbSet<NotificationType> NotificationTypes { get; set; }
@@ -297,18 +297,7 @@ namespace StudentFreelance.DbContext
                 .HasForeignKey(p => p.TypeID)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Transaction>()
-                .HasOne(t => t.Type)
-                .WithMany(tt => tt.Transactions)
-                .HasForeignKey(t => t.TypeID)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Transaction>()
-                .HasOne(t => t.Status)
-                .WithMany(ts => ts.Transactions)
-                .HasForeignKey(t => t.StatusID)
-                .OnDelete(DeleteBehavior.Restrict);
-
+          
             modelBuilder.Entity<Report>()
                 .HasOne(r => r.Type)
                 .WithMany(rt => rt.Reports)

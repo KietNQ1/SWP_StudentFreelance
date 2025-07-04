@@ -4,6 +4,7 @@ using StudentFreelance.DbContext;
 using StudentFreelance.Models;
 using StudentFreelance.Data;
 using StudentFreelance.Models.Email;
+using StudentFreelance.Models.PayOS;
 using StudentFreelance.Services.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +23,9 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
+
+// Đăng ký cấu hình PayOS
+builder.Services.Configure<PayOSConfig>(builder.Configuration.GetSection("PayOS"));
 
 // 3. Configure Authentication Cookie
 builder.Services.ConfigureApplicationCookie(options =>
@@ -54,6 +58,7 @@ builder.Services.AddScoped<StudentFreelance.Services.Interfaces.INotificationSer
 
 // 4. Add MVC support
 builder.Services.AddControllersWithViews();
+
 
 var app = builder.Build();
 
@@ -91,3 +96,5 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+
+
