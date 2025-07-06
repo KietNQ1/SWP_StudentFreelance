@@ -40,6 +40,20 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/search/searchJob.css" asp-append-version="true" />
+    <style>
+        .search-header {
+            background-color: #89AC46 !important;
+        }
+        
+        .filter-header {
+            background-color: #89AC46 !important;
+            color: white;
+        }
+        
+        .list-group-item.fw-bold.bg-primary {
+            background-color: #89AC46 !important;
+        }
+    </style>
 }
 
 <div class="search-header">
@@ -102,7 +116,7 @@
                                         <!-- Cột danh mục -->
                                         <div class="col-md-4 p-0 category-list">
                                             <div class="list-group list-group-flush">
-                                                <div class="list-group-item fw-bold bg-light text-dark">NHÓM NGHỀ</div>
+                                                <div class="list-group-item fw-bold filter-header">NHÓM NGHỀ</div>
                                                 @foreach (var category in mainCategories)
                                                 {
                                                     string activeClass = categoryId == category.CategoryID ? "active" : "";
@@ -117,7 +131,7 @@
                                         <!-- Cột danh mục con -->
                                         <div class="col-md-4 p-0 subcategory-list">
                                             <div class="list-group list-group-flush">
-                                                <div class="list-group-item fw-bold bg-light text-dark">NGHỀ</div>
+                                                <div class="list-group-item fw-bold filter-header">NGHỀ</div>
                                                 @foreach (var mainCategory in mainCategories)
                                                 {
                                                     <div class="subcategory-group" id="subcategory-@mainCategory.CategoryID" style="display: @(categoryId == mainCategory.CategoryID ? "block" : "none");">
@@ -148,7 +162,7 @@
                                         <!-- Cột kỹ năng -->
                                         <div class="col-md-4 p-0 skill-list">
                                             <div class="list-group list-group-flush">
-                                                <div class="list-group-item fw-bold bg-light text-dark">VỊ TRÍ CHUYÊN MÔN</div>
+                                                <div class="list-group-item fw-bold filter-header">VỊ TRÍ CHUYÊN MÔN</div>
                                                 <div class="selected-skills-container @(selectedSkills.Any() ? "" : "d-none")">
                                                     <div class="list-group-item bg-light text-dark">
                                                         <small>Đã chọn (<span id="selectedSkillsCount">@selectedSkills.Count</span>)</small>
