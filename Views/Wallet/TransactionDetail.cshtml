@@ -1,0 +1,180 @@
+@model StudentFreelance.Models.Transaction
+
+@{
+    ViewData["Title"] = "Transaction Detail";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/wallet/transaction-detail.css" asp-append-version="true" />
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Transaction Detail</h2>
+        <a asp-action="TransactionHistory" class="btn btn-primary btn-back">
+            <i class="bi bi-arrow-left"></i> Back to History
+        </a>
+    </div>
+    
+    <div class="card transaction-detail-card">
+        <div class="card-body">
+            <div class="text-center mb-4">
+                @{
+                    string typeClass = Model.TypeID == 1 ? "deposit" : "withdrawal";
+                    string statusClass = Model.StatusID == 1 ? "completed" : (Model.StatusID == 2 ? "failed" : "pending");
+                }
+                
+                <div class="d-flex justify-content-center">
+                    <span class="transaction-type @typeClass">@Model.Type.TypeName</span>
+                    <span class="transaction-status @statusClass">@Model.Status.StatusName</span>
+                </div>
+                
+                <div class="transaction-amount @typeClass">
+                    @(Model.TypeID == 1 ? "+" : "-")@Model.Amount.ToString("C")
+                </div>
+                
+                <div class="text-muted">
+                    @Model.TransactionDate.ToString("dddd, MMMM d, yyyy h:mm tt")
+                </div>
+            </div>
+            
+            <hr>
+            
+            <ul class="detail-list">
+                <li>
+                    <span class="detail-label">Transaction ID</span>
+                    <span class="detail-value">@Model.TransactionID</span>
+                </li>
+                <li>
+                    <span class="detail-label">Description</span>
+                    <span class="detail-value">@(string.IsNullOrEmpty(Model.Description) ? "No description provided" : Model.Description)</span>
+                </li>
+                
+                <!-- Thông tin người gửi/người nhận -->
+                @if (Model.TypeID == 1) // Deposit (nạp tiền)
+                {
+                    <li>
+                        <span class="detail-label">From</span>
+                        <span class="detail-value">
+                            @(Model.Description?.Contains("Bank") == true ? "Bank Transfer" : 
+                              Model.Description?.Contains("Card") == true ? "Credit/Debit Card" : 
+                              Model.Description?.Contains("Wallet") == true ? "E-Wallet" : "External Account")
+                        </span>
+                    </li>
+                    <li>
+                        <span class="detail-label">To</span>
+                        <span class="detail-value">
+                            <span class="user-info">
+                                <i class="bi bi-person-circle me-1"></i>
+                                @Model.User.FullName (@Model.User.Email)
+                            </span>
+                        </span>
+                    </li>
+                }
+                else if (Model.TypeID == 2) // Withdrawal (rút tiền)
+                {
+                    <li>
+                        <span class="detail-label">From</span>
+                        <span class="detail-value">
+                            <span class="user-info">
+                                <i class="bi bi-person-circle me-1"></i>
+                                @Model.User.FullName (@Model.User.Email)
+                            </span>
+                        </span>
+                    </li>
+                    <li>
+                        <span class="detail-label">To</span>
+                        <span class="detail-value">
+                            @(Model.Description?.Contains("Bank") == true ? "Bank Account" : 
+                              Model.Description?.Contains("Card") == true ? "Credit/Debit Card" : 
+                              Model.Description?.Contains("Wallet") == true ? "E-Wallet" : "External Account")
+                        </span>
+                    </li>
+                }
+                else if (Model.TypeID == 3 && Model.Project != null) // Payment (thanh toán dự án)
+                {
+                    <li>
+                        <span class="detail-label">From</span>
+                        <span class="detail-value">
+                            <span class="user-info">
+                                <i class="bi bi-person-circle me-1"></i>
+                                @Model.User.FullName (@Model.User.Email)
+                            </span>
+                        </span>
+                    </li>
+                    <li>
+                        <span class="detail-label">To</span>
+                        <span class="detail-value">
+                            <span class="user-info">
+                                <i class="bi bi-building me-1"></i>
+                                @Model.Project.Business.FullName (@Model.Project.Business.Email)
+                            </span>
+                        </span>
+                    </li>
+                }
+                
+                <li>
+                    <span class="detail-label">Status</span>
+                    <span class="detail-value">
+                        @if (Model.StatusID == 1) // Assuming 1 is Completed
+                        {
+                            <span class="badge bg-success">@Model.Status.StatusName</span>
+                        }
+                        else if (Model.StatusID == 2) // Assuming 2 is Failed
+                        {
+                            <span class="badge bg-danger">@Model.Status.StatusName</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning">@Model.Status.StatusName</span>
+                        }
+                    </span>
+                </li>
+                @if (Model.Project != null)
+                {
+                    <li>
+                        <span class="detail-label">Related Project</span>
+                        <span class="detail-value">
+                            <a asp-controller="Project" asp-action="Details" asp-route-id="@Model.ProjectID" class="project-link">
+                                @Model.Project.Title
+                            </a>
+                        </span>
+                    </li>
+                }
+                
+                <!-- Additional security information -->
+                @if (ViewBag.TransactionHistory != null)
+                {
+                    <li>
+                        <span class="detail-label">IP Address</span>
+                        <span class="detail-value">@ViewBag.TransactionHistory.IPAddress</span>
+                    </li>
+                    <li>
+                        <span class="detail-label">Device</span>
+                        <span class="detail-value">@ViewBag.TransactionHistory.UserAgent</span>
+                    </li>
+                }
+            </ul>
+            
+            <div class="mt-4">
+                <div class="alert @(Model.StatusID == 1 ? "alert-success" : (Model.StatusID == 2 ? "alert-danger" : "alert-warning"))">
+                    @if (Model.StatusID == 1) // Completed
+                    {
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        <span>This transaction has been completed successfully.</span>
+                    }
+                    else if (Model.StatusID == 2) // Failed
+                    {
+                        <i class="bi bi-x-circle-fill me-2"></i>
+                        <span>This transaction has failed. Please contact support if you need assistance.</span>
+                    }
+                    else // Pending or other status
+                    {
+                        <i class="bi bi-hourglass-split me-2"></i>
+                        <span>This transaction is currently being processed.</span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

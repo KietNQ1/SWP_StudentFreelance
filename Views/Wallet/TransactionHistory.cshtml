@@ -4,6 +4,19 @@
     ViewData["Title"] = "Transaction History";
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/wallet/transaction-history.css" asp-append-version="true" />
+    <style>
+        .transaction-row {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .transaction-row:hover {
+            background-color: rgba(211, 230, 113, 0.2);
+        }
+    </style>
+}
+
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Transaction History</h2>
@@ -44,7 +57,7 @@
                         <tbody>
                             @foreach (var transaction in Model)
                             {
-                                <tr>
+                                <tr class="transaction-row" onclick="location.href='@Url.Action("TransactionDetail", "Wallet", new { id = transaction.TransactionID })'">
                                     <td>@transaction.TransactionDate.ToString("yyyy-MM-dd HH:mm")</td>
                                     <td>@transaction.Type.TypeName</td>
                                     <td class="@(transaction.TypeID == 1 ? "text-success" : "text-danger")">

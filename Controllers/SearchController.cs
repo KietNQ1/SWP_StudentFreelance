@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using StudentFreelance.ViewModels;
 
 namespace StudentFreelance.Controllers
 {
@@ -213,11 +214,17 @@ namespace StudentFreelance.Controllers
             }
 
             // Lấy danh sách kỹ năng
-            ViewBag.Skills = await _context.Skills
+            var skills = await _context.Skills
                 .Include(s => s.Category)
                 .Where(s => s.IsActive)
                 .OrderBy(s => s.Category.CategoryName)
                 .ThenBy(s => s.SkillName)
+                .ToListAsync();
+            
+            // Lấy danh mục kỹ năng
+            var categories = await _context.Categories
+                .Where(c => c.IsActive && c.CategoryType == "Skill")
+                .OrderBy(c => c.CategoryName)
                 .ToListAsync();
 
             // Lấy danh sách tỉnh/thành phố
@@ -237,13 +244,21 @@ namespace StudentFreelance.Controllers
                 .GroupBy(ss => ss.UserID)
                 .ToDictionary(g => g.Key, g => g.ToList());
 
-            ViewBag.StudentSkills = studentSkillsDict;
+            // Tạo view model chứa cả danh sách sinh viên, kỹ năng và danh mục
+            var viewModel = new SearchStudentsViewModel
+            {
+                Students = students.ToList(),
+                Skills = skills,
+                Categories = categories,
+                SelectedSkillIds = skillIds ?? new List<int>()
+            };
 
+            ViewBag.StudentSkills = studentSkillsDict;
             ViewBag.Query = query;
             ViewBag.SkillIds = skillIds;
             ViewBag.ProvinceId = provinceId;
 
-            return View(students.ToList());
+            return View(viewModel);
         }
 
         public async Task<IActionResult> SearchBusinesses(string query, int? provinceId)

@@ -4,6 +4,10 @@
     ViewData["Title"] = "Kết quả dự án";
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/projectsubmission/projectSubmissions.css" asp-append-version="true" />
+}
+
 <div class="container mt-4">
     <h2>Kết quả dự án</h2>
     <hr />
@@ -13,7 +17,7 @@
             <h5 class="mb-0">Thông tin dự án</h5>
         </div>
         <div class="card-body">
-            <div class="row">
+            <div class="row project-info">
                 <div class="col-md-6">
                     <p><strong>Tên dự án:</strong> @Model.ProjectTitle</p>
                     <p><strong>Sinh viên:</strong> @Model.StudentName</p>
