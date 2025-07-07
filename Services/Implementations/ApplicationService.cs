@@ -188,7 +188,9 @@ namespace StudentFreelance.Services.Implementations
                     Salary = salary,
                     DateApplied = DateTime.Now,
                     Status = "Pending",
-                    LastStatusUpdate = DateTime.Now
+                    LastStatusUpdate = DateTime.Now,
+                    BusinessConfirmedCompletion = false,
+                    StudentConfirmedCompletion = false
                 };
                 
                 // Debug info

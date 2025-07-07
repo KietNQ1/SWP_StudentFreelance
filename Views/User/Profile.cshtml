@@ -1,119 +1,122 @@
 ﻿@model StudentFreelance.ViewModels.UserProfileViewModel
 
+@{
+    ViewData["Title"] = "Thông tin cá nhân";
+}
+
 <style>
     :root {
         --primary: #89AC46;
         --accent1: #D3E671;
         --accent2: #F8ED8C;
         --accent3: #FF8989;
-        --bs-primary: #89AC46; /* override bootstrap primary */
     }
 
     body {
-        background-color: #f9fafb;
+        background-color: #F8F8F8;
+        color: #222;
+        font-family: 'Segoe UI', sans-serif;
     }
 
     .card {
-        border-radius: 10px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
         border-left: 5px solid var(--primary);
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        background-color: #fff;
     }
 
     .card-header.bg-primary {
-        background-color: var(--primary) !important;
-        color: white;
+        background-color: var(--accent1) !important;
+        color: #222;
         font-weight: 600;
+        font-size: 1.1rem;
     }
 
     .card-header.bg-light {
-        background-color: var(--accent1) !important;
-        color: #333;
+        background-color: var(--accent2) !important;
+        color: #222;
         font-weight: 600;
+    }
+
+    .badge.bg-primary {
+        background-color: var(--accent2);
+        color: #222;
+        font-size: 0.875rem;
+        padding: 6px 10px;
+        border-radius: 20px;
+    }
+
+    .badge.bg-secondary {
+        background-color: var(--accent1);
+        color: #222;
+        font-size: 0.875rem;
+        padding: 6px 10px;
+        border-radius: 20px;
     }
 
     .btn-primary {
         background-color: var(--accent3);
         border-color: var(--accent3);
         font-weight: 600;
+        color: white;
     }
 
         .btn-primary:hover {
             background-color: #e35a5a;
             border-color: #e35a5a;
+            color: white;
         }
-
-    .badge.bg-primary {
-        background-color: var(--accent2) !important;
-        color: #222;
-        font-weight: 500;
-        font-size: 0.9rem;
-        padding: 6px 12px;
-        border-radius: 20px;
-    }
-
-    .badge.bg-secondary {
-        background-color: var(--accent1) !important;
-        color: #333;
-        font-size: 0.85rem;
-        border-radius: 20px;
-    }
 
     .alert-success {
         background-color: var(--accent1);
-        color: #333;
+        color: #222;
         border: 1px solid var(--primary);
+    }
+
+    .profile-avatar img {
+        width: 180px;
+        height: 180px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 4px solid var(--accent1);
+    }
+
+    .profile-label {
+        font-weight: 600;
+        color: #000;
     }
 
     .text-muted i {
         color: var(--primary);
-        margin-right: 6px;
+        margin-right: 5px;
     }
 
-    img.rounded-circle {
-        border: 5px solid var(--accent1);
-    }
-
-    .btn-lg {
-        padding: 12px 30px;
-        font-size: 1.1rem;
+    .edit-btn {
+        background-color: var(--accent3);
+        color: white;
         font-weight: 600;
+        padding: 10px 20px;
+        border-radius: 6px;
+        text-decoration: none;
     }
 
-    @@media (max-width: 768px) {
-        .btn-lg
-
-    {
-        width: 100%;
-    }
-
-    img.rounded-circle {
-        width: 120px !important;
-        height: 120px !important;
-    }
-
-    .card-header h5, .card-header h4 {
-        font-size: 1.2rem;
-    }
-
-    }
+        .edit-btn:hover {
+            background-color: #e55c5c;
+            color: white;
+        }
 </style>
-
-
-
-@{
-    ViewData["Title"] = "Thông tin cá nhân";
-}
 
 <div class="container py-5">
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <div class="card-header bg-primary d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">@ViewData["Title"]</h4>
-                    <a asp-action="Edit" class="btn btn-light">
-                        <i class="bi bi-pencil"></i> Chỉnh sửa
+                    <a asp-action="Edit" class="edit-btn btn-sm">
+                        <i class="bi bi-pencil-square"></i> Chỉnh sửa
                     </a>
                 </div>
+
                 <div class="card-body">
                     @if (TempData["Success"] != null)
                     {
@@ -121,62 +124,54 @@
                     }
 
                     <div class="row">
-                        <div class="col-md-4 text-center mb-4">
-                            <div class="mb-4">
+                        <div class="col-md-4 text-center">
+                            <div class="profile-avatar mb-3">
                                 @if (!string.IsNullOrEmpty(Model.AvatarPath))
                                 {
-                                    <img src="@Model.AvatarPath" class="img-fluid rounded-circle" style="width:200px;height:200px;object-fit:cover;" />
+                                    <img src="@Model.AvatarPath" alt="Avatar" />
                                 }
                                 else
                                 {
-                                    <img src="/image/default-avatar.png" class="img-fluid rounded-circle" style="width:200px;height:200px;object-fit:cover;" />
+                                    <img src="/image/default-avatar.png" alt="Avatar" />
                                 }
                             </div>
-                            <h4>@Model.FullName</h4>
-                            <p class="text-muted"><i class="bi bi-envelope"></i> @Model.Email</p>
-                            <div class="mt-3">
-                                <p><i class="bi bi-calendar"></i> Thành viên từ: @Model.CreatedAt.ToString("dd/MM/yyyy")</p>
-                                <p><i class="bi bi-clock"></i> Cập nhật lần cuối: @Model.UpdatedAt.ToString("dd/MM/yyyy")</p>
-                            </div>
+                            <h4 class="fw-bold">@Model.FullName</h4>
+                            <p class="text-muted"><i class="bi bi-envelope"></i>@Model.Email</p>
+                            <p><i class="bi bi-calendar"></i> Thành viên từ: @Model.CreatedAt.ToString("dd/MM/yyyy")</p>
+                            <p><i class="bi bi-clock-history"></i> Cập nhật: @Model.UpdatedAt.ToString("dd/MM/yyyy")</p>
                         </div>
 
                         <div class="col-md-8">
+                            <!-- Basic Info -->
                             <div class="card mb-4">
-                                <div class="card-header bg-light">
-                                    <h5 class="mb-0">Thông tin cơ bản</h5>
-                                </div>
+                                <div class="card-header bg-light">Thông tin cơ bản</div>
                                 <div class="card-body">
-                                    <div class="row mb-3">
-                                        <div class="col-md-4 fw-bold">Họ tên:</div>
-                                        <div class="col-md-8">@Model.FullName</div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-4 profile-label">Số điện thoại:</div>
+                                        <div class="col-md-8">@(!string.IsNullOrEmpty(Model.PhoneNumber) ? Model.PhoneNumber : "Chưa cập nhật")</div>
                                     </div>
-                                    <div class="row mb-3">
-                                        <div class="col-md-4 fw-bold">Số điện thoại:</div>
-                                        <div class="col-md-8">@(string.IsNullOrEmpty(Model.PhoneNumber) ? "Chưa cập nhật" : Model.PhoneNumber)</div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-4 profile-label">Trường đại học:</div>
+                                        <div class="col-md-8">@(!string.IsNullOrEmpty(Model.University) ? Model.University : "Chưa cập nhật")</div>
                                     </div>
-                                    <div class="row mb-3">
-                                        <div class="col-md-4 fw-bold">Trường đại học:</div>
-                                        <div class="col-md-8">@(string.IsNullOrEmpty(Model.University) ? "Chưa cập nhật" : Model.University)</div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-4 profile-label">Ngành học:</div>
+                                        <div class="col-md-8">@(!string.IsNullOrEmpty(Model.Major) ? Model.Major : "Chưa cập nhật")</div>
                                     </div>
-                                    <div class="row mb-3">
-                                        <div class="col-md-4 fw-bold">Ngành học:</div>
-                                        <div class="col-md-8">@(string.IsNullOrEmpty(Model.Major) ? "Chưa cập nhật" : Model.Major)</div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-4 profile-label">Công ty:</div>
+                                        <div class="col-md-8">@(!string.IsNullOrEmpty(Model.CompanyName) ? Model.CompanyName : "Chưa cập nhật")</div>
                                     </div>
-                                    <div class="row mb-3">
-                                        <div class="col-md-4 fw-bold">Công ty:</div>
-                                        <div class="col-md-8">@(string.IsNullOrEmpty(Model.CompanyName) ? "Chưa cập nhật" : Model.CompanyName)</div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-4 fw-bold">Lĩnh vực:</div>
-                                        <div class="col-md-8">@(string.IsNullOrEmpty(Model.Industry) ? "Chưa cập nhật" : Model.Industry)</div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-4 profile-label">Lĩnh vực:</div>
+                                        <div class="col-md-8">@(!string.IsNullOrEmpty(Model.Industry) ? Model.Industry : "Chưa cập nhật")</div>
                                     </div>
                                 </div>
                             </div>
 
+                            <!-- Address -->
                             <div class="card mb-4">
-                                <div class="card-header bg-light">
-                                    <h5 class="mb-0">Địa chỉ</h5>
-                                </div>
+                                <div class="card-header bg-light">Địa chỉ</div>
                                 <div class="card-body">
                                     @if (string.IsNullOrEmpty(Model.FullAddress) && Model.ProvinceID == null)
                                     {
@@ -185,7 +180,7 @@
                                     else
                                     {
                                         <p>
-                                            @(string.IsNullOrEmpty(Model.DetailAddress) ? "" : Model.DetailAddress)
+                                            @(Model.DetailAddress)
                                             @(string.IsNullOrEmpty(Model.WardName) ? "" : ", " + Model.WardName)
                                             @(string.IsNullOrEmpty(Model.DistrictName) ? "" : ", " + Model.DistrictName)
                                             @(string.IsNullOrEmpty(Model.ProvinceName) ? "" : ", " + Model.ProvinceName)
@@ -194,10 +189,9 @@
                                 </div>
                             </div>
 
+                            <!-- Skills -->
                             <div class="card">
-                                <div class="card-header bg-light">
-                                    <h5 class="mb-0">Kỹ năng</h5>
-                                </div>
+                                <div class="card-header bg-light">Kỹ năng</div>
                                 <div class="card-body">
                                     @if (Model.Skills == null || !Model.Skills.Any())
                                     {
@@ -209,10 +203,8 @@
                                             @foreach (var skill in Model.Skills)
                                             {
                                                 <div class="col-md-6 mb-2">
-                                                    <div class="d-flex align-items-center">
-                                                        <span class="badge bg-primary me-2">@skill.SkillName</span>
-                                                        <span class="badge bg-secondary">@skill.ProficiencyLevelName</span>
-                                                    </div>
+                                                    <span class="badge bg-primary me-1">@skill.SkillName</span>
+                                                    <span class="badge bg-secondary">@skill.ProficiencyLevelName</span>
                                                 </div>
                                             }
                                         </div>
@@ -222,12 +214,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="text-center mt-4">
-                <a asp-action="Edit" class="btn btn-primary btn-lg">
-                    <i class="bi bi-pencil-square"></i> Chỉnh sửa thông tin cá nhân
-                </a>
             </div>
         </div>
     </div>

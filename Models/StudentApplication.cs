@@ -27,7 +27,7 @@ namespace StudentFreelance.Models
         [Column(TypeName = "decimal(15,2)")]
         public decimal Salary { get; set; }
 
-        /// Trạng thái đơn (Pending, Accepted, Rejected,…)
+        /// Trạng thái đơn (Pending, Accepted, Rejected, InProgress, Completed, PendingReview)
         [Required]
         public string Status { get; set; }
 
@@ -57,7 +57,21 @@ namespace StudentFreelance.Models
         /// Kết quả phỏng vấn
         public string? InterviewResult { get; set; }
 
+        /// Cờ đánh dấu đã thanh toán
+        public bool IsPaid { get; set; } = false;
+
+        /// Ngày hoàn thành dự án
+        public DateTime? CompletionDate { get; set; }
+
+        public string? Notes { get; set; }
+        public DateTime? InterviewDate { get; set; }
+        public string? ResumeLink { get; set; }
+        public bool BusinessConfirmedCompletion { get; set; } = false;
+        public bool StudentConfirmedCompletion { get; set; } = false;
+        public bool IsActive { get; set; } = true;
+
         public Project Project { get; set; }
         public ApplicationUser User { get; set; }
+        public ICollection<ProjectSubmission> Submissions { get; set; } = new List<ProjectSubmission>();
     }
 }

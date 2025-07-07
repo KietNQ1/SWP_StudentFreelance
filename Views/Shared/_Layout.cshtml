@@ -24,6 +24,7 @@
     <link rel="stylesheet" href="~/css/site.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     @await RenderSectionAsync("Styles", required: false)
+    
 </head>
 <body>
 @* <<<<<<< HEAD *@
@@ -178,6 +179,14 @@
                                 <div class="dropdown-menu" id="userDropdownMenu">
                                     <a asp-controller="AdminUser" asp-action="Index" class="dropdown-item">📊 Dashboard</a>
                                     <a asp-controller="User" asp-action="Profile" class="dropdown-item">👤 Profile</a>
+                                    <a asp-controller="Wallet" asp-action="Index" class="dropdown-item">💰 My Wallet</a>
+                                    <a class="nav-link" asp-controller="Chat" asp-action="Index">
+                                        <i class="bi bi-chat-square-text"></i>
+                                        Tin nhắn
+                                    </a>
+                                    <a class="nav-link text-warning" asp-controller="" asp-action="">
+                                        <i class="bi bi-flag"></i> Báo cáo
+                                    </a>
                                     @if (User.IsInRole("Student"))
                                     {
                                         <a asp-controller="Application" asp-action="MyApplications" class="dropdown-item">

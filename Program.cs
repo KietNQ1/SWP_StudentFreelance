@@ -7,7 +7,7 @@ using StudentFreelance.Models.Email;
 using StudentFreelance.Services.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddSignalR();              // Đăng ký SignalR
 // 1. Configure Entity Framework Core (SQL Server)
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -47,10 +47,12 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Emai
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IEmailSender, StudentFreelance.Services.Implementations.GmailEmailSender>();
 
 // Register application services
-builder.Services.AddScoped<StudentFreelance.Interfaces.IProjectService, StudentFreelance.Services.Implementations.ProjectService>();
-builder.Services.AddScoped<StudentFreelance.Interfaces.IReportService, StudentFreelance.Services.Implementations.ReportService>();
+builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IProjectService, StudentFreelance.Services.Implementations.ProjectService>();
+builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IReportService, StudentFreelance.Services.Implementations.ReportService>();
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IApplicationService, StudentFreelance.Services.Implementations.ApplicationService>();
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.INotificationService, StudentFreelance.Services.Implementations.NotificationService>();
+builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IProjectSubmissionService, StudentFreelance.Services.Implementations.ProjectSubmissionService>();
+builder.Services.AddScoped<StudentFreelance.Services.Interfaces.ITransactionService, StudentFreelance.Services.Implementations.TransactionService>();
 
 // 4. Add MVC support
 builder.Services.AddControllersWithViews();
@@ -89,5 +91,6 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-
+// Route cho SignalR hub
+app.MapHub<StudentFreelance.Hubs.ChatHub>("/chathub");
 app.Run();

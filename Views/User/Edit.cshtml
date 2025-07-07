@@ -1,4 +1,9 @@
-@model StudentFreelance.ViewModels.UserProfileViewModel
+﻿@model StudentFreelance.ViewModels.UserProfileViewModel
+
+@{
+    ViewData["Title"] = "Chỉnh sửa thông tin cá nhân";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
 
 <style>
     :root {
@@ -8,28 +13,36 @@
         --accent3: #FF8989;
     }
 
+    body {
+        background-color: #F8F8F8;
+        color: #222;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
     .card {
         border-radius: 10px;
         border-left: 5px solid var(--primary);
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        background-color: #fff;
     }
 
-    .card-header.bg-primary {
-        background-color: var(--primary) !important;
-        color: white;
+    .card-header {
+        background-color: var(--accent1);
         font-weight: 600;
+        color: #222;
+        font-size: 1.1rem;
     }
 
     .form-label {
         font-weight: 600;
-        color: #333;
+        color: #000;
     }
 
-    .form-control {
+    .form-control, .form-select {
         border-radius: 6px;
     }
 
-        .form-control:focus {
+        .form-control:focus, .form-select:focus {
             border-color: var(--primary);
             box-shadow: 0 0 0 0.2rem rgba(137, 172, 70, 0.25);
         }
@@ -38,67 +51,69 @@
         background-color: var(--accent3);
         border-color: var(--accent3);
         font-weight: 600;
+        color: white;
     }
 
         .btn-primary:hover {
-            background-color: #e55c5c;
-            border-color: #e55c5c;
+            background-color: #e35a5a;
+            border-color: #e35a5a;
+            color: white;
         }
 
     .btn-outline-secondary {
-        border-color: var(--accent1);
-        color: var(--primary);
+        background-color: white;
+        color: #222;
+        border: 1px solid var(--accent1);
+        font-weight: 500;
     }
 
         .btn-outline-secondary:hover {
             background-color: var(--accent1);
             color: black;
+            border-color: var(--accent1);
         }
 
     .btn-danger {
         background-color: var(--accent3);
         border-color: var(--accent3);
+        color: white;
     }
 
         .btn-danger:hover {
             background-color: #e35a5a;
             border-color: #e35a5a;
+            color: white;
         }
 
     .avatar-preview img {
         border: 4px solid var(--accent1);
         border-radius: 50%;
-        object-fit: cover;
         width: 200px;
         height: 200px;
+        object-fit: cover;
     }
 
-    .alert-success {
-        background-color: var(--accent1);
-        color: #333;
-        border: 1px solid var(--primary);
-    }
-
-    .skill-item select {
-        flex: 1;
-        margin-right: 0.5rem;
+    .skill-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
     }
 
     .w-45 {
         width: 45%;
     }
 
-    @@media screen and (max-width: 768px) {
+    @@media (max-width: 768px) {
         .skill-item
 
     {
         flex-direction: column;
-        align-items: stretch !important;
+        align-items: stretch;
     }
 
-    .skill-item select {
-        width: 100% !important;
-        margin-bottom: 0.5rem;
+    .w-45 {
+        width: 100%;
     }
 
     .avatar-preview img {
@@ -109,223 +124,142 @@
     }
 </style>
 
-
-@{
-    ViewData["Title"] = "Chỉnh sửa thông tin cá nhân";
-}
-
 <div class="container py-5">
-    <div class="row">
-        <div class="col-12">
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">@ViewData["Title"]</h4>
+    <h2 class="mb-4">@ViewData["Title"]</h2>
+
+    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+        <div class="row">
+            <!-- Avatar -->
+            <div class="col-md-4 text-center mb-4">
+                <div class="avatar-preview mb-3">
+                    <img src="@(!string.IsNullOrEmpty(Model.AvatarPath) ? Model.AvatarPath : "/image/default-avatar.png")" />
                 </div>
-                <div class="card-body">
-                    @if (TempData["Success"] != null)
-                    {
-                        <div class="alert alert-success">@TempData["Success"]</div>
-                    }
+                <div class="form-group">
+                    <label asp-for="AvatarImage" class="form-label">Chọn ảnh đại diện</label>
+                    <input asp-for="AvatarImage" type="file" class="form-control" accept="image/*" />
+                </div>
+            </div>
 
-                    <form asp-action="Edit" method="post" enctype="multipart/form-data">
-                        <div class="row">
-                            <div class="col-md-4 text-center mb-4">
-                                <div class="avatar-upload mb-3">
-                                    <div class="avatar-preview mb-3">
-                                        @if (!string.IsNullOrEmpty(Model.AvatarPath))
-                                        {
-                                            <img src="@Model.AvatarPath" class="img-fluid rounded-circle" style="width:200px;height:200px;object-fit:cover;" />
-                                        }
-                                        else
-                                        {
-                                            <img src="/image/default-avatar.png" class="img-fluid rounded-circle" style="width:200px;height:200px;object-fit:cover;" />
-                                        }
-                                    </div>
-                                    <div class="custom-file">
-                                        <input type="file" name="AvatarImage" class="form-control" id="avatarUpload" accept="image/*" />
-                                    </div>
-                                </div>
-                                <div class="text-muted">
-                                    <p>Thành viên từ: @Model.CreatedAt.ToString("dd/MM/yyyy")</p>
-                                    <p><i class="bi bi-envelope"></i> Email: @Model.Email</p>
-                                </div>
-                            </div>
-
-                            <div class="col-md-8">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-3">
-                                            <label class="form-label">Họ tên</label>
-                                            <input asp-for="FullName" class="form-control" />
-                                            <span asp-validation-for="FullName" class="text-danger"></span>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-3">
-                                            <label class="form-label">Số điện thoại</label>
-                                            <input asp-for="PhoneNumber" class="form-control" />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-3">
-                                            <label class="form-label">Trường đại học</label>
-                                            <input asp-for="University" class="form-control" />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-3">
-                                            <label class="form-label">Ngành học</label>
-                                            <input asp-for="Major" class="form-control" />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-3">
-                                            <label class="form-label">Công ty</label>
-                                            <input asp-for="CompanyName" class="form-control" />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-3">
-                                            <label class="form-label">Lĩnh vực</label>
-                                            <input asp-for="Industry" class="form-control" />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+            <!-- Thông tin -->
+            <div class="col-md-8">
+                <div class="card mb-4">
+                    <div class="card-header">Thông tin cá nhân</div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="FullName" class="form-label">Họ tên</label>
+                            <input asp-for="FullName" class="form-control" />
+                            <span asp-validation-for="FullName" class="text-danger"></span>
                         </div>
 
-                        <hr />
-                        <h5 class="mb-3">Địa chỉ</h5>
-                        <div class="row">
+                        <div class="mb-3">
+                            <label asp-for="PhoneNumber" class="form-label">Số điện thoại</label>
+                            <input asp-for="PhoneNumber" class="form-control" />
+                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="University" class="form-label">Trường đại học</label>
+                            <input asp-for="University" class="form-control" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Major" class="form-label">Ngành học</label>
+                            <input asp-for="Major" class="form-control" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="CompanyName" class="form-label">Công ty</label>
+                            <input asp-for="CompanyName" class="form-control" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Industry" class="form-label">Lĩnh vực</label>
+                            <input asp-for="Industry" class="form-control" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Địa chỉ -->
+                <div class="card mb-4">
+                    <div class="card-header">Địa chỉ</div>
+                    <div class="card-body">
+                        <div class="row mb-3">
                             <div class="col-md-4">
-                                <div class="form-group mb-3">
-                                    <label class="form-label">Tỉnh/Thành</label>
-                                    <select asp-for="ProvinceID" class="form-control" id="province-dropdown">
-                                        <option value="">-- Chọn tỉnh/thành --</option>
-                                        @foreach (var p in Model.Provinces)
-                                        {
-                                            if (p.ID == Model.ProvinceID)
-                                            {
-                                                <option value="@p.ID" selected>@p.Name</option>
-                                            }
-                                            else
-                                            {
-                                                <option value="@p.ID">@p.Name</option>
-                                            }
-                                        }
-                                    </select>
-                                </div>
+                                <label asp-for="ProvinceID" class="form-label">Tỉnh/Thành</label>
+                                <select asp-for="ProvinceID" class="form-select" id="province-dropdown">
+                                    <option value="">-- Chọn --</option>
+                                    @foreach (var p in Model.Provinces)
+                                    {
+                                        <option value="@p.ID">@p.Name</option>
+                                    }
+                                </select>
                             </div>
-
                             <div class="col-md-4">
-                                <div class="form-group mb-3">
-                                    <label class="form-label">Quận/Huyện</label>
-                                    <select asp-for="DistrictID" class="form-control" id="district-dropdown">
-                                        <option value="">-- Chọn quận/huyện --</option>
-                                        @foreach (var d in Model.Districts)
-                                        {
-                                            if (d.ID == Model.DistrictID)
-                                            {
-                                                <option value="@d.ID" selected>@d.Name</option>
-                                            }
-                                            else
-                                            {
-                                                <option value="@d.ID">@d.Name</option>
-                                            }
-                                        }
-                                    </select>
-                                </div>
+                                <label asp-for="DistrictID" class="form-label">Quận/Huyện</label>
+                                <select asp-for="DistrictID" class="form-select" id="district-dropdown">
+                                    <option value="">-- Chọn --</option>
+                                    @foreach (var d in Model.Districts)
+                                    {
+                                        <option value="@d.ID">@d.Name</option>
+                                    }
+                                </select>
                             </div>
-
                             <div class="col-md-4">
-                                <div class="form-group mb-3">
-                                    <label class="form-label">Phường/Xã</label>
-                                    <select asp-for="WardID" class="form-control" id="ward-dropdown">
-                                        <option value="">-- Chọn phường/xã --</option>
-                                        @foreach (var w in Model.Wards)
-                                        {
-                                            if (w.ID == Model.WardID)
-                                            {
-                                                <option value="@w.ID" selected>@w.Name</option>
-                                            }
-                                            else
-                                            {
-                                                <option value="@w.ID">@w.Name</option>
-                                            }
-                                        }
-                                    </select>
-                                </div>
+                                <label asp-for="WardID" class="form-label">Phường/Xã</label>
+                                <select asp-for="WardID" class="form-select" id="ward-dropdown">
+                                    <option value="">-- Chọn --</option>
+                                    @foreach (var w in Model.Wards)
+                                    {
+                                        <option value="@w.ID">@w.Name</option>
+                                    }
+                                </select>
                             </div>
                         </div>
 
-                        <div class="form-group mb-3">
-                            <label class="form-label">Chi tiết địa chỉ</label>
-                            <input asp-for="DetailAddress" class="form-control" placeholder="Số nhà, tên đường, thôn/xóm..." />
+                        <div class="mb-3">
+                            <label asp-for="DetailAddress" class="form-label">Địa chỉ chi tiết</label>
+                            <input asp-for="DetailAddress" class="form-control" />
                         </div>
+                    </div>
+                </div>
 
-                        <hr />
-                        <h5 class="mb-3">Kỹ năng</h5>
-
-                        <div id="skills-container">
-                            @for (int i = 0; i < Model.Skills.Count; i++)
-                            {
-                                var currentSkill = Model.Skills[i];
-                                <div class="skill-item mb-2 d-flex align-items-center">
-                                    <select name="Skills[@i].SkillID" class="form-control w-45 me-2">
-                                        @foreach (var skill in Model.AvailableSkills)
-                                        {
-                                            if (skill.ID == currentSkill.SkillID)
-                                            {
-                                                <option value="@skill.ID" selected>@skill.Name</option>
-                                            }
-                                            else
-                                            {
-                                                <option value="@skill.ID">@skill.Name</option>
-                                            }
-                                        }
-                                    </select>
-
-                                    <select name="Skills[@i].ProficiencyLevelID" class="form-control w-45 me-2">
-                                        @foreach (var level in Model.AvailableProficiencyLevels)
-                                        {
-                                            if (level.ID == currentSkill.ProficiencyLevelID)
-                                            {
-                                                <option value="@level.ID" selected>@level.Name</option>
-                                            }
-                                            else
-                                            {
-                                                <option value="@level.ID">@level.Name</option>
-                                            }
-                                        }
-                                    </select>
-
-                                    <button type="button" class="btn btn-danger btn-sm" onclick="removeSkill(this)">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            }
-                        </div>
-
-                        <button type="button" class="btn btn-outline-secondary mt-2 mb-4" onclick="addSkill()">
-                            <i class="bi bi-plus-circle"></i> Thêm kỹ năng
-                        </button>
-
-                        <hr />
-                        <div class="d-flex justify-content-between mt-4">
-                            <a asp-action="Profile" class="btn btn-secondary">Quay lại</a>
-                            <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
-                        </div>
-                    </form>
+                <!-- Kỹ năng -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        Kỹ năng
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addSkill()">+ Thêm</button>
+                    </div>
+                    <div class="card-body" id="skills-container">
+                        @for (int i = 0; i < Model.Skills.Count; i++)
+                        {
+                            <div class="skill-item">
+                                <select name="Skills[@i].SkillID" class="form-select w-45">
+                                    @foreach (var s in Model.AvailableSkills)
+                                    {
+                                        <option value="@s.ID" selected="@(Model.Skills[i].SkillID == s.ID)">@s.Name</option>
+                                    }
+                                </select>
+                                <select name="Skills[@i].ProficiencyLevelID" class="form-select w-45">
+                                    @foreach (var l in Model.AvailableProficiencyLevels)
+                                    {
+                                        <option value="@l.ID" selected="@(Model.Skills[i].ProficiencyLevelID == l.ID)">@l.Name</option>
+                                    }
+                                </select>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        }
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+
+        <div class="text-end mt-4">
+            <a asp-action="Profile" class="btn btn-outline-secondary me-2">Quay lại</a>
+            <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+        </div>
+    </form>
 </div>
 
 @section Scripts {
@@ -333,17 +267,19 @@
     <script>
         let skillIndex = @Model.Skills.Count;
 
-        const skillOptions = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.AvailableSkills));
-        const levelOptions = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.AvailableProficiencyLevels));
+        const skillList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.AvailableSkills));
+        const levelList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.AvailableProficiencyLevels));
 
         function addSkill() {
+            const container = document.getElementById("skills-container");
+
             const div = document.createElement("div");
-            div.className = "skill-item mb-2 d-flex align-items-center";
+            div.className = "skill-item";
 
             const skillSelect = document.createElement("select");
             skillSelect.name = `Skills[${skillIndex}].SkillID`;
-            skillSelect.className = "form-control w-45 me-2";
-            skillOptions.forEach(s => {
+            skillSelect.className = "form-select w-45";
+            skillList.forEach(s => {
                 const opt = document.createElement("option");
                 opt.value = s.ID;
                 opt.textContent = s.Name;
@@ -352,8 +288,8 @@
 
             const levelSelect = document.createElement("select");
             levelSelect.name = `Skills[${skillIndex}].ProficiencyLevelID`;
-            levelSelect.className = "form-control w-45 me-2";
-            levelOptions.forEach(l => {
+            levelSelect.className = "form-select w-45";
+            levelList.forEach(l => {
                 const opt = document.createElement("option");
                 opt.value = l.ID;
                 opt.textContent = l.Name;
@@ -369,76 +305,32 @@
             div.appendChild(skillSelect);
             div.appendChild(levelSelect);
             div.appendChild(removeBtn);
-            document.getElementById("skills-container").appendChild(div);
+            container.appendChild(div);
 
             skillIndex++;
         }
 
-        function removeSkill(button) {
-            button.closest(".skill-item").remove();
-        }
-
         $('#province-dropdown').on('change', function () {
             const provinceId = $(this).val();
-            $('#district-dropdown').html('<option value="">-- Đang tải --</option>');
-            $('#ward-dropdown').html('<option value="">-- Chọn quận trước --</option>');
-
             $.get(`/User/GetDistricts?provinceId=${provinceId}`, function (data) {
-                $('#district-dropdown').html('<option value="">-- Chọn quận/huyện --</option>');
+                const $district = $('#district-dropdown');
+                $district.empty().append('<option value="">-- Chọn --</option>');
                 data.forEach(d => {
-                    $('#district-dropdown').append(`<option value="${d.id}">${d.name}</option>`);
+                    $district.append(`<option value="${d.id}">${d.name}</option>`);
                 });
+                $('#ward-dropdown').empty().append('<option value="">-- Chọn --</option>');
             });
         });
 
         $('#district-dropdown').on('change', function () {
             const districtId = $(this).val();
-            $('#ward-dropdown').html('<option value="">-- Đang tải --</option>');
-
             $.get(`/User/GetWards?districtId=${districtId}`, function (data) {
-                $('#ward-dropdown').html('<option value="">-- Chọn phường/xã --</option>');
+                const $ward = $('#ward-dropdown');
+                $ward.empty().append('<option value="">-- Chọn --</option>');
                 data.forEach(w => {
-                    $('#ward-dropdown').append(`<option value="${w.id}">${w.name}</option>`);
+                    $ward.append(`<option value="${w.id}">${w.name}</option>`);
                 });
-            });
-        });
-
-        $(document).ready(function () {
-            const selectedProvince = $('#province-dropdown').val();
-            const selectedDistrict = $('#district-dropdown').val();
-            const selectedWard = '@Model.WardID';
-
-            if (selectedProvince) {
-                $.get(`/User/GetDistricts?provinceId=${selectedProvince}`, function (districts) {
-                    $('#district-dropdown').html('<option value="">-- Chọn quận/huyện --</option>');
-                    districts.forEach(d => {
-                        const selected = d.id == selectedDistrict ? 'selected' : '';
-                        $('#district-dropdown').append(`<option value="${d.id}" ${selected}>${d.name}</option>`);
-                    });
-
-                    if (selectedDistrict) {
-                        $.get(`/User/GetWards?districtId=${selectedDistrict}`, function (wards) {
-                            $('#ward-dropdown').html('<option value="">-- Chọn phường/xã --</option>');
-                            wards.forEach(w => {
-                                const selected = w.id == selectedWard ? 'selected' : '';
-                                $('#ward-dropdown').append(`<option value="${w.id}" ${selected}>${w.name}</option>`);
-                            });
-                        });
-                    }
-                });
-            }
-
-            // Preview image before upload
-            $("#avatarUpload").change(function () {
-                const file = this.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        $('.avatar-preview img').attr('src', e.target.result);
-                    }
-                    reader.readAsDataURL(file);
-                }
             });
         });
     </script>
-} 
+}

@@ -1,6 +1,6 @@
 using StudentFreelance.Models;
 
-namespace StudentFreelance.Interfaces
+namespace StudentFreelance.Services.Interfaces
 {
     public interface IProjectService
     {
@@ -14,5 +14,7 @@ namespace StudentFreelance.Interfaces
         Task<IEnumerable<Project>> GetProjectsByStatusAsync(int statusId);
         Task<IEnumerable<Project>> GetProjectsByTypeAsync(int typeId);
         Task<bool> UpdateProjectStatusAsync(int projectId, int statusId);
+        Task<bool> ConfirmProjectCompletionAsync(int projectId, int applicationId, bool isBusinessConfirmation);
+        Task<bool> CompleteProjectAndTransferFundsAsync(int projectId, int applicationId);
     }
 } 

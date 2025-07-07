@@ -1,17 +1,20 @@
 using Microsoft.EntityFrameworkCore;
 using StudentFreelance.DbContext;
-using StudentFreelance.Interfaces;
+using StudentFreelance.Services.Interfaces;
 using StudentFreelance.Models;
+using StudentFreelance.Models.Enums;
 
 namespace StudentFreelance.Services.Implementations
 {
     public class ProjectService : IProjectService
     {
         private readonly ApplicationDbContext _context;
+        private readonly ITransactionService _transactionService;
 
-        public ProjectService(ApplicationDbContext context)
+        public ProjectService(ApplicationDbContext context, ITransactionService transactionService)
         {
             _context = context;
+            _transactionService = transactionService;
         }
 
         public async Task<IEnumerable<Project>> GetAllProjectsAsync(bool includeInactive = false, int? userId = null)
@@ -190,6 +193,92 @@ namespace StudentFreelance.Services.Implementations
                 
             project.StatusID = statusId;
             project.UpdatedAt = DateTime.UtcNow;
+            
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> ConfirmProjectCompletionAsync(int projectId, int applicationId, bool isBusinessConfirmation)
+        {
+            var project = await _context.Projects.FindAsync(projectId);
+            var application = await _context.StudentApplications.FindAsync(applicationId);
+            
+            if (project == null || application == null)
+                return false;
+                
+            if (application.ProjectID != projectId)
+                return false;
+            
+            // Nếu application đang ở trạng thái InProgress, chuyển sang PendingReview
+            // Nếu đang ở trạng thái Completed, giữ nguyên trạng thái
+            if (application.Status == "InProgress")
+            {
+                application.Status = "PendingReview";
+            }
+            
+            if (isBusinessConfirmation)
+            {
+                application.BusinessConfirmedCompletion = true;
+            }
+            else
+            {
+                application.StudentConfirmedCompletion = true;
+            }
+            
+            await _context.SaveChangesAsync();
+            
+            // Check if both parties have confirmed completion
+            if (application.BusinessConfirmedCompletion && application.StudentConfirmedCompletion)
+            {
+                // Complete the project and transfer funds
+                return await CompleteProjectAndTransferFundsAsync(projectId, applicationId);
+            }
+            
+            return true;
+        }
+        
+        public async Task<bool> CompleteProjectAndTransferFundsAsync(int projectId, int applicationId)
+        {
+            var project = await _context.Projects.FindAsync(projectId);
+            var application = await _context.StudentApplications
+                .Include(a => a.User)
+                .FirstOrDefaultAsync(a => a.ApplicationID == applicationId);
+            
+            if (project == null || application == null)
+                return false;
+                
+            if (application.ProjectID != projectId)
+                return false;
+            
+            // Update project status to completed
+            project.StatusID = 3; // Assuming 3 is "Completed"
+            project.UpdatedAt = DateTime.UtcNow;
+            
+            // Update application status
+            application.Status = "Completed";
+            
+            // Create transaction to transfer funds from business to student
+            var transaction = new Transaction
+            {
+                UserID = application.UserID,
+                ProjectID = projectId,
+                Amount = project.Budget,
+                TypeID = 4, // Assuming 4 is "ProjectPayment"
+                TransactionDate = DateTime.UtcNow,
+                Description = $"Payment for completed project: {project.Title}",
+                StatusID = 1, // Assuming 1 is "Completed"
+                IsActive = true
+            };
+            
+            await _context.Transactions.AddAsync(transaction);
+            
+            // Update student's wallet balance
+            var student = application.User;
+            if (student != null)
+            {
+                student.WalletBalance += project.Budget;
+                _context.Users.Update(student);
+            }
             
             await _context.SaveChangesAsync();
             return true;

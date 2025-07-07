@@ -32,6 +32,7 @@ namespace StudentFreelance.DbContext
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<Rating> Ratings { get; set; }
         public DbSet<Report> Reports { get; set; }
+        public DbSet<Conversation> Conversations { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<UserNotification> UserNotifications { get; set; }
@@ -48,6 +49,9 @@ namespace StudentFreelance.DbContext
         public DbSet<AccountStatus> AccountStatuses { get; set; }
         public DbSet<ProficiencyLevel> ProficiencyLevels { get; set; }
         public DbSet<ImportanceLevel> ImportanceLevels { get; set; }
+
+        public DbSet<ProjectSubmission> ProjectSubmissions { get; set; }
+        public DbSet<ProjectSubmissionAttachment> ProjectSubmissionAttachments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -345,6 +349,26 @@ namespace StudentFreelance.DbContext
                 .HasForeignKey(psr => psr.ImportanceLevelID)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // ProjectSubmission relationships
+            modelBuilder.Entity<ProjectSubmission>()
+                .HasOne(ps => ps.Application)
+                .WithMany()  // no StudentApplication.Submissions collection
+                .HasForeignKey(ps => ps.ApplicationID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // ProjectSubmissionAttachment relationships
+            modelBuilder.Entity<ProjectSubmissionAttachment>()
+                .HasOne(psa => psa.Submission)
+                .WithMany(ps => ps.Attachments)
+                .HasForeignKey(psa => psa.SubmissionID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ProjectSubmissionAttachment>()
+                .HasOne(psa => psa.UploadedByUser)
+                .WithMany()  // no User.SubmissionAttachments collection
+                .HasForeignKey(psa => psa.UploadedBy)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // Global query filters for soft-delete
             
             modelBuilder.Entity<Address>().HasQueryFilter(a => a.IsActive);
@@ -369,6 +393,8 @@ namespace StudentFreelance.DbContext
             modelBuilder.Entity<AccountStatus>().HasQueryFilter(e => e.IsActive);
             modelBuilder.Entity<ProficiencyLevel>().HasQueryFilter(e => e.IsActive);
             modelBuilder.Entity<ImportanceLevel>().HasQueryFilter(e => e.IsActive);
+            modelBuilder.Entity<ProjectSubmission>().HasQueryFilter(ps => ps.IsActive);
+            modelBuilder.Entity<ProjectSubmissionAttachment>().HasQueryFilter(psa => psa.IsActive);
         }
     }
 }

@@ -1,0 +1,47 @@
+﻿@{
+    Layout = null; // hoặc _Layout không có sidebar nếu bạn muốn
+}
+<link href="~/css/AdminSidebar.css" rel="stylesheet" />
+
+<div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <nav class="sidebar-menu">
+            <a href="#">Dashboard</a>
+            <a href="#">Calendar</a>
+            <div class="dropdown">
+                <button class="dropdown-toggle" onclick="toggleDropdown(this)">Profile</button>
+                <div class="dropdown-menu">
+                    <a href="#">My Profile</a>
+                    <a href="#">Freelancers</a>
+                    <a href="#">Companies</a>
+                </div>
+            </div>
+            <div class="dropdown">
+                <button class="dropdown-toggle" onclick="toggleDropdown(this)">Customer Management</button>
+                <div class="dropdown-menu">
+                    <a href="#">Freelancers</a>
+                    <a href="#">Companies</a>
+                </div>
+            </div>
+            <a href="#">Project Management</a>
+            <a href="#">Applications</a>
+            <a href="#">Payments</a>
+            <a href="#">Reviews & Reports</a>
+            <a href="#">System Settings</a>
+        </nav>
+    </aside>
+
+    <!-- Main content area -->
+    <main class="main">
+        @RenderBody()
+    </main>
+    <script>
+        function toggleDropdown(button) {
+            const dropdown = button.closest(".dropdown");
+            dropdown.classList.toggle("open");
+        }
+    </script>
+</div>
+
+

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using StudentFreelance.DbContext;
-using StudentFreelance.Interfaces;
+using StudentFreelance.Services.Interfaces;
 using StudentFreelance.Models;
 using StudentFreelance.Models.Enums;
 using StudentFreelance.ViewModels;

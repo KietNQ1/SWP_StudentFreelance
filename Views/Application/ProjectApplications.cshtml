@@ -3,6 +3,183 @@
     ViewData["Title"] = "Danh sách ứng viên";
 }
 
+<style>
+    :root {
+        --primary: #89AC46;
+        --accent1: #D3E671;
+        --accent2: #F8ED8C;
+        --accent3: #FF8989;
+    }
+
+    body {
+        background-color: #F8F8F8;
+        color: #222;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .breadcrumb {
+        background-color: transparent;
+        font-size: 0.95rem;
+    }
+
+    .card {
+        border-radius: 12px;
+        border-left: 5px solid var(--primary);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        background-color: #fff;
+        border: 1px solid #ddd;
+    }
+
+    .card-header {
+        background-color: var(--accent1);
+        font-weight: 600;
+        color: #222;
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+        border-bottom: 1px solid #ccc;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+        background-color: #fff;
+    }
+
+    .badge {
+        font-size: 0.85rem;
+        padding: 0.4em 0.8em;
+        border-radius: 20px;
+        font-weight: 500;
+    }
+
+    .bg-warning {
+        background-color: var(--accent2) !important;
+        color: #222;
+    }
+
+    .bg-success {
+        background-color: #6FCF97 !important;
+        color: white;
+    }
+
+    .bg-danger {
+        background-color: var(--accent3) !important;
+        color: white;
+    }
+
+    .bg-info {
+        background-color: #9AD0EC !important;
+        color: #222;
+    }
+
+    .bg-secondary {
+        background-color: var(--accent1) !important;
+        color: #222;
+    }
+
+    .cover-letter {
+        background-color: #fdfdfd;
+        border: 1px solid #ddd;
+        border-left: 4px solid var(--primary);
+        font-size: 0.95rem;
+        padding: 1rem;
+        color: #333;
+    }
+
+    .applicant-info h6 {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .rating i {
+        font-size: 1.1rem;
+    }
+
+    .btn {
+        font-weight: 500;
+    }
+
+    .btn-info {
+        background-color: #9AD0EC;
+        border-color: #9AD0EC;
+        color: #222;
+    }
+
+        .btn-info:hover {
+            background-color: #86c5e0;
+            color: black;
+        }
+
+    .btn-primary {
+        background-color: var(--accent3);
+        border-color: var(--accent3);
+        color: white;
+    }
+
+        .btn-primary:hover {
+            background-color: #e35a5a;
+            border-color: #e35a5a;
+            color: white;
+        }
+
+    .btn-outline-primary {
+        border-color: var(--primary);
+        color: var(--primary);
+        background-color: #fff;
+    }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+    .btn-success {
+        background-color: var(--primary);
+        border-color: var(--primary);
+        color: white;
+    }
+
+        .btn-success:hover {
+            background-color: #6d9138;
+            border-color: #6d9138;
+        }
+
+    .alert-success {
+        background-color: var(--accent1);
+        color: #333;
+        border: 1px solid var(--primary);
+    }
+
+    .alert-danger {
+        background-color: var(--accent3);
+        color: white;
+        border: none;
+    }
+
+    .alert-info {
+        background-color: #E8F0E8;
+        border-left: 4px solid var(--primary);
+        color: #333;
+    }
+
+    @@media (max-width: 768px) {
+        .card-header h5
+
+    {
+        font-size: 1.1rem;
+    }
+
+    .btn {
+        font-size: 0.9rem;
+    }
+
+    .cover-letter {
+        font-size: 0.9rem;
+    }
+
+    }
+</style>
+
+
 <div class="container mt-4">
     <div class="row mb-4">
         <div class="col">
@@ -166,6 +343,14 @@
                                                class="btn btn-primary w-100 mb-2">
                                                 <i class="bi bi-pencil-square"></i> Cập nhật trạng thái
                                             </a>
+                                            
+                                            @if (application.Status == "PendingReview" || application.Status == "InProgress" || application.Status == "Completed")
+                                            {
+                                                <a asp-controller="ProjectSubmission" asp-action="ProjectSubmissions" asp-route-applicationId="@application.ApplicationID" 
+                                                    class="btn btn-success w-100 mb-2">
+                                                    <i class="bi bi-file-earmark-check"></i> Xem kết quả dự án
+                                                </a>
+                                            }
                                             
                                             <a href="mailto:@application.UserEmail" class="btn btn-outline-primary w-100">
                                                 <i class="bi bi-envelope"></i> Liên hệ qua email
