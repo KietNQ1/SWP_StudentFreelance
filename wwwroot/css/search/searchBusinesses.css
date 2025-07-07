@@ -10,7 +10,7 @@
 
 /* General styles */
 body {
-    background: linear-gradient(135deg, var(--secondary-color), var(--accent-color), var(--highlight-color));
+    background: #F8F8F8 ;
     background-attachment: fixed;
     min-height: 100vh;
 }
