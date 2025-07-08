@@ -1,0 +1,316 @@
+/* Palette color variables */
+:root {
+    --primary-color: #89AC46;
+    --secondary-color: #D3E671;
+    --accent-color: #F8ED8C;
+    --highlight-color: #FF8989;
+    --orange-accent: #FF8989;
+    --blue-accent: #89AC46;
+}
+
+/* General styles */
+body {
+    background: #F8F8F8;
+    min-height: 100vh;
+}
+
+.container {
+    background-color: #FFFFFF;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-top: 4px solid var(--primary-color);
+    margin-top: 20px;
+}
+
+h2 {
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 10px;
+    display: inline-block;
+}
+
+/* Card styling */
+.card {
+    transition: transform 0.3s, box-shadow 0.3s;
+    border-radius: 8px;
+    overflow: hidden;
+    background: linear-gradient(to bottom right, white, rgba(211, 230, 113, 0.15));
+    border: 1px solid rgba(211, 230, 113, 0.4);
+    margin-bottom: 20px;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(137, 172, 70, 0.25);
+}
+
+.card-header {
+    border-bottom: none;
+    font-weight: 600;
+    padding: 12px 20px;
+}
+
+.card-header.bg-primary {
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color)) !important;
+    color: white;
+}
+
+.card-header.bg-info {
+    background: linear-gradient(to right, var(--accent-color), var(--secondary-color)) !important;
+    color: #555;
+}
+
+.card-header.bg-secondary {
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color)) !important;
+    color: white;
+}
+
+.card-header.bg-success {
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color)) !important;
+    color: white;
+}
+
+.card-header.bg-warning {
+    background: linear-gradient(to right, var(--accent-color), var(--highlight-color)) !important;
+    color: #555;
+}
+
+/* Button styling */
+.btn-primary {
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color)) !important;
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 2px 4px rgba(137, 172, 70, 0.3);
+    color: white;
+    font-weight: 500;
+    padding: 10px 20px;
+    border-radius: 4px;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background: linear-gradient(to right, var(--secondary-color), var(--primary-color)) !important;
+    border-color: var(--secondary-color) !important;
+    box-shadow: 0 4px 8px rgba(137, 172, 70, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-success {
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color)) !important;
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 2px 4px rgba(137, 172, 70, 0.3);
+    color: white;
+}
+
+.btn-success:hover, .btn-success:focus {
+    background: linear-gradient(to right, var(--secondary-color), var(--primary-color)) !important;
+    border-color: var(--secondary-color) !important;
+    box-shadow: 0 4px 8px rgba(137, 172, 70, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-warning {
+    background: linear-gradient(to right, var(--accent-color), var(--highlight-color)) !important;
+    border-color: var(--accent-color) !important;
+    box-shadow: 0 2px 4px rgba(248, 237, 140, 0.3);
+    color: #555;
+}
+
+.btn-warning:hover, .btn-warning:focus {
+    background: linear-gradient(to right, var(--highlight-color), var(--accent-color)) !important;
+    border-color: var(--highlight-color) !important;
+    box-shadow: 0 4px 8px rgba(248, 237, 140, 0.4);
+    transform: translateY(-1px);
+    color: #555;
+}
+
+.btn-outline-secondary {
+    color: var(--primary-color);
+    border-color: var(--secondary-color);
+}
+
+.btn-outline-secondary:hover, .btn-outline-secondary:focus {
+    background-color: var(--secondary-color);
+    color: #555;
+    border-color: var(--primary-color);
+}
+
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover, .btn-outline-primary:focus {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* Wallet balance display */
+.display-4 {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+/* Alert styling */
+.alert-success {
+    background-color: rgba(211, 230, 113, 0.3);
+    border-color: var(--secondary-color);
+    color: var(--primary-color);
+    border-left: 4px solid var(--primary-color);
+}
+
+.alert-info {
+    background-color: rgba(248, 237, 140, 0.3);
+    border-color: var(--accent-color);
+    color: #6b6219;
+    border-left: 4px solid var(--primary-color);
+}
+
+/* List group styling */
+.list-group-item {
+    border-color: rgba(211, 230, 113, 0.4);
+    padding: 12px 15px;
+}
+
+.list-group-item:hover {
+    background-color: rgba(211, 230, 113, 0.1);
+}
+
+.list-group-item i {
+    color: var(--primary-color);
+    margin-right: 10px;
+}
+
+.list-group-item a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.list-group-item a:hover {
+    color: var(--highlight-color);
+    text-decoration: underline;
+}
+
+/* Table styling */
+.table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table thead th {
+    background-color: rgba(211, 230, 113, 0.2);
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--secondary-color);
+    font-weight: 600;
+    padding: 12px;
+}
+
+.table tbody td {
+    padding: 12px;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(211, 230, 113, 0.2);
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(248, 248, 248, 0.7);
+}
+
+.table-striped tbody tr:hover {
+    background-color: rgba(211, 230, 113, 0.1);
+}
+
+/* Badge styling */
+.badge.bg-success {
+    background-color: var(--primary-color) !important;
+    color: white;
+}
+
+.badge.bg-danger {
+    background-color: var(--highlight-color) !important;
+    color: white;
+}
+
+.badge.bg-warning {
+    background-color: var(--accent-color) !important;
+    color: #555;
+}
+
+/* Text colors */
+.text-success {
+    color: var(--primary-color) !important;
+}
+
+.text-danger {
+    color: var(--highlight-color) !important;
+}
+
+/* Pagination styling */
+.pagination .page-link {
+    color: var(--primary-color);
+    border-color: rgba(211, 230, 113, 0.4);
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #6c757d;
+}
+
+.pagination .page-link:hover {
+    background-color: rgba(211, 230, 113, 0.2);
+    color: var(--primary-color);
+}
+
+/* Form styling */
+.form-control, .form-select {
+    border: 1px solid rgba(211, 230, 113, 0.4);
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(137, 172, 70, 0.25);
+}
+
+.input-group-text {
+    background-color: rgba(248, 248, 248, 0.7);
+    border: 1px solid rgba(211, 230, 113, 0.4);
+    color: var(--primary-color);
+}
+
+.form-label {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+/* Form check styling */
+.form-check-input:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.form-check-label {
+    color: #555;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767px) {
+    .container {
+        padding: 15px;
+    }
+    
+    .btn {
+        padding: 8px 16px;
+    }
+    
+    .display-4 {
+        font-size: 2.5rem;
+    }
+} 
