@@ -128,6 +128,9 @@
     <h2 class="mb-4">@ViewData["Title"]</h2>
 
     <form asp-action="Edit" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+        
         <div class="row">
             <!-- Avatar -->
             <div class="col-md-4 text-center mb-4">
@@ -185,40 +188,65 @@
                     <div class="card-body">
                         <div class="row mb-3">
                             <div class="col-md-4">
-                                <label asp-for="ProvinceID" class="form-label">Tỉnh/Thành</label>
-                                <select asp-for="ProvinceID" class="form-select" id="province-dropdown">
+                                <label asp-for="ProvinceCode" class="form-label">Tỉnh/Thành</label>
+                                <select asp-for="ProvinceCode" class="form-select" id="province-dropdown">
                                     <option value="">-- Chọn --</option>
                                     @foreach (var p in Model.Provinces)
                                     {
-                                        <option value="@p.ID">@p.Name</option>
+                                        @if (p.ID.ToString() == Model.ProvinceCode?.ToString())
+                                        {
+                                            <option value="@p.ID" selected>@p.Name</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@p.ID">@p.Name</option>
+                                        }
                                     }
                                 </select>
+                                <span asp-validation-for="ProvinceCode" class="text-danger"></span>
                             </div>
                             <div class="col-md-4">
-                                <label asp-for="DistrictID" class="form-label">Quận/Huyện</label>
-                                <select asp-for="DistrictID" class="form-select" id="district-dropdown">
+                                <label asp-for="DistrictCode" class="form-label">Quận/Huyện</label>
+                                <select asp-for="DistrictCode" class="form-select" id="district-dropdown">
                                     <option value="">-- Chọn --</option>
                                     @foreach (var d in Model.Districts)
                                     {
-                                        <option value="@d.ID">@d.Name</option>
+                                        @if (d.ID.ToString() == Model.DistrictCode?.ToString())
+                                        {
+                                            <option value="@d.ID" selected>@d.Name</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@d.ID">@d.Name</option>
+                                        }
                                     }
                                 </select>
+                                <span asp-validation-for="DistrictCode" class="text-danger"></span>
                             </div>
                             <div class="col-md-4">
-                                <label asp-for="WardID" class="form-label">Phường/Xã</label>
-                                <select asp-for="WardID" class="form-select" id="ward-dropdown">
+                                <label asp-for="WardCode" class="form-label">Phường/Xã</label>
+                                <select asp-for="WardCode" class="form-select" id="ward-dropdown">
                                     <option value="">-- Chọn --</option>
                                     @foreach (var w in Model.Wards)
                                     {
-                                        <option value="@w.ID">@w.Name</option>
+                                        @if (w.ID.ToString() == Model.WardCode?.ToString())
+                                        {
+                                            <option value="@w.ID" selected>@w.Name</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@w.ID">@w.Name</option>
+                                        }
                                     }
                                 </select>
+                                <span asp-validation-for="WardCode" class="text-danger"></span>
                             </div>
                         </div>
 
                         <div class="mb-3">
                             <label asp-for="DetailAddress" class="form-label">Địa chỉ chi tiết</label>
                             <input asp-for="DetailAddress" class="form-control" />
+                            <span asp-validation-for="DetailAddress" class="text-danger"></span>
                         </div>
                     </div>
                 </div>
@@ -236,13 +264,27 @@
                                 <select name="Skills[@i].SkillID" class="form-select w-45">
                                     @foreach (var s in Model.AvailableSkills)
                                     {
-                                        <option value="@s.ID" selected="@(Model.Skills[i].SkillID == s.ID)">@s.Name</option>
+                                        if (Model.Skills[i].SkillID.ToString() == s.ID)
+                                        {
+                                            <option value="@s.ID" selected>@s.Name</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@s.ID">@s.Name</option>
+                                        }
                                     }
                                 </select>
                                 <select name="Skills[@i].ProficiencyLevelID" class="form-select w-45">
                                     @foreach (var l in Model.AvailableProficiencyLevels)
                                     {
-                                        <option value="@l.ID" selected="@(Model.Skills[i].ProficiencyLevelID == l.ID)">@l.Name</option>
+                                        if (Model.Skills[i].ProficiencyLevelID.ToString() == l.ID)
+                                        {
+                                            <option value="@l.ID" selected>@l.Name</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@l.ID">@l.Name</option>
+                                        }
                                     }
                                 </select>
                                 <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">
@@ -264,6 +306,7 @@
 
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
     <script>
         let skillIndex = @Model.Skills.Count;
 
@@ -310,26 +353,95 @@
             skillIndex++;
         }
 
+        // Display any messages from TempData
+        $(document).ready(function() {
+            // Show success message if available
+            @if (TempData["Success"] != null)
+            {
+                <text>
+                showMessage("@TempData["Success"]", "success");
+                </text>
+            }
+            
+            // Show error message if available
+            @if (TempData["Error"] != null)
+            {
+                <text>
+                showMessage("@TempData["Error"]", "error");
+                </text>
+            }
+            
+            // Function to show messages
+            function showMessage(message, type) {
+                const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+                const alertDiv = $(`<div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>`);
+                
+                // Add alert to the top of the form
+                $('.container.py-5').prepend(alertDiv);
+                
+                // Auto dismiss after 5 seconds
+                setTimeout(() => {
+                    alertDiv.alert('close');
+                }, 5000);
+            }
+            
+            // Form validation
+            $('form').on('submit', function(e) {
+                // Log form data for debugging
+                console.log("Form submitted");
+                console.log("ProvinceCode:", $("#province-dropdown").val());
+                console.log("DistrictCode:", $("#district-dropdown").val());
+                console.log("WardCode:", $("#ward-dropdown").val());
+                console.log("DetailAddress:", $("#DetailAddress").val());
+            });
+        });
+
         $('#province-dropdown').on('change', function () {
             const provinceId = $(this).val();
+            if (!provinceId) {
+                // Clear district and ward dropdowns
+                $('#district-dropdown').empty().append('<option value="">-- Chọn --</option>');
+                $('#ward-dropdown').empty().append('<option value="">-- Chọn --</option>');
+                return;
+            }
+            
+            // Gọi API lấy quận/huyện
             $.get(`/User/GetDistricts?provinceId=${provinceId}`, function (data) {
                 const $district = $('#district-dropdown');
                 $district.empty().append('<option value="">-- Chọn --</option>');
                 data.forEach(d => {
+                    // Use the API ID directly as string
                     $district.append(`<option value="${d.id}">${d.name}</option>`);
                 });
                 $('#ward-dropdown').empty().append('<option value="">-- Chọn --</option>');
+            }).fail(function(error) {
+                console.error("Error fetching districts:", error);
+                showMessage("Không thể lấy danh sách quận/huyện. Vui lòng thử lại sau.", "error");
             });
         });
 
         $('#district-dropdown').on('change', function () {
             const districtId = $(this).val();
+            if (!districtId) {
+                // Clear ward dropdown
+                $('#ward-dropdown').empty().append('<option value="">-- Chọn --</option>');
+                return;
+            }
+            
+            // Gọi API lấy phường/xã
             $.get(`/User/GetWards?districtId=${districtId}`, function (data) {
                 const $ward = $('#ward-dropdown');
                 $ward.empty().append('<option value="">-- Chọn --</option>');
                 data.forEach(w => {
+                    // Use the API ID directly as string
                     $ward.append(`<option value="${w.id}">${w.name}</option>`);
                 });
+            }).fail(function(error) {
+                console.error("Error fetching wards:", error);
+                showMessage("Không thể lấy danh sách phường/xã. Vui lòng thử lại sau.", "error");
             });
         });
     </script>

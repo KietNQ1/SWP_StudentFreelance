@@ -4,6 +4,7 @@ using StudentFreelance.DbContext;
 using StudentFreelance.Models;
 using StudentFreelance.Models.Enums;
 using Microsoft.AspNetCore.Identity;
+using StudentFreelance.Services.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,23 +17,32 @@ namespace StudentFreelance.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole<int>> _roleManager;
+        private readonly ILocationApiService _locationApiService;
 
         public SearchController(
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
-            RoleManager<IdentityRole<int>> roleManager)
+            RoleManager<IdentityRole<int>> roleManager,
+            ILocationApiService locationApiService)
         {
             _context = context;
             _userManager = userManager;
             _roleManager = roleManager;
+            _locationApiService = locationApiService;
         }
 
         // Method to get provinces for dropdown
         public async Task<IActionResult> GetProvinces()
         {
-            var provinces = await _context.Provinces
-                .OrderBy(p => p.Name)
-                .ToListAsync();
+            var apiProvinces = await _locationApiService.GetProvincesAsync();
+            
+            // Convert API provinces to the model expected by the view
+            var provinces = apiProvinces.Select(p => new Province
+            {
+                ProvinceID = int.Parse(p.Id),
+                Name = p.Name,
+                Code = p.Slug ?? p.Id
+            }).OrderBy(p => p.Name).ToList();
                 
             return PartialView("_ProvinceDropdown", provinces);
         }
@@ -145,10 +155,14 @@ namespace StudentFreelance.Controllers
             var businessUsers = await _userManager.GetUsersInRoleAsync("Business");
             ViewBag.BusinessUsers = businessUsers.Where(u => u.IsActive).OrderBy(u => u.CompanyName).ToList();
 
-            // Lấy danh sách tỉnh/thành phố
-            ViewBag.Provinces = await _context.Provinces
-                .OrderBy(p => p.Name)
-                .ToListAsync();
+            // Lấy danh sách tỉnh/thành phố từ API
+            var apiProvinces = await _locationApiService.GetProvincesAsync();
+            ViewBag.Provinces = apiProvinces.Select(p => new Province
+            {
+                ProvinceID = int.Parse(p.Id),
+                Name = p.Name,
+                Code = p.Slug ?? p.Id
+            }).OrderBy(p => p.Name).ToList();
 
             // Lấy các mức độ quan trọng từ model ImportanceLevel
             ViewBag.ImportanceLevels = await _context.ImportanceLevels
@@ -227,10 +241,14 @@ namespace StudentFreelance.Controllers
                 .OrderBy(c => c.CategoryName)
                 .ToListAsync();
 
-            // Lấy danh sách tỉnh/thành phố
-            ViewBag.Provinces = await _context.Provinces
-                .OrderBy(p => p.Name)
-                .ToListAsync();
+            // Lấy danh sách tỉnh/thành phố từ API
+            var apiProvinces = await _locationApiService.GetProvincesAsync();
+            ViewBag.Provinces = apiProvinces.Select(p => new Province
+            {
+                ProvinceID = int.Parse(p.Id),
+                Name = p.Name,
+                Code = p.Slug ?? p.Id
+            }).OrderBy(p => p.Name).ToList();
 
             // Lấy danh sách kỹ năng của từng sinh viên
             var studentSkills = await _context.StudentSkills
@@ -313,10 +331,14 @@ namespace StudentFreelance.Controllers
 
             ViewBag.ProjectCounts = businessIdToProjectCount;
 
-            // Lấy danh sách tỉnh/thành phố
-            ViewBag.Provinces = await _context.Provinces
-                .OrderBy(p => p.Name)
-                .ToListAsync();
+            // Lấy danh sách tỉnh/thành phố từ API
+            var apiProvinces = await _locationApiService.GetProvincesAsync();
+            ViewBag.Provinces = apiProvinces.Select(p => new Province
+            {
+                ProvinceID = int.Parse(p.Id),
+                Name = p.Name,
+                Code = p.Slug ?? p.Id
+            }).OrderBy(p => p.Name).ToList();
 
             ViewBag.Query = query;
             ViewBag.ProvinceId = provinceId;

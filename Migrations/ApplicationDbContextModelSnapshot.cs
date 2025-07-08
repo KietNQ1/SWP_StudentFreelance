@@ -168,8 +168,18 @@ namespace StudentFreelance.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<string>("DistrictCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<int?>("DistrictID")
                         .HasColumnType("int");
+
+                    b.Property<string>("DistrictName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("FullAddress")
                         .IsRequired()
@@ -179,11 +189,31 @@ namespace StudentFreelance.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<string>("ProvinceCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<int?>("ProvinceID")
                         .HasColumnType("int");
 
+                    b.Property<string>("ProvinceName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("WardCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<int?>("WardID")
                         .HasColumnType("int");
+
+                    b.Property<string>("WardName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.HasKey("AddressID");
 

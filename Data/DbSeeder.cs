@@ -109,6 +109,16 @@ namespace StudentFreelance.Data
             context.SaveChanges();
         }
 
+        // Helper method to ensure we have location data in the database
+        // This is needed even though we're using the API for location data in the application
+        // because the database still has foreign key constraints
+        private static void EnsureLocationData(ApplicationDbContext context)
+        {
+            // We no longer need to seed location data since we're using the API
+            // The Address model has been updated to store API IDs and names directly
+            Console.WriteLine("Using API for location data - no need to seed location tables");
+        }
+
         public static async Task SeedSampleDataAsync(
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
@@ -133,7 +143,11 @@ namespace StudentFreelance.Data
                 context.SaveChanges();
             }
 
-            // 3. Default Users
+            // 3. Ensure we have location data for foreign key constraints
+            // This is now a no-op since we're using the API
+            EnsureLocationData(context);
+
+            // 4. Default Users
             var usersToSeed = new List<(string Email, string Password, string Role, string FullName)>
             {
                 ("admin@example.com", "Admin@123", "Admin", "Admin"),
@@ -165,11 +179,14 @@ namespace StudentFreelance.Data
                     // Create address for user with default values
                     var address = new Address
                     {
-                        ProvinceID = 1,
-                        DistrictID = 1,
-                        WardID = 1,
+                        ProvinceCode = "01",
+                        ProvinceName = "Hà Nội",
+                        DistrictCode = "001",
+                        DistrictName = "Quận Ba Đình",
+                        WardCode = "00001",
+                        WardName = "Phường Phúc Xá",
                         DetailAddress = "Số nhà mặc định",
-                        FullAddress = "Địa chỉ mặc định",
+                        FullAddress = "Số nhà mặc định, Phường Phúc Xá, Quận Ba Đình, Hà Nội",
                         IsActive = true
                     };
                     
@@ -245,7 +262,7 @@ namespace StudentFreelance.Data
                 return industries[new Random().Next(0, industries.Length)];
             }
 
-            // 4. Seed Categories if empty
+            // 5. Seed Categories if empty
             if (!context.Categories.Any())
             {
                 var parentCategories = new[]
@@ -296,7 +313,7 @@ namespace StudentFreelance.Data
                 context.SaveChanges();
             }
 
-            // 5. Seed Skills
+            // 6. Seed Skills
             if (!context.Skills.Any())
             {
                 // Get categories
@@ -402,7 +419,7 @@ namespace StudentFreelance.Data
                 context.SaveChanges();
             }
 
-            // 6. Seed Project
+            // 7. Seed Project
             if (!context.Projects.Any())
             {
                 // Get business users
@@ -428,6 +445,87 @@ namespace StudentFreelance.Data
                 var partTimeType = context.ProjectTypes.First(t => t.TypeName == "Bán thời gian");
                 var projectBasedType = context.ProjectTypes.First(t => t.TypeName == "Theo dự án");
                 
+                // Create a few addresses for projects
+                var projectAddresses = new List<Address>();
+                
+                // Sample location data for projects
+                var sampleLocations = new[]
+                {
+                    (Code: "01", Name: "Hà Nội", Districts: new[]
+                    {
+                        (Code: "001", Name: "Quận Ba Đình", Wards: new[] 
+                        {
+                            (Code: "00001", Name: "Phường Phúc Xá"),
+                            (Code: "00004", Name: "Phường Trúc Bạch")
+                        }),
+                        (Code: "002", Name: "Quận Hoàn Kiếm", Wards: new[] 
+                        {
+                            (Code: "00037", Name: "Phường Hàng Bạc"),
+                            (Code: "00040", Name: "Phường Hàng Bồ")
+                        })
+                    }),
+                    (Code: "79", Name: "TP Hồ Chí Minh", Districts: new[]
+                    {
+                        (Code: "760", Name: "Quận 1", Wards: new[] 
+                        {
+                            (Code: "26734", Name: "Phường Bến Nghé"),
+                            (Code: "26737", Name: "Phường Bến Thành")
+                        }),
+                        (Code: "761", Name: "Quận 3", Wards: new[] 
+                        {
+                            (Code: "26767", Name: "Phường 1"),
+                            (Code: "26770", Name: "Phường 2")
+                        })
+                    }),
+                    (Code: "48", Name: "Đà Nẵng", Districts: new[]
+                    {
+                        (Code: "490", Name: "Quận Hải Châu", Wards: new[] 
+                        {
+                            (Code: "20194", Name: "Phường Hải Châu 1"),
+                            (Code: "20195", Name: "Phường Hải Châu 2")
+                        }),
+                        (Code: "491", Name: "Quận Thanh Khê", Wards: new[] 
+                        {
+                            (Code: "20227", Name: "Phường Tam Thuận"),
+                            (Code: "20230", Name: "Phường Thanh Khê Tây")
+                        })
+                    })
+                };
+                
+                for (int i = 0; i < 10; i++)
+                {
+                    var random = new Random();
+                    
+                    // Select random province
+                    var provinceIndex = random.Next(sampleLocations.Length);
+                    var province = sampleLocations[provinceIndex];
+                    
+                    // Select random district
+                    var districtIndex = random.Next(province.Districts.Length);
+                    var district = province.Districts[districtIndex];
+                    
+                    // Select random ward
+                    var wardIndex = random.Next(district.Wards.Length);
+                    var ward = district.Wards[wardIndex];
+                    
+                    var address = new Address
+                    {
+                        ProvinceCode = province.Code,
+                        ProvinceName = province.Name,
+                        DistrictCode = district.Code,
+                        DistrictName = district.Name,
+                        WardCode = ward.Code,
+                        WardName = ward.Name,
+                        DetailAddress = $"Địa chỉ dự án {i+1}",
+                        FullAddress = $"Địa chỉ dự án {i+1}, {ward.Name}, {district.Name}, {province.Name}",
+                        IsActive = true
+                    };
+                    
+                    context.Addresses.Add(address);
+                    context.SaveChanges();
+                    projectAddresses.Add(address);
+                }
+                
                 var projects = new List<Project>
                 {
                     // Web Development Projects
@@ -442,6 +540,7 @@ namespace StudentFreelance.Data
                         CategoryID = webCategory.CategoryID,
                         StatusID = recruitingStatus.StatusID,
                         TypeID = fullTimeType.TypeID,
+                        AddressID = projectAddresses[0].AddressID,
                         IsActive = true
                     },
                     new Project
@@ -455,6 +554,7 @@ namespace StudentFreelance.Data
                         CategoryID = webCategory.CategoryID,
                         StatusID = inProgressStatus.StatusID,
                         TypeID = projectBasedType.TypeID,
+                        AddressID = projectAddresses[1].AddressID,
                         IsActive = true
                     },
                     new Project
@@ -468,6 +568,7 @@ namespace StudentFreelance.Data
                         CategoryID = webCategory.CategoryID,
                         StatusID = completedStatus.StatusID,
                         TypeID = fullTimeType.TypeID,
+                        AddressID = projectAddresses[2].AddressID,
                         IsActive = true
                     },
                     
@@ -483,6 +584,7 @@ namespace StudentFreelance.Data
                         CategoryID = mobileCategory.CategoryID,
                         StatusID = recruitingStatus.StatusID,
                         TypeID = fullTimeType.TypeID,
+                        AddressID = projectAddresses[3].AddressID,
                         IsActive = true
                     },
                     new Project
@@ -496,6 +598,7 @@ namespace StudentFreelance.Data
                         CategoryID = mobileCategory.CategoryID,
                         StatusID = recruitingStatus.StatusID,
                         TypeID = partTimeType.TypeID,
+                        AddressID = projectAddresses[4].AddressID,
                         IsActive = true
                     },
                     
@@ -511,6 +614,7 @@ namespace StudentFreelance.Data
                         CategoryID = dataCategory.CategoryID,
                         StatusID = recruitingStatus.StatusID,
                         TypeID = projectBasedType.TypeID,
+                        AddressID = projectAddresses[5].AddressID,
                         IsActive = true
                     },
                     
@@ -526,6 +630,7 @@ namespace StudentFreelance.Data
                         CategoryID = uiuxCategory.CategoryID,
                         StatusID = inProgressStatus.StatusID,
                         TypeID = partTimeType.TypeID,
+                        AddressID = projectAddresses[6].AddressID,
                         IsActive = true
                     },
                     
@@ -541,6 +646,7 @@ namespace StudentFreelance.Data
                         CategoryID = socialMediaCategory.CategoryID,
                         StatusID = recruitingStatus.StatusID,
                         TypeID = partTimeType.TypeID,
+                        AddressID = projectAddresses[7].AddressID,
                         IsActive = true
                     },
                     
@@ -556,6 +662,7 @@ namespace StudentFreelance.Data
                         CategoryID = contentWritingCategory.CategoryID,
                         StatusID = recruitingStatus.StatusID,
                         TypeID = projectBasedType.TypeID,
+                        AddressID = projectAddresses[8].AddressID,
                         IsActive = true
                     },
                     
@@ -571,6 +678,7 @@ namespace StudentFreelance.Data
                         CategoryID = translationCategory.CategoryID,
                         StatusID = recruitingStatus.StatusID,
                         TypeID = projectBasedType.TypeID,
+                        AddressID = projectAddresses[9].AddressID,
                         IsActive = true
                     }
                 };
@@ -579,7 +687,7 @@ namespace StudentFreelance.Data
                 context.SaveChanges();
             }
 
-            // 7. Seed ProjectSkillRequired
+            // 8. Seed ProjectSkillRequired
             if (!context.ProjectSkillsRequired.Any())
             {
                 var projects = context.Projects.ToList();
@@ -687,7 +795,7 @@ namespace StudentFreelance.Data
                 context.SaveChanges();
             }
 
-            // 8. Seed StudentSkills
+            // 9. Seed StudentSkills
             if (!context.StudentSkills.Any())
             {
                 var students = await userManager.GetUsersInRoleAsync("Student");
@@ -772,7 +880,7 @@ namespace StudentFreelance.Data
                 context.SaveChanges();
             }
 
-            // 9. Seed StudentApplications
+            // 10. Seed StudentApplications
             if (!context.StudentApplications.Any())
             {
                 var students = await userManager.GetUsersInRoleAsync("Student");
@@ -882,7 +990,7 @@ namespace StudentFreelance.Data
                 return resumeLinks[new Random().Next(resumeLinks.Length)];
             }
 
-            // 10. Seed Messages
+            // 11. Seed Messages
             if (!context.Messages.Any())
             {
                 var student = await userManager.FindByEmailAsync("student@example.com");
@@ -930,7 +1038,7 @@ namespace StudentFreelance.Data
             }
 
 
-            // 11. Seed Transactions
+            // 12. Seed Transactions
             if (!context.Transactions.Any())
             {
                 var student = await userManager.FindByEmailAsync("student@example.com");
@@ -966,7 +1074,7 @@ namespace StudentFreelance.Data
                 context.SaveChanges();
             }
 
-            // 12. Seed Ratings
+            // 13. Seed Ratings
             if (!context.Ratings.Any())
             {
                 var project = context.Projects.First();
@@ -998,7 +1106,7 @@ namespace StudentFreelance.Data
                 context.SaveChanges();
             }
 
-            // 13. Seed Reports
+            // 14. Seed Reports
             if (!context.Reports.Any())
             {
                 var students = await userManager.GetUsersInRoleAsync("Student");
@@ -1110,7 +1218,7 @@ namespace StudentFreelance.Data
                 }
             }
 
-            // 14. Seed Notifications
+            // 15. Seed Notifications
             if (!context.Notifications.Any())
             {
                 var students = await userManager.GetUsersInRoleAsync("Student");
