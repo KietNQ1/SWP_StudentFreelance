@@ -5,6 +5,8 @@ using StudentFreelance.Services.Interfaces;
 using StudentFreelance.Models;
 using StudentFreelance.ViewModels;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using StudentFreelance.DbContext;
 
 namespace StudentFreelance.Controllers
 {
@@ -13,11 +15,16 @@ namespace StudentFreelance.Controllers
     {
         private readonly ITransactionService _transactionService;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationDbContext _context;
 
-        public WalletController(ITransactionService transactionService, UserManager<ApplicationUser> userManager)
+        public WalletController(
+            ITransactionService transactionService, 
+            UserManager<ApplicationUser> userManager,
+            ApplicationDbContext context)
         {
             _transactionService = transactionService;
             _userManager = userManager;
+            _context = context;
         }
 
         // GET: /Wallet
@@ -137,6 +144,37 @@ namespace StudentFreelance.Controllers
 
             var transactions = await _transactionService.GetTransactionsByUserIdAsync(user.Id.ToString());
             return View(transactions);
+        }
+        
+        // GET: /Wallet/TransactionDetail/5
+        public async Task<IActionResult> TransactionDetail(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var transaction = await _transactionService.GetTransactionByIdAsync(id);
+            
+            // Check if transaction exists and belongs to the current user
+            if (transaction == null || transaction.UserID != user.Id)
+            {
+                return NotFound();
+            }
+            
+            // Get associated transaction history record if available
+            var transactionHistory = await _context.UserAccountHistories
+                .FirstOrDefaultAsync(h => h.ActionType == "TRANSACTION" && 
+                                         h.Description.Contains(id.ToString()) && 
+                                         h.UserID == user.Id);
+            
+            if (transactionHistory != null)
+            {
+                ViewBag.TransactionHistory = transactionHistory;
+            }
+            
+            return View(transaction);
         }
     }
 } 
