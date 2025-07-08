@@ -64,6 +64,22 @@ namespace StudentFreelance.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Conversations",
+                columns: table => new
+                {
+                    ConversationID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ProjectID = table.Column<int>(type: "int", nullable: false),
+                    ParticipantAID = table.Column<int>(type: "int", nullable: false),
+                    ParticipantBID = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Conversations", x => x.ConversationID);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ImportanceLevels",
                 columns: table => new
                 {
@@ -465,6 +481,29 @@ namespace StudentFreelance.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "BankAccounts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserID = table.Column<int>(type: "int", nullable: false),
+                    BankName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    AccountNumber = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
+                    AccountHolderName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BankAccounts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_BankAccounts_AspNetUsers_UserID",
+                        column: x => x.UserID,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Notifications",
                 columns: table => new
                 {
@@ -652,6 +691,7 @@ namespace StudentFreelance.Migrations
                     SenderID = table.Column<int>(type: "int", nullable: false),
                     ReceiverID = table.Column<int>(type: "int", nullable: false),
                     ProjectID = table.Column<int>(type: "int", nullable: true),
+                    ConversationID = table.Column<int>(type: "int", nullable: false),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IsRead = table.Column<bool>(type: "bit", nullable: false),
                     SentAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -672,6 +712,12 @@ namespace StudentFreelance.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Messages_Conversations_ConversationID",
+                        column: x => x.ConversationID,
+                        principalTable: "Conversations",
+                        principalColumn: "ConversationID",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Messages_Projects_ProjectID",
                         column: x => x.ProjectID,
@@ -854,7 +900,15 @@ namespace StudentFreelance.Migrations
                     PortfolioLink = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     BusinessRating = table.Column<int>(type: "int", nullable: true),
                     InterviewSchedule = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    InterviewResult = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    InterviewResult = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsPaid = table.Column<bool>(type: "bit", nullable: false),
+                    CompletionDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    InterviewDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ResumeLink = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BusinessConfirmedCompletion = table.Column<bool>(type: "bit", nullable: false),
+                    StudentConfirmedCompletion = table.Column<bool>(type: "bit", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -886,6 +940,7 @@ namespace StudentFreelance.Migrations
                     TransactionDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     StatusID = table.Column<int>(type: "int", nullable: false),
+                    OrderCode = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
@@ -914,6 +969,71 @@ namespace StudentFreelance.Migrations
                         column: x => x.TypeID,
                         principalTable: "TransactionTypes",
                         principalColumn: "TypeID",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProjectSubmissions",
+                columns: table => new
+                {
+                    SubmissionID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ApplicationID = table.Column<int>(type: "int", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SubmittedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BusinessFeedback = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FeedbackDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    StudentApplicationApplicationID = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProjectSubmissions", x => x.SubmissionID);
+                    table.ForeignKey(
+                        name: "FK_ProjectSubmissions_StudentApplications_ApplicationID",
+                        column: x => x.ApplicationID,
+                        principalTable: "StudentApplications",
+                        principalColumn: "ApplicationID",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ProjectSubmissions_StudentApplications_StudentApplicationApplicationID",
+                        column: x => x.StudentApplicationApplicationID,
+                        principalTable: "StudentApplications",
+                        principalColumn: "ApplicationID");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProjectSubmissionAttachments",
+                columns: table => new
+                {
+                    AttachmentID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    SubmissionID = table.Column<int>(type: "int", nullable: false),
+                    FileName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FilePath = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FileSize = table.Column<long>(type: "bigint", nullable: false),
+                    ContentType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UploadedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UploadedBy = table.Column<int>(type: "int", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProjectSubmissionAttachments", x => x.AttachmentID);
+                    table.ForeignKey(
+                        name: "FK_ProjectSubmissionAttachments_AspNetUsers_UploadedBy",
+                        column: x => x.UploadedBy,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ProjectSubmissionAttachments_ProjectSubmissions_SubmissionID",
+                        column: x => x.SubmissionID,
+                        principalTable: "ProjectSubmissions",
+                        principalColumn: "SubmissionID",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -982,6 +1102,11 @@ namespace StudentFreelance.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_BankAccounts_UserID",
+                table: "BankAccounts",
+                column: "UserID");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Categories_CategoryName_CategoryType",
                 table: "Categories",
                 columns: new[] { "CategoryName", "CategoryType" },
@@ -996,6 +1121,11 @@ namespace StudentFreelance.Migrations
                 name: "IX_Districts_ProvinceID",
                 table: "Districts",
                 column: "ProvinceID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Messages_ConversationID",
+                table: "Messages",
+                column: "ConversationID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Messages_ProjectID",
@@ -1072,6 +1202,26 @@ namespace StudentFreelance.Migrations
                 name: "IX_ProjectSkillsRequired_SkillID",
                 table: "ProjectSkillsRequired",
                 column: "SkillID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProjectSubmissionAttachments_SubmissionID",
+                table: "ProjectSubmissionAttachments",
+                column: "SubmissionID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProjectSubmissionAttachments_UploadedBy",
+                table: "ProjectSubmissionAttachments",
+                column: "UploadedBy");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProjectSubmissions_ApplicationID",
+                table: "ProjectSubmissions",
+                column: "ApplicationID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProjectSubmissions_StudentApplicationApplicationID",
+                table: "ProjectSubmissions",
+                column: "StudentApplicationApplicationID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Ratings_ProjectID_ReviewerID_RevieweeID",
@@ -1207,6 +1357,9 @@ namespace StudentFreelance.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "BankAccounts");
+
+            migrationBuilder.DropTable(
                 name: "Messages");
 
             migrationBuilder.DropTable(
@@ -1216,13 +1369,13 @@ namespace StudentFreelance.Migrations
                 name: "ProjectSkillsRequired");
 
             migrationBuilder.DropTable(
+                name: "ProjectSubmissionAttachments");
+
+            migrationBuilder.DropTable(
                 name: "Ratings");
 
             migrationBuilder.DropTable(
                 name: "Reports");
-
-            migrationBuilder.DropTable(
-                name: "StudentApplications");
 
             migrationBuilder.DropTable(
                 name: "StudentSkills");
@@ -1240,7 +1393,13 @@ namespace StudentFreelance.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
+                name: "Conversations");
+
+            migrationBuilder.DropTable(
                 name: "ImportanceLevels");
+
+            migrationBuilder.DropTable(
+                name: "ProjectSubmissions");
 
             migrationBuilder.DropTable(
                 name: "ReportStatuses");
@@ -1255,9 +1414,6 @@ namespace StudentFreelance.Migrations
                 name: "Skills");
 
             migrationBuilder.DropTable(
-                name: "Projects");
-
-            migrationBuilder.DropTable(
                 name: "TransactionStatuses");
 
             migrationBuilder.DropTable(
@@ -1267,6 +1423,18 @@ namespace StudentFreelance.Migrations
                 name: "Notifications");
 
             migrationBuilder.DropTable(
+                name: "StudentApplications");
+
+            migrationBuilder.DropTable(
+                name: "NotificationTypes");
+
+            migrationBuilder.DropTable(
+                name: "Projects");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
                 name: "Categories");
 
             migrationBuilder.DropTable(
@@ -1274,12 +1442,6 @@ namespace StudentFreelance.Migrations
 
             migrationBuilder.DropTable(
                 name: "ProjectTypes");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUsers");
-
-            migrationBuilder.DropTable(
-                name: "NotificationTypes");
 
             migrationBuilder.DropTable(
                 name: "AccountStatuses");

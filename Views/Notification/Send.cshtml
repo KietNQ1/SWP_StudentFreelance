@@ -1,0 +1,108 @@
+﻿@model StudentFreelance.ViewModels.SendNotificationViewModel
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<StudentFreelance.Models.ApplicationUser> UserManager
+
+@{
+    ViewData["Title"] = "Gửi thông báo";
+    var isAdmin = User.IsInRole("Admin");
+}
+
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<h2 class="mb-3">Gửi Thông Báo</h2>
+
+@if (ViewData.ModelState.ErrorCount > 0)
+{
+    <div class="alert alert-danger">Vui lòng kiểm tra lại các thông tin bên dưới.</div>
+}
+
+<form asp-action="Send" method="post">
+    <div class="form-group mb-2">
+        <label asp-for="Title"></label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-2">
+        <label asp-for="Content"></label>
+        <textarea asp-for="Content" class="form-control" rows="4"></textarea>
+        <span asp-validation-for="Content" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-2">
+        <label asp-for="TypeID">Loại thông báo</label>
+        <select asp-for="TypeID" asp-items="Model.NotificationTypes" class="form-control"></select>
+        <span asp-validation-for="TypeID" class="text-danger"></span>
+    </div>
+
+    @if (isAdmin)
+    {
+        <div class="form-check mb-3">
+            <input class="form-check-input" asp-for="IsBroadcast" />
+            <label class="form-check-label" asp-for="IsBroadcast">Gửi cho tất cả người dùng</label>
+        </div>
+    }
+
+    <div class="form-group mb-3">
+        <label>Chọn người nhận (nếu không gửi broadcast)</label>
+        <select id="SelectedUserIDs"
+                asp-for="SelectedUserIDs"
+                asp-items="Model.AllUsers"
+                class="form-control"
+                multiple="multiple"
+                name="SelectedUserIDs">
+        </select>
+        <span asp-validation-for="SelectedUserIDs" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Gửi Thông Báo</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            const $userSelect = $('#SelectedUserIDs');
+            const $broadcastCheckbox = $('#IsBroadcast');
+            const $form = $('form');
+
+            // Khởi tạo Select2
+            $userSelect.select2({
+                placeholder: "Chọn người nhận...",
+                allowClear: true,
+                width: '100%'
+            });
+
+            function reparseValidation() {
+                $form.removeData("validator");
+                $form.removeData("unobtrusiveValidation");
+                $.validator.unobtrusive.parse($form);
+            }
+
+            function toggleValidation() {
+                if ($broadcastCheckbox.is(':checked')) {
+                    $userSelect.removeAttr('data-val');
+                    $userSelect.removeAttr('data-val-required');
+                } else {
+                    $userSelect.attr('data-val', 'true');
+                    $userSelect.attr('data-val-required', 'Vui lòng chọn ít nhất một người nhận.');
+                }
+
+                reparseValidation();
+            }
+
+            // Gọi ngay khi load
+            toggleValidation();
+
+            // Gọi khi thay đổi checkbox broadcast
+            $broadcastCheckbox.on('change', function () {
+                toggleValidation();
+            });
+        });
+    </script>
+}

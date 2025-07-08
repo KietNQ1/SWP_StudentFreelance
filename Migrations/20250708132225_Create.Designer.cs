@@ -12,7 +12,7 @@ using StudentFreelance.DbContext;
 namespace StudentFreelance.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250701093627_Create")]
+    [Migration("20250708132225_Create")]
     partial class Create
     {
         /// <inheritdoc />
@@ -326,6 +326,42 @@ namespace StudentFreelance.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("StudentFreelance.Models.BankAccount", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AccountHolderName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("AccountNumber")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("BankName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserID")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("BankAccounts");
+                });
+
             modelBuilder.Entity("StudentFreelance.Models.Category", b =>
                 {
                     b.Property<int>("CategoryID")
@@ -362,6 +398,31 @@ namespace StudentFreelance.Migrations
                         .IsUnique();
 
                     b.ToTable("Categories");
+                });
+
+            modelBuilder.Entity("StudentFreelance.Models.Conversation", b =>
+                {
+                    b.Property<int>("ConversationID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ConversationID"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ParticipantAID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ParticipantBID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProjectID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ConversationID");
+
+                    b.ToTable("Conversations");
                 });
 
             modelBuilder.Entity("StudentFreelance.Models.District", b =>
@@ -604,6 +665,9 @@ namespace StudentFreelance.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("ConversationID")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -623,6 +687,8 @@ namespace StudentFreelance.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("MessageID");
+
+                    b.HasIndex("ConversationID");
 
                     b.HasIndex("ProjectID");
 
@@ -831,6 +897,101 @@ namespace StudentFreelance.Migrations
                     b.ToTable("ProjectSkillsRequired");
                 });
 
+            modelBuilder.Entity("StudentFreelance.Models.ProjectSubmission", b =>
+                {
+                    b.Property<int>("SubmissionID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SubmissionID"));
+
+                    b.Property<int>("ApplicationID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("BusinessFeedback")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("FeedbackDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("StudentApplicationApplicationID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("SubmissionID");
+
+                    b.HasIndex("ApplicationID");
+
+                    b.HasIndex("StudentApplicationApplicationID");
+
+                    b.ToTable("ProjectSubmissions");
+                });
+
+            modelBuilder.Entity("StudentFreelance.Models.ProjectSubmissionAttachment", b =>
+                {
+                    b.Property<int>("AttachmentID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AttachmentID"));
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("SubmissionID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UploadedBy")
+                        .HasColumnType("int");
+
+                    b.HasKey("AttachmentID");
+
+                    b.HasIndex("SubmissionID");
+
+                    b.HasIndex("UploadedBy");
+
+                    b.ToTable("ProjectSubmissionAttachments");
+                });
+
             modelBuilder.Entity("StudentFreelance.Models.Province", b =>
                 {
                     b.Property<int>("ProvinceID")
@@ -984,11 +1145,17 @@ namespace StudentFreelance.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ApplicationID"));
 
+                    b.Property<bool>("BusinessConfirmedCompletion")
+                        .HasColumnType("bit");
+
                     b.Property<string>("BusinessNotes")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("BusinessRating")
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("CompletionDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("CoverLetter")
                         .IsRequired()
@@ -997,14 +1164,26 @@ namespace StudentFreelance.Migrations
                     b.Property<DateTime>("DateApplied")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("InterviewDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("InterviewResult")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("InterviewSchedule")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime?>("LastStatusUpdate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PortfolioLink")
                         .HasColumnType("nvarchar(max)");
@@ -1015,12 +1194,18 @@ namespace StudentFreelance.Migrations
                     b.Property<string>("ResumeAttachment")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ResumeLink")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<decimal>("Salary")
                         .HasColumnType("decimal(15,2)");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("StudentConfirmedCompletion")
+                        .HasColumnType("bit");
 
                     b.Property<int>("UserID")
                         .HasColumnType("int");
@@ -1084,6 +1269,10 @@ namespace StudentFreelance.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
+
+                    b.Property<string>("OrderCode")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int?>("ProjectID")
                         .HasColumnType("int");
@@ -1312,6 +1501,17 @@ namespace StudentFreelance.Migrations
                     b.Navigation("Status");
                 });
 
+            modelBuilder.Entity("StudentFreelance.Models.BankAccount", b =>
+                {
+                    b.HasOne("StudentFreelance.Models.ApplicationUser", "User")
+                        .WithMany("BankAccounts")
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("StudentFreelance.Models.Category", b =>
                 {
                     b.HasOne("StudentFreelance.Models.Category", "ParentCategory")
@@ -1335,6 +1535,12 @@ namespace StudentFreelance.Migrations
 
             modelBuilder.Entity("StudentFreelance.Models.Message", b =>
                 {
+                    b.HasOne("StudentFreelance.Models.Conversation", "Conversation")
+                        .WithMany("Messages")
+                        .HasForeignKey("ConversationID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("StudentFreelance.Models.Project", "Project")
                         .WithMany("Messages")
                         .HasForeignKey("ProjectID")
@@ -1351,6 +1557,8 @@ namespace StudentFreelance.Migrations
                         .HasForeignKey("SenderID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Conversation");
 
                     b.Navigation("Project");
 
@@ -1463,6 +1671,40 @@ namespace StudentFreelance.Migrations
                     b.Navigation("Project");
 
                     b.Navigation("Skill");
+                });
+
+            modelBuilder.Entity("StudentFreelance.Models.ProjectSubmission", b =>
+                {
+                    b.HasOne("StudentFreelance.Models.StudentApplication", "Application")
+                        .WithMany()
+                        .HasForeignKey("ApplicationID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("StudentFreelance.Models.StudentApplication", null)
+                        .WithMany("Submissions")
+                        .HasForeignKey("StudentApplicationApplicationID");
+
+                    b.Navigation("Application");
+                });
+
+            modelBuilder.Entity("StudentFreelance.Models.ProjectSubmissionAttachment", b =>
+                {
+                    b.HasOne("StudentFreelance.Models.ProjectSubmission", "Submission")
+                        .WithMany("Attachments")
+                        .HasForeignKey("SubmissionID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("StudentFreelance.Models.ApplicationUser", "UploadedByUser")
+                        .WithMany()
+                        .HasForeignKey("UploadedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Submission");
+
+                    b.Navigation("UploadedByUser");
                 });
 
             modelBuilder.Entity("StudentFreelance.Models.Rating", b =>
@@ -1668,6 +1910,8 @@ namespace StudentFreelance.Migrations
 
             modelBuilder.Entity("StudentFreelance.Models.ApplicationUser", b =>
                 {
+                    b.Navigation("BankAccounts");
+
                     b.Navigation("SentNotifications");
 
                     b.Navigation("UserNotifications");
@@ -1680,6 +1924,11 @@ namespace StudentFreelance.Migrations
                     b.Navigation("Skills");
 
                     b.Navigation("SubCategories");
+                });
+
+            modelBuilder.Entity("StudentFreelance.Models.Conversation", b =>
+                {
+                    b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("StudentFreelance.Models.District", b =>
@@ -1761,6 +2010,11 @@ namespace StudentFreelance.Migrations
                     b.Navigation("Transactions");
                 });
 
+            modelBuilder.Entity("StudentFreelance.Models.ProjectSubmission", b =>
+                {
+                    b.Navigation("Attachments");
+                });
+
             modelBuilder.Entity("StudentFreelance.Models.Province", b =>
                 {
                     b.Navigation("Addresses");
@@ -1773,6 +2027,11 @@ namespace StudentFreelance.Migrations
                     b.Navigation("ProjectSkillsRequired");
 
                     b.Navigation("StudentSkills");
+                });
+
+            modelBuilder.Entity("StudentFreelance.Models.StudentApplication", b =>
+                {
+                    b.Navigation("Submissions");
                 });
 
             modelBuilder.Entity("StudentFreelance.Models.Ward", b =>

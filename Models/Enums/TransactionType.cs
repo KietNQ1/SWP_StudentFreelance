@@ -3,13 +3,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace StudentFreelance.Models.Enums
 {
-    public class TransactionStatus
+    public class TransactionType
     {
         [Key]
-        public int StatusID { get; set; }
+        public int TypeID { get; set; }
 
         [Required]
-        public required string StatusName { get; set; }
+        public required string TypeName { get; set; }
 
         public bool IsActive { get; set; }
 

@@ -1,145 +1,91 @@
 ﻿@model IEnumerable<StudentFreelance.Models.ApplicationUser>
 @{
     ViewData["Title"] = "User Management";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "~/Views/Shared/_Dashboard.cshtml";
 }
+<link rel="stylesheet" href="~/css/UserManagest.css" />
 
-<link rel="stylesheet" href="~/css/userManagest.css" />
+<form asp-action="Index" method="get" class="topbar">
+    <h1><i class="fas fa-users-cog"></i> Freelancer Management</h1>
 
-<div class="layout">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <nav class="sidebar-menu">
-            <a href="#">Dashboard</a>
-            <a href="#">Calendar</a>
-            <div class="dropdown">
-                <button class="dropdown-toggle" onclick="toggleDropdown(this)">Profile</button>
-                <div class="dropdown-menu">
-                    <a href="#">My Profile</a>
-                    <a href="#">Freelancers</a>
-                    <a href="#">Companies</a>
-                </div>
-            </div>
-            <div class="dropdown">
-                <button class="dropdown-toggle" onclick="toggleDropdown(this)">Customer Management</button>
-                <div class="dropdown-menu">
-                    <a href="#">Freelancers</a>
-                    <a href="#">Companies</a>
-                </div>
-            </div>
-            <a href="#">Project Management</a>
-            <a href="#">Applications</a>
-            <a href="#">Payments</a>
-            <a href="#">Reviews & Reports</a>
-            <a href="#">System Settings</a>
-        </nav>
-    </aside>
+    <div class="filter-row">
+        <div class="filter-group">
+            <input type="text" name="searchTerm" placeholder="🔍 Search freelancer..." value="@Context.Request.Query["searchTerm"]" />
+        </div>
 
-    <!-- Main Content -->
-    <main class="main">
-        <form asp-action="Index" method="get" class="topbar">
-            <h1>Freelancer Management</h1>
-
-            <input type="text" name="searchTerm" placeholder="Search freelancer..."
-                   value="@Context.Request.Query["searchTerm"]" />
-
+        <div class="filter-group">
             <select name="selectedRole">
-                <option value="">Roles</option>
+                <option value="">👥 All Roles</option>
                 @foreach (var role in (ViewBag.AllRoles as List<string> ?? new List<string>()))
                 {
-                    if (role == Context.Request.Query["selectedRole"])
-                    {
-                        <option value="@role" selected>@role</option>
-                    }
-                    else
-                    {
-                        <option value="@role">@role</option>
-                    }
+                    <option value="@role" @@(role == Context.Request.Query["selectedRole"] ? "selected" : "")>@role</option>
                 }
             </select>
+        </div>
 
+        <div class="filter-group">
             <select name="status">
-                <option value="">Status</option>
-
-                @if (Context.Request.Query["status"] == "Active")
-                {
-                    <option value="Active" selected>Active</option>
-                }
-                else
-                {
-                    <option value="Active">Active</option>
-                }
-
-                @if (Context.Request.Query["status"] == "Inactive")
-                {
-                    <option value="Inactive" selected>Inactive</option>
-                }
-                else
-                {
-                    <option value="Inactive">Inactive</option>
-                }
+                <option value="">📊 All Status</option>
+                <option value="Active" @@(Context.Request.Query["status"] == "Active" ? "selected" : "")>Active</option>
+                <option value="Inactive" @@(Context.Request.Query["status"] == "Inactive" ? "selected" : "")>Inactive</option>
             </select>
+        </div>
 
+        <button type="submit" class="filter-btn">
+            <i class="fas fa-filter"></i> Filter
+        </button>
+    </div>
+</form>
 
-            <button type="submit">Filter</button>
-        </form>
-
-        <table class="styled-table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Full Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (Model.Any())
+<div class="table-container">
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Full Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Any())
+            {
+                int index = 1;
+                foreach (var user in Model)
                 {
-                    int index = 1;
-                    foreach (var user in Model)
-                    {
-                        var statusClass = user.IsActive ? "status-active" : "status-inactive";
-                        var rowClass = user.IsActive ? "" : "text-muted";
-                        <tr class="@rowClass">
-                            <td>@index</td>
-                            <td>@(string.IsNullOrEmpty(user.FullName) ? user.Email : user.FullName)</td>
-                            <td>@user.Email</td>
-                            <td>@user.PhoneNumber</td>
-                            <td class="@statusClass">@(user.IsActive ? "Active" : "Inactive")</td>
-                            <td>
-                                <a href="@Url.Action("Edit", "AdminUser", new { id = user.Id })" class="action-btn edit">✏️ Edit</a>
-                                @if (user.IsActive)
-                                {
-                                    <form asp-action="Deactivate" asp-route-id="@user.Id" method="post" style="display:inline;">
-                                        <button type="submit" class="action-btn delete" onclick="return confirm('Bạn có chắc chắn muốn ẩn người dùng này?');">❌ Delete</button>
-                                    </form>
-                                }
-                                else
-                                {
-                                    <form asp-action="Restore" asp-route-id="@user.Id" method="post" style="display:inline;">
-                                        <button type="submit" class="action-btn restore" onclick="return confirm('Khôi phục người dùng này?');">♻️ Restore</button>
-                                    </form>
-                                }
-                            </td>
-                        </tr>
-                        index++;
-                    }
+                    var statusClass = user.IsActive ? "status-active" : "status-inactive";
+                    var rowClass = user.IsActive ? "" : "text-muted";
+                    <tr class="@rowClass">
+                        <td>@index</td>
+                        <td>@(string.IsNullOrEmpty(user.FullName) ? user.Email : user.FullName)</td>
+                        <td>@user.Email</td>
+                        <td>@user.PhoneNumber</td>
+                        <td class="@statusClass">@(user.IsActive ? "Active" : "Inactive")</td>
+                        <td>
+                            <a href="@Url.Action("Edit", "AdminUser", new { id = user.Id })" class="action-btn edit"><i class="fas fa-edit"></i> Edit</a>
+                            @if (user.IsActive)
+                            {
+                                <form asp-action="Deactivate" asp-route-id="@user.Id" method="post" style="display:inline;">
+                                    <button type="submit" class="action-btn delete"><i class="fas fa-trash"></i> Delete</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form asp-action="Restore" asp-route-id="@user.Id" method="post" style="display:inline;">
+                                    <button type="submit" class="action-btn restore"><i class="fas fa-undo"></i> Restore</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                    index++;
                 }
-                else
-                {
-                    <tr><td colspan="6">No users found.</td></tr>
-                }
-            </tbody>
-        </table>
-    </main>
+            }
+            else
+            {
+                <tr><td colspan="6" class="no-data">No users found.</td></tr>
+            }
+        </tbody>
+    </table>
 </div>
-
-<script>
-    function toggleDropdown(button) {
-        const dropdown = button.closest(".dropdown");
-        dropdown.classList.toggle("open");
-    }
-</script>

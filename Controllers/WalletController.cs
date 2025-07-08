@@ -1,190 +1,270 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using StudentFreelance.DbContext;
+using StudentFreelance.Services.Interfaces;
 using StudentFreelance.Models;
-using StudentFreelance.Models.Enums;
-using StudentFreelance.Models.PayOS;
-using StudentFreelance.Models.Constants;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
+using StudentFreelance.ViewModels;
+using System.Threading.Tasks;
 
 namespace StudentFreelance.Controllers
+
 {
     [Authorize]
+
     public class WalletController : Controller
     {
-        private readonly ApplicationDbContext _db;
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly PayOSConfig _payOSConfig;
+        private readonly IBankAccountService _bankAccountService;
 
         public WalletController(
-            ApplicationDbContext db,
+            ITransactionService transactionService,
             UserManager<ApplicationUser> userManager,
-            IOptions<PayOSConfig> payOSOptions)
+            IBankAccountService bankAccountService,
+            IPayOSService payOSService)
         {
-            _db = db;
+            _transactionService = transactionService;
             _userManager = userManager;
-            _payOSConfig = payOSOptions.Value;
+            _bankAccountService = bankAccountService;
+            _payOSService = payOSService;
         }
+        private readonly IPayOSService _payOSService;
+        private readonly ITransactionService _transactionService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public IActionResult Index() => RedirectToAction("Deposit");
 
-        public async Task<IActionResult> Deposit()
+        // GET: /Wallet
+        public async Task<IActionResult> Index()
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user == null || !_db.BankAccounts.Any(b => b.UserID == user.Id && b.IsActive))
+            if (user == null)
             {
-                return RedirectToAction("Add", "BankAccount", new { message = "Vui lòng thêm tài khoản ngân hàng trước khi nạp tiền." });
+                return NotFound();
             }
 
-            return View();
+            var transactions = await _transactionService.GetTransactionsByUserIdAsync(user.Id.ToString());
+            
+            var viewModel = new WalletViewModel
+            {
+                WalletBalance = user.WalletBalance,
+                Transactions = transactions
+            };
+
+            return View(viewModel);
+        }
+
+        //MangeBankAccount
+        [HttpGet]
+        public async Task<IActionResult> ManageBankAccount()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return NotFound();
+
+            var bankAccount = await _bankAccountService.GetBankAccountByUserIdAsync(user.Id);
+
+            var viewModel = bankAccount != null
+                ? new BankAccountViewModel
+                {
+                    BankName = bankAccount.BankName,
+                    AccountNumber = bankAccount.AccountNumber,
+                    AccountHolderName = bankAccount.AccountHolderName
+                }
+                : new BankAccountViewModel();
+
+            return View(viewModel);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateDeposit(decimal amount)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ManageBankAccount(BankAccountViewModel model)
         {
+            if (!ModelState.IsValid)
+                return View(model);
+
             var user = await _userManager.GetUserAsync(User);
-            if (user == null) return Unauthorized();
+            if (user == null) return NotFound();
 
-            var hasBankAccount = await _db.BankAccounts.AnyAsync(b => b.UserID == user.Id && b.IsActive);
-            if (!hasBankAccount)
-                return BadRequest("Bạn cần thêm tài khoản ngân hàng trước khi nạp tiền.");
-
-            var transaction = new Transaction
+            var account = new BankAccount
             {
-                UserID = user.Id,
-                Amount = amount,
-                TypeID = TransactionTypeConstants.Deposit,
-                StatusID = TransactionStatusConstants.Pending,
-                TransactionDate = DateTime.Now,
-                Description = $"Nạp {amount:N0} VNĐ vào ví qua PayOS"
+                BankName = model.BankName,
+                AccountNumber = model.AccountNumber,
+                AccountHolderName = model.AccountHolderName
             };
 
-            _db.Transactions.Add(transaction);
-            await _db.SaveChangesAsync();
+            await _bankAccountService.SaveOrUpdateBankAccountAsync(user.Id, account);
 
-            var payRequest = new
+            TempData["SuccessMessage"] = "Bank account info saved successfully.";
+            return RedirectToAction(nameof(Index));
+        }
+
+
+        // GET: /Wallet/Deposit
+        public IActionResult Deposit()
+        {
+            return View();
+        }
+
+        // POST: /Wallet/Deposit
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Deposit(DepositViewModel model)
+        {
+            if (!ModelState.IsValid)
             {
-                orderCode = transaction.TransactionID,
-                amount = (int)amount,
-                description = transaction.Description,
-                returnUrl = _payOSConfig.ReturnUrl,
-                cancelUrl = _payOSConfig.CancelUrl
-            };
+                return View(model);
+            }
 
-            using var client = new HttpClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _payOSConfig.ApiKey);
-            var content = new StringContent(JsonSerializer.Serialize(payRequest), Encoding.UTF8, "application/json");
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return NotFound();
+            }
 
-            var response = await client.PostAsync("https://api-sandbox.payos.vn/v1/payment-requests", content);
-            var json = await response.Content.ReadAsStringAsync();
+            // 1. Tạo giao dịch Pending
+            //Nếu chọn E - Wallet → Gọi PayOS
+            if (model.PaymentMethod == "eWallet")
+            {
+                var transaction = await _transactionService.CreatePendingDeposit(
+                    user.Id,
+                    model.Amount,
+                    model.Description ?? $"Deposit of {model.Amount:C}"
+                );
 
-            if (!response.IsSuccessStatusCode)
-                return Content("Lỗi tạo link thanh toán: " + json);
+                if (transaction == null)
+                {
+                    ModelState.AddModelError("", "Failed to create transaction.");
+                    return View(model);
+                }
 
-            var result = JsonDocument.Parse(json);
-            var checkoutUrl = result.RootElement.GetProperty("checkoutUrl").GetString();
+                var paymentUrl = await _payOSService.CreatePaymentLink(
+                    amount: model.Amount,
+                    orderCode: transaction.OrderCode,
+                    description: model.Description ?? $"Nạp {model.Amount} vào ví"
+                );
+
+                return Redirect(paymentUrl);
+            }
+
+            if (model.PaymentMethod == "creditCard")
+            {
+                var success = await _transactionService.ProcessDepositAsync(
+                user.Id,
+                model.Amount,
+                model.Description ?? $"Deposit of {model.Amount:C}"
+            );
+
+                if (success)
+                {
+                    TempData["SuccessMessage"] = $"Successfully deposited {model.Amount:C} to your wallet.";
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Failed to process deposit. Please try again.");
+                    return View(model);
+                }
+            }
+            // Nếu là CreditCard hoặc BankTransfer → xử lý khác (ví dụ nội bộ hoặc hiện thông báo chưa hỗ trợ)
+            ModelState.AddModelError("", "Hiện tại chỉ hỗ trợ E-Wallet thông qua PayOS.");
+            return View(model); ;
+        
+            //var success = await _transactionService.ProcessDepositAsync(
+            //    user.Id, 
+            //    model.Amount, 
+            //    model.Description ?? $"Deposit of {model.Amount:C}"
+            //);
+
+            //if (success)
+            //{
+            //    TempData["SuccessMessage"] = $"Successfully deposited {model.Amount:C} to your wallet.";
+            //    return RedirectToAction(nameof(Index));
+            //}
+            //else
+            //{
+            //    ModelState.AddModelError("", "Failed to process deposit. Please try again.");
+            //    return View(model);
+            //}
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateDeposit(DepositViewModel model)
+        {
+            if (!ModelState.IsValid) return View("Deposit", model);
+
+            var user = await _userManager.GetUserAsync(User);
+            var orderCode = Guid.NewGuid().ToString();
+
+            var checkoutUrl = await _payOSService.CreatePaymentLink(
+                model.Amount,
+                model.Description ?? $"Deposit {model.Amount:C}",
+                orderCode
+            );
+
+            // Optionally: lưu transaction với trạng thái "Pending" trước
+            await _transactionService.CreatePendingDeposit(user.Id, model.Amount, orderCode);
 
             return Redirect(checkoutUrl);
         }
 
-        public async Task<IActionResult> DepositSuccess(int orderCode)
+
+        // GET: /Wallet/Withdraw
+        public IActionResult Withdraw()
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null) return Unauthorized();
-
-            var transaction = await _db.Transactions
-                .FirstOrDefaultAsync(t => t.TransactionID == orderCode && t.UserID == user.Id);
-
-            if (transaction == null)
-                return Content("Không tìm thấy giao dịch.");
-
-            if (transaction.StatusID != TransactionStatusConstants.Pending)
-                return Content("Giao dịch đã xử lý trước đó.");
-
-            transaction.StatusID = TransactionStatusConstants.Success;
-            transaction.TransactionDate = DateTime.Now;
-
-            user.WalletBalance += transaction.Amount;
-
-            await _db.SaveChangesAsync();
-
-            return Content($"✅ Nạp tiền thành công! Số dư ví hiện tại: {user.WalletBalance:N0} VNĐ.");
-        }
-
-        public IActionResult DepositCancel() => Content("Bạn đã huỷ giao dịch.");
-
-        public async Task<IActionResult> Withdraw()
-        {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null || !_db.BankAccounts.Any(b => b.UserID == user.Id && b.IsActive))
-            {
-                return RedirectToAction("Add", "BankAccount", new { message = "Vui lòng thêm tài khoản ngân hàng trước khi rút tiền." });
-            }
-
             return View();
         }
 
+        // POST: /Wallet/Withdraw
         [HttpPost]
-        public async Task<IActionResult> RequestWithdraw(decimal amount)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Withdraw(WithdrawViewModel model)
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null) return Unauthorized();
-
-            if (amount <= 0)
-                return BadRequest("Số tiền không hợp lệ.");
-
-            if (user.WalletBalance < amount)
-                return BadRequest("❌ Số dư không đủ để rút.");
-
-            var hasBankAccount = await _db.BankAccounts.AnyAsync(b => b.UserID == user.Id && b.IsActive);
-            if (!hasBankAccount)
-                return BadRequest("Bạn cần thêm tài khoản ngân hàng trước khi rút tiền.");
-
-            var transaction = new Transaction
+            if (!ModelState.IsValid)
             {
-                UserID = user.Id,
-                Amount = amount,
-                TypeID = TransactionTypeConstants.Withdraw,
-                StatusID = TransactionStatusConstants.Pending,
-                TransactionDate = DateTime.Now,
-                Description = $"Yêu cầu rút {amount:N0} VNĐ từ ví"
-            };
-
-            user.WalletBalance -= amount;
-
-            _db.Transactions.Add(transaction);
-            await _db.SaveChangesAsync();
-
-            return Content($"✅ Đã ghi nhận yêu cầu rút {amount:N0} VNĐ. Admin sẽ duyệt sau.");
-        }
-
-        public async Task<IActionResult> History(int? typeId)
-        {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null) return Unauthorized();
-
-            var query = _db.Transactions.Where(t => t.UserID == user.Id);
-
-            if (typeId.HasValue)
-            {
-                query = query.Where(t => t.TypeID == typeId.Value);
+                return View(model);
             }
 
-            var result = await query
-                .Include(t => t.Type)
-                .Include(t => t.Status)
-                .OrderByDescending(t => t.TransactionDate)
-                .ToListAsync();
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return NotFound();
+            }
 
-            ViewBag.CurrentTypeId = typeId;
-            ViewBag.TransactionTypes = await _db.TransactionTypes.Where(t => t.IsActive).ToListAsync();
+            if (user.WalletBalance < model.Amount)
+            {
+                ModelState.AddModelError("", "Insufficient funds in your wallet.");
+                return View(model);
+            }
 
-            return View(result);
+            var success = await _transactionService.ProcessWithdrawalAsync(
+                user.Id, 
+                model.Amount, 
+                model.Description ?? $"Withdrawal of {model.Amount:C}"
+            );
+
+            if (success)
+            {
+                TempData["SuccessMessage"] = $"Successfully withdrew {model.Amount:C} from your wallet.";
+                return RedirectToAction(nameof(Index));
+            }
+            else
+            {
+                ModelState.AddModelError("", "Failed to process withdrawal. Please try again.");
+                return View(model);
+            }
+        }
+
+        // GET: /Wallet/TransactionHistory
+        public async Task<IActionResult> TransactionHistory()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var transactions = await _transactionService.GetTransactionsByUserIdAsync(user.Id.ToString());
+            return View(transactions);
         }
     }
-}
+} 
+

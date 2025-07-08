@@ -1,0 +1,49 @@
+@model StudentFreelance.Models.StudentApplication
+
+@{
+    ViewData["Title"] = "Xác nhận thanh toán";
+}
+
+<div class="container mt-4">
+    <h2>Xác nhận thanh toán</h2>
+    <hr />
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Thông tin dự án</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Tên dự án:</strong> @Model.Project.Title</p>
+                    <p><strong>Sinh viên:</strong> @Model.User.FullName</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Trạng thái:</strong> <span class="badge bg-success">@Model.Status</span></p>
+                    <p><strong>Số tiền thanh toán:</strong> @Model.Salary.ToString("N0") VNĐ</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0">Xác nhận thanh toán</h5>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info">
+                <p><i class="fas fa-info-circle"></i> Bạn đang chuẩn bị thanh toán cho sinh viên sau khi dự án đã hoàn thành.</p>
+                <p>Số tiền sẽ được chuyển từ tài khoản của bạn đến tài khoản của sinh viên.</p>
+                <p><strong>Lưu ý:</strong> Hành động này không thể hoàn tác.</p>
+            </div>
+
+            <form asp-action="FinalizeConfirmed" method="post">
+                <input type="hidden" name="applicationId" value="@Model.ApplicationID" />
+                <div class="form-group mt-4">
+                    <button type="submit" class="btn btn-success">Xác nhận thanh toán</button>
+                    <a asp-controller="Project" asp-action="Details" asp-route-id="@ViewBag.ProjectId" class="btn btn-secondary">Hủy</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div> 
