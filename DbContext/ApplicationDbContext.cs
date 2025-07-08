@@ -239,7 +239,14 @@ namespace StudentFreelance.DbContext
                 .HasForeignKey(r => r.ProjectID)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Message
+            // Conversation relationships
+            modelBuilder.Entity<Conversation>()
+                .HasOne(c => c.Project)
+                .WithMany(p => p.Conversations)
+                .HasForeignKey(c => c.ProjectID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Message relationships
             modelBuilder.Entity<Message>()
                 .HasOne(m => m.Sender)
                 .WithMany()   // no User.MessagesSent collection
@@ -254,6 +261,11 @@ namespace StudentFreelance.DbContext
                 .HasOne(m => m.Project)
                 .WithMany(p => p.Messages)
                 .HasForeignKey(m => m.ProjectID)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Message>()
+                .HasOne(m => m.Conversation)
+                .WithMany(c => c.Messages)
+                .HasForeignKey(m => m.ConversationID)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Notification
@@ -395,6 +407,7 @@ namespace StudentFreelance.DbContext
             modelBuilder.Entity<ImportanceLevel>().HasQueryFilter(e => e.IsActive);
             modelBuilder.Entity<ProjectSubmission>().HasQueryFilter(ps => ps.IsActive);
             modelBuilder.Entity<ProjectSubmissionAttachment>().HasQueryFilter(psa => psa.IsActive);
+            modelBuilder.Entity<Conversation>().HasQueryFilter(c => c.IsActive);
         }
     }
 }
