@@ -1,5 +1,163 @@
 @model IEnumerable<StudentFreelance.Models.Project>
 
+<style>
+    :root {
+        --primary: #89AC46;
+        --accent1: #D3E671;
+        --accent2: #F8ED8C;
+        --accent3: #FF8989;
+        --gray-bg: #f9f9f9;
+        --dark-text: #222;
+    }
+
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        background-color: var(--gray-bg);
+    }
+
+    h1 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    .btn-primary {
+        background-color: var(--primary);
+        border-color: var(--primary);
+        font-weight: 600;
+    }
+
+        .btn-primary:hover {
+            background-color: #6d9138;
+            border-color: #6d9138;
+        }
+
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.06);
+    }
+
+    .card-body {
+        background-color: #fff;
+        padding: 1.5rem;
+        border-radius: 12px;
+    }
+
+    .table {
+        margin: 0;
+    }
+
+        .table th {
+            background-color: var(--accent1);
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-bottom: none;
+        }
+
+        .table td {
+            vertical-align: middle;
+            font-size: 0.95rem;
+            color: var(--dark-text);
+        }
+
+    .table-hover tbody tr:hover {
+        background-color: #f1f8e9;
+    }
+
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.4em 0.7em;
+        border-radius: 20px;
+        font-weight: 500;
+    }
+
+        .badge.bg-primary {
+            background-color: var(--primary) !important;
+            color: white;
+        }
+
+        .badge.bg-warning {
+            background-color: var(--accent2);
+            color: #333;
+        }
+
+        .badge.bg-danger {
+            background-color: var(--accent3);
+            color: white;
+        }
+
+        .badge.bg-success {
+            background-color: #6fcf97;
+            color: white;
+        }
+
+    .btn-group .btn {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.6rem;
+        margin: 0 2px;
+    }
+
+    .btn-outline-primary {
+        color: var(--primary);
+        border-color: var(--primary);
+    }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+    .btn-outline-secondary {
+        border-color: var(--accent1);
+        color: #333;
+    }
+
+        .btn-outline-secondary:hover {
+            background-color: var(--accent1);
+            color: #111;
+        }
+
+    .btn-outline-danger {
+        color: var(--accent3);
+        border-color: var(--accent3);
+    }
+
+        .btn-outline-danger:hover {
+            background-color: var(--accent3);
+            color: white;
+        }
+
+    .btn-outline-success {
+        color: #6fcf97;
+        border-color: #6fcf97;
+    }
+
+        .btn-outline-success:hover {
+            background-color: #6fcf97;
+            color: white;
+        }
+
+    .table td span.badge {
+        margin-right: 0.5rem;
+    }
+
+    @@media (max-width: 768px) {
+        .table th, .table td
+
+    {
+        font-size: 0.85rem;
+    }
+
+    .btn-group .btn {
+        margin-bottom: 4px;
+    }
+
+    }
+</style>
+
+
 @{
     ViewData["Title"] = "Quản lý dự án";
 }
