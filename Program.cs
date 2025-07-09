@@ -75,7 +75,7 @@ using (var scope = app.Services.CreateScope())
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
 
-    db.Database.Migrate();
+    //db.Database.Migrate();
 
     DbSeeder.SeedEnums(db); // enum tables: statuses, types, etc.
     await DbSeeder.SeedSampleDataAsync(db, userManager, roleManager); // Identity + related data
