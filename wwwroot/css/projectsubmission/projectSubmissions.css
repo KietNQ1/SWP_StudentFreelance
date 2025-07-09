@@ -1,0 +1,222 @@
+/* Palette color variables */
+:root {
+    --primary-color: #89AC46;
+    --secondary-color: #D3E671;
+    --accent-color: #F8ED8C;
+    --highlight-color: #FF8989;
+    --orange-accent: #FF8989;
+    --blue-accent: #89AC46;
+}
+
+/* General styles */
+body {
+    background: #F8F8F8;
+    background-attachment: fixed;
+    min-height: 100vh;
+}
+
+.container {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-top: 4px solid var(--primary-color);
+    margin-top: 20px;
+}
+
+h2 {
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 15px;
+    border-bottom: 2px solid var(--secondary-color);
+    padding-bottom: 10px;
+    display: inline-block;
+}
+
+hr {
+    border-color: rgba(211, 230, 113, 0.4);
+    margin: 20px 0;
+}
+
+/* Project info card styling */
+.card {
+    transition: transform 0.3s, box-shadow 0.3s;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    border: 1px solid rgba(211, 230, 113, 0.4);
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(137, 172, 70, 0.25);
+}
+
+.card-header {
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color)) !important;
+    border-bottom: none;
+    color: white;
+    font-weight: 600;
+    padding: 12px 20px;
+}
+
+.card-header h5 {
+    margin-bottom: 0;
+    font-size: 1.1rem;
+}
+
+.card-body {
+    background: linear-gradient(to bottom right, white, rgba(211, 230, 113, 0.15));
+    padding: 20px;
+}
+
+/* Table styling */
+.table-responsive {
+    margin-top: 15px;
+}
+
+.table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(211, 230, 113, 0.1);
+}
+
+.table thead th {
+    background-color: rgba(137, 172, 70, 0.1);
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--secondary-color);
+    font-weight: 600;
+    padding: 12px;
+}
+
+.table tbody td {
+    padding: 12px;
+    vertical-align: middle;
+    border-top: 1px solid rgba(211, 230, 113, 0.3);
+}
+
+/* Badge styling */
+.badge {
+    padding: 6px 10px;
+    font-weight: 500;
+    font-size: 0.8rem;
+    border-radius: 4px;
+}
+
+.bg-success {
+    background-color: var(--primary-color) !important;
+}
+
+.bg-warning {
+    background-color: var(--accent-color) !important;
+    color: #6b6219 !important;
+}
+
+.bg-danger {
+    background-color: var(--highlight-color) !important;
+}
+
+.bg-primary {
+    background-color: var(--blue-accent) !important;
+}
+
+/* Button styling */
+.btn {
+    padding: 8px 16px;
+    font-weight: 500;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+}
+
+.btn-primary {
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color)) !important;
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 2px 4px rgba(137, 172, 70, 0.3);
+    color: white;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background: linear-gradient(to right, var(--secondary-color), var(--primary-color)) !important;
+    border-color: var(--secondary-color) !important;
+    box-shadow: 0 4px 8px rgba(137, 172, 70, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-info {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+.btn-info:hover, .btn-info:focus {
+    background-color: #5a6268;
+    border-color: #545b62;
+    color: white;
+}
+
+.btn-success {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.btn-success:hover, .btn-success:focus {
+    background-color: #7a9a3e;
+    border-color: #7a9a3e;
+    color: white;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover, .btn-secondary:focus {
+    background-color: #5a6268;
+    border-color: #545b62;
+    color: white;
+}
+
+/* Alert styling */
+.alert-info {
+    background-color: rgba(248, 237, 140, 0.3);
+    border-color: var(--accent-color);
+    color: #6b6219;
+    border-left: 4px solid var(--primary-color);
+    padding: 15px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767px) {
+    .container {
+        padding: 15px;
+    }
+    
+    .card-body {
+        padding: 15px;
+    }
+    
+    .table thead th, .table tbody td {
+        padding: 8px;
+    }
+    
+    .btn-sm {
+        padding: 4px 8px;
+        font-size: 0.75rem;
+    }
+}
+
+/* Project details styling */
+.project-info strong {
+    color: var(--primary-color);
+    font-weight: 600;
+} 
