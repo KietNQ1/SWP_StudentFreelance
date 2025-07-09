@@ -49,9 +49,12 @@ namespace StudentFreelance.Controllers
                     Major = user.Major,
                     CompanyName = user.CompanyName,
                     Industry = user.Industry,
-                    ProvinceID = user.Address?.ProvinceID,
-                    DistrictID = user.Address?.DistrictID,
-                    WardID = user.Address?.WardID,
+                    ProvinceCode = user.Address?.ProvinceCode,
+                    ProvinceName = user.Address?.ProvinceName,
+                    DistrictCode = user.Address?.DistrictCode,
+                    DistrictName = user.Address?.DistrictName,
+                    WardCode = user.Address?.WardCode,
+                    WardName = user.Address?.WardName,
                     DetailAddress = user.Address?.DetailAddress,
                     FullAddress = user.Address?.FullAddress,
                     AvatarPath = user.Avatar,
@@ -66,25 +69,6 @@ namespace StudentFreelance.Controllers
                     UpdatedAt = user.UpdatedAt,
                     Email = user.Email
                 };
-
-                // Get province, district, ward names
-                if (user.Address?.ProvinceID != null)
-                {
-                    var province = await _context.Provinces.FirstOrDefaultAsync(p => p.ProvinceID == user.Address.ProvinceID);
-                    viewModel.ProvinceName = province?.Name;
-                }
-
-                if (user.Address?.DistrictID != null)
-                {
-                    var district = await _context.Districts.FirstOrDefaultAsync(d => d.DistrictID == user.Address.DistrictID);
-                    viewModel.DistrictName = district?.Name;
-                }
-
-                if (user.Address?.WardID != null)
-                {
-                    var ward = await _context.Wards.FirstOrDefaultAsync(w => w.WardID == user.Address.WardID);
-                    viewModel.WardName = ward?.Name;
-                }
 
                 return View(viewModel);
             }
@@ -121,11 +105,6 @@ namespace StudentFreelance.Controllers
                     ProvinceCode = user.Address?.ProvinceCode,
                     DistrictCode = user.Address?.DistrictCode,
                     WardCode = user.Address?.WardCode,
-                    
-                    // For backward compatibility
-                    ProvinceID = null,
-                    DistrictID = null,
-                    WardID = null,
                     
                     DetailAddress = user.Address?.DetailAddress,
                     AvatarPath = user.Avatar,

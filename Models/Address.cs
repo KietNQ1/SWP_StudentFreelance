@@ -44,24 +44,5 @@ namespace StudentFreelance.Models
 
         /// Cờ kích hoạt (true nếu bản ghi còn hiệu lực, false nếu inactive)
         public bool IsActive { get; set; } = true;
-        
-        // For backward compatibility with existing code - these will be ignored in the database
-        [NotMapped]
-        public int? ProvinceID { get; set; }
-        
-        [NotMapped]
-        public int? DistrictID { get; set; }
-        
-        [NotMapped]
-        public int? WardID { get; set; }
-        
-        [NotMapped]
-        public Province Province { get; set; }
-        
-        [NotMapped]
-        public District District { get; set; }
-        
-        [NotMapped]
-        public Ward Ward { get; set; }
     }
 }

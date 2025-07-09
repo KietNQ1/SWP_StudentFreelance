@@ -11,16 +11,29 @@
     var categoryId = ViewBag.CategoryId as int? ?? null;
     var skillIds = ViewBag.SkillIds as List<int> ?? new List<int>();
     var userId = ViewBag.UserId as int? ?? null;
-    var provinceId = ViewBag.ProvinceId as int? ?? null;
+    var provinceCode = ViewBag.ProvinceCode as string ?? null;
     
     var categories = ViewBag.Categories as List<StudentFreelance.Models.Category> ?? new List<StudentFreelance.Models.Category>();
     var skills = ViewBag.Skills as List<StudentFreelance.Models.Skill> ?? new List<StudentFreelance.Models.Skill>();
     var businessUsers = ViewBag.BusinessUsers as List<StudentFreelance.Models.ApplicationUser> ?? new List<StudentFreelance.Models.ApplicationUser>();
-    var provinces = ViewBag.Provinces as List<StudentFreelance.Models.Province> ?? new List<StudentFreelance.Models.Province>();
+    var provinces = ViewBag.Provinces as dynamic ?? new List<dynamic>();
     
     var selectedCategory = categoryId.HasValue ? categories.FirstOrDefault(c => c.CategoryID == categoryId) : null;
     var selectedBusiness = userId.HasValue ? businessUsers.FirstOrDefault(u => u.Id == userId) : null;
-    var selectedProvince = provinceId.HasValue ? provinces.FirstOrDefault(p => p.ProvinceID == provinceId) : null;
+    
+    // Tìm province theo ID mà không sử dụng lambda với dynamic
+    dynamic selectedProvince = null;
+    if (!string.IsNullOrEmpty(provinceCode) && provinces != null)
+    {
+        foreach (var province in provinces)
+        {
+            if (province.ID == provinceCode)
+            {
+                selectedProvince = province;
+                break;
+            }
+        }
+    }
     
     var selectedSkills = skills.Where(s => skillIds.Contains(s.SkillID)).ToList();
     
@@ -247,6 +260,30 @@
                     }
                 </select>
             </div>
+            
+            <div class="col-md-2">
+                <select class="form-select" name="provinceCode">
+                    <option value="">-- Chọn tỉnh/thành --</option>
+                    @{
+                        var orderedProvinces = provinces as IEnumerable<dynamic>;
+                        if (orderedProvinces != null)
+                        {
+                            foreach (var province in orderedProvinces)
+                            {
+                                if (provinceCode == province.ID)
+                                {
+                                    <option value="@province.ID" selected>@province.Name</option>
+                                }
+                                else
+                                {
+                                    <option value="@province.ID">@province.Name</option>
+                                }
+                            }
+                        }
+                    }
+                </select>
+            </div>
+            
             <div class="col-md-2">
                 <button type="submit" class="btn btn-primary w-100" id="searchBtn">Tìm kiếm</button>
             </div>
@@ -259,7 +296,7 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
                 <p>Tìm thấy @Model.Count() dự án</p>
-                @if (!string.IsNullOrEmpty(query) || !string.IsNullOrEmpty(location) || categoryId.HasValue || skillIds.Any() || userId.HasValue || provinceId.HasValue)
+                @if (!string.IsNullOrEmpty(query) || !string.IsNullOrEmpty(location) || categoryId.HasValue || skillIds.Any() || userId.HasValue || !string.IsNullOrEmpty(provinceCode))
                 {
                     <p class="text-muted small">
                         Tiêu chí tìm kiếm: 
@@ -332,13 +369,25 @@
                                 
                                 <div class="col-md-3">
                                     <div class="mb-3">
-                                        @if (project.Address?.Province != null)
+                                        @if (project.Address != null && !string.IsNullOrEmpty(project.Address.ProvinceCode))
                                         {
                                             <p class="mb-2">
-                                                <i class="bi bi-geo-alt"></i> @project.Address.Province.Name
+                                                <i class="bi bi-geo-alt"></i>
                                                 @if (!string.IsNullOrEmpty(project.Address.DetailAddress))
                                                 {
-                                                    <span class="text-muted"> - @project.Address.DetailAddress</span>
+                                                    @(project.Address.DetailAddress)<text>, </text>
+                                                }
+                                                @if (!string.IsNullOrEmpty(project.Address.WardName))
+                                                {
+                                                    @(project.Address.WardName)<text>, </text>
+                                                }
+                                                @if (!string.IsNullOrEmpty(project.Address.DistrictName))
+                                                {
+                                                    @(project.Address.DistrictName)<text>, </text>
+                                                }
+                                                @if (!string.IsNullOrEmpty(project.Address.ProvinceName))
+                                                {
+                                                    @(project.Address.ProvinceName)
                                                 }
                                             </p>
                                         }

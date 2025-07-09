@@ -21,11 +21,6 @@ namespace StudentFreelance.ViewModels
         public string? DistrictCode { get; set; }
         public string? WardCode { get; set; }
         
-        // For backward compatibility
-        public int? ProvinceID { get; set; }
-        public int? DistrictID { get; set; }
-        public int? WardID { get; set; }
-        
         public string? DetailAddress { get; set; }
         public string? FullAddress { get; set; }
         

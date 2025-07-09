@@ -90,26 +90,6 @@ namespace StudentFreelance.DbContext
                 .HasForeignKey(w => w.DistrictID)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Addresses → Province/District/Ward
-            modelBuilder.Entity<Address>()
-                .HasOne(a => a.Province)
-                .WithMany(p => p.Addresses)
-                .HasForeignKey(a => a.ProvinceID)
-                .OnDelete(DeleteBehavior.Restrict);
-            modelBuilder.Entity<Address>()
-                .HasOne(a => a.District)
-                .WithMany(d => d.Addresses)
-                .HasForeignKey(a => a.DistrictID)
-                .OnDelete(DeleteBehavior.Restrict);
-            modelBuilder.Entity<Address>()
-                .HasOne(a => a.Ward)
-                .WithMany(w => w.Addresses)
-                .HasForeignKey(a => a.WardID)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Users → UserRole
-          
-
             // Users → Address
             modelBuilder.Entity<ApplicationUser>()
                 .HasOne(u => u.Address)
