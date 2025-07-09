@@ -211,7 +211,7 @@ namespace StudentFreelance.Services.Implementations
                 UserID = userId,
                 Amount = amount,
                 Description = "Deposit via PayOS",
-                OrderCode = GenerateOrderCode(),
+                OrderCode = orderCode,
                 StatusID = 1, // Pending
                 TypeID = 1,   // Deposit
                 TransactionDate = DateTime.UtcNow
