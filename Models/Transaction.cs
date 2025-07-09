@@ -37,6 +37,12 @@ namespace StudentFreelance.Models
         [ForeignKey(nameof(Status))]
         public int StatusID { get; set; }
 
+        /// Mã giao dịch dùng để liên kết với PayOS (tùy chọn)
+        [MaxLength(100)]
+        public string? OrderCode { get; set; }
+
+
+
         /// Cờ kích hoạt (true nếu bản ghi còn hiệu lực, false nếu inactive)
         public bool IsActive { get; set; } = true;
 

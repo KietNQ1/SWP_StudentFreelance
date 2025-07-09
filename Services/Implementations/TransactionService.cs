@@ -19,6 +19,10 @@ namespace StudentFreelance.Services.Implementations
             _context = context;
         }
 
+        private string GenerateOrderCode()
+    {
+        return $"ORDER_{DateTime.UtcNow:yyyyMMddHHmmssfff}";
+    }
         public async Task<IEnumerable<Transaction>> GetAllTransactionsAsync()
         {
             return await _context.Transactions
@@ -200,5 +204,22 @@ namespace StudentFreelance.Services.Implementations
             await CreateTransactionAsync(transaction);
             return transaction.StatusID == 1; // Return true if status is Completed
         }
+        public async Task<Transaction> CreatePendingDeposit(int userId, decimal amount, string orderCode)
+        {
+            var transaction = new Transaction
+            {
+                UserID = userId,
+                Amount = amount,
+                Description = "Deposit via PayOS",
+                OrderCode = GenerateOrderCode(),
+                StatusID = 1, // Pending
+                TypeID = 1,   // Deposit
+                TransactionDate = DateTime.UtcNow
+            };
+            _context.Transactions.Add(transaction);
+            await _context.SaveChangesAsync();
+            return transaction;
+        }
+
     }
 } 
