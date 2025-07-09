@@ -16,8 +16,8 @@ namespace StudentFreelance.DbContext
         }
 
         // DbSet declarations
-      
-      
+
+
         public DbSet<Province> Provinces { get; set; }
         public DbSet<District> Districts { get; set; }
         public DbSet<Ward> Wards { get; set; }
@@ -37,6 +37,8 @@ namespace StudentFreelance.DbContext
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<UserNotification> UserNotifications { get; set; }
         public DbSet<UserAccountHistory> UserAccountHistories { get; set; }
+        public DbSet<BankAccount> BankAccounts { get; set; }
+
 
         // Enum DbSets
         public DbSet<ProjectStatus> ProjectStatuses { get; set; }
@@ -108,7 +110,7 @@ namespace StudentFreelance.DbContext
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Users → UserRole
-          
+
 
             // Users → Address
             modelBuilder.Entity<ApplicationUser>()
@@ -281,13 +283,13 @@ namespace StudentFreelance.DbContext
                 .WithMany(u => u.UserNotifications)
                 .HasForeignKey(un => un.UserID)
                 .OnDelete(DeleteBehavior.Restrict);
-                
+
             modelBuilder.Entity<UserNotification>()
                 .HasOne(un => un.Notification)
                 .WithMany(n => n.UserNotifications)
                 .HasForeignKey(un => un.NotificationID)
                 .OnDelete(DeleteBehavior.Restrict);
-                
+
             // Create a unique index for UserID and NotificationID combination
             modelBuilder.Entity<UserNotification>()
                 .HasIndex(un => new { un.UserID, un.NotificationID })
@@ -382,7 +384,7 @@ namespace StudentFreelance.DbContext
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Global query filters for soft-delete
-            
+
             modelBuilder.Entity<Address>().HasQueryFilter(a => a.IsActive);
             modelBuilder.Entity<Category>().HasQueryFilter(c => c.IsActive);
             modelBuilder.Entity<Skill>().HasQueryFilter(s => s.IsActive);

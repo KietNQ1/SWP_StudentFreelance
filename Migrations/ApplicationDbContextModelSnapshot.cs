@@ -323,6 +323,42 @@ namespace StudentFreelance.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("StudentFreelance.Models.BankAccount", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AccountHolderName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("AccountNumber")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("BankName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserID")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("BankAccounts");
+                });
+
             modelBuilder.Entity("StudentFreelance.Models.Category", b =>
                 {
                     b.Property<int>("CategoryID")
@@ -1236,6 +1272,10 @@ namespace StudentFreelance.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<string>("OrderCode")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<int?>("ProjectID")
                         .HasColumnType("int");
 
@@ -1461,6 +1501,17 @@ namespace StudentFreelance.Migrations
                     b.Navigation("Address");
 
                     b.Navigation("Status");
+                });
+
+            modelBuilder.Entity("StudentFreelance.Models.BankAccount", b =>
+                {
+                    b.HasOne("StudentFreelance.Models.ApplicationUser", "User")
+                        .WithMany("BankAccounts")
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("StudentFreelance.Models.Category", b =>
@@ -1872,6 +1923,8 @@ namespace StudentFreelance.Migrations
 
             modelBuilder.Entity("StudentFreelance.Models.ApplicationUser", b =>
                 {
+                    b.Navigation("BankAccounts");
+
                     b.Navigation("SentNotifications");
 
                     b.Navigation("UserNotifications");

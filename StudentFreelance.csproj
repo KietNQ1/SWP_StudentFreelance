@@ -27,6 +27,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.*" />
+    <PackageReference Include="PayOS" Version="1.0.7" />
   </ItemGroup>
 
 </Project>

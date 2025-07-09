@@ -6,6 +6,8 @@ using System;
 
 namespace StudentFreelance.Models
 {
+    
+
     public class ApplicationUser : IdentityUser<int>
     {
         public string FullName { get; set; }
@@ -29,8 +31,8 @@ namespace StudentFreelance.Models
         public int StatusID { get; set; }
 
         // Navigation properties
-        
-        
+
+        public ICollection<BankAccount> BankAccounts { get; set; } = new List<BankAccount>();
 
         [ForeignKey(nameof(AddressID))]
         public Address Address { get; set; }
