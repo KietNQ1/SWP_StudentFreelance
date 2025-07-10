@@ -236,7 +236,6 @@ namespace StudentFreelance.Controllers
         [Authorize(Roles = "Student")]
         public async Task<IActionResult> MySubmissions(int applicationId)
         {
-            // Kiểm tra xem đơn ứng tuyển có tồn tại không
             var application = await _context.StudentApplications
                 .Include(a => a.Project)
                     .ThenInclude(p => p.Business)
@@ -246,12 +245,10 @@ namespace StudentFreelance.Controllers
             if (application == null)
                 return NotFound();
 
-            // Kiểm tra xem người dùng hiện tại có phải là người sở hữu đơn ứng tuyển này không
             var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             if (application.UserID != currentUserId)
                 return Forbid();
 
-            // Lấy danh sách submission
             var submissions = await _submissionService.GetSubmissionsByApplicationIdAsync(applicationId);
 
             var model = new ProjectSubmissionListViewModel
@@ -275,8 +272,30 @@ namespace StudentFreelance.Controllers
             };
 
             ViewBag.ProjectId = application.ProjectID;
+
+            // ✅ Kiểm tra điều kiện đánh giá (đơn đã hoàn thành)
+            if (application.Status == "Completed")
+            {
+                var hasRated = await _context.Ratings.AnyAsync(r =>
+                    r.ProjectID == application.ProjectID &&
+                    r.ReviewerID == currentUserId &&
+                    r.RevieweeID == application.Project.BusinessID);
+
+                ViewBag.CanRateBusiness = !hasRated;
+                ViewBag.RevieweeID = application.Project.BusinessID;
+                ViewBag.ReviewerID = currentUserId;
+                ViewBag.ProjectTitle = application.Project.Title;
+            }
+            else
+            {
+                ViewBag.CanRateBusiness = false;
+            }
+
             return View(model);
         }
+
+
+
 
         // GET: /ProjectSubmission/ProjectSubmissions/{applicationId}
         [Authorize(Roles = "Business,Admin,Moderator")]
@@ -305,6 +324,9 @@ namespace StudentFreelance.Controllers
             var model = new ProjectSubmissionListViewModel
             {
                 ApplicationID = applicationId,
+                ProjectID = application.ProjectID,
+                BusinessID = application.Project.BusinessID,
+                StudentID = application.UserID,
                 ProjectTitle = application.Project?.Title ?? "Không xác định",
                 StudentName = application.User?.FullName ?? "Không xác định",
                 ApplicationStatus = application.Status ?? "Không xác định",
@@ -323,8 +345,28 @@ namespace StudentFreelance.Controllers
             };
 
             ViewBag.ProjectId = application.ProjectID;
+
+            // ✅ Kiểm tra điều kiện để Business được đánh giá Student
+            if (application.Status == "Completed")
+            {
+                var hasRated = await _context.Ratings.AnyAsync(r =>
+                    r.ProjectID == application.ProjectID &&
+                    r.ReviewerID == currentUserId &&
+                    r.RevieweeID == application.UserID);
+
+                ViewBag.CanRateStudent = !hasRated;
+                ViewBag.ReviewerID = currentUserId;
+                ViewBag.RevieweeID = application.UserID;
+                ViewBag.ProjectTitle = application.Project.Title;
+            }
+            else
+            {
+                ViewBag.CanRateStudent = false;
+            }
+
             return View(model);
         }
+
 
         // GET: /ProjectSubmission/Details/{id}
         [Authorize]

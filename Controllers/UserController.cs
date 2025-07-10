@@ -21,7 +21,7 @@ namespace StudentFreelance.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Profile()
+        public async Task<IActionResult> Profile(int page = 1)
         {
             try
             {
@@ -61,7 +61,7 @@ namespace StudentFreelance.Controllers
                     Email = user.Email
                 };
 
-                // Get province, district, ward names
+                // Tên tỉnh/huyện/xã
                 if (user.Address?.ProvinceID != null)
                 {
                     var province = await _context.Provinces.FirstOrDefaultAsync(p => p.ProvinceID == user.Address.ProvinceID);
@@ -80,6 +80,38 @@ namespace StudentFreelance.Controllers
                     viewModel.WardName = ward?.Name;
                 }
 
+                // ⭐ Thêm phần đánh giá
+                var ratingsQuery = _context.Ratings
+                    .Include(r => r.Reviewer)
+                    .Where(r => r.RevieweeID == userId)
+                    .OrderByDescending(r => r.DateRated);
+
+                var totalRatings = await ratingsQuery.CountAsync();
+                var pageSize = 5;
+
+                var averageRating = totalRatings > 0
+                    ? (double?)(await ratingsQuery.AverageAsync(r => r.Score))
+                    : null;
+
+
+                var ratingList = await ratingsQuery
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(r => new RatingViewModel
+                    {
+                        ReviewerName = r.Reviewer.FullName,
+                        ReviewerAvatarPath = string.IsNullOrEmpty(r.Reviewer.ProfilePicturePath) ? "/image/default-avatar.png" : r.Reviewer.ProfilePicturePath,
+                        Score = r.Score,
+                        Comment = r.Comment,
+                        DateRated = r.DateRated
+                    }).ToListAsync();
+
+                viewModel.AverageRating = averageRating;
+                viewModel.TotalReviews = totalRatings;
+                viewModel.ReceivedRatings = ratingList;
+                viewModel.CurrentPage = page;
+                viewModel.TotalPages = (int)Math.Ceiling((double)totalRatings / pageSize);
+
                 return View(viewModel);
             }
             catch (Exception ex)
@@ -88,6 +120,7 @@ namespace StudentFreelance.Controllers
                 return StatusCode(500);
             }
         }
+
 
         [HttpGet]
         public async Task<IActionResult> Edit()

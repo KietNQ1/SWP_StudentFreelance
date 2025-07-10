@@ -1,0 +1,89 @@
+/* Deposit page specific styles */
+@import url('wallet.css');
+
+/* Card styling for deposit */
+.card {
+    border-left: 4px solid var(--primary-color);
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #FFFFFF;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* Amount input styling */
+.input-group .form-control {
+    border-left: none;
+}
+
+.input-group-text {
+    background-color: rgba(211, 230, 113, 0.1);
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* Payment methods section */
+.alert-info {
+    background-color: rgba(248, 248, 248, 0.7);
+    border: 1px solid rgba(211, 230, 113, 0.4);
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.alert-info h5 {
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed rgba(211, 230, 113, 0.5);
+}
+
+/* Form check styling */
+.form-check {
+    margin-bottom: 10px;
+    padding-left: 30px;
+}
+
+.form-check-input {
+    margin-top: 0.25rem;
+    margin-left: -30px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.form-check-input:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.form-check-label {
+    cursor: pointer;
+    font-weight: 500;
+    padding-left: 5px;
+}
+
+/* Button group styling */
+.d-flex.justify-content-between {
+    margin-top: 25px;
+}
+
+.btn-success {
+    padding: 10px 25px;
+    font-weight: 500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767px) {
+    .card {
+        border-left: none;
+        border-top: 4px solid var(--primary-color);
+    }
+    
+    .form-check {
+        padding-left: 25px;
+    }
+    
+    .form-check-input {
+        margin-left: -25px;
+    }
+} 
