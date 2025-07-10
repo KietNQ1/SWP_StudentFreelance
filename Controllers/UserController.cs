@@ -70,24 +70,7 @@ namespace StudentFreelance.Controllers
                     Email = user.Email
                 };
 
-                // Tên tỉnh/huyện/xã
-                if (user.Address?.ProvinceID != null)
-                {
-                    var province = await _context.Provinces.FirstOrDefaultAsync(p => p.ProvinceID == user.Address.ProvinceID);
-                    viewModel.ProvinceName = province?.Name;
-                }
-
-                if (user.Address?.DistrictID != null)
-                {
-                    var district = await _context.Districts.FirstOrDefaultAsync(d => d.DistrictID == user.Address.DistrictID);
-                    viewModel.DistrictName = district?.Name;
-                }
-
-                if (user.Address?.WardID != null)
-                {
-                    var ward = await _context.Wards.FirstOrDefaultAsync(w => w.WardID == user.Address.WardID);
-                    viewModel.WardName = ward?.Name;
-                }
+            
 
                 // ⭐ Thêm phần đánh giá
                 var ratingsQuery = _context.Ratings
