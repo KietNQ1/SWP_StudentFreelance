@@ -199,7 +199,7 @@
                             <div class="card mb-4">
                                 <div class="card-header bg-light">Địa chỉ</div>
                                 <div class="card-body">
-                                    @if (string.IsNullOrEmpty(Model.FullAddress) && Model.ProvinceID == null)
+                                    @if (string.IsNullOrEmpty(Model.FullAddress) && string.IsNullOrEmpty(Model.ProvinceCode))
                                     {
                                         <p class="text-muted">Chưa cập nhật địa chỉ</p>
                                     }

@@ -2,15 +2,29 @@
 @{
     ViewData["Title"] = "Cuộc trò chuyện";
     var conversationId = Model.ConversationID.ToString();
-    var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier).Value; 
+    var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier).Value;
 }
 
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
 <style>
+    body {
+        background-color: #f3f3f3;
+    }
+
+    .chat-area {
+        max-width: 800px;
+        margin: auto;
+        margin-top: 40px;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
     .message-box {
         border-radius: 20px;
         padding: 10px 15px;
         max-width: 70%;
- 
     }
 
     .message-left {
@@ -18,12 +32,15 @@
     }
 
     .message-right {
-        background-color: #5f4b8b;
+        background-color: #FF8989;
         color: white;
     }
 
     .chat-body {
         background-color: #dcdcdc;
+        height: 400px;
+        overflow-y: auto;
+        padding: 16px;
     }
 
     .message-meta {
@@ -32,81 +49,94 @@
         margin-top: 4px;
     }
 
-    .message-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        margin-right: 8px;
+    .send-button {
+        background-color: #89AC46;
+        color: white;
+        padding: 8px 20px;
+        border: none;
+        border-radius: 30px;
+        font-weight: 500;
+        transition: background-color 0.3s ease-in-out;
     }
 
-    .btn.btn-link.mt-3{
-        color: #354f6c !important;
-        border-color: #354f6c !important;
-        transition: all 0.2s ease-in-out;
+        .send-button:hover {
+            background-color: #6f963a;
+            cursor: pointer;
+        }
+
+    .back-button {
+        display: inline-block;
+        margin: 24px auto;
+        padding: 8px 16px;
+        border-radius: 30px;
+        background-color: #89AC46;
+        color: white;
+        font-weight: 500;
+        font-size: 0.95rem;
+        border: none;
+        text-decoration: none;
+        transition: all 0.3s ease-in-out;
     }
 
-    .btn.btn-link.mt-3:hover{
-        background-color: white;
-        color: #354f6c !important;
-        border-color: #354f6c !important;
-        border: 2px solid #354f6c;
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 600;
+        .back-button:hover {
+            background-color: #6f963a;
+            color: #fff;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+        }
+
+    .chat-footer input {
+        flex-grow: 1;
     }
 </style>
 
-<div class="chat-area border rounded shadow-sm mt-3" style="max-width: 800px; margin: auto;">
+<div class="chat-area border shadow-sm">
     <!-- Header -->
-    <div class="chat-header p-3 border-bottom" style="background-color: #333; color: white;">
+    <div class="chat-header p-3 border-bottom" style="background-color: #89AC46; color: white;">
         <h5 class="mb-0">@Model.OtherUserName</h5>
     </div>
 
     <!-- Body -->
-    <div class="chat-body p-3" id="chatWindow" style="height:400px; overflow-y:auto;">
+    <div class="chat-body" id="chatWindow">
         @foreach (var m in Model.Messages)
         {
             if (m.IsMine)
             {
-                <!-- Tin nhắn của bạn -->
                 <div class="d-flex justify-content-end mb-2">
-                    <div class="message-box message-right">
+                    <div class="message-box message-right text-end">
                         @m.Content
-                        <div class="message-meta text-end">@m.SentAt.ToLocalTime().ToString("HH:mm dd/MM")</div>
+                        <div class="message-meta">@m.SentAt.ToLocalTime().ToString("HH:mm dd/MM")</div>
                     </div>
                 </div>
             }
             else
             {
-                <!-- Tin nhắn đối phương -->
                 <div class="d-flex justify-content-start mb-2">
-                    @* <img src="@Model.OtherUserAvatar ?? " /images/default-avatar.png"" class="message-avatar" /> *@               
-                        <div class="message-box message-left">
-                            @m.Content
-                            <div class="message-meta">@m.SentAt.ToLocalTime().ToString("HH:mm dd/MM")</div>
-                        </div>                                        
+                    <div class="message-box message-left">
+                        @m.Content
+                        <div class="message-meta">@m.SentAt.ToLocalTime().ToString("HH:mm dd/MM")</div>
+                    </div>
                 </div>
             }
         }
     </div>
 
     <!-- Footer -->
-    <div class="chat-footer border-top p-3 bg-white">
+    <div class="chat-footer border-top p-3 bg-white d-flex">
         <form id="chatForm" class="d-flex w-100">
             @Html.AntiForgeryToken()
             <input type="hidden" id="conversationId" name="conversationID" value="@Model.ConversationID" />
             <input type="text" id="messageInput" name="content" class="form-control me-2"
                    placeholder="Type something..." autocomplete="off" />
-            <button id="sendBtn" type="button" class="btn btn-outline-secondary">
-                <i class="bi bi-send-fill"></i> 
+            <button id="sendBtn" type="button" class="send-button">
+                <i class="bi bi-send-fill"></i> Gửi
             </button>
         </form>
     </div>
 </div>
 
-
-<a asp-action="Index" asp-controller="Chat" class="btn btn-link mt-3">← Quay lại danh sách</a>
+<div class="text-center">
+    <a asp-action="Index" asp-controller="Chat" class="back-button">← Quay lại danh sách</a>
+</div>
 
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
@@ -125,7 +155,7 @@
             .withUrl("/chathub")
             .build();
 
-               connection.on("ReceiveMessage", msg => {
+        connection.on("ReceiveMessage", msg => {
             if (msg.conversationID !== convId) return;
 
             const isMine = msg.senderId === currentUserId;
@@ -136,14 +166,13 @@
             div.innerHTML = `
                 <div class="message-box ${isMine ? "message-right text-end" : "message-left"}">
                     ${msg.content}
-                    <div class="message-meta">${new Date(msg.sentAt).toLocaleString()}</div>
+                    <div class="message-meta">${new Date(msg.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ${new Date(msg.sentAt).toLocaleDateString()}</div>
                 </div>
             `;
 
             chatWin.appendChild(div);
             scrollToBottom();
         });
-
 
         (async function () {
             try {
@@ -162,6 +191,7 @@
                 sendMessage();
             }
         });
+
         async function sendMessage() {
             const input = document.getElementById("messageInput");
             const text = input.value.trim();

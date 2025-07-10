@@ -93,7 +93,7 @@
                                 </div>
                                 <div class="dropdown-divider m-0"></div>
                                 <div class="p-2 d-flex justify-content-between">
-                                    <a href="@Url.Action("SearchStudents", "Search", new { query = ViewBag.Query, provinceId = ViewBag.ProvinceId })" 
+                                    <a href="@Url.Action("SearchStudents", "Search", new { query = ViewBag.Query, provinceCode = ViewBag.ProvinceCode })" 
                                        class="btn btn-sm btn-outline-danger" id="clearSkills">Hủy chọn</a>
                                     <button type="submit" class="btn btn-sm btn-primary">Áp dụng</button>
                                 </div>
@@ -103,12 +103,12 @@
 
                     <div class="col-md-4 mb-3">
                     <label class="form-label">Tỉnh/Thành phố</label>
-                    <select name="provinceId" class="form-select">
+                    <select name="provinceCode" class="form-select">
                         <option value="">-- Tất cả --</option>
                         @foreach (var province in ViewBag.Provinces)
                         {
-                            var selected = ViewBag.ProvinceId != null && ViewBag.ProvinceId == province.ProvinceID;
-                            <option value="@province.ProvinceID" selected="@selected">
+                            var selected = ViewBag.ProvinceCode != null && ViewBag.ProvinceCode == province.ID;
+                            <option value="@province.ID" selected="@selected">
                                 @province.Name
                             </option>
                         }
@@ -185,34 +185,39 @@
                                     <div class="mt-3">
                                         <h6 class="skills-title">Kỹ năng</h6>
                                         <div>
-                                            @if (studentSkills != null && studentSkills.Count > 0)
-                                    {
+                                            @{
+                                                var userSkills = ViewBag.StudentSkills != null && ViewBag.StudentSkills.ContainsKey(student.Id) 
+                                                    ? ViewBag.StudentSkills[student.Id] 
+                                                    : new List<StudentFreelance.Models.StudentSkill>();
+                                            }
+                                            @if (userSkills != null && userSkills.Count > 0)
+                                            {
                                                 var skillCounter = 0;
                                                 var maxSkillsToShow = 5;
                                                 
-                                                @foreach (var ss in studentSkills)
+                                                @foreach (var ss in userSkills)
                                                 {
                                                     if (skillCounter < maxSkillsToShow)
-                                        {
-                                            <span class="skill-tag">
+                                                    {
+                                                        <span class="skill-tag">
                                                             @ss.Skill.SkillName
                                                             <span class="skill-level">(@ss.ProficiencyLevel.LevelName)</span>
-                                            </span>
+                                                        </span>
                                                         skillCounter++;
                                                     }
                                                 }
                                                 
-                                                @if (studentSkills.Count > maxSkillsToShow)
+                                                @if (userSkills.Count > maxSkillsToShow)
                                                 {
-                                                    <span class="skill-tag">+@(studentSkills.Count - maxSkillsToShow) khác</span>
-                                        }
-                                    }
-                                    else
-                                    {
+                                                    <span class="skill-tag">+@(userSkills.Count - maxSkillsToShow) khác</span>
+                                                }
+                                            }
+                                            else
+                                            {
                                                 <span class="text-muted">Chưa có kỹ năng</span>
-                                    }
-                                </div>
-                            </div>
+                                            }
+                                        </div>
+                                    </div>
                             </div>
                                 <div class="col-md-3 d-flex align-items-center justify-content-center">
                                     <a href="@Url.Action("Profile", "User", new { id = student.Id })" class="btn btn-view-profile btn-lg">
@@ -241,7 +246,7 @@
     <script>
         $(document).ready(function() {
             // Province dropdown using Select2
-            $('select[name="provinceId"]').select2({
+            $('select[name="provinceCode"]').select2({
                 placeholder: "Chọn tỉnh/thành phố...",
                 allowClear: true
             });

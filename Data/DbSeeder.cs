@@ -109,6 +109,16 @@ namespace StudentFreelance.Data
             context.SaveChanges();
         }
 
+        // Helper method to ensure we have location data in the database
+        // This is needed even though we're using the API for location data in the application
+        // because the database still has foreign key constraints
+        private static void EnsureLocationData(ApplicationDbContext context)
+        {
+            // We no longer need to seed location data since we're using the API
+            // The Address model has been updated to store API IDs and names directly
+            Console.WriteLine("Using API for location data - no need to seed location tables");
+        }
+
         public static async Task SeedSampleDataAsync(
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
@@ -133,7 +143,11 @@ namespace StudentFreelance.Data
                 context.SaveChanges();
             }
 
-            // 3. Default Users
+            // 3. Ensure we have location data for foreign key constraints
+            // This is now a no-op since we're using the API
+            EnsureLocationData(context);
+
+            // 4. Default Users
             var usersToSeed = new List<(string Email, string Password, string Role, string FullName)>
             {
                 ("admin@example.com", "Admin@123", "Admin", "Admin"),
@@ -165,17 +179,20 @@ namespace StudentFreelance.Data
                     // Create address for user with default values
                     var address = new Address
                     {
-                        ProvinceID = 1,
-                        DistrictID = 1,
-                        WardID = 1,
+                        ProvinceCode = "1",
+                        ProvinceName = "Hà Nội",
+                        DistrictCode = "001",
+                        DistrictName = "Quận Ba Đình",
+                        WardCode = "00001",
+                        WardName = "Phường Phúc Xá",
                         DetailAddress = "Số nhà mặc định",
-                        FullAddress = "Địa chỉ mặc định",
+                        FullAddress = "Số nhà mặc định, Phường Phúc Xá, Quận Ba Đình, Hà Nội",
                         IsActive = true
                     };
-                    
+
                     context.Addresses.Add(address);
                     context.SaveChanges();
-                    
+
                     var user = new ApplicationUser
                     {
                         UserName = email,
@@ -213,39 +230,39 @@ namespace StudentFreelance.Data
                     }
                 }
             }
-            
+
             // Helper methods for random data
             string GetRandomUniversity()
             {
                 string[] universities = {
-                    "FPT University", "Đại học Bách Khoa Hà Nội", "Đại học Quốc gia Hà Nội", 
+                    "FPT University", "Đại học Bách Khoa Hà Nội", "Đại học Quốc gia Hà Nội",
                     "Đại học Kinh tế TP.HCM", "Đại học Công nghệ TP.HCM", "Đại học Đà Nẵng",
                     "Đại học Cần Thơ", "Đại học Huế", "Đại học Ngoại thương"
                 };
                 return universities[new Random().Next(0, universities.Length)];
             }
-            
+
             string GetRandomMajor()
             {
                 string[] majors = {
-                    "Công nghệ thông tin", "Kỹ thuật phần mềm", "Khoa học máy tính", 
+                    "Công nghệ thông tin", "Kỹ thuật phần mềm", "Khoa học máy tính",
                     "Marketing", "Thiết kế đồ họa", "Quản trị kinh doanh",
                     "Kế toán", "Ngôn ngữ Anh", "Truyền thông đa phương tiện"
                 };
                 return majors[new Random().Next(0, majors.Length)];
             }
-            
+
             string GetRandomIndustry()
             {
                 string[] industries = {
-                    "Công nghệ", "Thương mại điện tử", "Fintech", 
+                    "Công nghệ", "Thương mại điện tử", "Fintech",
                     "Giáo dục", "Y tế", "Truyền thông",
                     "Bán lẻ", "Sản xuất", "Dịch vụ"
                 };
                 return industries[new Random().Next(0, industries.Length)];
             }
 
-            // 4. Seed Categories if empty
+            // 5. Seed Categories if empty
             if (!context.Categories.Any())
             {
                 var parentCategories = new[]
@@ -296,7 +313,7 @@ namespace StudentFreelance.Data
                 context.SaveChanges();
             }
 
-            // 5. Seed Skills
+            // 6. Seed Skills
             if (!context.Skills.Any())
             {
                 // Get categories
@@ -397,17 +414,17 @@ namespace StudentFreelance.Data
                     new Skill { SkillName = "Financial Analysis", CategoryID = accountingCategory.CategoryID, IsActive = true },
                     new Skill { SkillName = "Tax Consulting", CategoryID = accountingCategory.CategoryID, IsActive = true }
                 };
-                
+
                 context.Skills.AddRange(skills);
                 context.SaveChanges();
             }
 
-            // 6. Seed Project
+            // 7. Seed Project
             if (!context.Projects.Any())
             {
                 // Get business users
                 var businesses = await userManager.GetUsersInRoleAsync("Business");
-                
+
                 // Get categories
                 var webCategory = context.Categories.First(c => c.CategoryName == "Lập trình web");
                 var mobileCategory = context.Categories.First(c => c.CategoryName == "Lập trình mobile");
@@ -416,17 +433,98 @@ namespace StudentFreelance.Data
                 var socialMediaCategory = context.Categories.First(c => c.CategoryName == "Social Media");
                 var contentWritingCategory = context.Categories.First(c => c.CategoryName == "Viết nội dung");
                 var translationCategory = context.Categories.First(c => c.CategoryName == "Anh - Việt");
-                
+
                 // Get project statuses
                 var recruitingStatus = context.ProjectStatuses.First(s => s.StatusName == "Đang tuyển");
                 var inProgressStatus = context.ProjectStatuses.First(s => s.StatusName == "Đang tiến hành");
                 var completedStatus = context.ProjectStatuses.First(s => s.StatusName == "Đã hoàn thành");
                 var cancelledStatus = context.ProjectStatuses.First(s => s.StatusName == "Đã hủy");
-                
+
                 // Get project types
                 var fullTimeType = context.ProjectTypes.First(t => t.TypeName == "Toàn thời gian");
                 var partTimeType = context.ProjectTypes.First(t => t.TypeName == "Bán thời gian");
                 var projectBasedType = context.ProjectTypes.First(t => t.TypeName == "Theo dự án");
+                
+                // Create a few addresses for projects
+                var projectAddresses = new List<Address>();
+                
+                // Sample location data for projects
+                var sampleLocations = new[]
+                {
+                    (Code: "1", Name: "Hà Nội", Districts: new[]
+                    {
+                        (Code: "001", Name: "Quận Ba Đình", Wards: new[] 
+                        {
+                            (Code: "00001", Name: "Phường Phúc Xá"),
+                            (Code: "00004", Name: "Phường Trúc Bạch")
+                        }),
+                        (Code: "002", Name: "Quận Hoàn Kiếm", Wards: new[] 
+                        {
+                            (Code: "00037", Name: "Phường Hàng Bạc"),
+                            (Code: "00040", Name: "Phường Hàng Bồ")
+                        })
+                    }),
+                    (Code: "79", Name: "TP Hồ Chí Minh", Districts: new[]
+                    {
+                        (Code: "760", Name: "Quận 1", Wards: new[] 
+                        {
+                            (Code: "26734", Name: "Phường Bến Nghé"),
+                            (Code: "26737", Name: "Phường Bến Thành")
+                        }),
+                        (Code: "761", Name: "Quận 3", Wards: new[] 
+                        {
+                            (Code: "26767", Name: "Phường 1"),
+                            (Code: "26770", Name: "Phường 2")
+                        })
+                    }),
+                    (Code: "48", Name: "Đà Nẵng", Districts: new[]
+                    {
+                        (Code: "490", Name: "Quận Hải Châu", Wards: new[] 
+                        {
+                            (Code: "20194", Name: "Phường Hải Châu 1"),
+                            (Code: "20195", Name: "Phường Hải Châu 2")
+                        }),
+                        (Code: "491", Name: "Quận Thanh Khê", Wards: new[] 
+                        {
+                            (Code: "20227", Name: "Phường Tam Thuận"),
+                            (Code: "20230", Name: "Phường Thanh Khê Tây")
+                        })
+                    })
+                };
+                
+                for (int i = 0; i < 10; i++)
+                {
+                    var random = new Random();
+                    
+                    // Select random province
+                    var provinceIndex = random.Next(sampleLocations.Length);
+                    var province = sampleLocations[provinceIndex];
+                    
+                    // Select random district
+                    var districtIndex = random.Next(province.Districts.Length);
+                    var district = province.Districts[districtIndex];
+                    
+                    // Select random ward
+                    var wardIndex = random.Next(district.Wards.Length);
+                    var ward = district.Wards[wardIndex];
+                    
+                    var address = new Address
+                    {
+                        ProvinceCode = province.Code,
+                        ProvinceName = province.Name,
+                        DistrictCode = district.Code,
+                        DistrictName = district.Name,
+                        WardCode = ward.Code,
+                        WardName = ward.Name,
+                        DetailAddress = $"Địa chỉ dự án {i+1}",
+                        FullAddress = $"Địa chỉ dự án {i+1}, {ward.Name}, {district.Name}, {province.Name}",
+                        IsActive = true
+                    };
+                    
+                    context.Addresses.Add(address);
+                    context.SaveChanges();
+                    projectAddresses.Add(address);
+                }
                 
                 var projects = new List<Project>
                 {
@@ -442,6 +540,7 @@ namespace StudentFreelance.Data
                         CategoryID = webCategory.CategoryID,
                         StatusID = recruitingStatus.StatusID,
                         TypeID = fullTimeType.TypeID,
+                        AddressID = projectAddresses[0].AddressID,
                         IsActive = true
                     },
                     new Project
@@ -455,6 +554,7 @@ namespace StudentFreelance.Data
                         CategoryID = webCategory.CategoryID,
                         StatusID = inProgressStatus.StatusID,
                         TypeID = projectBasedType.TypeID,
+                        AddressID = projectAddresses[1].AddressID,
                         IsActive = true
                     },
                     new Project
@@ -468,6 +568,7 @@ namespace StudentFreelance.Data
                         CategoryID = webCategory.CategoryID,
                         StatusID = completedStatus.StatusID,
                         TypeID = fullTimeType.TypeID,
+                        AddressID = projectAddresses[2].AddressID,
                         IsActive = true
                     },
                     
@@ -483,6 +584,7 @@ namespace StudentFreelance.Data
                         CategoryID = mobileCategory.CategoryID,
                         StatusID = recruitingStatus.StatusID,
                         TypeID = fullTimeType.TypeID,
+                        AddressID = projectAddresses[3].AddressID,
                         IsActive = true
                     },
                     new Project
@@ -496,6 +598,7 @@ namespace StudentFreelance.Data
                         CategoryID = mobileCategory.CategoryID,
                         StatusID = recruitingStatus.StatusID,
                         TypeID = partTimeType.TypeID,
+                        AddressID = projectAddresses[4].AddressID,
                         IsActive = true
                     },
                     
@@ -511,6 +614,7 @@ namespace StudentFreelance.Data
                         CategoryID = dataCategory.CategoryID,
                         StatusID = recruitingStatus.StatusID,
                         TypeID = projectBasedType.TypeID,
+                        AddressID = projectAddresses[5].AddressID,
                         IsActive = true
                     },
                     
@@ -526,6 +630,7 @@ namespace StudentFreelance.Data
                         CategoryID = uiuxCategory.CategoryID,
                         StatusID = inProgressStatus.StatusID,
                         TypeID = partTimeType.TypeID,
+                        AddressID = projectAddresses[6].AddressID,
                         IsActive = true
                     },
                     
@@ -541,6 +646,7 @@ namespace StudentFreelance.Data
                         CategoryID = socialMediaCategory.CategoryID,
                         StatusID = recruitingStatus.StatusID,
                         TypeID = partTimeType.TypeID,
+                        AddressID = projectAddresses[7].AddressID,
                         IsActive = true
                     },
                     
@@ -556,6 +662,7 @@ namespace StudentFreelance.Data
                         CategoryID = contentWritingCategory.CategoryID,
                         StatusID = recruitingStatus.StatusID,
                         TypeID = projectBasedType.TypeID,
+                        AddressID = projectAddresses[8].AddressID,
                         IsActive = true
                     },
                     
@@ -571,19 +678,20 @@ namespace StudentFreelance.Data
                         CategoryID = translationCategory.CategoryID,
                         StatusID = recruitingStatus.StatusID,
                         TypeID = projectBasedType.TypeID,
+                        AddressID = projectAddresses[9].AddressID,
                         IsActive = true
                     }
                 };
-                
+
                 context.Projects.AddRange(projects);
                 context.SaveChanges();
             }
 
-            // 7. Seed ProjectSkillRequired
+            // 8. Seed ProjectSkillRequired
             if (!context.ProjectSkillsRequired.Any())
             {
                 var projects = context.Projects.ToList();
-                
+
                 // Get skills
                 var dotnetSkill = context.Skills.First(s => s.SkillName == ".NET");
                 var reactSkill = context.Skills.First(s => s.SkillName == "React");
@@ -604,7 +712,7 @@ namespace StudentFreelance.Data
                 var blogSkill = context.Skills.First(s => s.SkillName == "Blog Writing");
                 var techWritingSkill = context.Skills.First(s => s.SkillName == "Technical Writing");
                 var engViSkill = context.Skills.First(s => s.SkillName == "English to Vietnamese");
-                
+
                 // Get importance levels
                 var requiredLevel = context.ImportanceLevels.First(l => l.LevelName == "Bắt buộc");
                 var importantLevel = context.ImportanceLevels.First(l => l.LevelName == "Quan trọng");
@@ -687,30 +795,30 @@ namespace StudentFreelance.Data
                 context.SaveChanges();
             }
 
-            // 8. Seed StudentSkills
+            // 9. Seed StudentSkills
             if (!context.StudentSkills.Any())
             {
                 var students = await userManager.GetUsersInRoleAsync("Student");
                 var random = new Random();
-                
+
                 // Get skills
                 var skills = context.Skills.ToList();
-                
+
                 // Get proficiency levels
                 var beginnerLevel = context.ProficiencyLevels.First(l => l.LevelName == "Mới bắt đầu");
                 var intermediateLevel = context.ProficiencyLevels.First(l => l.LevelName == "Trung cấp");
                 var advancedLevel = context.ProficiencyLevels.First(l => l.LevelName == "Thành thạo");
                 var expertLevel = context.ProficiencyLevels.First(l => l.LevelName == "Chuyên gia");
-                
+
                 var levels = new[] { beginnerLevel, intermediateLevel, advancedLevel, expertLevel };
                 var webDevSkills = skills.Where(s => s.CategoryID == context.Categories.First(c => c.CategoryName == "Lập trình web").CategoryID).ToList();
                 var mobileDevSkills = skills.Where(s => s.CategoryID == context.Categories.First(c => c.CategoryName == "Lập trình mobile").CategoryID).ToList();
-                var designSkills = skills.Where(s => s.CategoryID == context.Categories.First(c => c.CategoryName == "UI/UX Design").CategoryID 
+                var designSkills = skills.Where(s => s.CategoryID == context.Categories.First(c => c.CategoryName == "UI/UX Design").CategoryID
                     || s.CategoryID == context.Categories.First(c => c.CategoryName == "Đồ họa").CategoryID).ToList();
                 var contentSkills = skills.Where(s => s.CategoryID == context.Categories.First(c => c.CategoryName == "Viết nội dung").CategoryID).ToList();
-                
+
                 var studentSkills = new List<StudentSkill>();
-                
+
                 // Assign skills to each student
                 foreach (var student in students)
                 {
@@ -723,7 +831,7 @@ namespace StudentFreelance.Data
                         2 => designSkills,
                         _ => contentSkills
                     };
-                    
+
                     // Assign 3-5 primary skills with higher proficiency
                     var numPrimarySkills = random.Next(3, 6);
                     for (int i = 0; i < numPrimarySkills && i < primarySkills.Count; i++)
@@ -731,11 +839,11 @@ namespace StudentFreelance.Data
                         var skill = primarySkills[random.Next(primarySkills.Count)];
                         // Higher chances of advanced or expert level for primary skills
                         var level = levels[random.Next(2, 4)];
-                        
+
                         // Skip if this skill is already added for this student
                         if (studentSkills.Any(ss => ss.UserID == student.Id && ss.SkillID == skill.SkillID))
                             continue;
-                            
+
                         studentSkills.Add(new StudentSkill
                         {
                             UserID = student.Id,
@@ -744,7 +852,7 @@ namespace StudentFreelance.Data
                             IsActive = true
                         });
                     }
-                    
+
                     // Assign 1-3 secondary skills with lower proficiency
                     var numSecondarySkills = random.Next(1, 4);
                     var secondarySkills = skills.Except(primarySkills).ToList();
@@ -753,11 +861,11 @@ namespace StudentFreelance.Data
                         var skill = secondarySkills[random.Next(secondarySkills.Count)];
                         // Lower chances of beginner or intermediate level for secondary skills
                         var level = levels[random.Next(0, 2)];
-                        
+
                         // Skip if this skill is already added for this student
                         if (studentSkills.Any(ss => ss.UserID == student.Id && ss.SkillID == skill.SkillID))
                             continue;
-                            
+
                         studentSkills.Add(new StudentSkill
                         {
                             UserID = student.Id,
@@ -767,18 +875,18 @@ namespace StudentFreelance.Data
                         });
                     }
                 }
-                
+
                 context.StudentSkills.AddRange(studentSkills);
                 context.SaveChanges();
             }
 
-            // 9. Seed StudentApplications
+            // 10. Seed StudentApplications
             if (!context.StudentApplications.Any())
             {
                 var students = await userManager.GetUsersInRoleAsync("Student");
                 var projects = context.Projects.ToList();
                 var random = new Random();
-                
+
                 var applications = new List<StudentApplication>
                 {
                     new StudentApplication
@@ -829,11 +937,11 @@ namespace StudentFreelance.Data
                         IsActive = true
                     }
                 };
-                
+
                 context.StudentApplications.AddRange(applications);
                 context.SaveChanges();
             }
-            
+
             // Helper method for generating cover letters
             string GetRandomCoverLetter()
             {
@@ -846,10 +954,10 @@ namespace StudentFreelance.Data
                     "Với niềm đam mê và kiến thức chuyên môn, tôi tự tin sẽ mang lại giá trị gia tăng cho dự án của quý công ty.",
                     "Tôi đã nghiên cứu kỹ về dự án và thấy rằng kỹ năng của mình rất phù hợp. Tôi mong muốn được đóng góp vào sự thành công của dự án này."
                 };
-                
+
                 return coverLetters[new Random().Next(coverLetters.Length)];
             }
-            
+
             // Helper method for generating portfolio links
             string GetRandomPortfolioLink()
             {
@@ -862,10 +970,10 @@ namespace StudentFreelance.Data
                     "https://linkedin.com/in/student-profile",
                     "https://codepen.io/student-demos"
                 };
-                
+
                 return portfolioLinks[new Random().Next(portfolioLinks.Length)];
             }
-            
+
             // Helper method for generating resume links
             string GetRandomResumeLink()
             {
@@ -878,11 +986,11 @@ namespace StudentFreelance.Data
                     "https://resume.io/r/student-cv",
                     "https://cv.student-portfolio.com/resume.pdf"
                 };
-                
+
                 return resumeLinks[new Random().Next(resumeLinks.Length)];
             }
 
-            // 10. Seed Messages
+            // 11. Seed Messages
             if (!context.Messages.Any())
             {
                 var student = await userManager.FindByEmailAsync("student@example.com");
@@ -891,7 +999,7 @@ namespace StudentFreelance.Data
 
                 // Tạo Conversation trước
                 var conversation = new Conversation
-                {                   
+                {
                     ProjectID = project.ProjectID,
                     ParticipantAID = student.Id,
                     ParticipantBID = business.Id,
@@ -930,7 +1038,7 @@ namespace StudentFreelance.Data
             }
 
 
-            // 11. Seed Transactions
+            // 12. Seed Transactions
             if (!context.Transactions.Any())
             {
                 var student = await userManager.FindByEmailAsync("student@example.com");
@@ -949,7 +1057,9 @@ namespace StudentFreelance.Data
                         TransactionDate = DateTime.Now.AddDays(-1),
                         Description = "Nạp tiền vào tài khoản",
                         StatusID = success.StatusID,
-                        IsActive = true
+                        IsActive = true,
+
+                        OrderCode = Guid.NewGuid().ToString()
                     },
                     new Transaction
                     {
@@ -960,13 +1070,15 @@ namespace StudentFreelance.Data
                         TransactionDate = DateTime.Now,
                         Description = "Thanh toán cho freelancer",
                         StatusID = success.StatusID,
-                        IsActive = true
+                        IsActive = true,
+
+                        OrderCode = Guid.NewGuid().ToString()
                     }
                 );
                 context.SaveChanges();
             }
 
-            // 12. Seed Ratings
+            // 13. Seed Ratings
             if (!context.Ratings.Any())
             {
                 var project = context.Projects.First();
@@ -998,29 +1110,29 @@ namespace StudentFreelance.Data
                 context.SaveChanges();
             }
 
-            // 13. Seed Reports
+            // 14. Seed Reports
             if (!context.Reports.Any())
             {
                 var students = await userManager.GetUsersInRoleAsync("Student");
                 var businesses = await userManager.GetUsersInRoleAsync("Business");
                 var projects = context.Projects.ToList();
                 var random = new Random();
-                
+
                 // Get report types
                 var spamType = context.ReportTypes.First(t => t.TypeName == "Spam");
                 var fraudType = context.ReportTypes.First(t => t.TypeName == "Lừa đảo");
                 var inappropriateType = context.ReportTypes.First(t => t.TypeName == "Nội dung không phù hợp");
                 var otherType = context.ReportTypes.First(t => t.TypeName == "Khác");
                 var reportTypes = new[] { spamType, fraudType, inappropriateType, otherType };
-                
+
                 // Get report statuses
                 var pendingStatus = context.ReportStatuses.First(s => s.StatusName == "Đang xử lý");
                 var processedStatus = context.ReportStatuses.First(s => s.StatusName == "Đã xử lý");
                 var cancelledStatus = context.ReportStatuses.First(s => s.StatusName == "Đã hủy");
                 var reportStatuses = new[] { pendingStatus, processedStatus, cancelledStatus };
-                
+
                 var reports = new List<Report>();
-                
+
                 // Generate 5-10 reports from students about businesses
                 int numStudentReports = random.Next(5, 11);
                 for (int i = 0; i < numStudentReports; i++)
@@ -1030,7 +1142,7 @@ namespace StudentFreelance.Data
                     var project = projects[random.Next(projects.Count)];
                     var reportType = reportTypes[random.Next(reportTypes.Length)];
                     var reportStatus = reportStatuses[random.Next(reportStatuses.Length)];
-                    
+
                     reports.Add(new Report
                     {
                         ReporterID = student.Id,
@@ -1043,7 +1155,7 @@ namespace StudentFreelance.Data
                         IsActive = true
                     });
                 }
-                
+
                 // Generate 3-7 reports from businesses about students
                 int numBusinessReports = random.Next(3, 8);
                 for (int i = 0; i < numBusinessReports; i++)
@@ -1053,7 +1165,7 @@ namespace StudentFreelance.Data
                     var project = projects[random.Next(projects.Count)];
                     var reportType = reportTypes[random.Next(reportTypes.Length)];
                     var reportStatus = reportStatuses[random.Next(reportStatuses.Length)];
-                    
+
                     reports.Add(new Report
                     {
                         ReporterID = business.Id,
@@ -1066,11 +1178,11 @@ namespace StudentFreelance.Data
                         IsActive = true
                     });
                 }
-                
+
                 context.Reports.AddRange(reports);
                 context.SaveChanges();
             }
-            
+
             // Helper method to generate report descriptions
             string GetReportDescription(string reportType)
             {
@@ -1083,7 +1195,7 @@ namespace StudentFreelance.Data
                             "Liên tục gửi cùng một tin nhắn."
                         };
                         return spamReasons[new Random().Next(spamReasons.Length)];
-                        
+
                     case "Lừa đảo":
                         string[] fraudReasons = {
                             "Yêu cầu thanh toán trước khi bắt đầu công việc.",
@@ -1091,7 +1203,7 @@ namespace StudentFreelance.Data
                             "Sử dụng ảnh đại diện và thông tin của người khác."
                         };
                         return fraudReasons[new Random().Next(fraudReasons.Length)];
-                        
+
                     case "Nội dung không phù hợp":
                         string[] inappropriateReasons = {
                             "Sử dụng ngôn ngữ thô tục, thiếu tôn trọng.",
@@ -1099,7 +1211,7 @@ namespace StudentFreelance.Data
                             "Chia sẻ thông tin cá nhân của người khác."
                         };
                         return inappropriateReasons[new Random().Next(inappropriateReasons.Length)];
-                        
+
                     default:
                         string[] otherReasons = {
                             "Không trả lời tin nhắn trong thời gian dài.",
@@ -1110,23 +1222,23 @@ namespace StudentFreelance.Data
                 }
             }
 
-            // 14. Seed Notifications
+            // 15. Seed Notifications
             if (!context.Notifications.Any())
             {
                 var students = await userManager.GetUsersInRoleAsync("Student");
                 var businesses = await userManager.GetUsersInRoleAsync("Business");
                 var projects = context.Projects.ToList();
                 var random = new Random();
-                
+
                 // Get notification types
                 var systemType = context.NotificationTypes.First(t => t.TypeName == "Hệ thống");
                 var projectType = context.NotificationTypes.First(t => t.TypeName == "Dự án");
                 var messageType = context.NotificationTypes.First(t => t.TypeName == "Tin nhắn");
                 var transactionType = context.NotificationTypes.First(t => t.TypeName == "Giao dịch");
-                
+
                 var notifications = new List<Notification>();
                 var userNotifications = new List<UserNotification>();
-                
+
                 // Generate system notifications for all users
                 foreach (var student in students)
                 {
@@ -1138,13 +1250,13 @@ namespace StudentFreelance.Data
                         NotificationDate = student.CreatedAt.AddMinutes(5),
                         IsActive = true
                     };
-                    
+
                     notifications.Add(notification);
-                    
+
                     // After adding to the list, we'll need to have an ID for relationships
                     context.Notifications.Add(notification);
                     context.SaveChanges();
-                    
+
                     userNotifications.Add(new UserNotification
                     {
                         UserID = student.Id,
@@ -1152,7 +1264,7 @@ namespace StudentFreelance.Data
                         IsRead = true
                     });
                 }
-                
+
                 foreach (var business in businesses)
                 {
                     var notification = new Notification
@@ -1163,13 +1275,13 @@ namespace StudentFreelance.Data
                         NotificationDate = business.CreatedAt.AddMinutes(5),
                         IsActive = true
                     };
-                    
+
                     notifications.Add(notification);
-                    
+
                     // After adding to the list, we'll need to have an ID for relationships
                     context.Notifications.Add(notification);
                     context.SaveChanges();
-                    
+
                     userNotifications.Add(new UserNotification
                     {
                         UserID = business.Id,
@@ -1177,7 +1289,7 @@ namespace StudentFreelance.Data
                         IsRead = true
                     });
                 }
-                
+
                 // Generate project notifications
                 foreach (var project in projects.Take(5))
                 {
@@ -1191,20 +1303,20 @@ namespace StudentFreelance.Data
                         NotificationDate = DateTime.Now.AddDays(-random.Next(1, 10)),
                         IsActive = true
                     };
-                    
+
                     notifications.Add(businessNotification);
-                    
+
                     // After adding to the list, we'll need to have an ID for relationships
                     context.Notifications.Add(businessNotification);
                     context.SaveChanges();
-                    
+
                     userNotifications.Add(new UserNotification
                     {
                         UserID = project.BusinessID,
                         NotificationID = businessNotification.NotificationID,
                         IsRead = random.Next(0, 2) == 1
                     });
-                    
+
                     // For students
                     var student = students[random.Next(students.Count)];
                     var studentNotification = new Notification
@@ -1216,13 +1328,13 @@ namespace StudentFreelance.Data
                         NotificationDate = DateTime.Now.AddDays(-random.Next(1, 5)),
                         IsActive = true
                     };
-                    
+
                     notifications.Add(studentNotification);
-                    
+
                     // After adding to the list, we'll need to have an ID for relationships
                     context.Notifications.Add(studentNotification);
                     context.SaveChanges();
-                    
+
                     userNotifications.Add(new UserNotification
                     {
                         UserID = student.Id,
@@ -1230,14 +1342,14 @@ namespace StudentFreelance.Data
                         IsRead = random.Next(0, 2) == 1
                     });
                 }
-                
+
                 // Generate message notifications
                 for (int i = 0; i < 10; i++)
                 {
                     var student = students[random.Next(students.Count)];
                     var business = businesses[random.Next(businesses.Count)];
                     var project = projects[random.Next(projects.Count)];
-                    
+
                     if (random.Next(0, 2) == 0)
                     {
                         // Student receives message
@@ -1251,13 +1363,13 @@ namespace StudentFreelance.Data
                             NotificationDate = DateTime.Now.AddDays(-random.Next(0, 14)),
                             IsActive = true
                         };
-                        
+
                         notifications.Add(messageNotification);
-                        
+
                         // After adding to the list, we'll need to have an ID for relationships
                         context.Notifications.Add(messageNotification);
                         context.SaveChanges();
-                        
+
                         userNotifications.Add(new UserNotification
                         {
                             UserID = student.Id,
@@ -1278,13 +1390,13 @@ namespace StudentFreelance.Data
                             NotificationDate = DateTime.Now.AddDays(-random.Next(0, 14)),
                             IsActive = true
                         };
-                        
+
                         notifications.Add(messageNotification);
-                        
+
                         // After adding to the list, we'll need to have an ID for relationships
                         context.Notifications.Add(messageNotification);
                         context.SaveChanges();
-                        
+
                         userNotifications.Add(new UserNotification
                         {
                             UserID = business.Id,
@@ -1293,7 +1405,7 @@ namespace StudentFreelance.Data
                         });
                     }
                 }
-                
+
                 // Generate transaction notifications
                 foreach (var business in businesses.Take(3))
                 {
@@ -1305,13 +1417,13 @@ namespace StudentFreelance.Data
                         NotificationDate = DateTime.Now.AddDays(-random.Next(1, 30)),
                         IsActive = true
                     };
-                    
+
                     notifications.Add(transactionNotification);
-                    
+
                     // After adding to the list, we'll need to have an ID for relationships
                     context.Notifications.Add(transactionNotification);
                     context.SaveChanges();
-                    
+
                     userNotifications.Add(new UserNotification
                     {
                         UserID = business.Id,
@@ -1319,7 +1431,7 @@ namespace StudentFreelance.Data
                         IsRead = random.Next(0, 2) == 1
                     });
                 }
-                
+
                 foreach (var student in students.Take(2))
                 {
                     var transactionNotification = new Notification
@@ -1330,13 +1442,13 @@ namespace StudentFreelance.Data
                         NotificationDate = DateTime.Now.AddDays(-random.Next(1, 15)),
                         IsActive = true
                     };
-                    
+
                     notifications.Add(transactionNotification);
-                    
+
                     // After adding to the list, we'll need to have an ID for relationships
                     context.Notifications.Add(transactionNotification);
                     context.SaveChanges();
-                    
+
                     userNotifications.Add(new UserNotification
                     {
                         UserID = student.Id,
@@ -1344,7 +1456,7 @@ namespace StudentFreelance.Data
                         IsRead = random.Next(0, 2) == 1
                     });
                 }
-                
+
                 // Add a broadcast notification
                 var broadcastNotification = new Notification
                 {
@@ -1355,11 +1467,11 @@ namespace StudentFreelance.Data
                     IsBroadcast = true,
                     IsActive = true
                 };
-                
+
                 notifications.Add(broadcastNotification);
                 context.Notifications.Add(broadcastNotification);
                 context.SaveChanges();
-                
+
                 // Add UserNotifications with Read status for some users
                 foreach (var user in students.Take(3).Concat(businesses.Take(2)))
                 {
@@ -1371,7 +1483,7 @@ namespace StudentFreelance.Data
                         ReadDate = DateTime.Now.AddDays(-2)
                     });
                 }
-                
+
                 context.UserNotifications.AddRange(userNotifications);
                 context.SaveChanges();
             }

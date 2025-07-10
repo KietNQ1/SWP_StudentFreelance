@@ -16,9 +16,11 @@ namespace StudentFreelance.ViewModels
         public string? CompanyName { get; set; }
         public string? Industry { get; set; }
 
-        public int? ProvinceID { get; set; }
-        public int? DistrictID { get; set; }
-        public int? WardID { get; set; }
+        // API location IDs
+        public string? ProvinceCode { get; set; }
+        public string? DistrictCode { get; set; }
+        public string? WardCode { get; set; }
+        
         public string? DetailAddress { get; set; }
         public string? FullAddress { get; set; }
         
@@ -61,7 +63,7 @@ namespace StudentFreelance.ViewModels
 
     public class OptionItem
     {
-        public int ID { get; set; }
+        public string ID { get; set; }
         public string Name { get; set; }
     }
 }

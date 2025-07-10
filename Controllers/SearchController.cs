@@ -4,10 +4,12 @@ using StudentFreelance.DbContext;
 using StudentFreelance.Models;
 using StudentFreelance.Models.Enums;
 using Microsoft.AspNetCore.Identity;
+using StudentFreelance.Services.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using StudentFreelance.ViewModels;
+using System;
 
 namespace StudentFreelance.Controllers
 {
@@ -16,114 +18,134 @@ namespace StudentFreelance.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole<int>> _roleManager;
+        private readonly ILocationApiService _locationApiService;
 
         public SearchController(
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
-            RoleManager<IdentityRole<int>> roleManager)
+            RoleManager<IdentityRole<int>> roleManager,
+            ILocationApiService locationApiService)
         {
             _context = context;
             _userManager = userManager;
             _roleManager = roleManager;
+            _locationApiService = locationApiService;
         }
 
         // Method to get provinces for dropdown
         public async Task<IActionResult> GetProvinces()
         {
-            var provinces = await _context.Provinces
-                .OrderBy(p => p.Name)
-                .ToListAsync();
+            var provinces = await _locationApiService.GetProvincesAsync();
+            
+            // Convert API provinces to OptionItem for the view
+            var provinceOptions = provinces.Select(p => new OptionItem
+            {
+                ID = p.Id,
+                Name = p.Name
+            }).OrderBy(p => p.Name).ToList();
                 
-            return PartialView("_ProvinceDropdown", provinces);
+            return PartialView("_ProvinceDropdown", provinceOptions);
         }
 
-        public async Task<IActionResult> SearchJob(string query, string location, int? categoryId, List<int> skillIds, int? userId, int? provinceId)
+        public async Task<IActionResult> SearchJob(string query, string location, int? categoryId, List<int> skillIds, int? userId, string provinceCode)
         {
-            // Lấy danh sách dự án từ model Project
+            Console.WriteLine($"[DEBUG] SearchJob called with provinceCode: {provinceCode}");
+            
+            // Lấy danh sách dự án
             var projects = _context.Projects
                 .Include(p => p.Business)
                 .Include(p => p.Category)
                 .Include(p => p.Status)
                 .Include(p => p.Type)
                 .Include(p => p.Address)
-                    .ThenInclude(a => a.Province)
                 .Include(p => p.ProjectSkillsRequired)
                     .ThenInclude(ps => ps.Skill)
                 .Include(p => p.ProjectSkillsRequired)
                     .ThenInclude(ps => ps.ImportanceLevel)
-                .Where(p => p.IsActive);
+                .Where(p => p.IsActive)
+                .AsQueryable();
 
-            // Tìm kiếm theo từ khóa trong tiêu đề hoặc mô tả
+            // Debug: Hiển thị thông tin địa chỉ của tất cả dự án
+            var allProjects = await projects.ToListAsync();
+            foreach (var project in allProjects)
+            {
+                Console.WriteLine($"[DEBUG] Project: {project.Title}, Address: {project.Address?.ProvinceName ?? "NULL"}, ProvinceCode: {project.Address?.ProvinceCode ?? "NULL"}");
+            }
+
+            // Tìm kiếm theo từ khóa
             if (!string.IsNullOrEmpty(query))
             {
                 projects = projects.Where(p => 
                     p.Title.Contains(query) || 
-                    p.Description.Contains(query));
+                    p.Description.Contains(query) || 
+                    p.Business.CompanyName.Contains(query));
             }
 
-            // Tìm kiếm theo địa điểm (location)
+            // Tìm kiếm theo địa điểm
             if (!string.IsNullOrEmpty(location))
             {
-                // Tìm các tỉnh/thành phố phù hợp với từ khóa location
-                var matchingProvinces = await _context.Provinces
-                    .Where(p => p.Name.Contains(location))
-                    .Select(p => p.ProvinceID)
-                    .ToListAsync();
-
-                if (matchingProvinces.Any())
-                {
-                    projects = projects.Where(p => 
-                        p.Address != null && 
-                        matchingProvinces.Contains(p.Address.ProvinceID.Value));
-                }
+                projects = projects.Where(p => 
+                    (p.Address != null && (
+                        p.Address.ProvinceName.Contains(location) || 
+                        p.Address.DistrictName.Contains(location) || 
+                        p.Address.WardName.Contains(location) || 
+                        p.Address.DetailAddress.Contains(location)
+                    )));
             }
 
-            // Lọc theo danh mục dựa trên model Category
+            // Lọc theo danh mục
             if (categoryId.HasValue)
             {
-                // Tìm danh mục theo CategoryID từ model Category
-                var selectedCategory = await _context.Categories.FindAsync(categoryId.Value);
-                if (selectedCategory != null)
+                // Kiểm tra xem đây có phải là danh mục cha không
+                var isParentCategory = await _context.Categories
+                    .AnyAsync(c => c.ParentCategoryID == categoryId);
+                
+                if (isParentCategory)
                 {
-                    if (selectedCategory.CategoryType == "Field")
-                    {
-                        // Nếu là danh mục chính, lấy cả dự án thuộc danh mục con
-                        var subCategoryIds = await _context.Categories
-                            .Where(c => c.ParentCategoryID == selectedCategory.CategoryID && c.IsActive)
-                            .Select(c => c.CategoryID)
-                            .ToListAsync();
-
-                        projects = projects.Where(p => 
-                            p.CategoryID == categoryId.Value || 
-                            subCategoryIds.Contains(p.CategoryID));
-                    }
-                    else
-                    {
-                        // Nếu là danh mục con, chỉ lấy dự án thuộc danh mục đó
-                        projects = projects.Where(p => p.CategoryID == categoryId.Value);
-                    }
+                    // Nếu là danh mục cha, lấy tất cả ID của danh mục con
+                    var subCategoryIds = await _context.Categories
+                        .Where(c => c.ParentCategoryID == categoryId)
+                        .Select(c => c.CategoryID)
+                        .ToListAsync();
+                    
+                    // Lọc theo danh mục con
+                    projects = projects.Where(p => subCategoryIds.Contains(p.CategoryID));
+                }
+                else
+                {
+                    // Nếu không có danh mục con, chỉ tìm theo danh mục hiện tại
+                    projects = projects.Where(p => p.CategoryID == categoryId);
                 }
             }
 
-            // Lọc theo kỹ năng dựa trên model Skill và ProjectSkillRequired
+            // Lọc theo kỹ năng
             if (skillIds != null && skillIds.Any())
             {
-                projects = projects.Where(p => 
-                    p.ProjectSkillsRequired.Any(ps => skillIds.Contains(ps.SkillID) && ps.IsActive));
+                projects = projects.Where(p => p.ProjectSkillsRequired.Any(ps => skillIds.Contains(ps.SkillID)));
             }
 
-            // Lọc theo người đăng (business) dựa trên model User
+            // Lọc theo doanh nghiệp
             if (userId.HasValue)
             {
                 projects = projects.Where(p => p.BusinessID == userId.Value);
             }
             
             // Lọc theo tỉnh/thành phố
-            if (provinceId.HasValue)
+            if (!string.IsNullOrEmpty(provinceCode))
             {
+                Console.WriteLine($"[DEBUG] Filtering projects by provinceCode: {provinceCode}");
+                
                 projects = projects.Where(p => 
                     p.Address != null && 
-                    p.Address.ProvinceID == provinceId.Value);
+                    p.Address.ProvinceCode == provinceCode);
+                
+                // Debug: Hiển thị số lượng kết quả sau khi lọc
+                var filteredProjects = await projects.ToListAsync();
+                Console.WriteLine($"[DEBUG] Filtered projects count: {filteredProjects.Count}");
+                foreach (var project in filteredProjects)
+                {
+                    Console.WriteLine($"[DEBUG] Filtered Project: {project.Title}, ProvinceCode: {project.Address?.ProvinceCode ?? "NULL"}");
+                }
             }
 
             // Lấy danh sách danh mục từ model Category
@@ -145,10 +167,13 @@ namespace StudentFreelance.Controllers
             var businessUsers = await _userManager.GetUsersInRoleAsync("Business");
             ViewBag.BusinessUsers = businessUsers.Where(u => u.IsActive).OrderBy(u => u.CompanyName).ToList();
 
-            // Lấy danh sách tỉnh/thành phố
-            ViewBag.Provinces = await _context.Provinces
-                .OrderBy(p => p.Name)
-                .ToListAsync();
+            // Lấy danh sách tỉnh/thành phố từ API
+            var apiProvinces = await _locationApiService.GetProvincesAsync();
+            ViewBag.Provinces = apiProvinces.Select(p => new
+            {
+                ID = p.Id,
+                Name = p.Name
+            }).OrderBy(p => p.Name).ToList();
 
             // Lấy các mức độ quan trọng từ model ImportanceLevel
             ViewBag.ImportanceLevels = await _context.ImportanceLevels
@@ -165,12 +190,12 @@ namespace StudentFreelance.Controllers
             ViewBag.CategoryId = categoryId;
             ViewBag.SkillIds = skillIds;
             ViewBag.UserId = userId;
-            ViewBag.ProvinceId = provinceId;
+            ViewBag.ProvinceCode = provinceCode;
 
             return View(await projects.ToListAsync());
         }
 
-        public async Task<IActionResult> SearchStudents(string query, List<int> skillIds, int? provinceId)
+        public async Task<IActionResult> SearchStudents(string query, List<int> skillIds, string provinceCode)
         {
             // Lấy danh sách sinh viên
             var allStudents = await _userManager.GetUsersInRoleAsync("Student");
@@ -184,8 +209,7 @@ namespace StudentFreelance.Controllers
                     s.Email.Contains(query) || 
                     s.UserName.Contains(query) || 
                     (s.University != null && s.University.Contains(query)) || 
-                    (s.Major != null && s.Major.Contains(query)))
-                    .AsQueryable();
+                    (s.Major != null && s.Major.Contains(query)));
             }
 
             // Lọc theo kỹ năng
@@ -195,77 +219,106 @@ namespace StudentFreelance.Controllers
                     .Where(ss => skillIds.Contains(ss.SkillID) && ss.IsActive)
                     .Select(ss => ss.UserID)
                     .ToListAsync();
-                
-                students = students.Where(s => studentIdsWithSkills.Contains(s.Id)).AsQueryable();
+
+                students = students.Where(s => studentIdsWithSkills.Contains(s.Id));
             }
 
             // Lọc theo tỉnh/thành phố
-            if (provinceId.HasValue)
+            if (!string.IsNullOrEmpty(provinceCode))
             {
+                // Lấy danh sách ID của sinh viên có địa chỉ ở tỉnh/thành phố đã chọn
                 var studentIdsInProvince = await _context.Users
-                    .Where(u => u.AddressID.HasValue)
-                    .Join(_context.Addresses.Where(a => a.ProvinceID == provinceId.Value),
-                        u => u.AddressID,
-                        a => a.AddressID,
-                        (u, a) => u.Id)
+                    .Where(u => u.Address != null && u.Address.ProvinceCode == provinceCode)
+                    .Select(u => u.Id)
                     .ToListAsync();
-                
-                students = students.Where(s => studentIdsInProvince.Contains(s.Id)).AsQueryable();
+
+                students = students.Where(s => studentIdsInProvince.Contains(s.Id));
             }
 
-            // Lấy danh sách kỹ năng
+            // Lấy danh sách kỹ năng từ model Skill
             var skills = await _context.Skills
                 .Include(s => s.Category)
                 .Where(s => s.IsActive)
                 .OrderBy(s => s.Category.CategoryName)
                 .ThenBy(s => s.SkillName)
                 .ToListAsync();
-            
-            // Lấy danh mục kỹ năng
+
+            // Lấy danh sách danh mục
             var categories = await _context.Categories
-                .Where(c => c.IsActive && c.CategoryType == "Skill")
+                .Where(c => c.IsActive)
                 .OrderBy(c => c.CategoryName)
                 .ToListAsync();
 
-            // Lấy danh sách tỉnh/thành phố
-            ViewBag.Provinces = await _context.Provinces
-                .OrderBy(p => p.Name)
-                .ToListAsync();
+            // Lấy danh sách tỉnh/thành phố từ API
+            var apiProvinces = await _locationApiService.GetProvincesAsync();
+            var provinces = apiProvinces.Select(p => new
+            {
+                ID = p.Id,
+                Name = p.Name
+            }).OrderBy(p => p.Name).ToList();
 
-            // Lấy danh sách kỹ năng của từng sinh viên
-            var studentSkills = await _context.StudentSkills
+            // Lấy thông tin kỹ năng của sinh viên
+            var studentsList = students.ToList();
+            var studentIds = studentsList.Select(s => s.Id).ToList();
+            var allStudentSkills = await _context.StudentSkills
+                .Where(ss => studentIds.Contains(ss.UserID) && ss.IsActive)
                 .Include(ss => ss.Skill)
                 .Include(ss => ss.ProficiencyLevel)
-                .Where(ss => ss.IsActive)
                 .ToListAsync();
 
-            // Chuyển đổi từ UserID sang Id nếu cần thiết
-            var studentSkillsDict = studentSkills
-                .GroupBy(ss => ss.UserID)
-                .ToDictionary(g => g.Key, g => g.ToList());
+            // Tạo Dictionary để lưu trữ kỹ năng theo ID sinh viên
+            var studentSkillsDict = new Dictionary<int, List<StudentSkill>>();
+            foreach (var skill in allStudentSkills)
+            {
+                if (!studentSkillsDict.ContainsKey(skill.UserID))
+                {
+                    studentSkillsDict[skill.UserID] = new List<StudentSkill>();
+                }
+                studentSkillsDict[skill.UserID].Add(skill);
+            }
 
-            // Tạo view model chứa cả danh sách sinh viên, kỹ năng và danh mục
+            // Tạo view model
             var viewModel = new SearchStudentsViewModel
             {
-                Students = students.ToList(),
+                Students = studentsList,
                 Skills = skills,
                 Categories = categories,
                 SelectedSkillIds = skillIds ?? new List<int>()
             };
 
-            ViewBag.StudentSkills = studentSkillsDict;
+            // Truyền dữ liệu qua ViewBag để tương thích với view hiện tại
             ViewBag.Query = query;
             ViewBag.SkillIds = skillIds;
-            ViewBag.ProvinceId = provinceId;
+            ViewBag.ProvinceCode = provinceCode;
+            ViewBag.Provinces = provinces;
+            ViewBag.StudentSkills = studentSkillsDict;
 
             return View(viewModel);
         }
 
-        public async Task<IActionResult> SearchBusinesses(string query, int? provinceId)
+        public async Task<IActionResult> SearchBusinesses(string query, string provinceCode)
         {
+            Console.WriteLine($"[DEBUG] SearchBusinesses called with provinceCode: {provinceCode}");
+            
             // Lấy danh sách doanh nghiệp
             var allBusinesses = await _userManager.GetUsersInRoleAsync("Business");
-            var businesses = allBusinesses.Where(u => u.IsActive).AsQueryable();
+            
+            // Lấy danh sách ID của tất cả doanh nghiệp
+            var businessIds = allBusinesses.Select(b => b.Id).ToList();
+            
+            // Lấy thông tin chi tiết của doanh nghiệp bao gồm địa chỉ
+            var businessesWithAddress = await _context.Users
+                .Include(u => u.Address)
+                .Where(u => businessIds.Contains(u.Id) && u.IsActive)
+                .ToListAsync();
+                
+            var businesses = businessesWithAddress.AsQueryable();
+            
+            // Debug: Hiển thị thông tin địa chỉ của tất cả doanh nghiệp
+            foreach (var business in businesses)
+            {
+                Console.WriteLine($"[DEBUG] Business: {business.FullName}, Address: {business.Address?.ProvinceName ?? "NULL"}, ProvinceCode: {business.Address?.ProvinceCode ?? "NULL"}");
+            }
 
             // Tìm kiếm theo tên công ty hoặc lĩnh vực
             if (!string.IsNullOrEmpty(query))
@@ -277,17 +330,21 @@ namespace StudentFreelance.Controllers
             }
 
             // Lọc theo tỉnh/thành phố
-            if (provinceId.HasValue)
+            if (!string.IsNullOrEmpty(provinceCode))
             {
-                var businessIdsInProvince = await _context.Users
-                    .Where(u => u.AddressID.HasValue)
-                    .Join(_context.Addresses.Where(a => a.ProvinceID == provinceId.Value),
-                        u => u.AddressID,
-                        a => a.AddressID,
-                        (u, a) => u.Id)
-                    .ToListAsync();
+                Console.WriteLine($"[DEBUG] Filtering by provinceCode: {provinceCode}");
                 
-                businesses = businesses.Where(b => businessIdsInProvince.Contains(b.Id)).AsQueryable();
+                businesses = businesses.Where(b => 
+                    b.Address != null && 
+                    b.Address.ProvinceCode == provinceCode)
+                    .AsQueryable();
+                
+                // Debug: Hiển thị số lượng kết quả sau khi lọc
+                Console.WriteLine($"[DEBUG] Filtered businesses count: {businesses.Count()}");
+                foreach (var business in businesses)
+                {
+                    Console.WriteLine($"[DEBUG] Filtered Business: {business.FullName}, ProvinceCode: {business.Address?.ProvinceCode ?? "NULL"}");
+                }
             }
 
             // Lấy số lượng dự án của mỗi doanh nghiệp
@@ -313,13 +370,16 @@ namespace StudentFreelance.Controllers
 
             ViewBag.ProjectCounts = businessIdToProjectCount;
 
-            // Lấy danh sách tỉnh/thành phố
-            ViewBag.Provinces = await _context.Provinces
-                .OrderBy(p => p.Name)
-                .ToListAsync();
+            // Lấy danh sách tỉnh/thành phố từ API
+            var apiProvinces = await _locationApiService.GetProvincesAsync();
+            ViewBag.Provinces = apiProvinces.Select(p => new
+            {
+                ID = p.Id,
+                Name = p.Name
+            }).OrderBy(p => p.Name).ToList();
 
             ViewBag.Query = query;
-            ViewBag.ProvinceId = provinceId;
+            ViewBag.ProvinceCode = provinceCode;
 
             return View(businesses.ToList());
         }

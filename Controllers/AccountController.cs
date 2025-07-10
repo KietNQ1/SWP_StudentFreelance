@@ -43,11 +43,14 @@ namespace StudentFreelance.Controllers
             // Create address for user with default values
             var address = new Address
             {
-                ProvinceID = 1,
-                DistrictID = 1,
-                WardID = 1,
+                ProvinceCode = "01",
+                ProvinceName = "Hà Nội",
+                DistrictCode = "001",
+                DistrictName = "Quận Ba Đình",
+                WardCode = "00001",
+                WardName = "Phường Phúc Xá",
                 DetailAddress = "Số nhà mặc định",
-                FullAddress = "Số nhà mặc định, Phường/Xã mặc định, Quận/Huyện mặc định, Tỉnh/Thành phố mặc định",
+                FullAddress = "Số nhà mặc định, Phường Phúc Xá, Quận Ba Đình, Hà Nội",
                 IsActive = true
             };
             
@@ -275,11 +278,14 @@ namespace StudentFreelance.Controllers
                 {
                     var address = new Address
                     {
-                        ProvinceID = 1,
-                        DistrictID = 1,
-                        WardID = 1,
+                        ProvinceCode = "01",
+                        ProvinceName = "Hà Nội",
+                        DistrictCode = "001",
+                        DistrictName = "Quận Ba Đình",
+                        WardCode = "00001",
+                        WardName = "Phường Phúc Xá",
                         DetailAddress = "Số nhà mặc định",
-                        FullAddress = "Số nhà mặc định, Phường/Xã mặc định, Quận/Huyện mặc định, Tỉnh/Thành phố mặc định",
+                        FullAddress = "Số nhà mặc định, Phường Phúc Xá, Quận Ba Đình, Hà Nội",
                         IsActive = true
                     };
                     
