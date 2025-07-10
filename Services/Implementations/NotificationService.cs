@@ -30,7 +30,7 @@ namespace StudentFreelance.Services.Implementations
         }
 
         public async Task<Notification> GetNotificationByIdAsync(int id)
-        {
+            {
             return await _context.Notifications
                 .Include(n => n.Type)
                 .Include(n => n.Sender)

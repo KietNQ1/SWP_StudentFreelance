@@ -167,6 +167,14 @@
                                                 <i class="bi bi-pencil-square"></i> Cập nhật trạng thái
                                             </a>
                                             
+                                            @if (application.Status == "PendingReview" || application.Status == "InProgress" || application.Status == "Completed")
+                                            {
+                                                <a asp-controller="ProjectSubmission" asp-action="ProjectSubmissions" asp-route-applicationId="@application.ApplicationID" 
+                                                    class="btn btn-success w-100 mb-2">
+                                                    <i class="bi bi-file-earmark-check"></i> Xem kết quả dự án
+                                                </a>
+                                            }
+                                            
                                             <a href="mailto:@application.UserEmail" class="btn btn-outline-primary w-100">
                                                 <i class="bi bi-envelope"></i> Liên hệ qua email
                                             </a>

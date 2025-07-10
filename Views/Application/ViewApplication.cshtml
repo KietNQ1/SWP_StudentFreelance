@@ -191,6 +191,23 @@
                             <i class="bi bi-envelope"></i> Liên hệ qua email
                         </a>
                     </div>
+
+                    @if (Model.Status == "Accepted" || Model.Status == "InProgress")
+                    {
+                        <div class="mt-3">
+                            <a asp-controller="ProjectSubmission" asp-action="Create" asp-route-applicationId="@Model.ApplicationID" class="btn btn-primary">
+                                <i class="fas fa-upload"></i> Nộp kết quả dự án
+                            </a>
+                        </div>
+                    }
+                    @if (Model.Status == "Accepted" || Model.Status == "InProgress" || Model.Status == "PendingReview" || Model.Status == "Completed")
+                    {
+                        <div class="mt-3">
+                            <a asp-controller="ProjectSubmission" asp-action="MySubmissions" asp-route-applicationId="@Model.ApplicationID" class="btn btn-info">
+                                <i class="fas fa-list"></i> Xem kết quả đã nộp
+                            </a>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
