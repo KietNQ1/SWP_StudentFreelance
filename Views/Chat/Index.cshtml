@@ -1,4 +1,15 @@
-﻿<style>
+﻿@model StudentFreelance.ViewModels.ConversationListViewModel
+@{
+    ViewData["Title"] = "Tin nhắn";
+}
+
+<style>
+    body {
+        background-color: #F8F8F8;
+        margin: 0;
+        padding: 0;
+    }
+
     .conversation-list {
         max-width: 800px;
         margin: auto;
@@ -17,7 +28,7 @@
 
         .conversation-card:hover {
             transform: translateY(-2px);
-            background-color: #f9f9f9;
+            background-color: #D3E671;
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
         }
 
@@ -44,7 +55,7 @@
 
     .conversation-project {
         font-size: 0.9rem;
-        color: #555;
+        color: #FF8989;
         margin-top: 2px;
     }
 
@@ -58,35 +69,88 @@
         font-weight: 500;
     }
 
-    .btn-outline-primary {
-        color: #354f6c !important;
-        border-color: #354f6c !important;
-        transition: all 0.2s ease-in-out;
+    .action-button {
+        background-color: #89AC46;
+        color: white;
+        padding: 8px 18px;
+        border: none;
+        border-radius: 30px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-block;
+        transition: background-color 0.3s ease-in-out;
     }
-      .btn-outline-primary:hover {
-            background-color: white;
-            color: #354f6c !important;
-            border-color: #354f6c !important;
-            border: 2px solid #354f6c;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
+
+        .action-button:hover {
+            background-color: #6f963a;
+            color: #fff;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
         }
 
-</style>
+    .form-select {
+        padding: 12px 16px;
+        padding-right: 40px; /* Tăng padding phải để tránh chữ đè icon */
+        border-radius: 10px;
+        border: 2px solid #000;
+        font-size: 1rem;
+        font-weight: 500;
+        color: #354f6c;
+        background-color: #fff;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        transition: border-color 0.2s ease-in-out;
+        cursor: pointer;
+        
+    }
 
-@model StudentFreelance.ViewModels.ConversationListViewModel
-@{
-    ViewData["Title"] = "Tin nhắn";
-}
+
+        .form-select:hover {
+            border-color: #000;
+        }
+
+    .d-flex {
+        display: flex;
+    }
+
+    .justify-content-between {
+        justify-content: space-between;
+    }
+
+    .align-items-center {
+        align-items: center;
+    }
+
+    .me-2 {
+        margin-right: 0.5rem;
+    }
+
+    .mb-4 {
+        margin-bottom: 1.5rem;
+    }
+
+    .mb-3 {
+        margin-bottom: 1rem;
+    }
+
+    .w-auto {
+        width: auto;
+    }
+
+    .d-inline-block {
+        display: inline-block;
+    }
+
+    .mt-4 {
+        margin-top: 1.5rem;
+    }
+</style>
 
 <div class="conversation-list mt-4">
     <h3 class="mb-4">Tin nhắn</h3>
 
+    <!-- Dropdown chọn dự án -->
     <form method="get" asp-action="Index" class="mb-3">
-        <select name="projectId" class="form-select w-auto d-inline-block"
-                onchange="this.form.submit()">
+        <select name="projectId" class="form-select w-auto d-inline-block" onchange="this.form.submit()">
             <option value="">Tất cả dự án</option>
             @foreach (var p in Model.Projects)
             {
@@ -97,37 +161,30 @@
         </select>
     </form>
 
+    <!-- Danh sách cuộc trò chuyện -->
     @foreach (var c in Model.Items)
     {
         <div class="conversation-card d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center">
-                <img src="@(c.OtherUserAvatar ?? "/images/default-avatar.png")"
-                     class="conversation-avatar" />
+                <img src="@(c.OtherUserAvatar ?? "/images/default-avatar.png")" class="conversation-avatar" />
                 <div>
                     <div class="d-flex align-items-center">
                         <span class="conversation-title me-2">@c.OtherUserName</span>
-
-                        @* Hiển thị badge số chưa đọc *@
                         @if (c.UnreadCount > 0)
                         {
-                            <span class="badge bg-danger conversation-badge">
-                                @c.UnreadCount
-                            </span>
+                            <span class="conversation-badge">@c.UnreadCount</span>
                         }
                     </div>
-
                     <div class="conversation-project">@c.ProjectTitle</div>
-
                     <div class="conversation-meta">
                         @c.LastMessageAt.ToLocalTime().ToString("g") – @c.LastMessage
                     </div>
                 </div>
             </div>
-
-            <a asp-action="Room" asp-route-id="@c.ConversationID"
-               class="btn btn-sm btn-outline-primary">
-                Mở
-            </a>
+            <div class="d-flex align-items-center">
+                <a asp-controller="Project" asp-action="Details" asp-route-id="@c.ProjectID" class="action-button me-2">Dự án</a>
+                <a asp-action="Room" asp-route-id="@c.ConversationID" class="action-button">xem</a>
+            </div>
         </div>
     }
 </div>
