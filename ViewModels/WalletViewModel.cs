@@ -19,6 +19,9 @@ namespace StudentFreelance.ViewModels
 
         [StringLength(200, ErrorMessage = "Description cannot be longer than 200 characters")]
         public string Description { get; set; }
+
+        [Required]
+        public string PaymentMethod { get; set; }
     }
 
     public class WithdrawViewModel

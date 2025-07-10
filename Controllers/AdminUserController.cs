@@ -6,6 +6,7 @@ using StudentFreelance.Models;
 
 namespace StudentFreelance.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class AdminUserController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
