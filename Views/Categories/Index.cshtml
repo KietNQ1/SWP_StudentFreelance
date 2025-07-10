@@ -3,7 +3,8 @@
 @{
     ViewData["Title"] = "Category List";
 }
-
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="~/css/Categoryindex.css" />
 <h2>@ViewData["Title"]</h2>
 
 @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
@@ -52,3 +53,4 @@
         }
     </tbody>
 </table>
+

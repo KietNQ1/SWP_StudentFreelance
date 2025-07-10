@@ -83,14 +83,22 @@ namespace StudentFreelance.Services.Implementations
 
         public async Task<Project> CreateProjectAsync(Project project)
         {
-            project.CreatedAt = DateTime.UtcNow;
-            project.UpdatedAt = DateTime.UtcNow;
-            project.IsActive = true;
-            
-            _context.Projects.Add(project);
-            await _context.SaveChangesAsync();
-            
-            return project;
+            try
+            {
+                // Set default values
+                project.CreatedAt = DateTime.UtcNow;
+                project.UpdatedAt = DateTime.UtcNow;
+                project.IsActive = true;
+                
+                _context.Projects.Add(project);
+                await _context.SaveChangesAsync();
+                
+                return project;
+            }
+            catch (Exception ex)
+            {
+                throw; // Re-throw to be handled by the controller
+            }
         }
 
         public async Task<Project> UpdateProjectAsync(Project project)

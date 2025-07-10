@@ -4,19 +4,15 @@
     ViewData["Title"] = "Withdraw Funds";
 }
 
-@section Styles {
-    <link rel="stylesheet" href="~/css/wallet/withdraw.css" asp-append-version="true" />
-}
-
 <div class="container mt-4">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <form asp-action="Withdraw" method="post">
-                <div class="card">
-                    <div class="card-header bg-warning">
-                        <h3>Withdraw Funds</h3>
-                    </div>
-                    <div class="card-body">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h3>Withdraw Funds</h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Withdraw" method="post">
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                         
                         <div class="mb-3">
@@ -60,9 +56,9 @@
                             <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
                             <button type="submit" class="btn btn-warning">Withdraw Funds</button>
                         </div>
-                    </div>
+                    </form>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>

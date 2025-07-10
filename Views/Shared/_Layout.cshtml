@@ -87,11 +87,10 @@
                         <i class="fas fa-chevron-down"></i>
                         <div class="dropdown-menu">
                             <a asp-controller="Project" asp-action="Index" class="dropdown-item">Browse Projects <span class="new-label">Hot</span></a>
-                            <a asp-controller="Search" asp-action="SearchJob" class="dropdown-item">Search Projects</a>
+                            <a asp-controller="Search" asp-action="SearchJob" class="dropdown-item">Find Projects</a>
                             <a asp-controller="Search" asp-action="SearchStudents" class="dropdown-item">Find Students</a>
                             <a asp-controller="Search" asp-action="SearchBusinesses" class="dropdown-item">Find Businesses</a>
-                            <a href="#">Design & Creative</a>
-                            <a href="#">Sales & Marketing</a>
+                            
                         </div>
                     </div>
 
@@ -99,18 +98,8 @@
                     <a asp-controller="Project" asp-action="Index" class="nav-link">Projects</a>
 
                     <!-- Enterprise -->
-                    <a asp-controller="Search" asp-action="SearchJob" class="nav-link">Enterprise</a>
+                    <a asp-controller="Search" asp-action="SearchJob" class="nav-link">Business</a>
 
-                    <!-- Search -->
-                    <div class="nav-item dropdown explore-dropdown">
-                        <span>Search</span>
-                        <i class="fas fa-chevron-down"></i>
-                        <div class="dropdown-menu">
-                            <a asp-controller="Search" asp-action="SearchJob" class="dropdown-item">Search Projects</a>
-                            <a asp-controller="Search" asp-action="SearchStudents" class="dropdown-item">Search Students</a>
-                            <a asp-controller="Search" asp-action="SearchBusinesses" class="dropdown-item">Search Businesses</a>
-                        </div>
-                    </div>
 
                     <!-- Explore -->
                     <div class="nav-item dropdown explore-dropdown">
@@ -120,16 +109,13 @@
                             <a href="#">STJobs VIP <span class="new-label">New</span></a>
                             <a href="#">Answers</a>
                             <a href="#">Community</a>
-                            <a href="#">Guides</a>
                             <a asp-controller="Report" asp-action="ListReport" class="dropdown-item">Report Management</a>
                             <a asp-controller="Report" asp-action="Create" class="dropdown-item">Submit Report </a>
                             <a href="#">Learn</a>
-                            <a href="#">Blog</a>
                         </div>
                     </div>
 
-                    <!-- About -->
-                    <a href="#" class="nav-link">About STJobs</a>
+                    
 
 
                     @if (SignInManager.IsSignedIn(User))
@@ -173,11 +159,14 @@
                             <div class="dropdown user-dropdown">
                                 <div class="avatar-wrapper" onclick="toggleUserDropdown(event)" style="cursor: pointer;">
                                     <img src="https://i.pravatar.cc/36" alt="Avatar" class="avatar-img" />
-                                    <span class="nav-link text-dark">Xin chào, @fullName!</span>
+                                    <span class="nav-link text-dark"> @fullName!</span>
                                 </div>
 
                                 <div class="dropdown-menu" id="userDropdownMenu">
-                                    <a asp-controller="AdminUser" asp-action="Index" class="dropdown-item">📊 Dashboard</a>
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <a asp-controller="AdminUser" asp-action="Index" class="dropdown-item">📊 Dashboard</a>
+                                    }
                                     <a asp-controller="User" asp-action="Profile" class="dropdown-item">👤 Profile</a>
                                     <a asp-controller="Wallet" asp-action="Index" class="dropdown-item">💰 My Wallet</a>
                                     <a class="nav-link" asp-controller="Chat" asp-action="Index">

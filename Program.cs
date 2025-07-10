@@ -4,6 +4,7 @@ using StudentFreelance.DbContext;
 using StudentFreelance.Models;
 using StudentFreelance.Data;
 using StudentFreelance.Models.Email;
+using StudentFreelance.Models.PayOS;
 using StudentFreelance.Services.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +23,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
+
+
 
 // 3. Configure Authentication Cookie
 builder.Services.ConfigureApplicationCookie(options =>
@@ -54,9 +57,15 @@ builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IApplicationServ
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.INotificationService, StudentFreelance.Services.Implementations.NotificationService>();
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IProjectSubmissionService, StudentFreelance.Services.Implementations.ProjectSubmissionService>();
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.ITransactionService, StudentFreelance.Services.Implementations.TransactionService>();
+builder.Services.AddScoped<IBankAccountService, BankAccountService>();
+builder.Services.AddScoped<IPayOSService, PayOSService>();
+//builder.Services.AddHttpClient<IPayOSService, PayOSService>();
 
+// Đăng ký cấu hình PayOS
+builder.Services.Configure<PayOSConfig>(builder.Configuration.GetSection("PayOS"));
 // 4. Add MVC support
 builder.Services.AddControllersWithViews();
+
 
 var app = builder.Build();
 
@@ -67,7 +76,7 @@ using (var scope = app.Services.CreateScope())
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
 
-    db.Database.Migrate();
+    //db.Database.Migrate();
 
     DbSeeder.SeedEnums(db); // enum tables: statuses, types, etc.
     await DbSeeder.SeedSampleDataAsync(db, userManager, roleManager); // Identity + related data
@@ -95,3 +104,5 @@ app.MapControllerRoute(
 // Route cho SignalR hub
 app.MapHub<StudentFreelance.Hubs.ChatHub>("/chathub");
 app.Run();
+
+

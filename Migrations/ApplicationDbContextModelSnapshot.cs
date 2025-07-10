@@ -17,7 +17,7 @@ namespace StudentFreelance.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.17")
+                .HasAnnotation("ProductVersion", "8.0.18")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -351,6 +351,42 @@ namespace StudentFreelance.Migrations
                     b.HasIndex("StatusID");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("StudentFreelance.Models.BankAccount", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AccountHolderName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("AccountNumber")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("BankName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserID")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("BankAccounts");
                 });
 
             modelBuilder.Entity("StudentFreelance.Models.Category", b =>
@@ -1266,6 +1302,10 @@ namespace StudentFreelance.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<string>("OrderCode")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<int?>("ProjectID")
                         .HasColumnType("int");
 
@@ -1453,26 +1493,17 @@ namespace StudentFreelance.Migrations
 
             modelBuilder.Entity("StudentFreelance.Models.Address", b =>
                 {
-                    b.HasOne("StudentFreelance.Models.District", "District")
+                    b.HasOne("StudentFreelance.Models.District", null)
                         .WithMany("Addresses")
-                        .HasForeignKey("DistrictID")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("DistrictID");
 
-                    b.HasOne("StudentFreelance.Models.Province", "Province")
+                    b.HasOne("StudentFreelance.Models.Province", null)
                         .WithMany("Addresses")
-                        .HasForeignKey("ProvinceID")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("ProvinceID");
 
-                    b.HasOne("StudentFreelance.Models.Ward", "Ward")
+                    b.HasOne("StudentFreelance.Models.Ward", null)
                         .WithMany("Addresses")
-                        .HasForeignKey("WardID")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("District");
-
-                    b.Navigation("Province");
-
-                    b.Navigation("Ward");
+                        .HasForeignKey("WardID");
                 });
 
             modelBuilder.Entity("StudentFreelance.Models.ApplicationUser", b =>
@@ -1491,6 +1522,17 @@ namespace StudentFreelance.Migrations
                     b.Navigation("Address");
 
                     b.Navigation("Status");
+                });
+
+            modelBuilder.Entity("StudentFreelance.Models.BankAccount", b =>
+                {
+                    b.HasOne("StudentFreelance.Models.ApplicationUser", "User")
+                        .WithMany("BankAccounts")
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("StudentFreelance.Models.Category", b =>
@@ -1902,6 +1944,8 @@ namespace StudentFreelance.Migrations
 
             modelBuilder.Entity("StudentFreelance.Models.ApplicationUser", b =>
                 {
+                    b.Navigation("BankAccounts");
+
                     b.Navigation("SentNotifications");
 
                     b.Navigation("UserNotifications");

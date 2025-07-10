@@ -1,0 +1,66 @@
+﻿@model List<StudentFreelance.Models.Transaction>
+
+@{
+    ViewBag.Title = "Lịch sử giao dịch";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2 class="mb-3">Lịch sử giao dịch</h2>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success">@TempData["Message"]</div>
+}
+
+<form method="get" asp-action="History" class="form-inline mb-3">
+    <label for="typeId" class="mr-2">Lọc theo loại:</label>
+    <select name="typeId" class="form-control mr-2">
+        <option value="">Tất cả</option>
+        @foreach (var type in (List<StudentFreelance.Models.Enums.TransactionType>)ViewBag.TransactionTypes)
+        {
+            <option value="@type.TypeID"
+                    selected="@(ViewBag.CurrentTypeId != null && ViewBag.CurrentTypeId == type.TypeID ? "selected" : null)">
+                @type.TypeName
+            </option>
+        }
+    </select>
+
+
+
+    <button type="submit" class="btn btn-secondary">Lọc</button>
+</form>
+
+<table class="table table-bordered table-striped">
+    <thead class="thead-dark">
+        <tr>
+            <th>Mã GD</th>
+            <th>Loại</th>
+            <th>Số tiền</th>
+            <th>Trạng thái</th>
+            <th>Ngày giao dịch</th>
+            <th>Ghi chú</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model == null || Model.Count == 0)
+        {
+            <tr>
+                <td colspan="6" class="text-center">Chưa có giao dịch nào.</td>
+            </tr>
+        }
+        else
+        {
+            foreach (var t in Model)
+            {
+                <tr>
+                    <td>@t.TransactionID</td>
+                    <td>@t.Type?.TypeName</td>
+                    <td>@t.Amount.ToString("N0") VNĐ</td>
+                    <td>@t.Status?.StatusName</td>
+                    <td>@t.TransactionDate.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@t.Description</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
