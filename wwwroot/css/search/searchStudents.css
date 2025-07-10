@@ -15,7 +15,8 @@ body {
     min-height: 100vh;
 }
 
-.container {
+/* Make container styling specific to the main content and not affect footer */
+.container:not(.footer .container) {
     background-color: rgba(255, 255, 255, 0.9);
     padding: 25px;
     border-radius: 8px;

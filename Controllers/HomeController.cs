@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StudentFreelance.DbContext;
 using StudentFreelance.Models;
+using StudentFreelance.Services.Interfaces;
 
 namespace StudentFreelance.Controllers
 {
@@ -10,11 +11,16 @@ namespace StudentFreelance.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly ApplicationDbContext _context;
+        private readonly ILocationApiService _locationApiService;
 
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
+        public HomeController(
+            ILogger<HomeController> logger, 
+            ApplicationDbContext context,
+            ILocationApiService locationApiService)
         {
             _logger = logger;
             _context = context;
+            _locationApiService = locationApiService;
         }
 
         public async Task<IActionResult> Index()
@@ -25,10 +31,14 @@ namespace StudentFreelance.Controllers
                 .OrderBy(s => s.SkillName)
                 .ToListAsync();
 
-            // Lấy danh sách tất cả tỉnh/thành phố cho dropdown
-            ViewBag.AllProvinces = await _context.Provinces
-                .OrderBy(p => p.Name)
-                .ToListAsync();
+            // Lấy danh sách tất cả tỉnh/thành phố từ API cho dropdown
+            var apiProvinces = await _locationApiService.GetProvincesAsync();
+            ViewBag.AllProvinces = apiProvinces.Select(p => new Province
+            {
+                ProvinceID = int.Parse(p.Id),
+                Name = p.Name,
+                Code = p.Slug ?? p.Id
+            }).OrderBy(p => p.Name).ToList();
 
             return View();
         }

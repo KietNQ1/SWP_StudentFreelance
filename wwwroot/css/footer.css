@@ -37,6 +37,20 @@ body {
     padding: 4rem 0 2rem;
 }
 
+/* More specific selector for footer container to avoid conflicts */
+.footer .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    background-color: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    border-top: none;
+    margin-top: 0;
+    z-index: 1;
+    position: relative;
+}
+
 .footer-content {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -225,6 +239,19 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 2rem;
+    position: relative;
+    z-index: 1;
+}
+
+/* Override any container styling from other CSS files for footer */
+.footer .container {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    border-top: none !important;
+    margin-top: 0 !important;
+    padding: 0 2rem !important;
+    max-width: 1200px;
     position: relative;
     z-index: 1;
 }

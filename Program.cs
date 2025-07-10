@@ -50,6 +50,7 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Emai
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IEmailSender, StudentFreelance.Services.Implementations.GmailEmailSender>();
 
 // Register application services
+builder.Services.AddHttpClient<StudentFreelance.Services.Interfaces.ILocationApiService, StudentFreelance.Services.Implementations.LocationApiService>();
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IProjectService, StudentFreelance.Services.Implementations.ProjectService>();
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IReportService, StudentFreelance.Services.Implementations.ReportService>();
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IApplicationService, StudentFreelance.Services.Implementations.ApplicationService>();
