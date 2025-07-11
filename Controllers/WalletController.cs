@@ -8,12 +8,13 @@ using System.Threading.Tasks;
 using StudentFreelance.DbContext;
 namespace StudentFreelance.Controllers;
 using Microsoft.EntityFrameworkCore;
-
+using StudentFreelance.Helpers;
 
 [Authorize]
 
 public class WalletController : Controller
 {
+    private readonly IConfiguration _configuration;
     private readonly IBankAccountService _bankAccountService;
     private readonly IPayOSService _payOSService;
     private readonly ITransactionService _transactionService;
@@ -25,13 +26,15 @@ public class WalletController : Controller
         UserManager<ApplicationUser> userManager,
         IBankAccountService bankAccountService,
         IPayOSService payOSService,
-        ApplicationDbContext context)
+        ApplicationDbContext context,
+        IConfiguration configuration)
     {
         _transactionService = transactionService;
         _userManager = userManager;
         _bankAccountService = bankAccountService;
         _payOSService = payOSService;
         _context = context;
+        _configuration = configuration;
     }
 
 
@@ -123,8 +126,8 @@ public class WalletController : Controller
         }
 
         // 1. Tạo giao dịch Pending
-        //Nếu chọn E - Wallet → Gọi PayOS
-        if (model.PaymentMethod == "eWallet")
+        //Nếu chọn bankTransfer → Gọi PayOS
+        if (model.PaymentMethod == "bankTransfer")
         {
             // orderCode phải là số nguyên duy nhất, dùng timestamp kiểu long
             long orderCode = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -163,6 +166,16 @@ public class WalletController : Controller
             return Redirect(paymentUrl);
         }
 
+        if (model.PaymentMethod == "eWallet")
+        {
+            // Gọi sang action khởi tạo VNPAY
+            return RedirectToAction("CreateVnPayPayment", new
+            {
+                amount = model.Amount,
+                description = model.Description
+            });
+        }
+
         if (model.PaymentMethod == "creditCard")
         {
             var success = await _transactionService.ProcessDepositAsync(
@@ -186,22 +199,7 @@ public class WalletController : Controller
         ModelState.AddModelError("", "Hiện tại chỉ hỗ trợ E-Wallet thông qua PayOS.");
         return View(model); ;
     
-        //var success = await _transactionService.ProcessDepositAsync(
-        //    user.Id, 
-        //    model.Amount, 
-        //    model.Description ?? $"Deposit of {model.Amount:C}"
-        //);
-
-        //if (success)
-        //{
-        //    TempData["SuccessMessage"] = $"Successfully deposited {model.Amount:C} to your wallet.";
-        //    return RedirectToAction(nameof(Index));
-        //}
-        //else
-        //{
-        //    ModelState.AddModelError("", "Failed to process deposit. Please try again.");
-        //    return View(model);
-        //}
+       
     }
 
     //[HttpPost]
@@ -258,6 +256,121 @@ public class WalletController : Controller
         await _transactionService.CreatePendingDeposit(user.Id, model.Amount, model.Description, orderCode);
 
         return Redirect(checkoutUrl);
+    }
+
+    public async Task<IActionResult> CreateVnPayPayment(decimal amount, string? description)
+    {
+        var config = _configuration.GetSection("VnPay");
+        var vnPay = new VnPayLibrary();
+
+        // Tạo mã đơn hàng duy nhất
+        var orderId = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
+        var amountInVND = ((int)(amount * 100)).ToString(); // VNPAY yêu cầu nhân 100
+
+        vnPay.AddRequestData("vnp_Version", "2.1.0");
+        vnPay.AddRequestData("vnp_Command", "pay");
+        vnPay.AddRequestData("vnp_TmnCode", config["TmnCode"]);
+        vnPay.AddRequestData("vnp_Amount", amountInVND);
+        vnPay.AddRequestData("vnp_CreateDate", DateTime.Now.ToString("yyyyMMddHHmmss"));
+        vnPay.AddRequestData("vnp_CurrCode", "VND");
+        vnPay.AddRequestData("vnp_IpAddr", HttpContext.Connection.RemoteIpAddress?.ToString());
+        vnPay.AddRequestData("vnp_Locale", "vn");
+        vnPay.AddRequestData("vnp_OrderInfo", description ?? "Nạp tiền qua VNPAY");
+        vnPay.AddRequestData("vnp_OrderType", "other");
+        vnPay.AddRequestData("vnp_ReturnUrl", config["ReturnUrl"]);
+        vnPay.AddRequestData("vnp_TxnRef", orderId);
+        vnPay.AddRequestData("vnp_SecureHashType", "HMACSHA512");
+
+        // ✅ Truy vấn từ DB
+        var type = await _context.TransactionTypes.FirstOrDefaultAsync(t => t.TypeName == "Nạp tiền");
+        var status = await _context.TransactionStatuses.FirstOrDefaultAsync(s => s.StatusName == "Đang xử lý");
+
+        if (type == null || status == null)
+        {
+            return Content("Thiếu TransactionType hoặc TransactionStatus trong database. Hãy kiểm tra bảng dữ liệu.");
+        }
+
+        // ✅ Lưu transaction
+        var userId = _userManager.GetUserId(User);
+        _context.Transactions.Add(new Transaction
+        {
+            UserID = int.Parse(userId),
+            Amount = amount,
+            Description = description ?? "Nạp tiền qua VNPAY",
+            TypeID = type.TypeID,
+            StatusID = status.StatusID,
+            TransactionDate = DateTime.Now,
+            OrderCode = orderId,
+            IsActive = true
+        });
+        await _context.SaveChangesAsync();
+
+        // ✅ Tạo URL từ PaymentUrl + HashSecret từ config
+        var paymentUrl = vnPay.CreateRequestUrl(config["PaymentUrl"], config["HashSecret"]);
+
+        // ✅ In log để kiểm tra
+        Console.WriteLine("========= VNPay Payment Debug =========");
+        Console.WriteLine("Payment URL: " + paymentUrl);
+        Console.WriteLine("Raw request data (for hash):");
+        foreach (var kv in vnPay.GetRequestData())
+        {
+            Console.WriteLine($"{kv.Key} = {kv.Value}");
+        }
+        Console.WriteLine("=======================================");
+
+        return Redirect(paymentUrl);
+    }
+
+
+    [HttpGet]
+    public async Task<IActionResult> VnPayCallback()
+    {
+        var config = _configuration.GetSection("VnPay");
+        var vnPay = new VnPayLibrary();
+
+        var responseParams = Request.Query;
+        foreach (var key in responseParams.Keys)
+        {
+            if (key.StartsWith("vnp_"))
+                vnPay.AddResponseData(key, responseParams[key]);
+        }
+
+        var isValid = vnPay.ValidateSignature(config["HashSecret"]);
+        if (!isValid)
+        {
+            return Content("Sai chữ ký hash – giao dịch bị nghi ngờ giả mạo.");
+        }
+
+        var orderCode = vnPay.GetResponseData("vnp_TxnRef");
+        var responseCode = vnPay.GetResponseData("vnp_ResponseCode");
+
+        var transaction = await _context.Transactions.FirstOrDefaultAsync(t => t.OrderCode == orderCode);
+        if (transaction == null)
+        {
+            return Content("Không tìm thấy giao dịch.");
+        }
+
+        // Lấy status từ DB
+        var statusName = responseCode == "00" ? "Thành công" : "Đã hủy";
+        var status = await _context.TransactionStatuses.FirstOrDefaultAsync(s => s.StatusName == statusName);
+
+        if (status == null)
+        {
+            return Content("Không tìm thấy trạng thái phù hợp trong database.");
+        }
+
+        transaction.StatusID = status.StatusID;
+        await _context.SaveChangesAsync();
+
+        if (statusName == "Thành công")
+        {
+            // cộng tiền vào WalletBalance
+            var user = await _userManager.FindByIdAsync(transaction.UserID.ToString());
+            user.WalletBalance += transaction.Amount;
+            await _userManager.UpdateAsync(user);
+        }
+
+        return View("PaymentResult", statusName == "Thành công" ? "success" : "fail"); // hoặc view riêng
     }
 
 

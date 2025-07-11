@@ -1,0 +1,20 @@
+[11/07/2025 10:43:29 CH] PayOS Response:
+{
+  "code": "00",
+  "desc": "success",
+  "data": {
+    "bin": "970422",
+    "accountNumber": "VQRQADGSV3523",
+    "accountName": "TRAN THI NGOC VY",
+    "amount": 50000,
+    "description": "nudhf",
+    "orderCode": 1752248607506,
+    "currency": "VND",
+    "paymentLinkId": "49e675bd972e479e88215d6647669618",
+    "status": "PENDING",
+    "checkoutUrl": "https://pay.payos.vn/web/49e675bd972e479e88215d6647669618",
+    "qrCode": "00020101021238570010A000000727012700069704220113VQRQADGSV35230208QRIBFTTA53037045405500005802VN62090805nudhf6304FEC5"
+  },
+  "signature": "49efb6fa106cb491a03e4eb4381c274e106c50a8a159c3ee241925ed61280867"
+}
+
