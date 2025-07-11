@@ -8,7 +8,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #D3E671 0%, #D3E671 100%);
     min-height: 100vh;
     position: relative;
     overflow-x: hidden;
@@ -129,9 +129,15 @@ body {
 
         .sidebar-menu a:hover,
         .dropdown-toggle:hover {
-            color: #667eea;
-            background: rgba(102, 126, 234, 0.1);
+            color: #5CB338;
+            background: rgba(92, 179, 56, 0.1);
             transform: translateX(5px);
+        }
+        .sidebar-menu a.active,
+        .dropdown-toggle.active {
+            color: #5CB338;
+            background: rgba(92, 179, 56, 0.1);
+            font-weight: 600;
         }
 
 .dropdown {

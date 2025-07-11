@@ -19,7 +19,24 @@
                     <p><strong>Sinh viên:</strong> @Model.StudentName</p>
                 </div>
                 <div class="col-md-6">
-                    <p><strong>Trạng thái đơn ứng tuyển:</strong> <span class="badge @(Model.ApplicationStatus == "Completed" ? "bg-success" : Model.ApplicationStatus == "Rejected" ? "bg-danger" : "bg-primary")">@Model.ApplicationStatus</span></p>
+                    <p><strong>Trạng thái đơn ứng tuyển:</strong> 
+                        <span class="badge @(Model.ApplicationStatus == "Completed" ? "bg-success" : Model.ApplicationStatus == "Rejected" ? "bg-danger" : "bg-primary")">
+                            @Model.ApplicationStatus
+                        </span>
+                    </p>
+
+                    @* ✅ Nếu được phép đánh giá doanh nghiệp *@
+                    @if (ViewBag.CanRateBusiness == true)
+                    {
+                        <form asp-controller="Rating" asp-action="Create" method="get">
+                            <input type="hidden" name="projectId" value="@ViewBag.ProjectId" />
+                            <input type="hidden" name="reviewerId" value="@ViewBag.ReviewerID" />
+                            <input type="hidden" name="revieweeId" value="@ViewBag.RevieweeID" />
+                            <button type="submit" class="btn btn-sm btn-warning mt-2">
+                                <i class="bi bi-star-fill"></i> Đánh giá doanh nghiệp
+                            </button>
+                        </form>
+                    }
                 </div>
             </div>
         </div>
@@ -97,4 +114,4 @@
     <div class="mt-3">
         <a asp-controller="Project" asp-action="Details" asp-route-id="@ViewBag.ProjectId" class="btn btn-secondary">Quay lại trang dự án</a>
     </div>
-</div> 
+</div>

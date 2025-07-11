@@ -22,28 +22,35 @@
         </div>
         <div class="card-body">
             <form asp-action="SearchBusinesses" method="get" class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">Tìm kiếm theo tên công ty/ngành nghề</label>
-                    <div class="input-group">
-                        <input type="text" name="query" value="@ViewBag.Query" class="form-control" placeholder="Nhập tên công ty hoặc lĩnh vực...">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-search"></i> Tìm kiếm
-                        </button>
+                <div class="row mb-3">
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control" name="query" placeholder="Tìm kiếm doanh nghiệp..." value="@ViewBag.Query">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <select name="provinceCode" class="form-select">
+                            <option value="">-- Chọn tỉnh/thành phố --</option>
+                            @foreach (var province in ViewBag.Provinces)
+                            {
+                                var selected = ViewBag.ProvinceCode != null && ViewBag.ProvinceCode == province.ID;
+                                <option value="@province.ID" selected="@selected">
+                                    @province.Name
+                                </option>
+                            }
+                        </select>
                     </div>
                 </div>
-
-                <div class="col-md-6">
-                    <label class="form-label">Tỉnh/Thành phố</label>
-                    <select name="provinceId" class="form-select">
-                        <option value="">-- Tất cả --</option>
-                        @foreach (var province in ViewBag.Provinces)
-                        {
-                            var selected = ViewBag.ProvinceId != null && ViewBag.ProvinceId == province.ProvinceID;
-                            <option value="@province.ProvinceID" selected="@selected">
-                                @province.Name
-                            </option>
-                        }
-                    </select>
+                <div class="row">
+                    <div class="col-md-12 text-center">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-search me-2"></i>Tìm kiếm
+                        </button>
+                        <a href="@Url.Action("SearchBusinesses", "Search")" class="btn btn-outline-secondary ms-2">
+                            <i class="bi bi-x-circle me-2"></i>Xóa bộ lọc
+                        </a>
+                    </div>
                 </div>
             </form>
         </div>
@@ -78,12 +85,26 @@
                             </div>
                             <div class="col-md-3">
                                 <p class="mb-1">
-                                    @if (business.Address != null)
+                                    @if (business.Address != null && (!string.IsNullOrEmpty(business.Address.ProvinceName) || !string.IsNullOrEmpty(business.Address.DetailAddress)))
                                     {
                                         <i class="bi bi-geo-alt"></i>
                                         <span>
-                                            @(string.IsNullOrEmpty(business.Address.DetailAddress) ? "" : business.Address.DetailAddress + ", ")
-                                            @(business.Address.Province?.Name ?? "")
+                                            @if (!string.IsNullOrEmpty(business.Address.DetailAddress))
+                                            {
+                                                @(business.Address.DetailAddress)<text>, </text>
+                                            }
+                                            @if (!string.IsNullOrEmpty(business.Address.WardName))
+                                            {
+                                                @(business.Address.WardName)<text>, </text>
+                                            }
+                                            @if (!string.IsNullOrEmpty(business.Address.DistrictName))
+                                            {
+                                                @(business.Address.DistrictName)<text>, </text>
+                                            }
+                                            @if (!string.IsNullOrEmpty(business.Address.ProvinceName))
+                                            {
+                                                @(business.Address.ProvinceName)
+                                            }
                                         </span>
                                     }
                                     else
@@ -135,7 +156,7 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
-            $('select[name="provinceId"]').select2({
+            $('select[name="provinceCode"]').select2({
                 placeholder: "Chọn tỉnh/thành phố...",
                 allowClear: true
             });

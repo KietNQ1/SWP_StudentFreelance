@@ -45,8 +45,8 @@ body {
     opacity: 0.9;
 }
 
-/* Override container styles for main content */
-.container.main-container {
+/* Override container styles for main content, but not affecting footer */
+.main-container {
     background-color: transparent;
     padding: 20px;
     border-radius: 0;

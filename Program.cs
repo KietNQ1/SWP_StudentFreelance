@@ -50,6 +50,7 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Emai
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IEmailSender, StudentFreelance.Services.Implementations.GmailEmailSender>();
 
 // Register application services
+builder.Services.AddHttpClient<StudentFreelance.Services.Interfaces.ILocationApiService, StudentFreelance.Services.Implementations.LocationApiService>();
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IProjectService, StudentFreelance.Services.Implementations.ProjectService>();
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IReportService, StudentFreelance.Services.Implementations.ReportService>();
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IApplicationService, StudentFreelance.Services.Implementations.ApplicationService>();
@@ -77,7 +78,7 @@ using (var scope = app.Services.CreateScope())
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
 
-    db.Database.Migrate();
+    //db.Database.Migrate();
 
     DbSeeder.SeedEnums(db); // enum tables: statuses, types, etc.
     await DbSeeder.SeedSampleDataAsync(db, userManager, roleManager); // Identity + related data

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StudentFreelance.DbContext;
 using StudentFreelance.Models;
+using StudentFreelance.Services.Interfaces;
 using StudentFreelance.ViewModels;
 using System.Security.Claims;
 
@@ -13,15 +14,20 @@ namespace StudentFreelance.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _env;
+        private readonly ILocationApiService _locationApiService;
 
-        public UserController(ApplicationDbContext context, IWebHostEnvironment env)
+        public UserController(
+            ApplicationDbContext context, 
+            IWebHostEnvironment env,
+            ILocationApiService locationApiService)
         {
             _context = context;
             _env = env;
+            _locationApiService = locationApiService;
         }
 
         [HttpGet]
-        public async Task<IActionResult> Profile()
+        public async Task<IActionResult> Profile(int page = 1)
         {
             try
             {
@@ -43,9 +49,12 @@ namespace StudentFreelance.Controllers
                     Major = user.Major,
                     CompanyName = user.CompanyName,
                     Industry = user.Industry,
-                    ProvinceID = user.Address?.ProvinceID,
-                    DistrictID = user.Address?.DistrictID,
-                    WardID = user.Address?.WardID,
+                    ProvinceCode = user.Address?.ProvinceCode,
+                    ProvinceName = user.Address?.ProvinceName,
+                    DistrictCode = user.Address?.DistrictCode,
+                    DistrictName = user.Address?.DistrictName,
+                    WardCode = user.Address?.WardCode,
+                    WardName = user.Address?.WardName,
                     DetailAddress = user.Address?.DetailAddress,
                     FullAddress = user.Address?.FullAddress,
                     AvatarPath = user.Avatar,
@@ -61,24 +70,39 @@ namespace StudentFreelance.Controllers
                     Email = user.Email
                 };
 
-                // Get province, district, ward names
-                if (user.Address?.ProvinceID != null)
-                {
-                    var province = await _context.Provinces.FirstOrDefaultAsync(p => p.ProvinceID == user.Address.ProvinceID);
-                    viewModel.ProvinceName = province?.Name;
-                }
+            
 
-                if (user.Address?.DistrictID != null)
-                {
-                    var district = await _context.Districts.FirstOrDefaultAsync(d => d.DistrictID == user.Address.DistrictID);
-                    viewModel.DistrictName = district?.Name;
-                }
+                // ⭐ Thêm phần đánh giá
+                var ratingsQuery = _context.Ratings
+                    .Include(r => r.Reviewer)
+                    .Where(r => r.RevieweeID == userId)
+                    .OrderByDescending(r => r.DateRated);
 
-                if (user.Address?.WardID != null)
-                {
-                    var ward = await _context.Wards.FirstOrDefaultAsync(w => w.WardID == user.Address.WardID);
-                    viewModel.WardName = ward?.Name;
-                }
+                var totalRatings = await ratingsQuery.CountAsync();
+                var pageSize = 5;
+
+                var averageRating = totalRatings > 0
+                    ? (double?)(await ratingsQuery.AverageAsync(r => r.Score))
+                    : null;
+
+
+                var ratingList = await ratingsQuery
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(r => new RatingViewModel
+                    {
+                        ReviewerName = r.Reviewer.FullName,
+                        ReviewerAvatarPath = string.IsNullOrEmpty(r.Reviewer.ProfilePicturePath) ? "/image/default-avatar.png" : r.Reviewer.ProfilePicturePath,
+                        Score = r.Score,
+                        Comment = r.Comment,
+                        DateRated = r.DateRated
+                    }).ToListAsync();
+
+                viewModel.AverageRating = averageRating;
+                viewModel.TotalReviews = totalRatings;
+                viewModel.ReceivedRatings = ratingList;
+                viewModel.CurrentPage = page;
+                viewModel.TotalPages = (int)Math.Ceiling((double)totalRatings / pageSize);
 
                 return View(viewModel);
             }
@@ -88,6 +112,7 @@ namespace StudentFreelance.Controllers
                 return StatusCode(500);
             }
         }
+
 
         [HttpGet]
         public async Task<IActionResult> Edit()
@@ -110,9 +135,12 @@ namespace StudentFreelance.Controllers
                     Major = user.Major,
                     CompanyName = user.CompanyName,
                     Industry = user.Industry,
-                    ProvinceID = user.Address?.ProvinceID,
-                    DistrictID = user.Address?.DistrictID,
-                    WardID = user.Address?.WardID,
+                    
+                    // API location data
+                    ProvinceCode = user.Address?.ProvinceCode,
+                    DistrictCode = user.Address?.DistrictCode,
+                    WardCode = user.Address?.WardCode,
+                    
                     DetailAddress = user.Address?.DetailAddress,
                     AvatarPath = user.Avatar,
                     Skills = skills.Select(s => new SkillItem
@@ -121,24 +149,27 @@ namespace StudentFreelance.Controllers
                         ProficiencyLevelID = s.ProficiencyLevelID
                     }).ToList(),
 
-                    Provinces = await _context.Provinces
-                        .Select(p => new OptionItem { ID = p.ProvinceID, Name = p.Name }).ToListAsync(),
+                    // Get provinces from API
+                    Provinces = (await _locationApiService.GetProvincesAsync())
+                        .Select(p => new OptionItem { ID = p.Id, Name = p.Name }).ToList(),
 
-                    Districts = user.Address?.ProvinceID != null
-                        ? await _context.Districts.Where(d => d.ProvinceID == user.Address.ProvinceID)
-                            .Select(d => new OptionItem { ID = d.DistrictID, Name = d.Name }).ToListAsync()
+                    // Get districts from API if province is selected
+                    Districts = !string.IsNullOrEmpty(user.Address?.ProvinceCode)
+                        ? (await _locationApiService.GetDistrictsByProvinceAsync(user.Address.ProvinceCode))
+                            .Select(d => new OptionItem { ID = d.Id, Name = d.Name }).ToList()
                         : new(),
 
-                    Wards = user.Address?.DistrictID != null
-                        ? await _context.Wards.Where(w => w.DistrictID == user.Address.DistrictID)
-                            .Select(w => new OptionItem { ID = w.WardID, Name = w.Name }).ToListAsync()
+                    // Get wards from API if district is selected
+                    Wards = !string.IsNullOrEmpty(user.Address?.DistrictCode)
+                        ? (await _locationApiService.GetWardsByDistrictAsync(user.Address.DistrictCode))
+                            .Select(w => new OptionItem { ID = w.Id, Name = w.Name }).ToList()
                         : new(),
 
                     AvailableSkills = await _context.Skills.Where(s => s.IsActive)
-                        .Select(s => new OptionItem { ID = s.SkillID, Name = s.SkillName }).ToListAsync(),
+                        .Select(s => new OptionItem { ID = s.SkillID.ToString(), Name = s.SkillName }).ToListAsync(),
 
                     AvailableProficiencyLevels = await _context.ProficiencyLevels.Where(p => p.IsActive)
-                        .Select(p => new OptionItem { ID = p.LevelID, Name = p.LevelName }).ToListAsync()
+                        .Select(p => new OptionItem { ID = p.LevelID.ToString(), Name = p.LevelName }).ToListAsync()
                 };
 
                 return View(viewModel);
@@ -150,11 +181,107 @@ namespace StudentFreelance.Controllers
             }
         }
 
+        // Helper method to repopulate view model
+        private async Task RepopulateViewModel(UserProfileViewModel model)
+        {
+            // Repopulate skills
+            model.AvailableSkills = await _context.Skills.Where(s => s.IsActive)
+                .Select(s => new OptionItem { ID = s.SkillID.ToString(), Name = s.SkillName }).ToListAsync();
+            
+            model.AvailableProficiencyLevels = await _context.ProficiencyLevels.Where(p => p.IsActive)
+                .Select(p => new OptionItem { ID = p.LevelID.ToString(), Name = p.LevelName }).ToListAsync();
+            
+            // Repopulate location data
+            model.Provinces = (await _locationApiService.GetProvincesAsync())
+                .Select(p => new OptionItem { ID = p.Id, Name = p.Name }).ToList();
+            
+            if (!string.IsNullOrEmpty(model.ProvinceCode))
+            {
+                model.Districts = (await _locationApiService.GetDistrictsByProvinceAsync(model.ProvinceCode))
+                    .Select(d => new OptionItem { ID = d.Id, Name = d.Name }).ToList();
+            }
+            else
+            {
+                model.Districts = new List<OptionItem>();
+            }
+            
+            if (!string.IsNullOrEmpty(model.DistrictCode))
+            {
+                model.Wards = (await _locationApiService.GetWardsByDistrictAsync(model.DistrictCode))
+                    .Select(w => new OptionItem { ID = w.Id, Name = w.Name }).ToList();
+            }
+            else
+            {
+                model.Wards = new List<OptionItem>();
+            }
+        }
+
+        // Helper method to generate full address string
+        private async Task<string> GetFullAddress(string provinceCode, string districtCode, string wardCode, string detailAddress)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(provinceCode) && string.IsNullOrEmpty(districtCode) && string.IsNullOrEmpty(wardCode) && string.IsNullOrWhiteSpace(detailAddress))
+                {
+                    return string.Empty;
+                }
+                
+                string fullAddress = !string.IsNullOrWhiteSpace(detailAddress) ? detailAddress : "";
+                
+                if (!string.IsNullOrEmpty(wardCode) && !string.IsNullOrEmpty(districtCode))
+                {
+                    var wards = await _locationApiService.GetWardsByDistrictAsync(districtCode);
+                    var ward = wards.FirstOrDefault(w => w.Id == wardCode);
+                    if (ward != null)
+                        fullAddress += (fullAddress.Length > 0 ? ", " : "") + ward.Name;
+                }
+                
+                if (!string.IsNullOrEmpty(districtCode) && !string.IsNullOrEmpty(provinceCode))
+                {
+                    var districts = await _locationApiService.GetDistrictsByProvinceAsync(provinceCode);
+                    var district = districts.FirstOrDefault(d => d.Id == districtCode);
+                    if (district != null)
+                        fullAddress += (fullAddress.Length > 0 ? ", " : "") + district.Name;
+                }
+                
+                if (!string.IsNullOrEmpty(provinceCode))
+                {
+                    var provinces = await _locationApiService.GetProvincesAsync();
+                    var province = provinces.FirstOrDefault(p => p.Id == provinceCode);
+                    if (province != null)
+                        fullAddress += (fullAddress.Length > 0 ? ", " : "") + province.Name;
+                }
+                
+                return fullAddress;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] GetFullAddress: {ex.Message}");
+                return detailAddress ?? "";
+            }
+        }
+
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(UserProfileViewModel model)
         {
             try
             {
+                // Debug information
+                Console.WriteLine("[DEBUG] Edit POST method called");
+                Console.WriteLine($"[DEBUG] ProvinceCode: {model.ProvinceCode}");
+                Console.WriteLine($"[DEBUG] DistrictCode: {model.DistrictCode}");
+                Console.WriteLine($"[DEBUG] WardCode: {model.WardCode}");
+                Console.WriteLine($"[DEBUG] DetailAddress: {model.DetailAddress}");
+                Console.WriteLine($"[DEBUG] Skills count: {model.Skills?.Count ?? 0}");
+                
+                if (!ModelState.IsValid)
+                {
+                    // Repopulate the view model with data
+                    await RepopulateViewModel(model);
+                    return View(model);
+                }
+                
                 var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
                 var user = await _context.Users.Include(u => u.Address).FirstOrDefaultAsync(u => u.Id == userId);
                 if (user == null) return NotFound();
@@ -182,30 +309,66 @@ namespace StudentFreelance.Controllers
                     user.ProfilePicturePath = imagePath;
                 }
 
+                // Get location names from API
+                string provinceName = "", districtName = "", wardName = "";
+                
+                if (!string.IsNullOrEmpty(model.ProvinceCode))
+                {
+                    var provinces = await _locationApiService.GetProvincesAsync();
+                    var province = provinces.FirstOrDefault(p => p.Id == model.ProvinceCode);
+                    if (province != null) provinceName = province.Name;
+                    
+                    if (!string.IsNullOrEmpty(model.DistrictCode))
+                    {
+                        var districts = await _locationApiService.GetDistrictsByProvinceAsync(model.ProvinceCode);
+                        var district = districts.FirstOrDefault(d => d.Id == model.DistrictCode);
+                        if (district != null) districtName = district.Name;
+                        
+                        if (!string.IsNullOrEmpty(model.WardCode))
+                        {
+                            var wards = await _locationApiService.GetWardsByDistrictAsync(model.DistrictCode);
+                            var ward = wards.FirstOrDefault(w => w.Id == model.WardCode);
+                            if (ward != null) wardName = ward.Name;
+                        }
+                    }
+                }
+
                 // Xử lý địa chỉ
+                Console.WriteLine($"[DEBUG] User address before update: {user.Address?.FullAddress ?? "NULL"}");
+                
                 if (user.Address == null || user.AddressID == null)
                 {
+                    Console.WriteLine("[DEBUG] Creating new address");
                     var newAddress = new Address
                     {
-                        ProvinceID = model.ProvinceID,
-                        DistrictID = model.DistrictID,
-                        WardID = model.WardID,
+                        ProvinceCode = model.ProvinceCode,
+                        ProvinceName = provinceName,
+                        DistrictCode = model.DistrictCode,
+                        DistrictName = districtName,
+                        WardCode = model.WardCode,
+                        WardName = wardName,
                         DetailAddress = model.DetailAddress,
-                        FullAddress = GetFullAddress(model.ProvinceID, model.DistrictID, model.WardID, model.DetailAddress),
+                        FullAddress = await GetFullAddress(model.ProvinceCode, model.DistrictCode, model.WardCode, model.DetailAddress),
                         IsActive = true
                     };
                     _context.Addresses.Add(newAddress);
                     await _context.SaveChangesAsync();
                     user.AddressID = newAddress.AddressID;
+                    Console.WriteLine($"[DEBUG] New address created with ID: {newAddress.AddressID}");
                 }
                 else
                 {
-                    user.Address.ProvinceID = model.ProvinceID;
-                    user.Address.DistrictID = model.DistrictID;
-                    user.Address.WardID = model.WardID;
+                    Console.WriteLine("[DEBUG] Updating existing address");
+                    user.Address.ProvinceCode = model.ProvinceCode;
+                    user.Address.ProvinceName = provinceName;
+                    user.Address.DistrictCode = model.DistrictCode;
+                    user.Address.DistrictName = districtName;
+                    user.Address.WardCode = model.WardCode;
+                    user.Address.WardName = wardName;
                     user.Address.DetailAddress = model.DetailAddress;
-                    user.Address.FullAddress = GetFullAddress(model.ProvinceID, model.DistrictID, model.WardID, model.DetailAddress);
+                    user.Address.FullAddress = await GetFullAddress(model.ProvinceCode, model.DistrictCode, model.WardCode, model.DetailAddress);
                     _context.Addresses.Update(user.Address);
+                    Console.WriteLine($"[DEBUG] Updated address with ID: {user.Address.AddressID}");
                 }
 
                 _context.Users.Update(user);
@@ -213,18 +376,23 @@ namespace StudentFreelance.Controllers
                 var oldSkills = _context.StudentSkills.Where(s => s.UserID == userId);
                 _context.StudentSkills.RemoveRange(oldSkills);
 
-                foreach (var skill in model.Skills)
+                if (model.Skills != null)
                 {
-                    _context.StudentSkills.Add(new StudentSkill
+                    foreach (var skill in model.Skills)
                     {
-                        UserID = userId,
-                        SkillID = skill.SkillID,
-                        ProficiencyLevelID = skill.ProficiencyLevelID,
-                        IsActive = true
-                    });
+                        _context.StudentSkills.Add(new StudentSkill
+                        {
+                            UserID = userId,
+                            SkillID = skill.SkillID,
+                            ProficiencyLevelID = skill.ProficiencyLevelID,
+                            IsActive = true
+                        });
+                    }
                 }
 
+                Console.WriteLine("[DEBUG] About to save changes to database");
                 await _context.SaveChangesAsync();
+                Console.WriteLine("[DEBUG] Changes saved successfully");
 
                 TempData["Success"] = "Cập nhật hồ sơ thành công!";
                 return RedirectToAction("Profile");
@@ -232,79 +400,72 @@ namespace StudentFreelance.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine($"[ERROR] POST Edit: {ex.Message}");
-                return StatusCode(500);
-            }
-        }
-
-        // Helper method to generate full address string
-        private string GetFullAddress(int? provinceID, int? districtID, int? wardID, string detailAddress)
-        {
-            try
-            {
-                string fullAddress = detailAddress ?? "";
                 
-                if (wardID.HasValue)
+                // Add more detailed error logging
+                Console.WriteLine($"Exception details: {ex}");
+                if (ex.InnerException != null)
                 {
-                    var ward = _context.Wards.FirstOrDefault(w => w.WardID == wardID);
-                    if (ward != null)
-                        fullAddress += $", {ward.Name}";
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                    Console.WriteLine($"Inner exception details: {ex.InnerException}");
                 }
                 
-                if (districtID.HasValue)
+                // Repopulate the view model with data to avoid losing user input
+                try
                 {
-                    var district = _context.Districts.FirstOrDefault(d => d.DistrictID == districtID);
-                    if (district != null)
-                        fullAddress += $", {district.Name}";
+                    await RepopulateViewModel(model);
+                    
+                    // Set a clear error message without special characters
+                    TempData["Error"] = "Có lỗi xảy ra khi cập nhật thông tin. Vui lòng thử lại.";
+                    return View(model);
                 }
-                
-                if (provinceID.HasValue)
+                catch (Exception repopulateEx)
                 {
-                    var province = _context.Provinces.FirstOrDefault(p => p.ProvinceID == provinceID);
-                    if (province != null)
-                        fullAddress += $", {province.Name}";
+                    Console.WriteLine($"[ERROR] Failed to repopulate form: {repopulateEx.Message}");
+                    TempData["Error"] = "Có lỗi xảy ra. Vui lòng thử lại sau.";
+                    return RedirectToAction("Edit");
                 }
-                
-                return fullAddress;
-            }
-            catch
-            {
-                return detailAddress ?? "";
             }
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetDistricts(int provinceId)
+        public async Task<IActionResult> GetDistricts(string provinceId)
         {
             try
             {
-                var districts = await _context.Districts
-                    .Where(d => d.ProvinceID == provinceId)
-                    .Select(d => new { id = d.DistrictID, name = d.Name })
-                    .ToListAsync();
-                return Json(districts);
+                if (string.IsNullOrEmpty(provinceId))
+                {
+                    return BadRequest("Province ID is required");
+                }
+                
+                // Use the API service to get districts
+                var districts = await _locationApiService.GetDistrictsByProvinceAsync(provinceId);
+                return Json(districts.Select(d => new { id = d.Id, name = d.Name }));
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[ERROR] GetDistricts: {ex.Message}");
-                return StatusCode(500);
+                return StatusCode(500, new { error = "Failed to retrieve districts" });
             }
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetWards(int districtId)
+        public async Task<IActionResult> GetWards(string districtId)
         {
             try
             {
-                var wards = await _context.Wards
-                    .Where(w => w.DistrictID == districtId)
-                    .Select(w => new { id = w.WardID, name = w.Name })
-                    .ToListAsync();
-                return Json(wards);
+                if (string.IsNullOrEmpty(districtId))
+                {
+                    return BadRequest("District ID is required");
+                }
+                
+                // Use the API service to get wards
+                var wards = await _locationApiService.GetWardsByDistrictAsync(districtId);
+                return Json(wards.Select(w => new { id = w.Id, name = w.Name }));
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[ERROR] GetWards: {ex.Message}");
-                return StatusCode(500);
+                return StatusCode(500, new { error = "Failed to retrieve wards" });
             }
         }
     }

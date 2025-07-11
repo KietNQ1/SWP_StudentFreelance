@@ -16,9 +16,11 @@ namespace StudentFreelance.ViewModels
         public string? CompanyName { get; set; }
         public string? Industry { get; set; }
 
-        public int? ProvinceID { get; set; }
-        public int? DistrictID { get; set; }
-        public int? WardID { get; set; }
+        // API location IDs
+        public string? ProvinceCode { get; set; }
+        public string? DistrictCode { get; set; }
+        public string? WardCode { get; set; }
+        
         public string? DetailAddress { get; set; }
         public string? FullAddress { get; set; }
         
@@ -41,6 +43,14 @@ namespace StudentFreelance.ViewModels
         public List<OptionItem> Provinces { get; set; } = new();
         public List<OptionItem> Districts { get; set; } = new();
         public List<OptionItem> Wards { get; set; } = new();
+
+        public List<RatingViewModel> ReceivedRatings { get; set; } = new();
+        public double? AverageRating { get; set; }  // ⭐ Đánh giá trung bình (1-5 sao)
+        public int TotalReviews { get; set; }       // 📊 Tổng số lượt đánh giá
+
+        public int CurrentPage { get; set; }
+        public int TotalPages { get; set; }
+
     }
 
     public class SkillItem
@@ -53,7 +63,7 @@ namespace StudentFreelance.ViewModels
 
     public class OptionItem
     {
-        public int ID { get; set; }
+        public string ID { get; set; }
         public string Name { get; set; }
     }
 }

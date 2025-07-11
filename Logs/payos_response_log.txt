@@ -18,3 +18,23 @@
   "signature": "49efb6fa106cb491a03e4eb4381c274e106c50a8a159c3ee241925ed61280867"
 }
 
+[11/07/2025 11:05:52 CH] PayOS Response:
+{
+  "code": "00",
+  "desc": "success",
+  "data": {
+    "bin": "970422",
+    "accountNumber": "VQRQADGSW6287",
+    "accountName": "TRAN THI NGOC VY",
+    "amount": 10000,
+    "description": "mxjbc",
+    "orderCode": 1752249951194,
+    "currency": "VND",
+    "paymentLinkId": "2c33c6f386cf46218dfbc5f530410b56",
+    "status": "PENDING",
+    "checkoutUrl": "https://pay.payos.vn/web/2c33c6f386cf46218dfbc5f530410b56",
+    "qrCode": "00020101021238570010A000000727012700069704220113VQRQADGSW62870208QRIBFTTA53037045405100005802VN62090805mxjbc63045884"
+  },
+  "signature": "c42f89d9011add957d83e1bf6f5518383684613ec8087c9ad686b9dba649c11e"
+}
+
