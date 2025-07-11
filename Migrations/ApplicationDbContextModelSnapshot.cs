@@ -408,6 +408,9 @@ namespace StudentFreelance.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<int>("ParticipantAID")
                         .HasColumnType("int");
 
@@ -418,6 +421,8 @@ namespace StudentFreelance.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("ConversationID");
+
+                    b.HasIndex("ProjectID");
 
                     b.ToTable("Conversations");
                 });
@@ -1519,6 +1524,17 @@ namespace StudentFreelance.Migrations
                     b.Navigation("ParentCategory");
                 });
 
+            modelBuilder.Entity("StudentFreelance.Models.Conversation", b =>
+                {
+                    b.HasOne("StudentFreelance.Models.Project", "Project")
+                        .WithMany("Conversations")
+                        .HasForeignKey("ProjectID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Project");
+                });
+
             modelBuilder.Entity("StudentFreelance.Models.District", b =>
                 {
                     b.HasOne("StudentFreelance.Models.Province", "Province")
@@ -1535,7 +1551,7 @@ namespace StudentFreelance.Migrations
                     b.HasOne("StudentFreelance.Models.Conversation", "Conversation")
                         .WithMany("Messages")
                         .HasForeignKey("ConversationID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("StudentFreelance.Models.Project", "Project")
@@ -1992,6 +2008,8 @@ namespace StudentFreelance.Migrations
 
             modelBuilder.Entity("StudentFreelance.Models.Project", b =>
                 {
+                    b.Navigation("Conversations");
+
                     b.Navigation("Messages");
 
                     b.Navigation("ProjectAttachments");

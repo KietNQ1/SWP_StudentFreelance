@@ -4,6 +4,10 @@
     ViewData["Title"] = "Deposit Funds";
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/wallet/deposit.css" asp-append-version="true" />
+}
+
 <div class="container mt-4">
     <div class="row justify-content-center">
         <div class="col-md-8">
@@ -43,7 +47,6 @@
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" asp-for="PaymentMethod" id="eWallet" value="eWallet">
                                 <label class="form-check-label" for="eWallet">E-Wallet</label>
-                           
                             </div>
                         </div>
                         

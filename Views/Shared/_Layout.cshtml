@@ -1,9 +1,9 @@
-﻿﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Identity
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
 
-﻿@using Microsoft.EntityFrameworkCore
+@using Microsoft.EntityFrameworkCore
 @using StudentFreelance.DbContext
 @using StudentFreelance.Models
 
@@ -209,6 +209,7 @@
         @RenderBody()
     </main>
 
+    <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
@@ -231,6 +232,7 @@
                 <div class="footer-column">
                     <h3>About</h3>
                     <ul>
+                        <li><a asp-controller="Home" asp-action="About">About Us</a></li>
                         <li><a href="#">Careers</a></li>
                         <li><a href="#">Press & News</a></li>
                         <li><a href="#">Partnerships</a></li>
@@ -247,7 +249,7 @@
                         <li><a href="#">Trust & Safety</a></li>
                         <li><a href="#">Selling on STJobs</a></li>
                         <li><a href="#">Buying on STJobs</a></li>
-                        <li><a href="#">STJobs Guides</a></li>
+                        <li><a href="#">Fiverr Guides</a></li>
                     </ul>
                 </div>
                 <div class="footer-column">

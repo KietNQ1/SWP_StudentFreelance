@@ -1,0 +1,217 @@
+/* Palette color variables */
+:root {
+    --primary-color: #89AC46;
+    --secondary-color: #D3E671;
+    --accent-color: #F8ED8C;
+    --highlight-color: #FF8989;
+    --orange-accent: #FF8989;
+    --blue-accent: #89AC46;
+}
+
+/* General styles */
+body {
+    background: #F8F8F8 ;
+    background-attachment: fixed;
+    min-height: 100vh;
+}
+
+.container {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-top: 4px solid var(--primary-color);
+    margin-top: 20px;
+}
+
+.text-primary {
+    color: var(--highlight-color) !important;
+}
+
+h2.mb-4.text-primary {
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 10px;
+    display: inline-block;
+}
+
+/* Search button styling */
+.btn-primary {
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color)) !important;
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 2px 4px rgba(137, 172, 70, 0.3);
+    color: white;
+    font-weight: 500;
+    padding: 10px 20px;
+    border-radius: 4px;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background: linear-gradient(to right, var(--secondary-color), var(--primary-color)) !important;
+    border-color: var(--secondary-color) !important;
+    box-shadow: 0 4px 8px rgba(137, 172, 70, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-primary .bi {
+    color: white;
+    margin-right: 5px;
+}
+
+.search-card {
+    background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.95), rgba(248, 237, 140, 0.2));
+    border-color: rgba(211, 230, 113, 0.4);
+    box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+}
+
+.search-card:hover {
+    box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+    transform: translateY(-2px);
+}
+
+.card-header.bg-secondary, .filter-header {
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color)) !important;
+    border-bottom: none;
+    color: white;
+}
+
+.business-list .card {
+    transition: transform 0.3s, box-shadow 0.3s;
+    border-left: 4px solid var(--primary-color);
+    border-radius: 8px;
+    overflow: hidden;
+    background: linear-gradient(to bottom right, white, rgba(211, 230, 113, 0.15));
+}
+
+.business-list .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(137, 172, 70, 0.25);
+    border-color: var(--primary-color);
+}
+
+.business-name {
+    color: var(--highlight-color);
+    font-weight: 600;
+}
+
+.profile-avatar-placeholder {
+    width: 60px;
+    height: 60px;
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    border-radius: 50%;
+}
+
+.rating-stars {
+    color: var(--accent-color);
+}
+
+/* View profile button styling */
+.btn-view-profile {
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+    color: white;
+    border: none;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 20px;
+}
+
+.btn-view-profile:hover, .btn-view-profile:focus {
+    background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(137, 172, 70, 0.3);
+}
+
+.alert-warning {
+    background-color: var(--accent-color);
+    border-color: #e0d87d;
+    color: #6b6219;
+    border-left: 4px solid var(--primary-color);
+}
+
+/* Form controls styling */
+.form-control, .form-select {
+    border: 1px solid #dbe8c6;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.input-group .form-control {
+    border-right: none;
+}
+
+.input-group .btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(137, 172, 70, 0.25);
+}
+
+.form-label {
+    color: var(--highlight-color);
+    font-weight: 500;
+}
+
+/* Additional styles with primary color */
+.info-badge {
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 20px;
+    padding: 5px 10px;
+    display: inline-block;
+    font-size: 0.9rem;
+}
+
+/* Rating badge specific styling */
+.info-badge:first-child {
+    background: linear-gradient(to right, var(--highlight-color), #ffacac);
+}
+
+.info-badge:first-child .bi-star-fill {
+    color: var(--accent-color);
+}
+
+/* Project count badge specific styling */
+.info-badge:last-child {
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+}
+
+.info-badge:last-child .bi-briefcase-fill {
+    color: white;
+}
+
+/* Icons styling */
+.bi {
+    color: var(--primary-color);
+}
+
+/* Icons inside info badges should be white */
+.info-badge .bi {
+    color: white;
+}
+
+/* Select2 custom styling */
+.select2-container--default .select2-selection--single {
+    border-color: #dbe8c6;
+    height: 42px;
+    padding: 6px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 42px;
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: var(--primary-color);
+    color: white;
+} 

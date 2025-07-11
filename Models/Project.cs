@@ -78,5 +78,6 @@ namespace StudentFreelance.Models
         public ICollection<Rating> Ratings { get; set; } = new List<Rating>();
         public ICollection<Message> Messages { get; set; } = new List<Message>();
         public ICollection<Report> Reports { get; set; } = new List<Report>();
+        public ICollection<Conversation> Conversations { get; set; } = new List<Conversation>();
     }
 }

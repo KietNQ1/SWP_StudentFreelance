@@ -2,10 +2,10 @@
 {
     public class PayOSConfig
     {
-        public string ClientId { get; set; } = null;
-        public string ApiKey { get; set; } = null;
-        public string ChecksumKey { get; set; } = null;
-        public string ReturnUrl { get; set; } = null;
-        public string CancelUrl { get; set; } = null;
+        public string ClientId { get; set; } = "";
+        public string ApiKey { get; set; } = "";
+        public string ChecksumKey { get; set; } = "";
+        public string ReturnUrl { get; set; } = "";
+        public string CancelUrl { get; set; } = "";
     }
 }
