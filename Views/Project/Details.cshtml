@@ -1,0 +1,635 @@
+@using System.Security.Claims
+@model StudentFreelance.Models.Project
+
+
+<style>
+    :root {
+        --primary: #89AC46;
+        --accent1: #D3E671;
+        --accent2: #F8ED8C;
+        --accent3: #FF8989;
+    }
+
+    body {
+        background-color: #F8F8F8;
+        color: #222;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    h1, h5, h6 {
+        font-weight: 600;
+        color: #222;
+    }
+
+    .breadcrumb {
+        background-color: transparent;
+        font-size: 0.95rem;
+        color: #555;
+    }
+
+    .card {
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        border-left: 5px solid var(--primary);
+        background-color: #ffffff;
+        border: 1px solid #ddd;
+    }
+
+    .card-header {
+        background-color: var(--accent1);
+        color: #222;
+        font-weight: 600;
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .badge {
+        font-size: 0.85rem;
+        padding: 0.4em 0.7em;
+        border-radius: 20px;
+        font-weight: 500;
+    }
+
+        .badge.bg-primary {
+            background-color: var(--primary) !important;
+            color: white;
+        }
+
+        .badge.bg-warning {
+            background-color: var(--accent2);
+            color: #222;
+        }
+
+        .badge.bg-info {
+            background-color: #A3DFF2;
+            color: #222;
+        }
+
+        .badge.bg-secondary {
+            background-color: var(--accent1);
+            color: #333;
+        }
+
+        .badge.bg-danger {
+            background-color: var(--accent3);
+            color: white;
+        }
+
+        .badge.bg-success {
+            background-color: #6FCF97;
+            color: white;
+        }
+
+    .list-group-item {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        padding: 12px 15px;
+        color: #222;
+    }
+
+    .btn-outline-primary {
+        border-color: var(--primary);
+        color: var(--primary);
+        font-weight: 600;
+    }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+    .btn-outline-secondary {
+        border-color: var(--accent1);
+        color: var(--primary);
+        background-color: #fff;
+    }
+
+        .btn-outline-secondary:hover {
+            background-color: var(--accent1);
+            color: #111;
+        }
+
+    .btn-outline-success {
+        border-color: #6FCF97;
+        color: #6FCF97;
+    }
+
+        .btn-outline-success:hover {
+            background-color: #6FCF97;
+            color: white;
+        }
+
+    .btn-success {
+        background-color: var(--accent3);
+        border-color: var(--accent3);
+        font-weight: 600;
+        color: white;
+    }
+
+        .btn-success:hover {
+            background-color: #e55b5b;
+            border-color: #e55b5b;
+            color: white;
+        }
+
+    .btn-primary {
+        background-color: var(--primary);
+        border-color: var(--primary);
+        color: white;
+    }
+
+        .btn-primary:hover {
+            background-color: #6d9138;
+            border-color: #6d9138;
+        }
+
+    .btn-warning {
+        background-color: var(--accent2);
+        border-color: var(--accent2);
+        color: #222;
+    }
+
+        .btn-warning:hover {
+            background-color: #f7e464;
+            border-color: #f7e464;
+        }
+
+    .btn-info {
+        background-color: #A3DFF2;
+        border-color: #A3DFF2;
+        color: #222;
+    }
+
+        .btn-info:hover {
+            background-color: #91cde1;
+            border-color: #91cde1;
+            color: #000;
+        }
+
+    .avatar-placeholder {
+        background-color: var(--accent1);
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        color: #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 1.2rem;
+    }
+
+    .formatted-content p {
+        margin-bottom: 1rem;
+        color: #222;
+    }
+
+    .formatted-content ul {
+        padding-left: 1.2rem;
+    }
+
+    .formatted-content li {
+        margin-bottom: 0.5rem;
+    }
+
+    .alert-info {
+        background-color: #D3E67166;
+        border-left: 4px solid var(--primary);
+        color: #333;
+    }
+
+    .alert-success {
+        background-color: #BFF5C0;
+        border-left: 4px solid #6FCF97;
+        color: #234;
+    }
+
+    .alert-danger {
+        background-color: #FFBFBF;
+        border-left: 4px solid var(--accent3);
+        color: #222;
+    }
+
+    .alert-warning {
+        background-color: #FFF9C4;
+        border-left: 4px solid var(--accent2);
+        color: #222;
+    }
+
+    .btn-group .btn {
+        font-size: 0.9rem;
+    }
+
+    .alert {
+        border-radius: 10px;
+        border: 1px solid #ccc;
+    }
+
+    @@media (max-width: 768px) {
+        .btn-group
+
+    {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn-group .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    }
+</style>
+
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Index">Projects</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Title</li>
+        </ol>
+    </nav>
+
+    @if (ViewBag.InactiveMessage != null)
+    {
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @ViewBag.InactiveMessage
+        </div>
+    }
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Lỗi!</strong> @ViewBag.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>Thành công!</strong> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="mb-3">
+                @if (Model.IsHighlighted)
+                {
+                    <span class="badge bg-warning me-2">Featured</span>
+                }
+                @if (!Model.IsActive)
+                {
+                    <span class="badge bg-danger me-2">Đã ẩn</span>
+                }
+                @Model.Title
+            </h1>
+            <div class="d-flex flex-wrap mb-3 gap-2">
+                <span class="badge bg-primary">@Model.Category.CategoryName</span>
+                <span class="badge @(Model.StatusID == 1 ? "bg-success" : Model.StatusID == 2 ? "bg-warning" : "bg-danger")">
+                    @Model.Status.StatusName
+                </span>
+                <span class="badge bg-info">@Model.Type.TypeName</span>
+                @if (Model.IsRemoteWork)
+                {
+                    <span class="badge bg-secondary">Remote Work</span>
+                }
+            </div>
+            <div class="d-flex gap-4 text-muted mb-4">
+                <div><i class="bi bi-calendar-date"></i> Posted: @Model.CreatedAt.ToString("dd/MM/yyyy")</div>
+                <div><i class="bi bi-hourglass-split"></i> Deadline: @Model.Deadline.ToString("dd/MM/yyyy")</div>
+                <div><i class="bi bi-currency-dollar"></i> Budget: @Model.Budget.ToString("C")</div>
+            </div>
+        </div>
+
+        <div class="col-md-4 text-end">
+            @if (User.Identity != null && User.Identity.IsAuthenticated &&
+            (User.IsInRole("Admin") ||
+            User.FindFirst(ClaimTypes.NameIdentifier)?.Value == Model.BusinessID.ToString()))
+            {
+                <div class="btn-group">
+                    <a asp-action="Edit" asp-route-id="@Model.ProjectID" class="btn btn-outline-primary">
+                        <i class="bi bi-pencil"></i> Edit Project
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@Model.ProjectID" class="btn btn-outline-danger">
+                        <i class="bi bi-trash"></i> Delete
+                    </a>
+                    <a asp-controller="Application" asp-action="ProjectApplications" asp-route-projectId="@Model.ProjectID"
+                       class="btn btn-outline-success">
+                        <i class="bi bi-people"></i> Xem ứng viên (@Model.StudentApplications.Count)
+                    </a>
+                </div>
+            }
+            else if (User.Identity != null && User.Identity.IsAuthenticated &&
+            User.FindFirst(ClaimTypes.NameIdentifier)?.Value != Model.BusinessID.ToString())
+            {
+                @if (User.IsInRole("Student"))
+                {
+                    <a asp-controller="Application" asp-action="Apply" asp-route-projectId="@Model.ProjectID"
+                       class="btn btn-success">
+                        <i class="bi bi-send"></i> Ứng tuyển vào dự án
+                    </a>
+                }
+            }
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Mô tả dự án -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Project Description</h5>
+                </div>
+                <div class="card-body">
+                    <div class="formatted-content">
+                        @Html.Raw(Model.Description)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kỹ năng yêu cầu -->
+            @if (Model.ProjectSkillsRequired.Any())
+            {
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Required Skills</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach (var skill in Model.ProjectSkillsRequired)
+                            {
+                                <span class="badge bg-secondary">@skill.Skill.SkillName</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Tập tin đính kèm -->
+            @if (Model.ProjectAttachments.Any())
+            {
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Project Attachments</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            @foreach (var attachment in Model.ProjectAttachments)
+                            {
+                                <a href="@attachment.FilePath" class="list-group-item list-group-item-action" download>
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">@attachment.FileName</h6>
+                                        <small>@(attachment.FileSize / 1024) KB</small>
+                                    </div>
+                                    <small class="text-muted">Uploaded @attachment.UploadedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="col-md-4">
+            <!-- Thông tin doanh nghiệp -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Business Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="avatar me-3">
+                            <div class="avatar-placeholder">
+                                @(Model.Business.UserName != null ? Model.Business.UserName.Substring(0, 1).ToUpper() : "U")
+                            </div>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">@Model.Business.FullName</h6>
+                            <small class="text-muted">Member since @(Model.Business.CreatedAt.ToString("MMM yyyy"))</small>
+                        </div>
+                    </div>
+
+                    @if (Model.Address != null)
+                    {
+                        <div class="mb-2">
+                            <i class="bi bi-geo-alt"></i>
+                            @Model.Address.DetailAddress, @Model.Address.Ward.Name,
+                            @Model.Address.District.Name, @Model.Address.Province.Name
+                        </div>
+                    }
+
+                    <div class="mt-3">
+                        <a href="#" class="btn btn-outline-secondary btn-sm w-100">
+                            <i class="bi bi-person"></i> View Profile
+                        </a>
+                        <form asp-controller="Chat" asp-action="StartProjectChat" method="post">
+                            <input type="hidden" name="projectId" value="@Model.ProjectID" />
+                            <button type="submit" class="btn btn-success mt-2 w-100">
+                                <i class="bi bi-chat-dots"></i> Nhắn tin với chủ dự án
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chi tiết dự án -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Project Details</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Start Date</span>
+                            <span>@Model.StartDate.ToString("dd/MM/yyyy")</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>End Date</span>
+                            <span>@Model.EndDate.ToString("dd/MM/yyyy")</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Duration</span>
+                            <span>@((Model.EndDate - Model.StartDate).Days) days</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Applications</span>
+                            <span class="badge bg-primary rounded-pill">@Model.StudentApplications.Count</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+@if (User.Identity.IsAuthenticated)
+{
+    var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+    var isOwner = Model.BusinessID == currentUserId;
+    var isAdmin = User.IsInRole("Admin") || User.IsInRole("Moderator");
+    var isStudent = User.IsInRole("Student");
+
+    if (isOwner || isAdmin)
+    {
+        if (Model.StudentApplications != null && Model.StudentApplications.Any(a =>
+            a.Status == "InProgress" || a.Status == "PendingReview" || a.Status == "Completed"))
+        {
+            <div class="card mb-3">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Kết quả dự án</h5>
+                </div>
+                <div class="card-body">
+                    <p>Xem kết quả dự án được nộp bởi sinh viên đã được chấp nhận:</p>
+                    <div class="list-group">
+                        @foreach (var app in Model.StudentApplications.Where(a =>
+                            a.Status == "InProgress" || a.Status == "PendingReview" || a.Status == "Completed"))
+                        {
+                            <div class="list-group-item d-flex flex-column">
+                                <div class="d-flex justify-content-between align-items-center w-100">
+                                    <div>
+                                        <strong>@app.User.FullName</strong>
+                                        <span class="badge @(app.Status == "Completed" ? "bg-success" : app.Status == "PendingReview" ? "bg-warning" : "bg-primary")">
+                                            @app.Status
+                                        </span>
+                                    </div>
+                                    <a href="@Url.Action("ProjectSubmissions", "ProjectSubmission", new { applicationId = app.ApplicationID })"
+                                       class="btn btn-sm btn-primary">Xem kết quả</a>
+                                </div>
+
+                                @if ((app.Status == "PendingReview" || app.Status == "InProgress" || app.Status == "Completed") &&
+                                     (Model.StatusID == 1 || Model.StatusID == 2))
+                                {
+                                    <div class="mt-2">
+                                        @if (!app.BusinessConfirmedCompletion)
+                                        {
+                                            <form asp-controller="Project" asp-action="ConfirmCompletion" method="post" class="d-inline">
+                                                <input type="hidden" name="projectId" value="@Model.ProjectID" />
+                                                <input type="hidden" name="applicationId" value="@app.ApplicationID" />
+                                                <button type="submit" class="btn btn-success btn-sm">
+                                                    <i class="bi bi-check-circle"></i> Xác nhận hoàn thành
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <form asp-controller="Project" asp-action="CancelConfirmation" method="post" class="d-inline">
+                                                <input type="hidden" name="projectId" value="@Model.ProjectID" />
+                                                <input type="hidden" name="applicationId" value="@app.ApplicationID" />
+                                                <button type="submit" class="btn btn-warning btn-sm">
+                                                    <i class="bi bi-x-circle"></i> Huỷ xác nhận
+                                                </button>
+                                            </form>
+
+                                            @if (app.BusinessConfirmedCompletion && !app.StudentConfirmedCompletion)
+                                            {
+                                                <div class="alert alert-info py-1 mt-2 mb-0">
+                                                    <small><i class="bi bi-info-circle"></i> Đã xác nhận. Đang chờ sinh viên xác nhận.</small>
+                                                </div>
+                                            }
+                                            else if (app.BusinessConfirmedCompletion && app.StudentConfirmedCompletion)
+                                            {
+                                                <div class="alert alert-success py-1 mt-2 mb-0">
+                                                    <small><i class="bi bi-check-circle"></i> Đã hoàn thành. Cả hai bên đã xác nhận.</small>
+                                                </div>
+
+                                                <form asp-controller="Project" asp-action="TransferPayment" method="post" class="d-inline mt-2">
+                                                    <input type="hidden" name="projectId" value="@Model.ProjectID" />
+                                                    <input type="hidden" name="applicationId" value="@app.ApplicationID" />
+                                                    <button type="submit" class="btn btn-primary btn-sm">
+                                                        <i class="bi bi-cash"></i> Thanh toán cho sinh viên
+                                                    </button>
+                                                </form>
+                                            }
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else if (isStudent)
+    {
+        var hasApplied = Model.StudentApplications?.Any(a => a.UserID == currentUserId) ?? false;
+
+        if (hasApplied)
+        {
+            var application = Model.StudentApplications.FirstOrDefault(a => a.UserID == currentUserId);
+
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Bạn đã ứng tuyển vào dự án này.
+                <a asp-controller="Application" asp-action="ViewApplication" asp-route-id="@application.ApplicationID" class="alert-link">
+                    Xem đơn ứng tuyển
+                </a>
+            </div>
+
+            @if (application.Status == "Accepted" || application.Status == "InProgress")
+            {
+                <a asp-controller="ProjectSubmission" asp-action="Create" asp-route-applicationId="@application.ApplicationID"
+                   class="btn btn-success mb-2">
+                    <i class="bi bi-upload"></i> Nộp kết quả dự án
+                </a>
+            }
+
+            @if (application.Status == "Accepted" || application.Status == "InProgress" ||
+                 application.Status == "PendingReview" || application.Status == "Completed")
+            {
+                <a asp-controller="ProjectSubmission" asp-action="MySubmissions" asp-route-applicationId="@application.ApplicationID"
+                   class="btn btn-info">
+                    <i class="bi bi-list-check"></i> Xem kết quả đã nộp
+                </a>
+
+                @if ((application.Status == "PendingReview" || application.Status == "InProgress" || application.Status == "Completed") &&
+                     !application.StudentConfirmedCompletion && (Model.StatusID == 1 || Model.StatusID == 2))
+                {
+                    <form asp-controller="Project" asp-action="ConfirmCompletion" method="post" class="d-inline">
+                        <input type="hidden" name="projectId" value="@Model.ProjectID" />
+                        <input type="hidden" name="applicationId" value="@application.ApplicationID" />
+                        <button type="submit" class="btn btn-success ms-2">
+                            <i class="bi bi-check-circle"></i> Xác nhận hoàn thành
+                        </button>
+                    </form>
+                }
+                else if (application.StudentConfirmedCompletion && (Model.StatusID == 1 || Model.StatusID == 2))
+                {
+                    <form asp-controller="Project" asp-action="CancelConfirmation" method="post" class="d-inline">
+                        <input type="hidden" name="projectId" value="@Model.ProjectID" />
+                        <input type="hidden" name="applicationId" value="@application.ApplicationID" />
+                        <button type="submit" class="btn btn-warning ms-2">
+                            <i class="bi bi-x-circle"></i> Huỷ xác nhận
+                        </button>
+                    </form>
+
+                    @if (!application.BusinessConfirmedCompletion)
+                    {
+                        <div class="alert alert-info mt-2">
+                            <i class="bi bi-info-circle"></i> Bạn đã xác nhận hoàn thành. Đang chờ xác nhận từ doanh nghiệp.
+                        </div>
+                    }
+                    else if (application.BusinessConfirmedCompletion)
+                    {
+                        <div class="alert alert-success mt-2">
+                            <i class="bi bi-check-circle"></i> Dự án đã hoàn thành. Cả hai bên đã xác nhận.
+                        </div>
+                    }
+                }
+            }
+        }
+    }
+}
+else
+{
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> Bạn cần
+        <a asp-controller="Account" asp-action="Login" class="alert-link">đăng nhập</a> để ứng tuyển vào dự án này.
+    </div>
+}
+</div>

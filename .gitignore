@@ -6,3 +6,8 @@ obj/
 *.sln.docstates
 .vs/
 .env
+**/Migrations/
+**/appsettings.json
+**/appsettings.Development.json
+**/appsettings.*.json
+

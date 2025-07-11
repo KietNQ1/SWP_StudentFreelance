@@ -1,0 +1,89 @@
+@model StudentFreelance.ViewModels.StudentApplicationListViewModel
+@{
+    ViewData["Title"] = "Đơn ứng tuyển của tôi";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Đơn ứng tuyển của tôi</h2>
+        <a asp-controller="Project" asp-action="Index" class="btn btn-outline-primary">
+            <i class="bi bi-search"></i> Tìm kiếm dự án mới
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (Model.Applications.Any())
+    {
+        <div class="row">
+            @foreach (var application in Model.Applications)
+            {
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span class="text-muted">@application.TimeAgo</span>
+                            <span class="badge @(application.Status == "Accepted" ? "bg-success" :
+                                                application.Status == "Rejected" ? "bg-danger" :
+                                                application.Status == "Shortlisted" ? "bg-info" :
+                                                "bg-warning")">
+                                @(application.Status == "Pending" ? "Đang chờ" :
+                                  application.Status == "Shortlisted" ? "Đã lọt vào vòng trong" :
+                                  application.Status == "Accepted" ? "Đã chấp nhận" :
+                                  application.Status == "Rejected" ? "Đã từ chối" :
+                                  application.Status)
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">@application.ProjectTitle</h5>
+                            
+                            <div class="text-muted small mb-3">
+                                <i class="bi bi-calendar3"></i> Ngày ứng tuyển: @application.DateApplied.ToString("dd/MM/yyyy HH:mm")
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="fw-bold text-success">
+                                    <i class="bi bi-cash"></i> Lương đề xuất: @application.Salary.ToString("N0") VNĐ
+                                </div>
+                            </div>
+                            
+                            <a asp-controller="Project" asp-action="Details" asp-route-id="@application.ProjectID" 
+                               class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-eye"></i> Xem dự án
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i> Bạn chưa ứng tuyển vào dự án nào.
+            <a asp-controller="Project" asp-action="Index" class="alert-link">Tìm kiếm dự án ngay!</a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // Auto dismiss alerts
+        setTimeout(function() {
+            $('.alert').alert('close');
+        }, 5000);
+    </script>
+} 

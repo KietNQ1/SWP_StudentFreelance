@@ -1,0 +1,56 @@
+@model IEnumerable<StudentFreelance.Models.Category>
+@using Microsoft.AspNetCore.Mvc.Rendering
+@{
+    ViewData["Title"] = "Category List";
+}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="~/css/Categoryindex.css" />
+<h2>@ViewData["Title"]</h2>
+
+@if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+{
+    <a asp-action="Create" class="btn btn-success mb-2">+ Create New</a>
+}
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Category Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Parent Category</th>
+            <th>Is Active</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr class="@(item.IsActive ? "" : "text-muted")">
+                <td>@(char.ToUpper(item.CategoryName[0]) + item.CategoryName.Substring(1).ToLower())</td>
+                <td>@(char.ToUpper(item.CategoryType[0]) + item.CategoryType.Substring(1).ToLower())</td>
+                <td>@item.Description</td>
+                <td>@(item.ParentCategory?.CategoryName ?? "-")</td>
+                <td>@(item.IsActive ? "Yes" : "No")</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.CategoryID" class="btn btn-sm btn-info">Details</a>
+
+                    @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+                    {
+                        <a asp-action="Edit" asp-route-id="@item.CategoryID" class="btn btn-sm btn-warning">Edit</a>
+
+                        @if (item.IsActive)
+                        {
+                            <a asp-action="Hide" asp-route-id="@item.CategoryID" class="btn btn-sm btn-danger">Hide</a>
+                        }
+                        else
+                        {
+                            <a asp-action="Unhide" asp-route-id="@item.CategoryID" class="btn btn-sm btn-success">Unhide</a>
+                        }
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+

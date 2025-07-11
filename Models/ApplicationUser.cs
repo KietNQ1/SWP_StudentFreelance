@@ -1,9 +1,13 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using StudentFreelance.Models.Enums;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
+using System;
 
 namespace StudentFreelance.Models
 {
+    
+
     public class ApplicationUser : IdentityUser<int>
     {
         public string FullName { get; set; }
@@ -27,13 +31,17 @@ namespace StudentFreelance.Models
         public int StatusID { get; set; }
 
         // Navigation properties
-        
-        
+
+        public ICollection<BankAccount> BankAccounts { get; set; } = new List<BankAccount>();
 
         [ForeignKey(nameof(AddressID))]
         public Address Address { get; set; }
 
         [ForeignKey(nameof(StatusID))]
         public AccountStatus Status { get; set; }
+        
+        // Notification collections
+        public ICollection<UserNotification> UserNotifications { get; set; } = new List<UserNotification>();
+        public ICollection<Notification> SentNotifications { get; set; } = new List<Notification>();
     }
 }

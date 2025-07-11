@@ -1,0 +1,68 @@
+@model StudentFreelance.ViewModels.ScheduleInterviewViewModel
+
+@{
+    ViewData["Title"] = "Lên lịch phỏng vấn";
+}
+
+<div class="container mt-4">
+    <h2>Lên lịch phỏng vấn</h2>
+    <hr />
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Thông tin phỏng vấn</h4>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Dự án:</dt>
+                        <dd class="col-sm-8">@Model.ProjectTitle</dd>
+                        
+                        <dt class="col-sm-4">Ứng viên:</dt>
+                        <dd class="col-sm-8">@Model.StudentName</dd>
+                    </dl>
+                    
+                    <form asp-action="ScheduleInterview" method="post">
+                        <input type="hidden" asp-for="ApplicationID" />
+                        <input type="hidden" asp-for="ProjectTitle" />
+                        <input type="hidden" asp-for="StudentName" />
+                        
+                        <div class="form-group mb-3">
+                            <label asp-for="InterviewDateTime" class="control-label"></label>
+                            <input asp-for="InterviewDateTime" class="form-control" type="datetime-local" />
+                            <span asp-validation-for="InterviewDateTime" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label asp-for="Notes" class="control-label"></label>
+                            <textarea asp-for="Notes" class="form-control" rows="4"></textarea>
+                            <span asp-validation-for="Notes" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Lên lịch phỏng vấn</button>
+                            <a asp-action="ProjectApplications" asp-route-projectId="@ViewBag.ProjectID" class="btn btn-secondary">Quay lại</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Hướng dẫn</h4>
+                </div>
+                <div class="card-body">
+                    <p>Lên lịch phỏng vấn cho ứng viên. Hệ thống sẽ tự động cập nhật trạng thái đơn ứng tuyển thành "Phỏng vấn".</p>
+                    <p>Sau khi lên lịch, bạn có thể liên hệ trực tiếp với ứng viên để thông báo.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 

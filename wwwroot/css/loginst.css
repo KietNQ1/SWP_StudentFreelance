@@ -1,0 +1,189 @@
+﻿body {
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+    background: url('/image/login.jpg') no-repeat center center/cover;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-box h1 {
+    font-weight: 600;
+    letter-spacing: 2px;
+}
+
+.login-container {
+    background-color: rgba(211, 214, 221, 0.6);
+    padding: 40px;
+    border-radius: 10px;
+    width: 380px;
+    color: white;
+}
+
+.btn-google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background-color: rgba(255, 255, 255, 0.7); /* ← màu trắng mờ */
+    color: #444;
+    font-weight: 500;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    width: 100%;
+    max-width: 300px;
+    margin: 10px auto;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    font-size: 14px;
+    text-decoration: none;
+}
+
+    .btn-google:hover {
+        background-color: #f1f1f1;
+        text-decoration: none;
+    }
+
+    .btn-google img {
+        width: 30px;
+        height: 20px;
+    }
+
+.or-divider {
+    width: 35px;
+    height: 35px;
+    background-color: #031f4a;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px auto;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+input::placeholder {
+    color: #E0E0E0; /* Trắng nhẹ nhẹ, không quá sáng */
+    opacity: 1; /* Đảm bảo không quá mờ */
+    font-weight: 400;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.brand-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #ffffff;
+    text-align: center;
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+}
+
+.login-box h1 {
+    text-align: center;
+    font-size: 30px;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+    color: #031f4a;
+}
+
+form h2 {
+    margin-bottom: 20px;
+    font-weight: 400;
+}
+
+.input-group {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+    .input-group input {
+        width: 87%;
+        padding: 10px 35px 10px 10px;
+        border: 1px solid#031f4a;
+        border-radius: 3px;
+        background: transparent;
+        color: #F0F0F0;
+    }
+
+    .input-group .icon {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+.options {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+    .options a {
+        color: white;
+        text-decoration: none;
+    }
+
+.btn-login {
+    width: 100%;
+    background-color: #031f4a;
+    color: white;
+    border: none;
+    padding: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.register {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 14px;
+}
+
+    .register a {
+        color: white;
+        background: #333;
+        padding: 5px 10px;
+        border-radius: 5px;
+        text-decoration: none;
+    }
+/* ... các CSS như trước ... */
+
+@media screen and (max-width: 480px) {
+    .login-container {
+        width: 90%;
+        padding: 25px;
+    }
+
+    .login-box h1 {
+        font-size: 18px;
+    }
+
+    form h2 {
+        font-size: 16px;
+    }
+
+    .btn-login {
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .options {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    .register {
+        font-size: 13px;
+    }
+
+        .register a {
+            display: inline-block;
+            margin-top: 8px;
+        }
+}

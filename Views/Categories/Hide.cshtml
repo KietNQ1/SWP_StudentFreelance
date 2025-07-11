@@ -1,0 +1,18 @@
+@model StudentFreelance.Models.Category
+@{
+    ViewData["Title"] = "Hide Category";
+}
+
+<h2>Are you sure you want to hide this category?</h2>
+
+<div>
+    <h4>@Model.CategoryName</h4>
+    <p>@Model.Description</p>
+</div>
+
+<form asp-action="Hide" method="post">
+    @Html.AntiForgeryToken()
+    <input asp-for="CategoryID" type="hidden" />
+    <button type="submit" class="btn btn-danger">Hide</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

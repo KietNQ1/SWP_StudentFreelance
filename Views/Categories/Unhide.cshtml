@@ -1,0 +1,19 @@
+﻿@model StudentFreelance.Models.Category
+
+@{
+    ViewData["Title"] = "Hiển thị lại danh mục";
+}
+
+<h1>Bạn có chắc muốn hiện lại danh mục này?</h1>
+<div>
+    <h4>@Model.CategoryName</h4>
+    <p>Loại: @Model.CategoryType</p>
+    <p>@Model.Description</p>
+</div>
+
+<form asp-action="Unhide" method="post">
+    @Html.AntiForgeryToken()
+    <input asp-for="CategoryID" type="hidden" />
+    <button type="submit" class="btn btn-success">Hiện</button>
+    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+</form>

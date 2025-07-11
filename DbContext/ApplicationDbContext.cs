@@ -16,8 +16,8 @@ namespace StudentFreelance.DbContext
         }
 
         // DbSet declarations
-      
-      
+
+
         public DbSet<Province> Provinces { get; set; }
         public DbSet<District> Districts { get; set; }
         public DbSet<Ward> Wards { get; set; }
@@ -32,9 +32,13 @@ namespace StudentFreelance.DbContext
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<Rating> Ratings { get; set; }
         public DbSet<Report> Reports { get; set; }
+        public DbSet<Conversation> Conversations { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<UserNotification> UserNotifications { get; set; }
         public DbSet<UserAccountHistory> UserAccountHistories { get; set; }
+        public DbSet<BankAccount> BankAccounts { get; set; }
+
 
         // Enum DbSets
         public DbSet<ProjectStatus> ProjectStatuses { get; set; }
@@ -47,6 +51,9 @@ namespace StudentFreelance.DbContext
         public DbSet<AccountStatus> AccountStatuses { get; set; }
         public DbSet<ProficiencyLevel> ProficiencyLevels { get; set; }
         public DbSet<ImportanceLevel> ImportanceLevels { get; set; }
+
+        public DbSet<ProjectSubmission> ProjectSubmissions { get; set; }
+        public DbSet<ProjectSubmissionAttachment> ProjectSubmissionAttachments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -103,7 +110,7 @@ namespace StudentFreelance.DbContext
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Users → UserRole
-          
+
 
             // Users → Address
             modelBuilder.Entity<ApplicationUser>()
@@ -234,7 +241,14 @@ namespace StudentFreelance.DbContext
                 .HasForeignKey(r => r.ProjectID)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Message
+            // Conversation relationships
+            modelBuilder.Entity<Conversation>()
+                .HasOne(c => c.Project)
+                .WithMany(p => p.Conversations)
+                .HasForeignKey(c => c.ProjectID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Message relationships
             modelBuilder.Entity<Message>()
                 .HasOne(m => m.Sender)
                 .WithMany()   // no User.MessagesSent collection
@@ -250,13 +264,36 @@ namespace StudentFreelance.DbContext
                 .WithMany(p => p.Messages)
                 .HasForeignKey(m => m.ProjectID)
                 .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Message>()
+                .HasOne(m => m.Conversation)
+                .WithMany(c => c.Messages)
+                .HasForeignKey(m => m.ConversationID)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Notification
             modelBuilder.Entity<Notification>()
-                .HasOne(n => n.User)
-                .WithMany()   // no User.Notifications collection
-                .HasForeignKey(n => n.UserID)
+                .HasOne(n => n.Sender)
+                .WithMany(u => u.SentNotifications)
+                .HasForeignKey(n => n.SenderID)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // UserNotification
+            modelBuilder.Entity<UserNotification>()
+                .HasOne(un => un.User)
+                .WithMany(u => u.UserNotifications)
+                .HasForeignKey(un => un.UserID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<UserNotification>()
+                .HasOne(un => un.Notification)
+                .WithMany(n => n.UserNotifications)
+                .HasForeignKey(un => un.NotificationID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Create a unique index for UserID and NotificationID combination
+            modelBuilder.Entity<UserNotification>()
+                .HasIndex(un => new { un.UserID, un.NotificationID })
+                .IsUnique();
 
             // UserAccountHistory
             modelBuilder.Entity<UserAccountHistory>()
@@ -326,13 +363,32 @@ namespace StudentFreelance.DbContext
                 .HasForeignKey(psr => psr.ImportanceLevelID)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // ProjectSubmission relationships
+            modelBuilder.Entity<ProjectSubmission>()
+                .HasOne(ps => ps.Application)
+                .WithMany()  // no StudentApplication.Submissions collection
+                .HasForeignKey(ps => ps.ApplicationID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // ProjectSubmissionAttachment relationships
+            modelBuilder.Entity<ProjectSubmissionAttachment>()
+                .HasOne(psa => psa.Submission)
+                .WithMany(ps => ps.Attachments)
+                .HasForeignKey(psa => psa.SubmissionID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ProjectSubmissionAttachment>()
+                .HasOne(psa => psa.UploadedByUser)
+                .WithMany()  // no User.SubmissionAttachments collection
+                .HasForeignKey(psa => psa.UploadedBy)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // Global query filters for soft-delete
-            
+
             modelBuilder.Entity<Address>().HasQueryFilter(a => a.IsActive);
             modelBuilder.Entity<Category>().HasQueryFilter(c => c.IsActive);
             modelBuilder.Entity<Skill>().HasQueryFilter(s => s.IsActive);
             modelBuilder.Entity<StudentSkill>().HasQueryFilter(ss => ss.IsActive);
-            modelBuilder.Entity<StudentApplication>().HasQueryFilter(sa => sa.IsActive);
             modelBuilder.Entity<ProjectSkillRequired>().HasQueryFilter(ps => ps.IsActive);
             modelBuilder.Entity<ProjectAttachment>().HasQueryFilter(pa => pa.IsActive);
             modelBuilder.Entity<Transaction>().HasQueryFilter(t => t.IsActive);
@@ -351,6 +407,9 @@ namespace StudentFreelance.DbContext
             modelBuilder.Entity<AccountStatus>().HasQueryFilter(e => e.IsActive);
             modelBuilder.Entity<ProficiencyLevel>().HasQueryFilter(e => e.IsActive);
             modelBuilder.Entity<ImportanceLevel>().HasQueryFilter(e => e.IsActive);
+            modelBuilder.Entity<ProjectSubmission>().HasQueryFilter(ps => ps.IsActive);
+            modelBuilder.Entity<ProjectSubmissionAttachment>().HasQueryFilter(psa => psa.IsActive);
+            modelBuilder.Entity<Conversation>().HasQueryFilter(c => c.IsActive);
         }
     }
 }

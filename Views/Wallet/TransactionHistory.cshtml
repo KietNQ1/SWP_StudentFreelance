@@ -1,0 +1,136 @@
+@model IEnumerable<StudentFreelance.Models.Transaction>
+
+@{
+    ViewData["Title"] = "Transaction History";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/wallet/transaction-history.css" asp-append-version="true" />
+    <style>
+        .transaction-row {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .transaction-row:hover {
+            background-color: rgba(211, 230, 113, 0.2);
+        }
+    </style>
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Transaction History</h2>
+        <a asp-action="Index" class="btn btn-primary">Back to Wallet</a>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>All Transactions</h4>
+                </div>
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="text" id="searchInput" class="form-control" placeholder="Search transactions...">
+                        <button class="btn btn-outline-secondary" type="button">
+                            <i class="bi bi-search"></i> Search
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped" id="transactionsTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                                <th>Project</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var transaction in Model)
+                            {
+                                <tr class="transaction-row" onclick="location.href='@Url.Action("TransactionDetail", "Wallet", new { id = transaction.TransactionID })'">
+                                    <td>@transaction.TransactionDate.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td>@transaction.Type.TypeName</td>
+                                    <td class="@(transaction.TypeID == 1 ? "text-success" : "text-danger")">
+                                        @(transaction.TypeID == 1 ? "+" : "-")@transaction.Amount.ToString("C")
+                                    </td>
+                                    <td>@transaction.Description</td>
+                                    <td>
+                                        @if (transaction.StatusID == 1) // Assuming 1 is Completed
+                                        {
+                                            <span class="badge bg-success">@transaction.Status.StatusName</span>
+                                        }
+                                        else if (transaction.StatusID == 2) // Assuming 2 is Failed
+                                        {
+                                            <span class="badge bg-danger">@transaction.Status.StatusName</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning">@transaction.Status.StatusName</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (transaction.Project != null)
+                                        {
+                                            <a asp-controller="Project" asp-action="Details" asp-route-id="@transaction.ProjectID">
+                                                @transaction.Project.Title
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span>-</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="mt-4">
+                    <nav aria-label="Transaction history pagination">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    You don't have any transactions yet.
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $("#searchInput").on("keyup", function() {
+                var value = $(this).val().toLowerCase();
+                $("#transactionsTable tbody tr").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+    </script>
+} 

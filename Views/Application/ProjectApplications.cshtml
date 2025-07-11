@@ -1,0 +1,394 @@
+@model StudentFreelance.ViewModels.ProjectApplicationListViewModel
+@{
+    ViewData["Title"] = "Danh sách ứng viên";
+}
+
+<style>
+    :root {
+        --primary: #89AC46;
+        --accent1: #D3E671;
+        --accent2: #F8ED8C;
+        --accent3: #FF8989;
+    }
+
+    body {
+        background-color: #F8F8F8;
+        color: #222;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .breadcrumb {
+        background-color: transparent;
+        font-size: 0.95rem;
+    }
+
+    .card {
+        border-radius: 12px;
+        border-left: 5px solid var(--primary);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        background-color: #fff;
+        border: 1px solid #ddd;
+    }
+
+    .card-header {
+        background-color: var(--accent1);
+        font-weight: 600;
+        color: #222;
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+        border-bottom: 1px solid #ccc;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+        background-color: #fff;
+    }
+
+    .badge {
+        font-size: 0.85rem;
+        padding: 0.4em 0.8em;
+        border-radius: 20px;
+        font-weight: 500;
+    }
+
+    .bg-warning {
+        background-color: var(--accent2) !important;
+        color: #222;
+    }
+
+    .bg-success {
+        background-color: #6FCF97 !important;
+        color: white;
+    }
+
+    .bg-danger {
+        background-color: var(--accent3) !important;
+        color: white;
+    }
+
+    .bg-info {
+        background-color: #9AD0EC !important;
+        color: #222;
+    }
+
+    .bg-secondary {
+        background-color: var(--accent1) !important;
+        color: #222;
+    }
+
+    .cover-letter {
+        background-color: #fdfdfd;
+        border: 1px solid #ddd;
+        border-left: 4px solid var(--primary);
+        font-size: 0.95rem;
+        padding: 1rem;
+        color: #333;
+    }
+
+    .applicant-info h6 {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .rating i {
+        font-size: 1.1rem;
+    }
+
+    .btn {
+        font-weight: 500;
+    }
+
+    .btn-info {
+        background-color: #9AD0EC;
+        border-color: #9AD0EC;
+        color: #222;
+    }
+
+        .btn-info:hover {
+            background-color: #86c5e0;
+            color: black;
+        }
+
+    .btn-primary {
+        background-color: var(--accent3);
+        border-color: var(--accent3);
+        color: white;
+    }
+
+        .btn-primary:hover {
+            background-color: #e35a5a;
+            border-color: #e35a5a;
+            color: white;
+        }
+
+    .btn-outline-primary {
+        border-color: var(--primary);
+        color: var(--primary);
+        background-color: #fff;
+    }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+    .btn-success {
+        background-color: var(--primary);
+        border-color: var(--primary);
+        color: white;
+    }
+
+        .btn-success:hover {
+            background-color: #6d9138;
+            border-color: #6d9138;
+        }
+
+    .alert-success {
+        background-color: var(--accent1);
+        color: #333;
+        border: 1px solid var(--primary);
+    }
+
+    .alert-danger {
+        background-color: var(--accent3);
+        color: white;
+        border: none;
+    }
+
+    .alert-info {
+        background-color: #E8F0E8;
+        border-left: 4px solid var(--primary);
+        color: #333;
+    }
+
+    @@media (max-width: 768px) {
+        .card-header h5
+
+    {
+        font-size: 1.1rem;
+    }
+
+    .btn {
+        font-size: 0.9rem;
+    }
+
+    .cover-letter {
+        font-size: 0.9rem;
+    }
+
+    }
+</style>
+
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Index">Dự án</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Details" asp-route-id="@Model.ProjectID">Chi tiết dự án</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Danh sách ứng viên (@Model.Applications.Count)</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Ứng viên cho dự án: @Model.ProjectTitle</h2>
+        <a asp-controller="Project" asp-action="Details" asp-route-id="@Model.ProjectID" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Quay lại dự án
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (Model.Applications.Any())
+    {
+        <div class="row">
+            <div class="col-12 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Tổng số ứng viên: @Model.Applications.Count</h5>
+                            <div>
+                                <span class="badge bg-warning me-2">Đang chờ: @Model.Applications.Count(a => a.Status == "Pending")</span>
+                                <span class="badge bg-info me-2">Vòng trong: @Model.Applications.Count(a => a.Status == "Shortlisted")</span>
+                                <span class="badge bg-success me-2">Đã chấp nhận: @Model.Applications.Count(a => a.Status == "Accepted")</span>
+                                <span class="badge bg-danger">Đã từ chối: @Model.Applications.Count(a => a.Status == "Rejected")</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            @foreach (var application in Model.Applications)
+            {
+                <div class="col-md-12 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <img src="@application.UserAvatar" alt="Avatar" class="rounded-circle me-2" style="width: 40px; height: 40px;" />
+                                <div>
+                                    <h5 class="mb-0">@application.UserFullName</h5>
+                                    <div class="text-muted small">Ứng tuyển @application.TimeAgo</div>
+                                </div>
+                            </div>
+                            <div>
+                                <!-- Hiển thị trạng thái từ dữ liệu thực tế, không phụ thuộc vào class hoặc element khác -->
+                                @{
+                                    string badgeClass = "bg-warning";
+                                    string statusText = "Đang chờ";
+                                    
+                                    if (application.Status == "Accepted")
+                                    {
+                                        badgeClass = "bg-success";
+                                        statusText = "Đã chấp nhận";
+                                    }
+                                    else if (application.Status == "Rejected")
+                                    {
+                                        badgeClass = "bg-danger";
+                                        statusText = "Đã từ chối";
+                                    }
+                                    else if (application.Status == "Shortlisted")
+                                    {
+                                        badgeClass = "bg-info";
+                                        statusText = "Đã lọt vào vòng trong";
+                                    }
+                                }
+                                <span class="badge @badgeClass">@statusText</span>
+                                <span class="d-none">Trạng thái gốc: @application.Status</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h6 class="fw-bold mb-2">Thư ứng tuyển:</h6>
+                                    <div class="cover-letter p-3 bg-light rounded mb-3">
+                                        @application.CoverLetter
+                                    </div>
+                                    
+                                    @if (application.StudentSkills != null && application.StudentSkills.Any())
+                                    {
+                                        <h6 class="fw-bold mb-2">Kỹ năng:</h6>
+                                        <div class="skills mb-3">
+                                            @foreach (var skill in application.StudentSkills)
+                                            {
+                                                <span class="badge bg-secondary me-1 mb-1">
+                                                    @skill.SkillName (@skill.ProficiencyLevelName)
+                                                </span>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="applicant-info">
+                                        <div class="info-item mb-3">
+                                            <h6 class="fw-bold">Thông tin liên hệ:</h6>
+                                            <div><i class="bi bi-envelope me-2"></i>@application.UserEmail</div>
+                                            @if (!string.IsNullOrEmpty(application.UserPhone))
+                                            {
+                                                <div><i class="bi bi-telephone me-2"></i>@application.UserPhone</div>
+                                            }
+                                        </div>
+                                        
+                                        <div class="info-item mb-3">
+                                            <h6 class="fw-bold">Mức lương đề xuất:</h6>
+                                            <div class="text-success fw-bold">@application.Salary.ToString("N0") VNĐ</div>
+                                        </div>
+                                        
+                                        @if (application.UserAverageRating.HasValue)
+                                        {
+                                            <div class="info-item mb-3">
+                                                <h6 class="fw-bold">Đánh giá:</h6>
+                                                <div class="rating">
+                                                    @for (int i = 1; i <= 5; i++)
+                                                    {
+                                                        if (i <= Math.Round(application.UserAverageRating.Value))
+                                                        {
+                                                            <i class="bi bi-star-fill text-warning"></i>
+                                                        }
+                                                        else
+                                                        {
+                                                            <i class="bi bi-star text-warning"></i>
+                                                        }
+                                                    }
+                                                    <span class="ms-2">(@application.UserAverageRating.Value.ToString("0.0"))</span>
+                                                </div>
+                                            </div>
+                                        }
+                                        
+                                        <div class="action-buttons mt-4">
+                                            <a asp-action="ViewApplication" asp-route-id="@application.ApplicationID" 
+                                               class="btn btn-info w-100 mb-2">
+                                                <i class="bi bi-eye"></i> Xem chi tiết
+                                            </a>
+                                            
+                                            <a asp-action="UpdateStatus" asp-route-id="@application.ApplicationID" 
+                                               class="btn btn-primary w-100 mb-2">
+                                                <i class="bi bi-pencil-square"></i> Cập nhật trạng thái
+                                            </a>
+                                            
+                                            @if (application.Status == "PendingReview" || application.Status == "InProgress" || application.Status == "Completed")
+                                            {
+                                                <a asp-controller="ProjectSubmission" asp-action="ProjectSubmissions" asp-route-applicationId="@application.ApplicationID" 
+                                                    class="btn btn-success w-100 mb-2">
+                                                    <i class="bi bi-file-earmark-check"></i> Xem kết quả dự án
+                                                </a>
+                                            }
+                                            
+                                            <a href="mailto:@application.UserEmail" class="btn btn-outline-primary w-100">
+                                                <i class="bi bi-envelope"></i> Liên hệ qua email
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i> Chưa có sinh viên nào ứng tuyển vào dự án này.
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // Auto dismiss alerts
+        setTimeout(function() {
+            $('.alert').alert('close');
+        }, 10000); // Tăng thời gian hiển thị thông báo để dễ đọc
+        
+        // Xóa bất kỳ badge "Withdrawn" nào được thêm vào từ bên ngoài
+        document.addEventListener('DOMContentLoaded', function() {
+            // Kiểm tra và loại bỏ badge Withdrawn nếu có
+            const withdrawnBadges = document.querySelectorAll('.badge:not(.bg-success):not(.bg-danger):not(.bg-info):not(.bg-warning)');
+            withdrawnBadges.forEach(badge => {
+                if (badge.textContent.trim() === 'Withdrawn') {
+                    badge.remove();
+                }
+            });
+        });
+    </script>
+} 

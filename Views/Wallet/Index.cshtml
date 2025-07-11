@@ -1,0 +1,122 @@
+@model StudentFreelance.ViewModels.WalletViewModel
+
+@{
+    ViewData["Title"] = "My Wallet";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/wallet/wallet.css" asp-append-version="true" />
+    <style>
+        .transaction-row {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .transaction-row:hover {
+            background-color: rgba(211, 230, 113, 0.2);
+        }
+    </style>
+}
+
+<div class="container mt-4">
+    <h2>My Wallet</h2>
+    
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4>Wallet Balance</h4>
+                </div>
+                <div class="card-body">
+                    <h2 class="display-4">@Model.WalletBalance.ToString("C")</h2>
+                    <div class="mt-4">
+                        <a asp-action="Deposit" class="btn btn-success me-2">Deposit Funds</a>
+                        <a asp-action="Withdraw" class="btn btn-warning">Withdraw Funds</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h4>Quick Actions</h4>
+                </div>
+                <div class="card-body">
+                    <p>Manage your wallet and view your transaction history.</p>
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <i class="bi bi-clock-history"></i>
+                            <a asp-action="TransactionHistory">View Full Transaction History</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-secondary text-white">
+            <h4>Recent Transactions</h4>
+        </div>
+        <div class="card-body">
+            @if (Model.Transactions != null && Model.Transactions.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var transaction in Model.Transactions.Take(5))
+                            {
+                                <tr class="transaction-row" onclick="location.href='@Url.Action("TransactionDetail", "Wallet", new { id = transaction.TransactionID })'">
+                                    <td>@transaction.TransactionDate.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td>@transaction.Type.TypeName</td>
+                                    <td class="@(transaction.TypeID == 1 ? "text-success" : "text-danger")">
+                                        @(transaction.TypeID == 1 ? "+" : "-")@transaction.Amount.ToString("C")
+                                    </td>
+                                    <td>@transaction.Description</td>
+                                    <td>
+                                        @if (transaction.StatusID == 1) // Assuming 1 is Completed
+                                        {
+                                            <span class="badge bg-success">@transaction.Status.StatusName</span>
+                                        }
+                                        else if (transaction.StatusID == 2) // Assuming 2 is Failed
+                                        {
+                                            <span class="badge bg-danger">@transaction.Status.StatusName</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning">@transaction.Status.StatusName</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center mt-3">
+                    <a asp-action="TransactionHistory" class="btn btn-outline-primary">View All Transactions</a>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    You don't have any transactions yet.
+                </div>
+            }
+        </div>
+    </div>
+</div> 

@@ -1,0 +1,144 @@
+@model IEnumerable<StudentFreelance.Models.ApplicationUser>
+@{
+    ViewData["Title"] = "Tìm kiếm doanh nghiệp";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/search/searchBusinesses.css" asp-append-version="true" />
+    <style>
+        .filter-header {
+            background-color: #89AC46 !important;
+            color: white;
+        }
+    </style>
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4 text-primary">Tìm kiếm doanh nghiệp</h2>
+
+    <div class="card mb-4 search-card">
+        <div class="card-header filter-header">
+            <h5 class="mb-0 text-white">Bộ lọc tìm kiếm</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="SearchBusinesses" method="get" class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Tìm kiếm theo tên công ty/ngành nghề</label>
+                    <div class="input-group">
+                        <input type="text" name="query" value="@ViewBag.Query" class="form-control" placeholder="Nhập tên công ty hoặc lĩnh vực...">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i> Tìm kiếm
+                        </button>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Tỉnh/Thành phố</label>
+                    <select name="provinceId" class="form-select">
+                        <option value="">-- Tất cả --</option>
+                        @foreach (var province in ViewBag.Provinces)
+                        {
+                            var selected = ViewBag.ProvinceId != null && ViewBag.ProvinceId == province.ProvinceID;
+                            <option value="@province.ProvinceID" selected="@selected">
+                                @province.Name
+                            </option>
+                        }
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="business-list">
+            @foreach (var business in Model)
+            {
+                <div class="card mb-3 search-card">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-1 text-center">
+                                @if (!string.IsNullOrEmpty(business.ProfilePicturePath))
+                                {
+                                    <img src="@business.ProfilePicturePath" class="rounded-circle profile-avatar" alt="@business.CompanyName" style="width: 60px; height: 60px;">
+                                }
+                                else
+                                {
+                                    <div class="profile-avatar-placeholder" style="width: 60px; height: 60px;">
+                                        <span>@(business.CompanyName?.Substring(0, 1) ?? "C")</span>
+                                    </div>
+                                }
+                            </div>
+                            <div class="col-md-5">
+                                <h5 class="mb-0 business-name">@business.CompanyName</h5>
+                                <p class="text-muted mb-2">@business.Industry</p>
+                                <p class="mb-0">
+                                    <i class="bi bi-person"></i> @business.FullName
+                                </p>
+                            </div>
+                            <div class="col-md-3">
+                                <p class="mb-1">
+                                    @if (business.Address != null)
+                                    {
+                                        <i class="bi bi-geo-alt"></i>
+                                        <span>
+                                            @(string.IsNullOrEmpty(business.Address.DetailAddress) ? "" : business.Address.DetailAddress + ", ")
+                                            @(business.Address.Province?.Name ?? "")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted"><i class="bi bi-geo-alt"></i> Chưa có thông tin địa chỉ</span>
+                                    }
+                                </p>
+                                @if (!string.IsNullOrEmpty(business.PhoneNumber))
+                                {
+                                    <p class="mb-1">
+                                        <i class="bi bi-telephone"></i> @business.PhoneNumber
+                                    </p>
+                                }
+                                <p class="mb-0">
+                                    <i class="bi bi-envelope"></i> @business.Email
+                                </p>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="info-badge mb-2">
+                                    <i class="bi bi-star-fill rating-stars me-1"></i>
+                                    <span>@business.AverageRating</span>
+                                </div>
+                                <div class="info-badge">
+                                    <i class="bi bi-briefcase-fill me-1"></i>
+                                    <span>@(ViewBag.ProjectCounts != null && ViewBag.ProjectCounts.ContainsKey(business.Id) 
+                                        ? ViewBag.ProjectCounts[business.Id] 
+                                        : 0) dự án</span>
+                                </div>
+                            </div>
+                            <div class="col-md-1 text-end">
+                                <a href="#" class="btn btn-view-profile">Xem hồ sơ</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            Không tìm thấy doanh nghiệp nào phù hợp với tiêu chí tìm kiếm.
+        </div>
+    }
+</div>
+
+
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('select[name="provinceId"]').select2({
+                placeholder: "Chọn tỉnh/thành phố...",
+                allowClear: true
+            });
+        });
+    </script>
+} 

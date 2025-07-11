@@ -3,9 +3,12 @@ using Microsoft.AspNetCore.Identity;
 using StudentFreelance.DbContext;
 using StudentFreelance.Models;
 using StudentFreelance.Data;
+using StudentFreelance.Models.Email;
+using StudentFreelance.Models.PayOS;
+using StudentFreelance.Services.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddSignalR();              // Đăng ký SignalR
 // 1. Configure Entity Framework Core (SQL Server)
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -21,6 +24,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
+
+
 // 3. Configure Authentication Cookie
 builder.Services.ConfigureApplicationCookie(options =>
 {
@@ -29,9 +34,39 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
     options.ExpireTimeSpan = TimeSpan.FromDays(7);
 });
+// 3b. Add Google Authentication
+builder.Services.AddAuthentication()
+    .AddGoogle(options =>
+    {
+        IConfigurationSection googleAuthNSection = builder.Configuration.GetSection("Authentication:Google");
+        options.ClientId = googleAuthNSection["ClientId"];
+        options.ClientSecret = googleAuthNSection["ClientSecret"];
+        // N?u mu?n l?y th�ng tin profile c th? dng scope:
+        // options.Scope.Add("profile");
+        // options.Scope.Add("email");
+    });
 
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IEmailSender, StudentFreelance.Services.Implementations.GmailEmailSender>();
+
+// Register application services
+builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IProjectService, StudentFreelance.Services.Implementations.ProjectService>();
+builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IReportService, StudentFreelance.Services.Implementations.ReportService>();
+builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IApplicationService, StudentFreelance.Services.Implementations.ApplicationService>();
+builder.Services.AddScoped<StudentFreelance.Services.Interfaces.INotificationService, StudentFreelance.Services.Implementations.NotificationService>();
+builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IProjectSubmissionService, StudentFreelance.Services.Implementations.ProjectSubmissionService>();
+builder.Services.AddScoped<StudentFreelance.Services.Interfaces.ITransactionService, StudentFreelance.Services.Implementations.TransactionService>();
+builder.Services.AddScoped<IBankAccountService, BankAccountService>();
+//builder.Services.AddScoped<IPayOSService, PayOSService>();
+builder.Services.AddHttpClient<IPayOSService, PayOSService>();
+builder.Services.Configure<PayOSConfig>(
+builder.Configuration.GetSection("PayOS"));
+
+// Đăng ký cấu hình PayOS
+builder.Services.Configure<PayOSConfig>(builder.Configuration.GetSection("PayOS"));
 // 4. Add MVC support
 builder.Services.AddControllersWithViews();
+
 
 var app = builder.Build();
 
@@ -67,5 +102,8 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-
+// Route cho SignalR hub
+app.MapHub<StudentFreelance.Hubs.ChatHub>("/chathub");
 app.Run();
+
+

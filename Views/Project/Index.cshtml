@@ -1,0 +1,259 @@
+@model IEnumerable<StudentFreelance.Models.Project>
+
+<style>
+    :root {
+        --primary: #89AC46;
+        --accent1: #D3E671;
+        --accent2: #F8ED8C;
+        --accent3: #FF8989;
+        --gray-bg: #f9f9f9;
+        --dark-text: #222;
+    }
+
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        background-color: var(--gray-bg);
+    }
+
+    h1 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    .btn-primary {
+        background-color: var(--primary);
+        border-color: var(--primary);
+        font-weight: 600;
+    }
+
+        .btn-primary:hover {
+            background-color: #6d9138;
+            border-color: #6d9138;
+        }
+
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.06);
+    }
+
+    .card-body {
+        background-color: #fff;
+        padding: 1.5rem;
+        border-radius: 12px;
+    }
+
+    .table {
+        margin: 0;
+    }
+
+        .table th {
+            background-color: var(--accent1);
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-bottom: none;
+        }
+
+        .table td {
+            vertical-align: middle;
+            font-size: 0.95rem;
+            color: var(--dark-text);
+        }
+
+    .table-hover tbody tr:hover {
+        background-color: #f1f8e9;
+    }
+
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.4em 0.7em;
+        border-radius: 20px;
+        font-weight: 500;
+    }
+
+        .badge.bg-primary {
+            background-color: var(--primary) !important;
+            color: white;
+        }
+
+        .badge.bg-warning {
+            background-color: var(--accent2);
+            color: #333;
+        }
+
+        .badge.bg-danger {
+            background-color: var(--accent3);
+            color: white;
+        }
+
+        .badge.bg-success {
+            background-color: #6fcf97;
+            color: white;
+        }
+
+    .btn-group .btn {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.6rem;
+        margin: 0 2px;
+    }
+
+    .btn-outline-primary {
+        color: var(--primary);
+        border-color: var(--primary);
+    }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+    .btn-outline-secondary {
+        border-color: var(--accent1);
+        color: #333;
+    }
+
+        .btn-outline-secondary:hover {
+            background-color: var(--accent1);
+            color: #111;
+        }
+
+    .btn-outline-danger {
+        color: var(--accent3);
+        border-color: var(--accent3);
+    }
+
+        .btn-outline-danger:hover {
+            background-color: var(--accent3);
+            color: white;
+        }
+
+    .btn-outline-success {
+        color: #6fcf97;
+        border-color: #6fcf97;
+    }
+
+        .btn-outline-success:hover {
+            background-color: #6fcf97;
+            color: white;
+        }
+
+    .table td span.badge {
+        margin-right: 0.5rem;
+    }
+
+    @@media (max-width: 768px) {
+        .table th, .table td
+
+    {
+        font-size: 0.85rem;
+    }
+
+    .btn-group .btn {
+        margin-bottom: 4px;
+    }
+
+    }
+</style>
+
+
+@{
+    ViewData["Title"] = "Quản lý dự án";
+}
+
+<div class="project-header">
+    <div class="container header-container">
+        <h1>Quản lý dự án</h1>
+        <p>Xem và quản lý các dự án của bạn</p>
+    </div>
+</div>
+
+<div class="container main-container">
+    <div class="content-container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-heading">Danh sách dự án</h2>
+            @if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i> Tạo dự án mới
+                </a>
+            }
+        </div>
+
+        <div class="card project-card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Tiêu đề</th>
+                                <th>Danh mục</th>
+                                <th>Ngân sách</th>
+                                <th>Hạn nộp</th>
+                                <th>Trạng thái</th>
+                                <th>Loại</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        @if (item.IsHighlighted)
+                                        {
+                                            <span class="badge featured-badge me-1">Nổi bật</span>
+                                        }
+                                        @if (!item.IsActive)
+                                        {
+                                            <span class="badge hidden-badge me-1">Đã ẩn</span>
+                                        }
+                                        @Html.DisplayFor(modelItem => item.Title)
+                                    </td>
+                                    <td>@Html.DisplayFor(modelItem => item.Category.CategoryName)</td>
+                                    <td>@Html.DisplayFor(modelItem => item.Budget) VNĐ</td>
+                                    <td>@item.Deadline.ToString("dd/MM/yyyy")</td>
+                                    <td>
+                                        <span class="badge status-badge status-@(item.StatusID)">
+                                            @Html.DisplayFor(modelItem => item.Status.StatusName)
+                                        </span>
+                                    </td>
+                                    <td>@Html.DisplayFor(modelItem => item.Type.TypeName)</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a asp-action="Details" asp-route-id="@item.ProjectID" class="btn btn-sm btn-view">
+                                                <i class="bi bi-eye"></i> Xem
+                                            </a>
+                                            @if (User.Identity != null && User.Identity.IsAuthenticated && 
+                                                (User.IsInRole("Admin") || 
+                                                 User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == item.BusinessID.ToString()))
+                                            {
+                                                <a asp-action="Edit" asp-route-id="@item.ProjectID" class="btn btn-sm btn-edit">
+                                                    <i class="bi bi-pencil"></i> Sửa
+                                                </a>
+                                                @if (item.IsActive)
+                                                {
+                                                    <a asp-action="Delete" asp-route-id="@item.ProjectID" class="btn btn-sm btn-delete">
+                                                        <i class="bi bi-trash"></i> Xóa
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    <a asp-action="Activate" asp-route-id="@item.ProjectID" class="btn btn-sm btn-activate">
+                                                        <i class="bi bi-check-circle"></i> Kích hoạt
+                                                    </a>
+                                                }
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

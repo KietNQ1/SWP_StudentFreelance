@@ -1,0 +1,140 @@
+﻿@model StudentFreelance.Models.ApplicationUser
+@{
+    ViewData["Title"] = "Edit User";
+    Layout = null;
+    var currentRole = ViewBag.CurrentRole as string;
+    var allRoles = ViewBag.AllRoles as List<string> ?? new List<string>();
+}
+
+<head>
+    <link href="~/css/Editst.css" rel="stylesheet" />
+</head>
+<body>
+<div class="container">
+    <div class="form-card">
+        <div class="card-header">
+            <h3>
+                <i class="fas fa-user-edit"></i>
+                Edit User
+            </h3>
+        </div>
+        <div class="card-body">
+            <form asp-action="Edit" method="post">
+                <input type="hidden" asp-for="Id" />
+
+                <div class="form-group">
+                    <label class="form-label" asp-for="FullName">
+                        <i class="fas fa-user"></i> Full Name
+                    </label>
+                    <div style="position: relative;">
+                        <input asp-for="FullName" class="form-control" placeholder="Enter full name" />
+                        <i class="fas fa-user input-icon"></i>
+                    </div>
+                    <span asp-validation-for="FullName" class="validation-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" asp-for="Email">
+                        <i class="fas fa-envelope"></i> Email
+                    </label>
+                    <div style="position: relative;">
+                        <input asp-for="Email" class="form-control" placeholder="Enter email" />
+                        <i class="fas fa-envelope input-icon"></i>
+                    </div>
+                    <span asp-validation-for="Email" class="validation-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" asp-for="PhoneNumber">
+                        <i class="fas fa-phone"></i> Phone Number
+                    </label>
+                    <div style="position: relative;">
+                        <input asp-for="PhoneNumber" class="form-control" placeholder="Enter phone number" />
+                        <i class="fas fa-phone input-icon"></i>
+                    </div>
+                    <span asp-validation-for="PhoneNumber" class="validation-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="selectedRole">
+                        <i class="fas fa-user-tag"></i> Role
+                    </label>
+                    <select name="selectedRole" id="selectedRole" class="form-select">
+                        @foreach (var role in allRoles)
+                        {
+                            <option value="@role" selected="@(role == currentRole)">
+                                @role
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+@section Scripts {
+    <script>
+         document.getElementById('editUserForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const submitBtn = this.querySelector('.btn-success');
+            submitBtn.classList.add('loading');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+            // Simulate form submission
+            setTimeout(() => {
+                submitBtn.classList.remove('loading');
+                submitBtn.innerHTML = '<i class="fas fa-check"></i> Saved!';
+                submitBtn.style.background = 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)';
+
+                setTimeout(() => {
+                    submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+                }, 2000);
+            }, 2000);
+        });
+
+        // Enhanced form interactions
+        document.querySelectorAll('.form-control, .form-select').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.closest('.form-group').querySelector('.form-label').style.color = '#667eea';
+            });
+
+            input.addEventListener('blur', function() {
+                this.closest('.form-group').querySelector('.form-label').style.color = '#2d3748';
+            });
+        });
+
+        // Cancel button function
+        function goBack() {
+            if (confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
+                // Simulate navigation back
+                console.log('Navigating back to user list...');
+            }
+        }
+
+        // Add subtle animations when page loads
+        window.addEventListener('load', function() {
+            const formGroups = document.querySelectorAll('.form-group');
+            formGroups.forEach((group, index) => {
+                group.style.opacity = '0';
+                group.style.transform = 'translateY(20px)';
+
+                setTimeout(() => {
+                    group.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+                    group.style.opacity = '1';
+                    group.style.transform = 'translateY(0)';
+                }, index * 100 + 300);
+            });
+        });
+    </script>
+}
