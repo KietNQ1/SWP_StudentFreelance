@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using StudentFreelance.Models;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -8,6 +9,8 @@ namespace StudentFreelance.ViewModels
     public class UserProfileViewModel
     {
         [Required]
+        public int UserID { get; set; }
+
         public string FullName { get; set; }
 
         public string? PhoneNumber { get; set; }
@@ -20,10 +23,10 @@ namespace StudentFreelance.ViewModels
         public string? ProvinceCode { get; set; }
         public string? DistrictCode { get; set; }
         public string? WardCode { get; set; }
-        
+
         public string? DetailAddress { get; set; }
         public string? FullAddress { get; set; }
-        
+
         // Location names for display
         public string? ProvinceName { get; set; }
         public string? DistrictName { get; set; }
@@ -32,7 +35,6 @@ namespace StudentFreelance.ViewModels
         public string? AvatarPath { get; set; }
         public IFormFile? AvatarImage { get; set; }
 
-        // User information
         public string? Email { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
@@ -45,11 +47,16 @@ namespace StudentFreelance.ViewModels
         public List<OptionItem> Wards { get; set; } = new();
 
         public List<RatingViewModel> ReceivedRatings { get; set; } = new();
-        public double? AverageRating { get; set; }  // ⭐ Đánh giá trung bình (1-5 sao)
-        public int TotalReviews { get; set; }       // 📊 Tổng số lượt đánh giá
+        public double? AverageRating { get; set; }
+        public int TotalReviews { get; set; }
 
         public int CurrentPage { get; set; }
         public int TotalPages { get; set; }
+
+        // 🆕 Dự án đã hoàn thành (preview + full)
+        public List<ProjectHistoryItem> ProjectHistoryPreview { get; set; } = new();
+        public List<ProjectHistoryItem> ProjectHistoryAll { get; set; } = new();
+        public bool IsCurrentUser { get; set; }
 
     }
 
@@ -65,5 +72,23 @@ namespace StudentFreelance.ViewModels
     {
         public string ID { get; set; }
         public string Name { get; set; }
+    }
+
+    // 🆕 Lịch sử dự án đã giao/nhận
+    public class ProjectHistoryItem
+    {
+        public int ProjectID { get; set; }
+        public string Title { get; set; }
+        public string Role { get; set; } // "Business" hoặc "Student"
+        public DateTime CompletedDate { get; set; }
+        public decimal Budget { get; set; }
+        public string TypeName { get; set; }
+        public bool IsRemoteWork { get; set; }
+        public string CategoryName { get; set; }
+
+        public string? BusinessName { get; set; }             // Tên người tạo (chỉ dùng nếu là Student)
+        public DateTime? EndDate { get; set; }                // Thời gian kết thúc dự án
+        public string? ShortDescription { get; set; }         // Mô tả ngắn
+
     }
 }

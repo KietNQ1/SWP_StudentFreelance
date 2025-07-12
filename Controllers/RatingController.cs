@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using StudentFreelance.Data;
 using StudentFreelance.DbContext;
 using StudentFreelance.Models;
 using StudentFreelance.ViewModels;
@@ -35,10 +34,11 @@ namespace StudentFreelance.Controllers
             if (project == null || business == null)
                 return NotFound();
 
-            // Kiểm tra quyền
-            var isOwned = await _context.StudentApplications
-                .AnyAsync(a => a.ProjectID == projectId && a.UserID == currentUserId && a.Status == "Completed");
-            if (!isOwned)
+            // Lấy Application đã hoàn thành
+            var application = await _context.StudentApplications
+                .FirstOrDefaultAsync(a => a.ProjectID == projectId && a.UserID == currentUserId && a.Status == "Completed");
+
+            if (application == null)
                 return Forbid();
 
             // Tránh đánh giá trùng
@@ -58,34 +58,23 @@ namespace StudentFreelance.Controllers
                 ReviewerID = currentUserId,
                 RevieweeID = revieweeId,
                 ProjectTitle = project.Title,
-                RevieweeName = business.FullName ?? business.Email
+                RevieweeName = business.FullName ?? business.Email,
+                ApplicationId = application.ApplicationID // ✅ GÁN GIÁ TRỊ CHÍNH XÁC
             };
 
             return View("Create", model);
         }
+
         [HttpPost]
         [Authorize(Roles = "Student")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateRatingViewModel model)
         {
-            // ✅ Xoá thủ công 2 trường không cần validate
             ModelState.Remove(nameof(model.ProjectTitle));
             ModelState.Remove(nameof(model.RevieweeName));
-            ModelState.Remove(nameof(model.ApplicationId));
 
             if (!ModelState.IsValid)
-            {
-                foreach (var key in ModelState.Keys)
-                {
-                    var errors = ModelState[key].Errors;
-                    foreach (var error in errors)
-                    {
-                        Console.WriteLine($"[ModelState Error] Field: {key}, Error: {error.ErrorMessage}");
-                    }
-                }
-
                 return View("Create", model);
-            }
 
             var rating = new Rating
             {
@@ -102,10 +91,8 @@ namespace StudentFreelance.Controllers
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "Đã gửi đánh giá thành công.";
-            return RedirectToAction("MySubmissions", "ProjectSubmission", new { applicationId = model.ApplicationId });
-
+            return RedirectToAction("MySubmissions", "ProjectSubmission", new { applicationId = model.ApplicationId }); // ✅ Ứng dụng sẽ không bị lỗi 404 nữa
         }
-
 
         // BUSINESS → STUDENT
         [Authorize(Roles = "Business")]
@@ -151,6 +138,9 @@ namespace StudentFreelance.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateForStudent(CreateRatingViewModel model)
         {
+            ModelState.Remove(nameof(model.ProjectTitle));
+            ModelState.Remove(nameof(model.RevieweeName));
+
             if (!ModelState.IsValid)
                 return View("Create", model);
 
