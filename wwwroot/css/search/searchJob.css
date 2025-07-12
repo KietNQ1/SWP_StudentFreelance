@@ -61,17 +61,17 @@ body {
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 3px 15px rgba(0,0,0,0.08);
-    margin-top: -20px;
+    margin-top: 0; /* Changed from -20px to prevent overflow */
     margin-bottom: 20px;
     position: relative;
     z-index: 10;
-    transition: all 0.3s ease;
+    transition: box-shadow 0.3s ease; /* Only transition the box-shadow */
     border: 1px solid rgba(211, 230, 113, 0.4);
 }
 
 .search-form-container:hover {
     box-shadow: 0 5px 20px rgba(0,0,0,0.12);
-    transform: translateY(-2px);
+    /* Remove the transform that's causing the overflow */
 }
 
 .results-container {
@@ -361,7 +361,7 @@ body {
     color: white;
 }
 
-.container {
+.main-container .container {
     background-color: rgba(255, 255, 255, 0.9);
     padding: 25px;
     border-radius: 8px;
