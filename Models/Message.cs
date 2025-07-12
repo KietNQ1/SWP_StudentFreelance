@@ -30,6 +30,7 @@
         /// Nội dung tin nhắn
         [Required]
         public string Content { get; set; } = string.Empty;
+        public string MessageType { get; set; } = "text";
 
 
         /// Cờ đã đọc chưa

@@ -17,7 +17,6 @@ namespace StudentFreelance.Controllers
             _userManager = userManager;
             _roleManager = roleManager;
         }
-
         // ✅ Gộp hiển thị và lọc người dùng
         [HttpGet]
         public async Task<IActionResult> Index(string searchTerm, string selectedRole, string status)
@@ -92,7 +91,7 @@ namespace StudentFreelance.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-
+    
         // ✅ Ẩn (xóa mềm)
         [HttpPost]
         public async Task<IActionResult> Deactivate(string id)

@@ -40,23 +40,8 @@ namespace StudentFreelance.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            // Create address for user with default values
-            var address = new Address
-            {
-                ProvinceCode = "01",
-                ProvinceName = "Hà Nội",
-                DistrictCode = "001",
-                DistrictName = "Quận Ba Đình",
-                WardCode = "00001",
-                WardName = "Phường Phúc Xá",
-                DetailAddress = "Số nhà mặc định",
-                FullAddress = "Số nhà mặc định, Phường Phúc Xá, Quận Ba Đình, Hà Nội",
-                IsActive = true
-            };
-            
-            _context.Addresses.Add(address);
-            await _context.SaveChangesAsync();
-
+           
+           
             var user = new ApplicationUser
             {
                 UserName = model.Email,
@@ -65,8 +50,7 @@ namespace StudentFreelance.Controllers
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,
                 IsActive = true,
-                StatusID = 1, // Mặc định trạng thái "Hoạt động"
-                AddressID = address.AddressID
+                StatusID = 1,              
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -98,15 +82,22 @@ namespace StudentFreelance.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
+            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: true);
 
             if (result.Succeeded)
             {
                 return RedirectToLocal(returnUrl);
             }
+            else if (result.IsLockedOut)
+            {
+                ModelState.AddModelError("", "Tài khoản đã bị khóa tạm thời. Vui lòng thử lại sau.");
+            }
+            else
+            {
+                ModelState.AddModelError("", "Đăng nhập không hợp lệ.");
+            }
 
-            ModelState.AddModelError(string.Empty, "Đăng nhập không hợp lệ.");
-            return View(model);
+            return View(model); 
         }
 
         private IActionResult RedirectToLocal(string? returnUrl)
@@ -141,8 +132,7 @@ namespace StudentFreelance.Controllers
 
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null )
-            {
-                // Không tiết lộ thông tin tồn tại vì lý do bảo mật
+            {               
                 return RedirectToAction("ForgotPasswordConfirmation");
             }
 

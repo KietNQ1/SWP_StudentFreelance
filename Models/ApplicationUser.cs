@@ -10,7 +10,7 @@ namespace StudentFreelance.Models
 
     public class ApplicationUser : IdentityUser<int>
     {
-        public string FullName { get; set; }
+        public string? FullName { get; set; }
         
         public bool VipStatus { get; set; }
         public int? AddressID { get; set; }
