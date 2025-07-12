@@ -58,8 +58,10 @@ builder.Services.AddScoped<StudentFreelance.Services.Interfaces.INotificationSer
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IProjectSubmissionService, StudentFreelance.Services.Implementations.ProjectSubmissionService>();
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.ITransactionService, StudentFreelance.Services.Implementations.TransactionService>();
 builder.Services.AddScoped<IBankAccountService, BankAccountService>();
-builder.Services.AddScoped<IPayOSService, PayOSService>();
-//builder.Services.AddHttpClient<IPayOSService, PayOSService>();
+//builder.Services.AddScoped<IPayOSService, PayOSService>();
+builder.Services.AddHttpClient<IPayOSService, PayOSService>();
+builder.Services.Configure<PayOSConfig>(
+builder.Configuration.GetSection("PayOS"));
 
 // Đăng ký cấu hình PayOS
 builder.Services.Configure<PayOSConfig>(builder.Configuration.GetSection("PayOS"));
