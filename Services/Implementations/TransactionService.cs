@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using StudentFreelance.DbContext;
 using StudentFreelance.Services.Interfaces;
 using StudentFreelance.Models;
@@ -204,14 +204,14 @@ namespace StudentFreelance.Services.Implementations
             await CreateTransactionAsync(transaction);
             return transaction.StatusID == 1; // Return true if status is Completed
         }
-        public async Task<Transaction> CreatePendingDeposit(int userId, decimal amount, string orderCode)
+        public async Task<Transaction> CreatePendingDeposit(int userId, decimal amount, string description, long orderCode)
         {
             var transaction = new Transaction
             {
                 UserID = userId,
                 Amount = amount,
                 Description = "Deposit via PayOS",
-                OrderCode = orderCode,
+                OrderCode = orderCode.ToString(),
                 StatusID = 1, // Pending
                 TypeID = 1,   // Deposit
                 TransactionDate = DateTime.UtcNow
@@ -220,6 +220,35 @@ namespace StudentFreelance.Services.Implementations
             await _context.SaveChangesAsync();
             return transaction;
         }
+
+        //mới thêm
+        public async Task<bool> ConfirmDepositFromPayOS(long orderCode)
+        {
+            var transaction = await _context.Transactions
+                .FirstOrDefaultAsync(t => t.OrderCode == orderCode.ToString());
+
+            // Chỉ xử lý nếu đang là "Đang xử lý"
+            if (transaction == null || transaction.StatusID != 1)
+                return false;
+
+            var user = await _context.Users.FindAsync(transaction.UserID);
+            if (user == null) return false;
+
+            // Cộng tiền vào ví
+            user.WalletBalance += transaction.Amount;
+
+            // Cập nhật trạng thái thành "Thành công"
+            transaction.StatusID = 2; // 2 = Thành công
+            transaction.TransactionDate = DateTime.Now;
+
+            _context.Users.Update(user);
+            _context.Transactions.Update(transaction);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+
 
     }
 } 

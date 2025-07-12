@@ -43,6 +43,14 @@ namespace StudentFreelance.ViewModels
         public List<OptionItem> Provinces { get; set; } = new();
         public List<OptionItem> Districts { get; set; } = new();
         public List<OptionItem> Wards { get; set; } = new();
+
+        public List<RatingViewModel> ReceivedRatings { get; set; } = new();
+        public double? AverageRating { get; set; }  // ⭐ Đánh giá trung bình (1-5 sao)
+        public int TotalReviews { get; set; }       // 📊 Tổng số lượt đánh giá
+
+        public int CurrentPage { get; set; }
+        public int TotalPages { get; set; }
+
     }
 
     public class SkillItem

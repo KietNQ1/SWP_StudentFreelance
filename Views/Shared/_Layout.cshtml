@@ -20,9 +20,70 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="stylesheet" href="~/css/header.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/footer.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/home/footer.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 0 !important;
+        }
+        main {
+            flex: 1;
+        }
+        .footer {
+            margin-top: auto;
+            margin-bottom: 0;
+            background-color: #F8F8F8 !important;
+        }
+        
+        .footer-content {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+            gap: 2rem !important;
+            margin-bottom: 2.5rem !important;
+        }
+        
+        .footer-column {
+            background: #ffffff !important;
+            padding: 1.5rem !important;
+            border-radius: 12px !important;
+            border: 1px solid #E8E8E8 !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+        }
+        
+        .footer-column:hover {
+            transform: translateY(-5px) !important;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+            border-color: #D1D5DB !important;
+        }
+        
+        .footer-column h3 {
+            color: #89AC46 !important;
+        }
+        
+        .footer-column a {
+            color: #6B7280 !important;
+            text-decoration: none !important;
+        }
+        
+        .footer-column a:hover {
+            color: #89AC46 !important;
+            transform: translateX(5px) !important;
+            padding-left: 0.5rem !important;
+        }
+        
+        .footer-bottom {
+            background-color: #ffffff !important;
+        }
+    </style>
     @await RenderSectionAsync("Styles", required: false)
     
 </head>
@@ -209,107 +270,8 @@
         @RenderBody()
     </main>
 
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-column">
-                    <h3>Categories</h3>
-                    <ul>
-                        <li><a href="#">Graphics & Design</a></li>
-                        <li><a href="#">Digital Marketing</a></li>
-                        <li><a href="#">Writing & Translation</a></li>
-                        <li><a href="#">Video & Animation</a></li>
-                        <li><a href="#">Music & Audio</a></li>
-                        <li><a href="#">Programming & Tech</a></li>
-                        <li><a href="#">Data</a></li>
-                        <li><a href="#">Business</a></li>
-                        <li><a href="#">Lifestyle</a></li>
-                        <li><a href="#">Photography</a></li>
-                        <li><a href="#">Sitemap</a></li>
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h3>About</h3>
-                    <ul>
-                        <li><a asp-controller="Home" asp-action="About">About Us</a></li>
-                        <li><a href="#">Careers</a></li>
-                        <li><a href="#">Press & News</a></li>
-                        <li><a href="#">Partnerships</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                        <li><a href="#">Terms of Service</a></li>
-                        <li><a href="#">Intellectual Property Claims</a></li>
-                        <li><a href="#">Investor Relations</a></li>
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h3>Support</h3>
-                    <ul>
-                        <li><a href="#">Help & Support</a></li>
-                        <li><a href="#">Trust & Safety</a></li>
-                        <li><a href="#">Selling on STJobs</a></li>
-                        <li><a href="#">Buying on STJobs</a></li>
-                        <li><a href="#">STJobs Guides</a></li>
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h3>Community</h3>
-                    <ul>
-                        <li><a href="#">Customer Success Stories</a></li>
-                        <li><a href="#">Community Hub</a></li>
-                        <li><a href="#">Forum</a></li>
-                        <li><a href="#">Events</a></li>
-                        <li><a href="#">Blog</a></li>
-                        <li><a href="#">Influencers</a></li>
-                        <li><a href="#">Affiliates</a></li>
-                        <li><a href="#">Podcast</a></li>
-                        <li><a href="#">Invite a Friend</a></li>
-                        <li><a href="#">Become a Seller</a></li>
-                        <li><a href="#">Community Standards</a></li>
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h3>More From STJobs</h3>
-                    <ul>
-                        <li><a href="#">STJobs Enterprise</a></li>
-                        <li><a href="#">STJobs Business</a></li>
-                        <li><a href="#">STJobs Pro</a></li>
-                        <li><a href="#">STJobs Logo Maker</a></li>
-                        <li><a href="#">STJobs Guides</a></li>
-                        <li><a href="#">Get Inspired</a></li>
-                        <li><a href="#">STJobs Select</a></li>
-                        <li><a href="#">ClearVoice</a></li>
-                        <li><a href="#">STJobs Workspace</a></li>
-                        <li><a href="#">Learn</a></li>
-                        <li><a href="#">Working Not Working</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <div class="footer-bottom-left">
-                    <div class="logo">
-                        <a asp-area="" asp-controller="Home" asp-action="Index" class="logo-link">
-                            STJobs<span class="logo-dot">.</span>
-                        </a>
-                    </div>
-                    <span class="copyright">© ShortTimeJob Ltd. 2025</span>
-                </div>
-                <div class="footer-bottom-center">
-                    <div class="social-links">
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-facebook"></i></a>
-                        <a href="#"><i class="fab fa-linkedin"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-youtube"></i></a>
-                    </div>
-                </div>
-                <div class="footer-bottom-right">
-                    <span>VietNam</span>
-                    <span>VND</span>
-                    <span>🌐</span>
-                </div>
-            </div>
-        </div>
-    </footer>
+    <!-- Footer -->
+    @await Html.PartialAsync("Footer")
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

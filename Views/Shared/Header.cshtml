@@ -34,14 +34,23 @@
                     </a>
                 </div>
 
-
+                <div class="search-container">
+                    <div class="search-bar">
+                        <input type="text" class="search-input" placeholder="Search for any">
+                        <button class="search-btn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
 
                 <!-- Menu và tài khoản bên phải -->
                 <div class="nav-menu">
                     <div class="nav-item dropdown explore-dropdown">
                         <span>Find talent</span>
                         <div class="dropdown-menu">
+
                             <a asp-controller="Project" asp-action="Index" class="dropdown-item">Projects <span class="new-label">Hot</span></a>
+
                             <a href="#">Design & Creative</a>
                             <a href="#">Sales & Marketing</a>
                             <a href="#">Writing & Translation</a>
@@ -51,14 +60,21 @@
 
                     <div class="nav-item dropdown">
                         <a href="#"> <span>Business</span></a>
+                        <div class="dropdown-menub">
+                            <a href="#">Công nghệ thông tin</a>
+                            <a href="#">Marketing</a>
+                            <a href="#">Thiết kế</a>
+                            <a href="#">Viết lách</a>
+                            <a href="#">Dịch thuật</a>
+                            <a href="#">Kinh doanh</a>
+                        </div>
                     </div>
 
                     <div class="nav-item dropdown explore-dropdown" id="exploreDropdownBtn">
                         <span>Explore</span>
                         <div class="dropdown-menu" id="exploreDropdownMenu">
                             <a href="#">STJobs VIP <span class="new-label">New</span></a>
-                            <a href="#">Answers</a>
-                            <a href="#">Community</a>
+                            <a href="#">Q&A</a>
                             <a href="#">Guides</a>
                             <a href="#">Report</a>
                         </div>

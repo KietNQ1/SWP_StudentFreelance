@@ -1,0 +1,20 @@
+﻿@model string
+
+@{
+    ViewData["Title"] = "Kết quả giao dịch";
+}
+
+<div class="container mt-5">
+    <div class="alert @(Model == "success" ? "alert-success" : "alert-danger")" role="alert">
+        <h4 class="alert-heading">
+            @(Model == "success" ? "Thanh toán thành công!" : "Thanh toán thất bại hoặc bị hủy.")
+        </h4>
+        <p>
+            @(Model == "success"
+                ? "Cảm ơn bạn đã nạp tiền vào hệ thống. Số dư ví đã được cập nhật."
+                : "Giao dịch của bạn không được thực hiện thành công.")
+        </p>
+        <hr />
+        <a href="/Wallet/TransactionHistory" class="btn btn-primary">Xem lịch sử giao dịch</a>
+    </div>
+</div>
