@@ -21,9 +21,17 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequiredLength = 6;
 })
+
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    // Cấu hình khóa tài khoản
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30); // Khóa trong 5 phút
+    options.Lockout.MaxFailedAccessAttempts = 5; // Sau 5 lần sai sẽ khóa
+    options.Lockout.AllowedForNewUsers = true;  // Áp dụng cho cả tài khoản mới
+});
 
 
 // 3. Configure Authentication Cookie
