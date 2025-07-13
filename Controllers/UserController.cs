@@ -32,16 +32,22 @@ namespace StudentFreelance.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Profile(int page = 1)
+        public async Task<IActionResult> Profile(int? id)
         {
             try
             {
-                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-                var user = await _context.Users.Include(u => u.Address).FirstOrDefaultAsync(u => u.Id == userId);
+                var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var profileUserId = id ?? currentUserId;
+                var isCurrentUser = profileUserId == currentUserId;
+
+                var user = await _context.Users
+                    .Include(u => u.Address)
+                    .FirstOrDefaultAsync(u => u.Id == profileUserId);
+
                 if (user == null) return NotFound();
 
                 var skills = await _context.StudentSkills
-                    .Where(s => s.UserID == userId && s.IsActive)
+                    .Where(s => s.UserID == profileUserId && s.IsActive)
                     .Include(s => s.Skill)
                     .Include(s => s.ProficiencyLevel)
                     .ToListAsync();
@@ -49,15 +55,91 @@ namespace StudentFreelance.Controllers
                 // Get user roles
                 var roles = await _userManager.GetRolesAsync(user);
                 var roleId = 0;
-                
-                // Map role names to IDs: 3 for Business, 4 for Student
                 if (roles.Contains("Business"))
                     roleId = 3;
                 else if (roles.Contains("Student"))
                     roleId = 4;
 
+                // ⭐ Lấy đánh giá
+                var receivedRatings = await _context.Ratings
+                    .Include(r => r.Reviewer)
+                    .Where(r => r.RevieweeID == profileUserId && r.IsActive)
+                    .OrderByDescending(r => r.DateRated)
+                    .ToListAsync();
+
+                var averageRating = receivedRatings.Any()
+                    ? (double?)Math.Round(receivedRatings.Average(r => (double)r.Score), 2)
+                    : null;
+
+                var totalReviews = receivedRatings.Count;
+
+                var ratingViewModels = receivedRatings.Select(r => new RatingViewModel
+                {
+                    ReviewerID = r.ReviewerID,
+                    ReviewerName = r.Reviewer?.FullName,
+                    ReviewerAvatarPath = r.Reviewer?.Avatar,
+                    Score = r.Score,
+                    Comment = r.Comment,
+                    DateRated = r.DateRated
+                }).ToList();
+
+                // 🧾 Lịch sử dự án đã hoàn thành (preview)
+                var completedProjects = new List<ProjectHistoryItem>();
+
+                // Business projects
+                var ownedProjects = await _context.Projects
+                    .Include(p => p.Status)
+                    .Include(p => p.Category)
+                    .Include(p => p.Type)
+                    .Where(p => p.BusinessID == profileUserId && p.StatusID == 3)
+                    .OrderByDescending(p => p.EndDate)
+                    .Take(3)
+                    .ToListAsync();
+
+                foreach (var proj in ownedProjects)
+                {
+                    completedProjects.Add(new ProjectHistoryItem
+                    {
+                        ProjectID = proj.ProjectID,
+                        Title = proj.Title,
+                        Role = "Business",
+                        CompletedDate = proj.EndDate,
+                        Budget = proj.Budget,
+                        TypeName = proj.Type.TypeName,
+                        IsRemoteWork = proj.IsRemoteWork,
+                        CategoryName = proj.Category.CategoryName,
+                        BusinessName = proj.Business?.FullName ?? "Bạn",
+                        EndDate = proj.EndDate
+                    });
+                }
+
+                // Student projects
+                var joinedProjects = await _context.StudentApplications
+                    .Include(a => a.Project).ThenInclude(p => p.Type)
+                    .Include(a => a.Project).ThenInclude(p => p.Category)
+                    .Include(a => a.Project).ThenInclude(p => p.Status)
+                    .Where(a => a.UserID == profileUserId && a.Status == "Completed")
+                    .ToListAsync();
+
+                foreach (var app in joinedProjects)
+                {
+                    var proj = app.Project;
+                    completedProjects.Add(new ProjectHistoryItem
+                    {
+                        ProjectID = proj.ProjectID,
+                        Title = proj.Title,
+                        Role = "Student",
+                        CompletedDate = proj.EndDate,
+                        Budget = proj.Budget,
+                        TypeName = proj.Type.TypeName,
+                        IsRemoteWork = proj.IsRemoteWork,
+                        CategoryName = proj.Category.CategoryName
+                    });
+                }
+
                 var viewModel = new UserProfileViewModel
                 {
+                    UserID = user.Id,
                     FullName = user.FullName,
                     PhoneNumber = user.PhoneNumber,
                     University = user.University,
@@ -73,54 +155,25 @@ namespace StudentFreelance.Controllers
                     DetailAddress = user.Address?.DetailAddress,
                     FullAddress = user.Address?.FullAddress,
                     AvatarPath = user.Avatar,
+                    Email = user.Email,
+                    CreatedAt = user.CreatedAt,
+                    UpdatedAt = user.UpdatedAt,
+                    RoleId = roleId,
+                    IsVip = user.VipStatus,
+                    VipExpiryDate = user.VipExpiryDate,
+                    IsCurrentUser = isCurrentUser,
                     Skills = skills.Select(s => new SkillItem
                     {
                         SkillID = s.SkillID,
                         ProficiencyLevelID = s.ProficiencyLevelID,
-                        SkillName = s.Skill.SkillName,
-                        ProficiencyLevelName = s.ProficiencyLevel.LevelName
+                        SkillName = s.Skill?.SkillName,
+                        ProficiencyLevelName = s.ProficiencyLevel?.LevelName
                     }).ToList(),
-                    CreatedAt = user.CreatedAt,
-                    UpdatedAt = user.UpdatedAt,
-                    Email = user.Email,
-                    RoleId = roleId,
-                    IsVip = user.VipStatus,
-                    VipExpiryDate = user.VipExpiryDate
+                    ReceivedRatings = ratingViewModels,
+                    AverageRating = averageRating,
+                    TotalReviews = totalReviews,
+                    ProjectHistoryPreview = completedProjects.Take(3).ToList()
                 };
-
-            
-
-                // ⭐ Thêm phần đánh giá
-                var ratingsQuery = _context.Ratings
-                    .Include(r => r.Reviewer)
-                    .Where(r => r.RevieweeID == userId)
-                    .OrderByDescending(r => r.DateRated);
-
-                var totalRatings = await ratingsQuery.CountAsync();
-                var pageSize = 5;
-
-                var averageRating = totalRatings > 0
-                    ? (double?)(await ratingsQuery.AverageAsync(r => r.Score))
-                    : null;
-
-
-                var ratingList = await ratingsQuery
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .Select(r => new RatingViewModel
-                    {
-                        ReviewerName = r.Reviewer.FullName,
-                        ReviewerAvatarPath = string.IsNullOrEmpty(r.Reviewer.ProfilePicturePath) ? "/image/default-avatar.png" : r.Reviewer.ProfilePicturePath,
-                        Score = r.Score,
-                        Comment = r.Comment,
-                        DateRated = r.DateRated
-                    }).ToListAsync();
-
-                viewModel.AverageRating = averageRating;
-                viewModel.TotalReviews = totalRatings;
-                viewModel.ReceivedRatings = ratingList;
-                viewModel.CurrentPage = page;
-                viewModel.TotalPages = (int)Math.Ceiling((double)totalRatings / pageSize);
 
                 return View(viewModel);
             }
@@ -130,6 +183,7 @@ namespace StudentFreelance.Controllers
                 return StatusCode(500);
             }
         }
+
 
 
         [HttpGet]
@@ -675,5 +729,135 @@ namespace StudentFreelance.Controllers
                 return RedirectToAction("VipSubscription");
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> AllProjectHistory(int page = 1)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                int pageSize = 10;
+
+                var completedProjects = new List<ProjectHistoryItem>();
+
+                // Projects do user làm chủ (Business)
+                var ownedProjects = await _context.Projects
+                    .Include(p => p.Status)
+                    .Include(p => p.Category)
+                    .Include(p => p.Type)
+                    .Where(p => p.BusinessID == userId && p.StatusID == 3)
+                    .OrderByDescending(p => p.EndDate)
+                    .ToListAsync();
+
+                foreach (var proj in ownedProjects)
+                {
+                    completedProjects.Add(new ProjectHistoryItem
+                    {
+                        ProjectID = proj.ProjectID,
+                        Title = proj.Title,
+                        Role = "Business",
+                        CompletedDate = proj.EndDate,
+                        Budget = proj.Budget,
+                        TypeName = proj.Type.TypeName,
+                        IsRemoteWork = proj.IsRemoteWork,
+                        CategoryName = proj.Category.CategoryName,
+                        BusinessName = proj.Business?.FullName ?? "Bạn",
+                        EndDate = proj.EndDate,                                 // Thêm dòng này     
+                    });
+                }
+
+                // Projects do user tham gia (Student)
+                var joinedProjects = await _context.StudentApplications
+                    .Include(a => a.Project).ThenInclude(p => p.Type)
+                    .Include(a => a.Project).ThenInclude(p => p.Category)
+                    .Include(a => a.Project).ThenInclude(p => p.Status)
+                    .Where(a => a.UserID == userId && a.Status == "Completed")
+                    .ToListAsync();
+
+                foreach (var app in joinedProjects)
+                {
+                    var proj = app.Project;
+                    completedProjects.Add(new ProjectHistoryItem
+                    {
+                        ProjectID = proj.ProjectID,
+                        Title = proj.Title,
+                        Role = "Student",
+                        CompletedDate = proj.EndDate,
+                        Budget = proj.Budget,
+                        TypeName = proj.Type.TypeName,
+                        IsRemoteWork = proj.IsRemoteWork,
+                        CategoryName = proj.Category.CategoryName
+                    });
+                }
+
+                var totalProjects = completedProjects.Count;
+
+                var pagedProjects = completedProjects
+                    .OrderByDescending(p => p.CompletedDate)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                var model = new UserProfileViewModel
+                {
+                    ProjectHistoryPreview = pagedProjects,
+                    CurrentPage = page,
+                    TotalPages = (int)Math.Ceiling((double)totalProjects / pageSize)
+                };
+
+                return View("AllProjectHistory", model);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] AllProjectHistory: {ex.Message}");
+                return StatusCode(500);
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> AllReviews(int page = 1)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var ratingsQuery = _context.Ratings
+                    .Include(r => r.Reviewer)
+                    .Where(r => r.RevieweeID == userId && r.IsActive)
+                    .OrderByDescending(r => r.DateRated);
+
+                var totalRatings = await ratingsQuery.CountAsync();
+                var pageSize = 10;
+
+                var ratings = await ratingsQuery
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(r => new RatingViewModel
+                    {
+                        ReviewerName = r.Reviewer.FullName,
+                        ReviewerAvatarPath = string.IsNullOrEmpty(r.Reviewer.ProfilePicturePath) ? "/image/default-avatar.png" : r.Reviewer.ProfilePicturePath,
+                        Score = r.Score,
+                        Comment = r.Comment,
+                        DateRated = r.DateRated
+                    }).ToListAsync();
+
+                var model = new UserProfileViewModel
+                {
+                    UserID = userId,
+                    ReceivedRatings = ratings,
+                    CurrentPage = page,
+                    TotalPages = (int)Math.Ceiling((double)totalRatings / pageSize),
+                    TotalReviews = totalRatings,
+                    AverageRating = totalRatings > 0 ? (double?)await ratingsQuery.AverageAsync(r => r.Score) : null
+                };
+
+                return View("AllReviews", model);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] GET AllReviews: {ex.Message}");
+                return StatusCode(500);
+            }
+        }
+
     }
 }
