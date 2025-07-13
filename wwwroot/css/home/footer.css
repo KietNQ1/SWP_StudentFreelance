@@ -11,17 +11,20 @@ body {
     color: #333;
     background-color: #F8F8F8;
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
+    /* Removed flex properties that were causing the issue */
 }
 
 .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 2rem;
-    position: relative;
-    z-index: 1;
+    /* Removed position: relative and z-index */
+}
+
+/* Main content wrapper - add this to prevent footer overlap */
+.main-content {
+    min-height: calc(100vh - 200px); /* Adjust based on footer height */
+    padding-bottom: 2rem;
 }
 
 /* Footer styles */
@@ -29,9 +32,10 @@ body {
     background-color: #F8F8F8;
     color: #333;
     padding: 3rem 0 1rem;
-    position: relative;
     border-top: 1px solid #E5E5E5;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+    margin-top: auto; /* This will push footer to bottom */
+    /* Removed position: relative */
 }
 
 /* Footer content */
