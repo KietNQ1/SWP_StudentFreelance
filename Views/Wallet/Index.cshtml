@@ -89,15 +89,15 @@
                                     </td>
                                     <td>@transaction.Description</td>
                                     <td>
-                                        @if (transaction.StatusID == 1) // Assuming 1 is Completed
+                                        @if (transaction.StatusID == 2) // Thành công
                                         {
                                             <span class="badge bg-success">@transaction.Status.StatusName</span>
                                         }
-                                        else if (transaction.StatusID == 2) // Assuming 2 is Failed
+                                        else if (transaction.StatusID == 3) // Thất bại
                                         {
                                             <span class="badge bg-danger">@transaction.Status.StatusName</span>
                                         }
-                                        else
+                                        else // Đang xử lý or other status
                                         {
                                             <span class="badge bg-warning">@transaction.Status.StatusName</span>
                                         }

@@ -157,18 +157,18 @@
             </ul>
             
             <div class="mt-4">
-                <div class="alert @(Model.StatusID == 1 ? "alert-success" : (Model.StatusID == 2 ? "alert-danger" : "alert-warning"))">
-                    @if (Model.StatusID == 1) // Completed
+                <div class="alert @(Model.StatusID == 2 ? "alert-success" : (Model.StatusID == 3 ? "alert-danger" : "alert-warning"))">
+                    @if (Model.StatusID == 2) // Thành công
                     {
                         <i class="bi bi-check-circle-fill me-2"></i>
                         <span>This transaction has been completed successfully.</span>
                     }
-                    else if (Model.StatusID == 2) // Failed
+                    else if (Model.StatusID == 3) // Thất bại
                     {
                         <i class="bi bi-x-circle-fill me-2"></i>
                         <span>This transaction has failed. Please contact support if you need assistance.</span>
                     }
-                    else // Pending or other status
+                    else // Đang xử lý or other status
                     {
                         <i class="bi bi-hourglass-split me-2"></i>
                         <span>This transaction is currently being processed.</span>
