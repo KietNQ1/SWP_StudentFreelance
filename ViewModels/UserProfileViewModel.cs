@@ -36,6 +36,11 @@ namespace StudentFreelance.ViewModels
         public string? Email { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+        public int RoleId { get; set; } // Role ID: 3 for Business, 4 for Student
+        
+        // VIP subscription properties
+        public bool IsVip { get; set; }
+        public DateTime? VipExpiryDate { get; set; }
 
         public List<SkillItem> Skills { get; set; } = new();
         public List<OptionItem> AvailableSkills { get; set; } = new();

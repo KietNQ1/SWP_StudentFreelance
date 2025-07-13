@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StudentFreelance.DbContext;
 using StudentFreelance.Models;
+using StudentFreelance.Models.Enums;
 using StudentFreelance.Services.Interfaces;
 using StudentFreelance.ViewModels;
 using System.Security.Claims;
@@ -15,15 +17,18 @@ namespace StudentFreelance.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _env;
         private readonly ILocationApiService _locationApiService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public UserController(
             ApplicationDbContext context, 
             IWebHostEnvironment env,
-            ILocationApiService locationApiService)
+            ILocationApiService locationApiService,
+            UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _env = env;
             _locationApiService = locationApiService;
+            _userManager = userManager;
         }
 
         [HttpGet]
@@ -40,6 +45,16 @@ namespace StudentFreelance.Controllers
                     .Include(s => s.Skill)
                     .Include(s => s.ProficiencyLevel)
                     .ToListAsync();
+
+                // Get user roles
+                var roles = await _userManager.GetRolesAsync(user);
+                var roleId = 0;
+                
+                // Map role names to IDs: 3 for Business, 4 for Student
+                if (roles.Contains("Business"))
+                    roleId = 3;
+                else if (roles.Contains("Student"))
+                    roleId = 4;
 
                 var viewModel = new UserProfileViewModel
                 {
@@ -67,7 +82,10 @@ namespace StudentFreelance.Controllers
                     }).ToList(),
                     CreatedAt = user.CreatedAt,
                     UpdatedAt = user.UpdatedAt,
-                    Email = user.Email
+                    Email = user.Email,
+                    RoleId = roleId,
+                    IsVip = user.VipStatus,
+                    VipExpiryDate = user.VipExpiryDate
                 };
 
             
@@ -127,6 +145,16 @@ namespace StudentFreelance.Controllers
                     .Where(s => s.UserID == userId && s.IsActive)
                     .ToListAsync();
 
+                // Get user roles
+                var roles = await _userManager.GetRolesAsync(user);
+                var roleId = 0;
+                
+                // Map role names to IDs: 3 for Business, 4 for Student
+                if (roles.Contains("Business"))
+                    roleId = 3;
+                else if (roles.Contains("Student"))
+                    roleId = 4;
+
                 var viewModel = new UserProfileViewModel
                 {
                     FullName = user.FullName,
@@ -148,6 +176,9 @@ namespace StudentFreelance.Controllers
                         SkillID = s.SkillID,
                         ProficiencyLevelID = s.ProficiencyLevelID
                     }).ToList(),
+                    RoleId = roleId,
+                    IsVip = user.VipStatus,
+                    VipExpiryDate = user.VipExpiryDate,
 
                     // Get provinces from API
                     Provinces = (await _locationApiService.GetProvincesAsync())
@@ -286,12 +317,26 @@ namespace StudentFreelance.Controllers
                 var user = await _context.Users.Include(u => u.Address).FirstOrDefaultAsync(u => u.Id == userId);
                 if (user == null) return NotFound();
 
+                // Get user roles to determine if user is a business
+                var roles = await _userManager.GetRolesAsync(user);
+                var isBusiness = roles.Contains("Business");
+
                 user.FullName = model.FullName;
                 user.PhoneNumber = model.PhoneNumber;
-                user.University = model.University;
-                user.Major = model.Major;
-                user.CompanyName = model.CompanyName;
-                user.Industry = model.Industry;
+                
+                // Update role-specific fields
+                if (!isBusiness) // Student fields
+                {
+                    user.University = model.University;
+                    user.Major = model.Major;
+                }
+                
+                if (isBusiness) // Business fields
+                {
+                    user.CompanyName = model.CompanyName;
+                    user.Industry = model.Industry;
+                }
+                
                 user.UpdatedAt = DateTime.Now;
 
                 if (model.AvatarImage != null)
@@ -373,20 +418,24 @@ namespace StudentFreelance.Controllers
 
                 _context.Users.Update(user);
 
-                var oldSkills = _context.StudentSkills.Where(s => s.UserID == userId);
-                _context.StudentSkills.RemoveRange(oldSkills);
-
-                if (model.Skills != null)
+                // Only update skills for non-business users
+                if (!isBusiness)
                 {
-                    foreach (var skill in model.Skills)
+                    var oldSkills = _context.StudentSkills.Where(s => s.UserID == userId);
+                    _context.StudentSkills.RemoveRange(oldSkills);
+
+                    if (model.Skills != null)
                     {
-                        _context.StudentSkills.Add(new StudentSkill
+                        foreach (var skill in model.Skills)
                         {
-                            UserID = userId,
-                            SkillID = skill.SkillID,
-                            ProficiencyLevelID = skill.ProficiencyLevelID,
-                            IsActive = true
-                        });
+                            _context.StudentSkills.Add(new StudentSkill
+                            {
+                                UserID = userId,
+                                SkillID = skill.SkillID,
+                                ProficiencyLevelID = skill.ProficiencyLevelID,
+                                IsActive = true
+                            });
+                        }
                     }
                 }
 
@@ -466,6 +515,164 @@ namespace StudentFreelance.Controllers
             {
                 Console.WriteLine($"[ERROR] GetWards: {ex.Message}");
                 return StatusCode(500, new { error = "Failed to retrieve wards" });
+            }
+        }
+        
+        [HttpGet]
+        public async Task<IActionResult> VipSubscription()
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                if (user == null) return NotFound();
+                
+                // Get user roles
+                var roles = await _userManager.GetRolesAsync(user);
+                var roleId = 0;
+                
+                // Map role names to IDs: 3 for Business, 4 for Student
+                if (roles.Contains("Business"))
+                    roleId = 3;
+                else if (roles.Contains("Student"))
+                    roleId = 4;
+                
+                var baseMonthlyPrice = 100000m; // 100,000 VND per month
+                
+                var viewModel = new VipSubscriptionViewModel
+                {
+                    RoleId = roleId,
+                    WalletBalance = user.WalletBalance,
+                    IsVip = user.VipStatus,
+                    VipExpiryDate = user.VipExpiryDate,
+                    Plans = new List<VipPlanOption>
+                    {
+                        new VipPlanOption
+                        {
+                            Months = 1,
+                            Price = baseMonthlyPrice,
+                            DiscountPercentage = 0,
+                            OriginalPrice = baseMonthlyPrice,
+                            FinalPrice = baseMonthlyPrice,
+                            Description = "1 tháng"
+                        },
+                        new VipPlanOption
+                        {
+                            Months = 3,
+                            Price = baseMonthlyPrice * 3 * 0.68m, // 32% discount
+                            DiscountPercentage = 32,
+                            OriginalPrice = baseMonthlyPrice * 3,
+                            FinalPrice = baseMonthlyPrice * 3 * 0.68m,
+                            Description = "3 tháng (Tiết kiệm 32%)"
+                        },
+                        new VipPlanOption
+                        {
+                            Months = 12,
+                            Price = baseMonthlyPrice * 12 * 0.44m, // 56% discount
+                            DiscountPercentage = 56,
+                            OriginalPrice = baseMonthlyPrice * 12,
+                            FinalPrice = baseMonthlyPrice * 12 * 0.44m,
+                            Description = "12 tháng (Tiết kiệm 56%)"
+                        }
+                    }
+                };
+                
+                if (TempData["Error"] != null)
+                {
+                    viewModel.ErrorMessage = TempData["Error"].ToString();
+                }
+                
+                if (TempData["Success"] != null)
+                {
+                    viewModel.SuccessMessage = TempData["Success"].ToString();
+                }
+                
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] VipSubscription: {ex.Message}");
+                return StatusCode(500);
+            }
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PurchaseVip(int months)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                if (user == null) return NotFound();
+                
+                // Calculate price based on months
+                var baseMonthlyPrice = 100000m; // 100,000 VND per month
+                decimal finalPrice;
+                
+                switch (months)
+                {
+                    case 1:
+                        finalPrice = baseMonthlyPrice;
+                        break;
+                    case 3:
+                        finalPrice = baseMonthlyPrice * 3 * 0.68m; // 32% discount
+                        break;
+                    case 12:
+                        finalPrice = baseMonthlyPrice * 12 * 0.44m; // 56% discount
+                        break;
+                    default:
+                        return BadRequest("Invalid subscription plan");
+                }
+                
+                // Check if user has enough balance
+                if (user.WalletBalance < finalPrice)
+                {
+                    TempData["Error"] = "Số dư không đủ để nâng cấp tài khoản VIP. Vui lòng nạp thêm tiền.";
+                    return RedirectToAction("VipSubscription");
+                }
+                
+                // Deduct balance
+                user.WalletBalance -= finalPrice;
+                
+                // Update VIP status
+                user.VipStatus = true;
+                
+                // Calculate expiry date
+                if (user.VipExpiryDate != null && user.VipExpiryDate > DateTime.Now)
+                {
+                    // Extend existing subscription
+                    user.VipExpiryDate = user.VipExpiryDate.Value.AddMonths(months);
+                }
+                else
+                {
+                    // New subscription
+                    user.VipExpiryDate = DateTime.Now.AddMonths(months);
+                }
+                
+                // Create transaction record
+                var transaction = new Transaction
+                {
+                    UserID = userId,
+                    Amount = finalPrice,
+                    TransactionDate = DateTime.Now,
+                    Description = $"Nâng cấp tài khoản VIP {months} tháng",
+                    TypeID = 5, // Assuming 5 is for VIP subscription
+                    StatusID = 2, // Changed from 1 (Đang xử lý) to 2 (Thành công)
+                    OrderCode = Guid.NewGuid().ToString() // Generate a unique order code
+                };
+                
+                _context.Transactions.Add(transaction);
+                await _context.SaveChangesAsync();
+                
+                TempData["Success"] = $"Đã nâng cấp thành công tài khoản VIP {months} tháng. Hết hạn: {user.VipExpiryDate?.ToString("dd/MM/yyyy")}";
+                return RedirectToAction("VipSubscription");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] PurchaseVip: {ex.Message}");
+                TempData["Error"] = "Đã xảy ra lỗi khi xử lý giao dịch. Vui lòng thử lại sau.";
+                return RedirectToAction("VipSubscription");
             }
         }
     }
