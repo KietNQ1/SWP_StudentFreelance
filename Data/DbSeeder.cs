@@ -35,7 +35,8 @@ namespace StudentFreelance.Data
                     new TransactionType { TypeName = "Nạp tiền", IsActive = true },
                     new TransactionType { TypeName = "Rút tiền", IsActive = true },
                     new TransactionType { TypeName = "Thanh toán", IsActive = true },
-                    new TransactionType { TypeName = "Hoàn tiền", IsActive = true }
+                    new TransactionType { TypeName = "Hoàn tiền", IsActive = true },
+                    new TransactionType { TypeName = "Nâng cấp VIP", IsActive = true }
                 );
             }
 

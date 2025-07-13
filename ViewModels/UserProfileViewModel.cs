@@ -38,26 +38,40 @@ namespace StudentFreelance.ViewModels
         public string? Email { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+        public int RoleId { get; set; } // Role ID: 3 for Business, 4 for Student
 
+        // VIP subscription properties
+        public bool IsVip { get; set; }
+        public DateTime? VipExpiryDate { get; set; }
+
+        // 💰 Wallet balance
+        public decimal WalletBalance { get; set; }
+
+        // Skill section
         public List<SkillItem> Skills { get; set; } = new();
         public List<OptionItem> AvailableSkills { get; set; } = new();
         public List<OptionItem> AvailableProficiencyLevels { get; set; } = new();
+
+        // Địa chỉ (API)
         public List<OptionItem> Provinces { get; set; } = new();
         public List<OptionItem> Districts { get; set; } = new();
         public List<OptionItem> Wards { get; set; } = new();
 
+        // ⭐ Đánh giá
         public List<RatingViewModel> ReceivedRatings { get; set; } = new();
         public double? AverageRating { get; set; }
         public int TotalReviews { get; set; }
 
+        // 📜 Phân trang lịch sử dự án
         public int CurrentPage { get; set; }
         public int TotalPages { get; set; }
 
-        // 🆕 Dự án đã hoàn thành (preview + full)
+        // 🆕 Dự án đã hoàn thành
         public List<ProjectHistoryItem> ProjectHistoryPreview { get; set; } = new();
         public List<ProjectHistoryItem> ProjectHistoryAll { get; set; } = new();
-        public bool IsCurrentUser { get; set; }
 
+        // 👤 Xác định người dùng hiện tại
+        public bool IsCurrentUser { get; set; }
     }
 
     public class SkillItem
@@ -74,7 +88,6 @@ namespace StudentFreelance.ViewModels
         public string Name { get; set; }
     }
 
-    // 🆕 Lịch sử dự án đã giao/nhận
     public class ProjectHistoryItem
     {
         public int ProjectID { get; set; }
@@ -86,9 +99,8 @@ namespace StudentFreelance.ViewModels
         public bool IsRemoteWork { get; set; }
         public string CategoryName { get; set; }
 
-        public string? BusinessName { get; set; }             // Tên người tạo (chỉ dùng nếu là Student)
-        public DateTime? EndDate { get; set; }                // Thời gian kết thúc dự án
-        public string? ShortDescription { get; set; }         // Mô tả ngắn
-
+        public string? BusinessName { get; set; }
+        public DateTime? EndDate { get; set; }
+        public string? ShortDescription { get; set; }
     }
 }

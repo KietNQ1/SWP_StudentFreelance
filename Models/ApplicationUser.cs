@@ -10,9 +10,10 @@ namespace StudentFreelance.Models
 
     public class ApplicationUser : IdentityUser<int>
     {
-        public string FullName { get; set; }
+        public string? FullName { get; set; }
         
         public bool VipStatus { get; set; }
+        public DateTime? VipExpiryDate { get; set; }
         public int? AddressID { get; set; }
         public decimal WalletBalance { get; set; }
         public string? University { get; set; }

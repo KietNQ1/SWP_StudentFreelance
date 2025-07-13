@@ -1,0 +1,303 @@
+@model StudentFreelance.ViewModels.VipSubscriptionViewModel
+
+@{
+    ViewData["Title"] = "Nâng cấp tài khoản VIP";
+}
+
+<style>
+    .vip-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 30px 0;
+    }
+
+    .vip-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .vip-title {
+        color: #333;
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .vip-subtitle {
+        color: #666;
+        font-size: 18px;
+        margin-bottom: 20px;
+    }
+
+    .vip-badge {
+        display: inline-block;
+        background-color: #FFD700;
+        color: #000;
+        font-weight: bold;
+        padding: 5px 15px;
+        border-radius: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .plans-container {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 40px;
+    }
+
+    .plan-card {
+        width: 300px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        overflow: hidden;
+        transition: transform 0.3s, box-shadow 0.3s;
+        background-color: #fff;
+    }
+
+    .plan-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    }
+
+    .plan-header {
+        background-color: #f8f8f8;
+        padding: 20px;
+        text-align: center;
+        border-bottom: 1px solid #eee;
+    }
+
+    .plan-title {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .plan-price {
+        font-size: 28px;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .plan-price-original {
+        text-decoration: line-through;
+        color: #999;
+        font-size: 16px;
+        margin-bottom: 5px;
+    }
+
+    .plan-discount {
+        background-color: #ff6b6b;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .plan-body {
+        padding: 20px;
+    }
+
+    .plan-features {
+        list-style-type: none;
+        padding: 0;
+        margin: 0 0 20px 0;
+    }
+
+    .plan-features li {
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .plan-features li:last-child {
+        border-bottom: none;
+    }
+
+    .plan-features i {
+        color: #4CAF50;
+        margin-right: 5px;
+    }
+
+    .btn-vip {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        background-color: #FFD700;
+        color: #000;
+        border: none;
+        border-radius: 5px;
+        font-weight: 600;
+        text-align: center;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .btn-vip:hover {
+        background-color: #E6C200;
+    }
+
+    .benefits-section {
+        margin-top: 50px;
+    }
+
+    .benefits-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .benefits-list {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .benefits-list li {
+        padding: 12px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .benefits-list i {
+        color: #4CAF50;
+        margin-right: 10px;
+    }
+
+    .wallet-info {
+        background-color: #f8f8f8;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .wallet-balance {
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .wallet-link {
+        color: #0066cc;
+        text-decoration: none;
+    }
+
+    .wallet-link:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<div class="container vip-container">
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger" role="alert">
+            @Model.ErrorMessage
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+    {
+        <div class="alert alert-success" role="alert">
+            @Model.SuccessMessage
+        </div>
+    }
+
+    <div class="vip-header">
+        <h1 class="vip-title">Nâng cấp tài khoản VIP</h1>
+        <p class="vip-subtitle">Mở khóa các tính năng cao cấp và tối ưu trải nghiệm của bạn</p>
+        
+        @if (Model.IsVip)
+        {
+            <div>
+                <div class="vip-badge">
+                    <i class="bi bi-star-fill"></i> VIP
+                </div>
+                <p>Tài khoản VIP của bạn sẽ hết hạn vào: @Model.VipExpiryDate?.ToString("dd/MM/yyyy")</p>
+                <p>Bạn có thể gia hạn bất kỳ lúc nào để tiếp tục tận hưởng các đặc quyền VIP.</p>
+            </div>
+        }
+    </div>
+
+    <div class="wallet-info">
+        <div class="wallet-balance">Số dư ví: @Model.WalletBalance.ToString("N0") VNĐ</div>
+        <a href="@Url.Action("Deposit", "Wallet")" class="wallet-link">Nạp thêm tiền</a>
+    </div>
+
+    <div class="plans-container">
+        @foreach (var plan in Model.Plans)
+        {
+            <div class="plan-card">
+                <div class="plan-header">
+                    <div class="plan-title">@plan.Description</div>
+                    @if (plan.DiscountPercentage > 0)
+                    {
+                        <div class="plan-price-original">@plan.OriginalPrice.ToString("N0") VNĐ</div>
+                        <div class="plan-price">@plan.FinalPrice.ToString("N0") VNĐ</div>
+                        <div class="plan-discount">Tiết kiệm @plan.DiscountPercentage%</div>
+                    }
+                    else
+                    {
+                        <div class="plan-price">@plan.FinalPrice.ToString("N0") VNĐ</div>
+                    }
+                </div>
+                <div class="plan-body">
+                    <form asp-action="PurchaseVip" method="post" onsubmit="return confirmPurchase(@plan.Months, @plan.FinalPrice)">
+                        <input type="hidden" name="months" value="@plan.Months" />
+                        <button type="submit" class="btn-vip">
+                            @(Model.IsVip ? "Gia hạn ngay" : "Nâng cấp ngay")
+                        </button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="benefits-section">
+        <h2 class="benefits-title">Đặc quyền thành viên VIP</h2>
+        
+        @if (Model.RoleId == 4) // Student
+        {
+            <ul class="benefits-list">
+                <li><i class="bi bi-check-circle-fill"></i> Nhắn tin trao đổi với khách hàng sau khi chào giá</li>
+                <li><i class="bi bi-check-circle-fill"></i> MIỄN PHÍ lấy số điện thoại và email của khách hàng</li>
+                <li><i class="bi bi-check-circle-fill"></i> Chức năng dùng AI để tạo CV chuyên nghiệp</li>
+                <li><i class="bi bi-check-circle-fill"></i> Ưu tiên hiển thị trong kết quả tìm kiếm</li>
+                <li><i class="bi bi-check-circle-fill"></i> Hỗ trợ ưu tiên từ đội ngũ chăm sóc khách hàng</li>
+            </ul>
+        }
+        else if (Model.RoleId == 3) // Business
+        {
+            <ul class="benefits-list">
+                <li><i class="bi bi-check-circle-fill"></i> 3 lượt đăng dự án nổi bật lên đầu trang</li>
+                <li><i class="bi bi-check-circle-fill"></i> Liên hệ trực tiếp với Freelancer qua email và số điện thoại</li>
+                <li><i class="bi bi-check-circle-fill"></i> Profile chuyên nghiệp hơn với logo công ty</li>
+                <li><i class="bi bi-check-circle-fill"></i> Tiếp cận nhiều ứng viên tiềm năng hơn</li>
+                <li><i class="bi bi-check-circle-fill"></i> Hỗ trợ ưu tiên từ đội ngũ chăm sóc khách hàng</li>
+            </ul>
+        }
+    </div>
+</div> 
+
+<script>
+    function confirmPurchase(months, price) {
+        var planText = "";
+        switch(months) {
+            case 1:
+                planText = "1 tháng";
+                break;
+            case 3:
+                planText = "3 tháng";
+                break;
+            case 12:
+                planText = "12 tháng";
+                break;
+        }
+        
+        return confirm(`Bạn có chắc chắn muốn mua gói VIP ${planText} với giá ${price.toLocaleString('vi-VN')} VNĐ không?`);
+    }
+</script> 

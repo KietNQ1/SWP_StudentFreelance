@@ -173,6 +173,7 @@
 
                                 <!-- Logout -->
                                 <form asp-controller="Account" asp-action="Logout" method="post" class="form-inline d-inline">
+                                    @Html.AntiForgeryToken()
                                     <button type="submit" class="nav-link btn btn-link text-dark" style="border: none;">Logout</button>
                                 </form>
                             </div>
