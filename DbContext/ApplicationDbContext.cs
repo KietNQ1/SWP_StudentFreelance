@@ -38,6 +38,8 @@ namespace StudentFreelance.DbContext
         public DbSet<UserNotification> UserNotifications { get; set; }
         public DbSet<UserAccountHistory> UserAccountHistories { get; set; }
         public DbSet<BankAccount> BankAccounts { get; set; }
+        public DbSet<UserAccountAction> UserAccountActions { get; set; }
+        public DbSet<ProjectFlagAction> ProjectFlagActions { get; set; }
 
 
         // Enum DbSets
@@ -75,6 +77,26 @@ namespace StudentFreelance.DbContext
             modelBuilder.Entity<Rating>()
                 .HasIndex(r => new { r.ProjectID, r.ReviewerID, r.RevieweeID })
                 .IsUnique();
+                
+            // Self-referencing relationships for user verification/flagging
+            modelBuilder.Entity<ApplicationUser>()
+                .HasOne(u => u.VerifiedBy)
+                .WithMany()
+                .HasForeignKey(u => u.VerifiedByID)
+                .OnDelete(DeleteBehavior.Restrict);
+                
+            modelBuilder.Entity<ApplicationUser>()
+                .HasOne(u => u.FlaggedBy)
+                .WithMany()
+                .HasForeignKey(u => u.FlaggedByID)
+                .OnDelete(DeleteBehavior.Restrict);
+                
+            // Project flagging relationship
+            modelBuilder.Entity<Project>()
+                .HasOne(p => p.FlaggedBy)
+                .WithMany()
+                .HasForeignKey(p => p.FlaggedByID)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Relationships
 
@@ -362,6 +384,32 @@ namespace StudentFreelance.DbContext
                 .WithMany()  // no User.SubmissionAttachments collection
                 .HasForeignKey(psa => psa.UploadedBy)
                 .OnDelete(DeleteBehavior.Restrict);
+                
+            // UserAccountActions relationships - prevent cascade delete cycles
+            modelBuilder.Entity<UserAccountAction>()
+                .HasOne(uaa => uaa.User)
+                .WithMany()
+                .HasForeignKey(uaa => uaa.UserID)
+                .OnDelete(DeleteBehavior.Restrict);
+                
+            modelBuilder.Entity<UserAccountAction>()
+                .HasOne(uaa => uaa.ActionBy)
+                .WithMany()
+                .HasForeignKey(uaa => uaa.ActionByID)
+                .OnDelete(DeleteBehavior.Restrict);
+                
+            // ProjectFlagActions relationships - prevent cascade delete cycles
+            modelBuilder.Entity<ProjectFlagAction>()
+                .HasOne(pfa => pfa.Project)
+                .WithMany()
+                .HasForeignKey(pfa => pfa.ProjectID)
+                .OnDelete(DeleteBehavior.Restrict);
+                
+            modelBuilder.Entity<ProjectFlagAction>()
+                .HasOne(pfa => pfa.ActionBy)
+                .WithMany()
+                .HasForeignKey(pfa => pfa.ActionByID)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Global query filters for soft-delete
 
@@ -390,6 +438,8 @@ namespace StudentFreelance.DbContext
             modelBuilder.Entity<ProjectSubmission>().HasQueryFilter(ps => ps.IsActive);
             modelBuilder.Entity<ProjectSubmissionAttachment>().HasQueryFilter(psa => psa.IsActive);
             modelBuilder.Entity<Conversation>().HasQueryFilter(c => c.IsActive);
+            modelBuilder.Entity<UserAccountAction>().HasQueryFilter(uaa => uaa.IsActive);
+            modelBuilder.Entity<ProjectFlagAction>().HasQueryFilter(pfa => pfa.IsActive);
         }
     }
 }

@@ -182,6 +182,7 @@ namespace StudentFreelance.Controllers
                     SenderID = m.SenderID,
                     SenderName = userDict.TryGetValue(m.SenderID, out var name) ? name : "Invalid",
                     Content = m.Content,
+                    MessageType = m.MessageType,
                     SentAt = m.SentAt,
                     IsMine = m.SenderID == userId
                 })
@@ -208,6 +209,26 @@ namespace StudentFreelance.Controllers
             if (conv.ParticipantAID != userId && conv.ParticipantBID != userId)
                 return Forbid();
 
+            // Xác định kiểu nội dung
+            string messageType;
+            if (content.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+                content.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ||
+                content.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
+                content.EndsWith(".gif", StringComparison.OrdinalIgnoreCase))
+            {
+                messageType = "image";
+            }
+            else if (content.EndsWith(".doc", StringComparison.OrdinalIgnoreCase) ||
+                     content.EndsWith(".docx", StringComparison.OrdinalIgnoreCase) ||
+                     content.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+            {
+                messageType = "file";
+            }
+            else
+            {
+                messageType = "text";
+            }
+
             var msg = new Message
             {
                 ConversationID = conversationID,
@@ -215,10 +236,12 @@ namespace StudentFreelance.Controllers
                 ReceiverID = (conv.ParticipantAID == userId ? conv.ParticipantBID : conv.ParticipantAID),
                 ProjectID = conv.ProjectID,
                 Content = content,
+                MessageType = messageType, // ✅ Thêm dòng này
                 SentAt = DateTime.UtcNow,
                 IsRead = false,
                 IsActive = true
             };
+
 
             _db.Messages.Add(msg);
             await _db.SaveChangesAsync();

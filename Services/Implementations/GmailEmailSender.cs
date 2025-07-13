@@ -16,9 +16,7 @@ namespace StudentFreelance.Services.Implementations
         }
 
         public async Task SendEmailAsync(string toEmail, string subject, string body)
-        {
-            Console.WriteLine("=== ĐÃ GỌI TỚI HÀM GỬI EMAIL ==="); // Thêm dòng này!
-
+        {   
             try
             {
                 var message = new MailMessage

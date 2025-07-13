@@ -1,6 +1,10 @@
 @using System.Security.Claims
 @model StudentFreelance.Models.Project
 
+@{
+    ViewData["Title"] = Model.Title;
+}
+
 
 <style>
     :root {
@@ -67,9 +71,12 @@
         }
 
         .badge.bg-secondary {
-            background-color: var(--accent1);
-            color: #333;
+            background-color: #e0f4d7; /* xanh nhạt pastel */
+            color: #1a1a1a;
+            font-weight: 600;
+            border: 1px solid #c4eac2;
         }
+
 
         .badge.bg-danger {
             background-color: var(--accent3);
@@ -240,6 +247,14 @@
     }
 
     }
+
+    .skill-badge {
+        background-color: #e6f9d9;
+        color: #222;
+        border: 1px solid #cceccc;
+        font-weight: 600;
+    }
+
 </style>
 
 
@@ -290,6 +305,12 @@
                 {
                     <span class="badge bg-danger me-2">Đã ẩn</span>
                 }
+                @if (Model.IsFlagged)
+                {
+                    <span class="badge bg-danger me-2" title="@Model.FlagReason">
+                        <i class="fas fa-flag"></i> Flagged
+                    </span>
+                }
                 @Model.Title
             </h1>
             <div class="d-flex flex-wrap mb-3 gap-2">
@@ -326,6 +347,27 @@
                        class="btn btn-outline-success">
                         <i class="bi bi-people"></i> Xem ứng viên (@Model.StudentApplications.Count)
                     </a>
+                </div>
+            }
+            @if (User.Identity != null && User.Identity.IsAuthenticated && 
+                 (User.IsInRole("Admin") || User.IsInRole("Moderator")))
+            {
+                <div class="mt-2">
+                    @if (!Model.IsFlagged)
+                    {
+                        <a asp-action="FlagProject" asp-route-id="@Model.ProjectID" class="btn btn-outline-danger">
+                            <i class="fas fa-flag"></i> Flag Project
+                        </a>
+                    }
+                    else
+                    {
+                        <form asp-action="UnflagProject" method="post" class="d-inline">
+                            <input type="hidden" name="id" value="@Model.ProjectID" />
+                            <button type="submit" class="btn btn-outline-warning">
+                                <i class="fas fa-flag-checkered"></i> Remove Flag
+                            </button>
+                        </form>
+                    }
                 </div>
             }
             else if (User.Identity != null && User.Identity.IsAuthenticated &&
@@ -367,7 +409,8 @@
                         <div class="d-flex flex-wrap gap-2">
                             @foreach (var skill in Model.ProjectSkillsRequired)
                             {
-                                <span class="badge bg-secondary">@skill.Skill.SkillName</span>
+                                <span class="badge skill-badge">@skill.Skill.SkillName</span>
+
                             }
                         </div>
                     </div>
@@ -427,9 +470,11 @@
                     }
 
                     <div class="mt-3">
-                        <a href="#" class="btn btn-outline-secondary btn-sm w-100">
+                        <a asp-controller="User" asp-action="Profile" asp-route-id="@Model.BusinessID"
+                           class="btn btn-outline-secondary btn-sm w-100">
                             <i class="bi bi-person"></i> View Profile
                         </a>
+
                         <form asp-controller="Chat" asp-action="StartProjectChat" method="post">
                             <input type="hidden" name="projectId" value="@Model.ProjectID" />
                             <button type="submit" class="btn btn-success mt-2 w-100">

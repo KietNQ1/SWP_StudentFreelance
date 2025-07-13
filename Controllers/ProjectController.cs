@@ -136,6 +136,14 @@ namespace StudentFreelance.Controllers
                                  projectStatuses.FirstOrDefault()?.StatusID ?? 0;
             var defaultTypeId = projectTypes.FirstOrDefault()?.TypeID ?? 0;
             
+            // Lấy thông tin người dùng hiện tại (doanh nghiệp)
+            var businessId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var business = await _context.Users.FirstOrDefaultAsync(u => u.Id == businessId);
+            
+            // Lấy địa chỉ của doanh nghiệp
+            int? businessAddressId = business?.AddressID;
+            ViewBag.BusinessAddressId = businessAddressId;
+            
             // Tạo viewModel với giá trị mặc định
             var viewModel = new ProjectViewModel
             {
@@ -146,10 +154,12 @@ namespace StudentFreelance.Controllers
                 StartDate = DateTime.Today,
                 EndDate = DateTime.Today.AddMonths(1),
                 Deadline = DateTime.Today.AddDays(14),
-                BusinessID = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)),
+                BusinessID = businessId,
                 CategoryID = defaultCategoryId, // Đặt giá trị mặc định
                 StatusID = defaultStatusId, // Đặt giá trị mặc định
-                TypeID = defaultTypeId // Đặt giá trị mặc định
+                TypeID = defaultTypeId, // Đặt giá trị mặc định
+                // Mặc định không sử dụng địa chỉ doanh nghiệp
+                AddressID = null
             };
 
             // Lấy danh sách ImportanceLevel để hiển thị trong dropdown
@@ -170,6 +180,19 @@ namespace StudentFreelance.Controllers
                 ModelState.AddModelError("CategoryID", "Vui lòng chọn danh mục cho dự án.");
                 await PopulateFormDataAsync(viewModel);
                 return View(viewModel);
+            }
+            
+            // Xử lý địa chỉ dựa trên checkbox IsRemoteWork
+            if (!viewModel.IsRemoteWork)
+            {
+                // Nếu không phải làm việc từ xa, sử dụng địa chỉ của doanh nghiệp
+                var business = await _context.Users.FirstOrDefaultAsync(u => u.Id == viewModel.BusinessID);
+                viewModel.AddressID = business?.AddressID;
+            }
+            else
+            {
+                // Nếu là làm việc từ xa, địa chỉ sẽ là null
+                viewModel.AddressID = null;
             }
             
             if (ModelState.IsValid)
@@ -361,6 +384,10 @@ namespace StudentFreelance.Controllers
             viewModel.ProjectTypes = await _context.ProjectTypes.Where(t => t.IsActive).ToListAsync();
             viewModel.Skills = await _context.Skills.Where(s => s.IsActive).ToListAsync();
             ViewBag.ImportanceLevels = await _context.ImportanceLevels.Where(il => il.IsActive).ToListAsync();
+            
+            // Get business address ID
+            var business = await _context.Users.FirstOrDefaultAsync(u => u.Id == viewModel.BusinessID);
+            ViewBag.BusinessAddressId = business?.AddressID;
         }
 
         // GET: Projects/Edit/5
@@ -1189,6 +1216,155 @@ namespace StudentFreelance.Controllers
             await _context.SaveChangesAsync();
             
             return Json(new { success = true, message = "Importance levels seeded successfully." });
+        }
+
+        // GET: Projects/FlagProject/5
+        [Authorize(Roles = "Admin,Moderator")]
+        public async Task<IActionResult> FlagProject(int id)
+        {
+            var project = await _projectService.GetProjectByIdAsync(id, true);
+            if (project == null)
+            {
+                return NotFound();
+            }
+            
+            return View(project);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,Moderator")]
+        public async Task<IActionResult> FlagProject(int id, string reason)
+        {
+            var project = await _context.Projects.FindAsync(id);
+            if (project == null)
+            {
+                return NotFound();
+            }
+            
+            // Check if already flagged
+            if (project.IsFlagged)
+            {
+                TempData["ErrorMessage"] = "Project is already flagged.";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            
+            // Update project flag status
+            project.IsFlagged = true;
+            project.FlagReason = reason;
+            project.FlaggedAt = DateTime.UtcNow;
+            project.FlaggedByID = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            
+            // Log the action
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+            var userAgent = HttpContext.Request.Headers["User-Agent"].ToString();
+            
+            var action = new ProjectFlagAction
+            {
+                ProjectID = project.ProjectID,
+                ActionByID = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)),
+                ActionType = "Flag",
+                Reason = reason,
+                ActionDate = DateTime.UtcNow,
+                IPAddress = ipAddress,
+                UserAgent = userAgent
+            };
+            
+            _context.ProjectFlagActions.Add(action);
+            await _context.SaveChangesAsync();
+            
+            // Notify the project owner
+            var notification = new Notification
+            {
+                Title = "Project Flagged",
+                Content = $"Your project '{project.Title}' has been flagged for review due to: {reason}",
+                TypeID = _context.NotificationTypes.First(t => t.TypeName == "Hệ thống").TypeID,
+                NotificationDate = DateTime.UtcNow,
+                IsActive = true
+            };
+            
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+            
+            _context.UserNotifications.Add(new UserNotification
+            {
+                UserID = project.BusinessID,
+                NotificationID = notification.NotificationID,
+                IsRead = false
+            });
+            
+            await _context.SaveChangesAsync();
+            
+            TempData["SuccessMessage"] = "Project successfully flagged.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,Moderator")]
+        public async Task<IActionResult> UnflagProject(int id)
+        {
+            var project = await _context.Projects.FindAsync(id);
+            if (project == null)
+            {
+                return NotFound();
+            }
+            
+            // Check if not flagged
+            if (!project.IsFlagged)
+            {
+                TempData["ErrorMessage"] = "Project is not flagged.";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            
+            // Update project flag status
+            project.IsFlagged = false;
+            project.FlagReason = null;
+            project.FlaggedAt = null;
+            project.FlaggedByID = null;
+            
+            // Log the action
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+            var userAgent = HttpContext.Request.Headers["User-Agent"].ToString();
+            
+            var action = new ProjectFlagAction
+            {
+                ProjectID = project.ProjectID,
+                ActionByID = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)),
+                ActionType = "Unflag",
+                Reason = "Flag removed",
+                ActionDate = DateTime.UtcNow,
+                IPAddress = ipAddress,
+                UserAgent = userAgent
+            };
+            
+            _context.ProjectFlagActions.Add(action);
+            await _context.SaveChangesAsync();
+            
+            // Notify the project owner
+            var notification = new Notification
+            {
+                Title = "Project Flag Removed",
+                Content = $"The flag on your project '{project.Title}' has been removed.",
+                TypeID = _context.NotificationTypes.First(t => t.TypeName == "Hệ thống").TypeID,
+                NotificationDate = DateTime.UtcNow,
+                IsActive = true
+            };
+            
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+            
+            _context.UserNotifications.Add(new UserNotification
+            {
+                UserID = project.BusinessID,
+                NotificationID = notification.NotificationID,
+                IsRead = false
+            });
+            
+            await _context.SaveChangesAsync();
+            
+            TempData["SuccessMessage"] = "Project flag successfully removed.";
+            return RedirectToAction(nameof(Details), new { id });
         }
 
         // Helper methods

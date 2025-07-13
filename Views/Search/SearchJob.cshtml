@@ -66,6 +66,59 @@
         .list-group-item.fw-bold.bg-primary {
             background-color: #89AC46 !important;
         }
+        
+        /* Fix for layout issues */
+        html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            min-height: 100vh !important;
+            height: auto !important;
+            overflow-x: hidden !important;
+        }
+        
+        body {
+            display: flex !important;
+            flex-direction: column !important;
+        }
+        
+        main {
+            flex: 1 !important;
+        }
+        
+        .main-container {
+            margin-bottom: 0 !important;
+        }
+        
+        .footer {
+            margin-top: auto !important;
+            margin-bottom: 0 !important;
+            background-color: #F8F8F8 !important;
+        }
+        
+        /* Override any container styles that might affect the footer */
+        .footer .container {
+            background-color: transparent !important;
+            box-shadow: none !important;
+            border-top: none !important;
+            padding-top: 3rem !important;
+            padding-bottom: 0 !important;
+        }
+        
+        /* Fix for search form container */
+        .search-form-container {
+            margin-top: 0 !important;
+            transform: none !important;
+            position: relative !important;
+            z-index: 10 !important;
+        }
+        
+        .search-form-container:hover {
+            transform: none !important;
+        }
+        
+        .search-header {
+            padding-bottom: 1.5rem !important;
+        }
     </style>
 }
 

@@ -160,25 +160,31 @@
                             <span asp-validation-for="PhoneNumber" class="text-danger"></span>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="University" class="form-label">Trường đại học</label>
-                            <input asp-for="University" class="form-control" />
-                        </div>
+                        @if (Model.RoleId != 3) // Show for non-business users
+                        {
+                            <div class="mb-3">
+                                <label asp-for="University" class="form-label">Trường đại học</label>
+                                <input asp-for="University" class="form-control" />
+                            </div>
 
-                        <div class="mb-3">
-                            <label asp-for="Major" class="form-label">Ngành học</label>
-                            <input asp-for="Major" class="form-control" />
-                        </div>
+                            <div class="mb-3">
+                                <label asp-for="Major" class="form-label">Ngành học</label>
+                                <input asp-for="Major" class="form-control" />
+                            </div>
+                        }
 
-                        <div class="mb-3">
-                            <label asp-for="CompanyName" class="form-label">Công ty</label>
-                            <input asp-for="CompanyName" class="form-control" />
-                        </div>
+                        @if (Model.RoleId != 4) // Show for non-student users
+                        {
+                            <div class="mb-3">
+                                <label asp-for="CompanyName" class="form-label">Công ty</label>
+                                <input asp-for="CompanyName" class="form-control" />
+                            </div>
 
-                        <div class="mb-3">
-                            <label asp-for="Industry" class="form-label">Lĩnh vực</label>
-                            <input asp-for="Industry" class="form-control" />
-                        </div>
+                            <div class="mb-3">
+                                <label asp-for="Industry" class="form-label">Lĩnh vực</label>
+                                <input asp-for="Industry" class="form-control" />
+                            </div>
+                        }
                     </div>
                 </div>
 
@@ -252,48 +258,51 @@
                 </div>
 
                 <!-- Kỹ năng -->
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        Kỹ năng
-                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addSkill()">+ Thêm</button>
+                @if (Model.RoleId != 3) // Hide Skills section for business users
+                {
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            Kỹ năng
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addSkill()">+ Thêm</button>
+                        </div>
+                        <div class="card-body" id="skills-container">
+                            @for (int i = 0; i < Model.Skills.Count; i++)
+                            {
+                                <div class="skill-item">
+                                    <select name="Skills[@i].SkillID" class="form-select w-45">
+                                        @foreach (var s in Model.AvailableSkills)
+                                        {
+                                            if (Model.Skills[i].SkillID.ToString() == s.ID)
+                                            {
+                                                <option value="@s.ID" selected>@s.Name</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@s.ID">@s.Name</option>
+                                            }
+                                        }
+                                    </select>
+                                    <select name="Skills[@i].ProficiencyLevelID" class="form-select w-45">
+                                        @foreach (var l in Model.AvailableProficiencyLevels)
+                                        {
+                                            if (Model.Skills[i].ProficiencyLevelID.ToString() == l.ID)
+                                            {
+                                                <option value="@l.ID" selected>@l.Name</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@l.ID">@l.Name</option>
+                                            }
+                                        }
+                                    </select>
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            }
+                        </div>
                     </div>
-                    <div class="card-body" id="skills-container">
-                        @for (int i = 0; i < Model.Skills.Count; i++)
-                        {
-                            <div class="skill-item">
-                                <select name="Skills[@i].SkillID" class="form-select w-45">
-                                    @foreach (var s in Model.AvailableSkills)
-                                    {
-                                        if (Model.Skills[i].SkillID.ToString() == s.ID)
-                                        {
-                                            <option value="@s.ID" selected>@s.Name</option>
-                                        }
-                                        else
-                                        {
-                                            <option value="@s.ID">@s.Name</option>
-                                        }
-                                    }
-                                </select>
-                                <select name="Skills[@i].ProficiencyLevelID" class="form-select w-45">
-                                    @foreach (var l in Model.AvailableProficiencyLevels)
-                                    {
-                                        if (Model.Skills[i].ProficiencyLevelID.ToString() == l.ID)
-                                        {
-                                            <option value="@l.ID" selected>@l.Name</option>
-                                        }
-                                        else
-                                        {
-                                            <option value="@l.ID">@l.Name</option>
-                                        }
-                                    }
-                                </select>
-                                <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
-                        }
-                    </div>
-                </div>
+                }
             </div>
         </div>
 
@@ -308,49 +317,54 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <partial name="_ValidationScriptsPartial" />
     <script>
-        let skillIndex = @Model.Skills.Count;
+        @if (Model.RoleId != 3) // Only include skills JavaScript for non-business users
+        {
+            <text>
+            let skillIndex = @Model.Skills.Count;
 
-        const skillList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.AvailableSkills));
-        const levelList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.AvailableProficiencyLevels));
+            const skillList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.AvailableSkills));
+            const levelList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.AvailableProficiencyLevels));
 
-        function addSkill() {
-            const container = document.getElementById("skills-container");
+            function addSkill() {
+                const container = document.getElementById("skills-container");
 
-            const div = document.createElement("div");
-            div.className = "skill-item";
+                const div = document.createElement("div");
+                div.className = "skill-item";
 
-            const skillSelect = document.createElement("select");
-            skillSelect.name = `Skills[${skillIndex}].SkillID`;
-            skillSelect.className = "form-select w-45";
-            skillList.forEach(s => {
-                const opt = document.createElement("option");
-                opt.value = s.ID;
-                opt.textContent = s.Name;
-                skillSelect.appendChild(opt);
-            });
+                const skillSelect = document.createElement("select");
+                skillSelect.name = `Skills[${skillIndex}].SkillID`;
+                skillSelect.className = "form-select w-45";
+                skillList.forEach(s => {
+                    const opt = document.createElement("option");
+                    opt.value = s.ID;
+                    opt.textContent = s.Name;
+                    skillSelect.appendChild(opt);
+                });
 
-            const levelSelect = document.createElement("select");
-            levelSelect.name = `Skills[${skillIndex}].ProficiencyLevelID`;
-            levelSelect.className = "form-select w-45";
-            levelList.forEach(l => {
-                const opt = document.createElement("option");
-                opt.value = l.ID;
-                opt.textContent = l.Name;
-                levelSelect.appendChild(opt);
-            });
+                const levelSelect = document.createElement("select");
+                levelSelect.name = `Skills[${skillIndex}].ProficiencyLevelID`;
+                levelSelect.className = "form-select w-45";
+                levelList.forEach(l => {
+                    const opt = document.createElement("option");
+                    opt.value = l.ID;
+                    opt.textContent = l.Name;
+                    levelSelect.appendChild(opt);
+                });
 
-            const removeBtn = document.createElement("button");
-            removeBtn.type = "button";
-            removeBtn.className = "btn btn-danger btn-sm";
-            removeBtn.innerHTML = '<i class="bi bi-trash"></i>';
-            removeBtn.onclick = () => div.remove();
+                const removeBtn = document.createElement("button");
+                removeBtn.type = "button";
+                removeBtn.className = "btn btn-danger btn-sm";
+                removeBtn.innerHTML = '<i class="bi bi-trash"></i>';
+                removeBtn.onclick = () => div.remove();
 
-            div.appendChild(skillSelect);
-            div.appendChild(levelSelect);
-            div.appendChild(removeBtn);
-            container.appendChild(div);
+                div.appendChild(skillSelect);
+                div.appendChild(levelSelect);
+                div.appendChild(removeBtn);
+                container.appendChild(div);
 
-            skillIndex++;
+                skillIndex++;
+            }
+            </text>
         }
 
         // Display any messages from TempData
