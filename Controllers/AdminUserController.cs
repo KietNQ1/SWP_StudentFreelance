@@ -17,7 +17,7 @@ namespace StudentFreelance.Controllers
             _userManager = userManager;
             _roleManager = roleManager;
         }
-        // ✅ Gộp hiển thị và lọc người dùng
+        
         [HttpGet]
         public async Task<IActionResult> Index(string searchTerm, string selectedRole, string status)
         {
@@ -26,8 +26,8 @@ namespace StudentFreelance.Controllers
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 users = users.Where(u =>
-                    u.UserName.Contains(searchTerm) ||
-                    u.Email.Contains(searchTerm));
+                    u.FullName.Contains(searchTerm) ||
+                    u.Email.Contains(searchTerm) || u.PhoneNumber.Contains(searchTerm));
             }
 
             if (status == "Active")
@@ -44,10 +44,10 @@ namespace StudentFreelance.Controllers
             var allRoles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
             ViewBag.AllRoles = allRoles;
 
-            return View(await users.ToListAsync()); // View: Index.cshtml
+            return View(await users.ToListAsync()); 
         }
 
-        // ✅ Sửa người dùng
+        // Sửa người dùng
         [HttpGet]
         public async Task<IActionResult> Edit(string id)
         {
@@ -65,7 +65,6 @@ namespace StudentFreelance.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(string id, ApplicationUser updatedUser, string selectedRole)
         {
             if (id != updatedUser.Id.ToString()) return BadRequest();
@@ -92,7 +91,7 @@ namespace StudentFreelance.Controllers
             return RedirectToAction(nameof(Index));
         }
     
-        // ✅ Ẩn (xóa mềm)
+       
         [HttpPost]
         public async Task<IActionResult> Deactivate(string id)
         {
