@@ -1,0 +1,74 @@
+@model IEnumerable<StudentFreelance.ViewModels.UserVerificationViewModel>
+
+@{
+    ViewData["Title"] = "User Verification";
+}
+
+<div class="container mt-4">
+    <h1>User Verification</h1>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <form asp-action="Index" method="get" class="form-inline">
+                <div class="input-group">
+                    <input type="text" name="searchString" class="form-control" placeholder="Search by name, email..." />
+                    <div class="input-group-append">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                @if (item.IsVerified)
+                                {
+                                    <span class="badge badge-success mr-2" title="Verified User"><i class="fas fa-check-circle"></i></span>
+                                }
+                                @if (item.IsFlagged)
+                                {
+                                    <span class="badge badge-danger mr-2" title="@item.FlagReason"><i class="fas fa-flag"></i></span>
+                                }
+                                @item.FullName
+                            </div>
+                            <small class="text-muted">@item.UserName</small>
+                        </td>
+                        <td>@item.Email</td>
+                        <td>
+                            @if (item.IsActive)
+                            {
+                                <span class="badge badge-success">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-danger">Inactive</span>
+                            }
+                        </td>
+                        <td>@item.CreatedAt.ToString("yyyy-MM-dd")</td>
+                        <td>
+                            <a asp-action="Details" asp-route-id="@item.UserID" class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i> Details
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div> 

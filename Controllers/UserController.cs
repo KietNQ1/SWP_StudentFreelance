@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StudentFreelance.DbContext;
 using StudentFreelance.Models;
+using StudentFreelance.Models.Enums;
 using StudentFreelance.Services.Interfaces;
 using StudentFreelance.ViewModels;
 using System.Security.Claims;
@@ -15,34 +17,129 @@ namespace StudentFreelance.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _env;
         private readonly ILocationApiService _locationApiService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public UserController(
             ApplicationDbContext context, 
             IWebHostEnvironment env,
-            ILocationApiService locationApiService)
+            ILocationApiService locationApiService,
+            UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _env = env;
             _locationApiService = locationApiService;
+            _userManager = userManager;
         }
 
         [HttpGet]
-        public async Task<IActionResult> Profile(int page = 1)
+        public async Task<IActionResult> Profile(int? id)
         {
             try
             {
-                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-                var user = await _context.Users.Include(u => u.Address).FirstOrDefaultAsync(u => u.Id == userId);
+                var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var profileUserId = id ?? currentUserId;
+                var isCurrentUser = profileUserId == currentUserId;
+
+                var user = await _context.Users
+                    .Include(u => u.Address)
+                    .FirstOrDefaultAsync(u => u.Id == profileUserId);
+
                 if (user == null) return NotFound();
 
                 var skills = await _context.StudentSkills
-                    .Where(s => s.UserID == userId && s.IsActive)
+                    .Where(s => s.UserID == profileUserId && s.IsActive)
                     .Include(s => s.Skill)
                     .Include(s => s.ProficiencyLevel)
                     .ToListAsync();
 
+                // Get user roles
+                var roles = await _userManager.GetRolesAsync(user);
+                var roleId = 0;
+                if (roles.Contains("Business"))
+                    roleId = 3;
+                else if (roles.Contains("Student"))
+                    roleId = 4;
+
+                // ⭐ Lấy đánh giá
+                var receivedRatings = await _context.Ratings
+                    .Include(r => r.Reviewer)
+                    .Where(r => r.RevieweeID == profileUserId && r.IsActive)
+                    .OrderByDescending(r => r.DateRated)
+                    .ToListAsync();
+
+                var averageRating = receivedRatings.Any()
+                    ? (double?)Math.Round(receivedRatings.Average(r => (double)r.Score), 2)
+                    : null;
+
+                var totalReviews = receivedRatings.Count;
+
+                var ratingViewModels = receivedRatings.Select(r => new RatingViewModel
+                {
+                    ReviewerID = r.ReviewerID,
+                    ReviewerName = r.Reviewer?.FullName,
+                    ReviewerAvatarPath = r.Reviewer?.Avatar,
+                    Score = r.Score,
+                    Comment = r.Comment,
+                    DateRated = r.DateRated
+                }).ToList();
+
+                // 🧾 Lịch sử dự án đã hoàn thành (preview)
+                var completedProjects = new List<ProjectHistoryItem>();
+
+                // Business projects
+                var ownedProjects = await _context.Projects
+                    .Include(p => p.Status)
+                    .Include(p => p.Category)
+                    .Include(p => p.Type)
+                    .Where(p => p.BusinessID == profileUserId && p.StatusID == 3)
+                    .OrderByDescending(p => p.EndDate)
+                    .Take(3)
+                    .ToListAsync();
+
+                foreach (var proj in ownedProjects)
+                {
+                    completedProjects.Add(new ProjectHistoryItem
+                    {
+                        ProjectID = proj.ProjectID,
+                        Title = proj.Title,
+                        Role = "Business",
+                        CompletedDate = proj.EndDate,
+                        Budget = proj.Budget,
+                        TypeName = proj.Type.TypeName,
+                        IsRemoteWork = proj.IsRemoteWork,
+                        CategoryName = proj.Category.CategoryName,
+                        BusinessName = proj.Business?.FullName ?? "Bạn",
+                        EndDate = proj.EndDate
+                    });
+                }
+
+                // Student projects
+                var joinedProjects = await _context.StudentApplications
+                    .Include(a => a.Project).ThenInclude(p => p.Type)
+                    .Include(a => a.Project).ThenInclude(p => p.Category)
+                    .Include(a => a.Project).ThenInclude(p => p.Status)
+                    .Where(a => a.UserID == profileUserId && a.Status == "Completed")
+                    .ToListAsync();
+
+                foreach (var app in joinedProjects)
+                {
+                    var proj = app.Project;
+                    completedProjects.Add(new ProjectHistoryItem
+                    {
+                        ProjectID = proj.ProjectID,
+                        Title = proj.Title,
+                        Role = "Student",
+                        CompletedDate = proj.EndDate,
+                        Budget = proj.Budget,
+                        TypeName = proj.Type.TypeName,
+                        IsRemoteWork = proj.IsRemoteWork,
+                        CategoryName = proj.Category.CategoryName
+                    });
+                }
+
                 var viewModel = new UserProfileViewModel
                 {
+                    UserID = user.Id,
                     FullName = user.FullName,
                     PhoneNumber = user.PhoneNumber,
                     University = user.University,
@@ -58,51 +155,25 @@ namespace StudentFreelance.Controllers
                     DetailAddress = user.Address?.DetailAddress,
                     FullAddress = user.Address?.FullAddress,
                     AvatarPath = user.Avatar,
+                    Email = user.Email,
+                    CreatedAt = user.CreatedAt,
+                    UpdatedAt = user.UpdatedAt,
+                    RoleId = roleId,
+                    IsVip = user.VipStatus,
+                    VipExpiryDate = user.VipExpiryDate,
+                    IsCurrentUser = isCurrentUser,
                     Skills = skills.Select(s => new SkillItem
                     {
                         SkillID = s.SkillID,
                         ProficiencyLevelID = s.ProficiencyLevelID,
-                        SkillName = s.Skill.SkillName,
-                        ProficiencyLevelName = s.ProficiencyLevel.LevelName
+                        SkillName = s.Skill?.SkillName,
+                        ProficiencyLevelName = s.ProficiencyLevel?.LevelName
                     }).ToList(),
-                    CreatedAt = user.CreatedAt,
-                    UpdatedAt = user.UpdatedAt,
-                    Email = user.Email
+                    ReceivedRatings = ratingViewModels,
+                    AverageRating = averageRating,
+                    TotalReviews = totalReviews,
+                    ProjectHistoryPreview = completedProjects.Take(3).ToList()
                 };
-
-            
-
-                // ⭐ Thêm phần đánh giá
-                var ratingsQuery = _context.Ratings
-                    .Include(r => r.Reviewer)
-                    .Where(r => r.RevieweeID == userId)
-                    .OrderByDescending(r => r.DateRated);
-
-                var totalRatings = await ratingsQuery.CountAsync();
-                var pageSize = 5;
-
-                var averageRating = totalRatings > 0
-                    ? (double?)(await ratingsQuery.AverageAsync(r => r.Score))
-                    : null;
-
-
-                var ratingList = await ratingsQuery
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .Select(r => new RatingViewModel
-                    {
-                        ReviewerName = r.Reviewer.FullName,
-                        ReviewerAvatarPath = string.IsNullOrEmpty(r.Reviewer.ProfilePicturePath) ? "/image/default-avatar.png" : r.Reviewer.ProfilePicturePath,
-                        Score = r.Score,
-                        Comment = r.Comment,
-                        DateRated = r.DateRated
-                    }).ToListAsync();
-
-                viewModel.AverageRating = averageRating;
-                viewModel.TotalReviews = totalRatings;
-                viewModel.ReceivedRatings = ratingList;
-                viewModel.CurrentPage = page;
-                viewModel.TotalPages = (int)Math.Ceiling((double)totalRatings / pageSize);
 
                 return View(viewModel);
             }
@@ -112,6 +183,7 @@ namespace StudentFreelance.Controllers
                 return StatusCode(500);
             }
         }
+
 
 
         [HttpGet]
@@ -126,6 +198,16 @@ namespace StudentFreelance.Controllers
                 var skills = await _context.StudentSkills
                     .Where(s => s.UserID == userId && s.IsActive)
                     .ToListAsync();
+
+                // Get user roles
+                var roles = await _userManager.GetRolesAsync(user);
+                var roleId = 0;
+                
+                // Map role names to IDs: 3 for Business, 4 for Student
+                if (roles.Contains("Business"))
+                    roleId = 3;
+                else if (roles.Contains("Student"))
+                    roleId = 4;
 
                 var viewModel = new UserProfileViewModel
                 {
@@ -148,6 +230,9 @@ namespace StudentFreelance.Controllers
                         SkillID = s.SkillID,
                         ProficiencyLevelID = s.ProficiencyLevelID
                     }).ToList(),
+                    RoleId = roleId,
+                    IsVip = user.VipStatus,
+                    VipExpiryDate = user.VipExpiryDate,
 
                     // Get provinces from API
                     Provinces = (await _locationApiService.GetProvincesAsync())
@@ -286,12 +371,26 @@ namespace StudentFreelance.Controllers
                 var user = await _context.Users.Include(u => u.Address).FirstOrDefaultAsync(u => u.Id == userId);
                 if (user == null) return NotFound();
 
+                // Get user roles to determine if user is a business
+                var roles = await _userManager.GetRolesAsync(user);
+                var isBusiness = roles.Contains("Business");
+
                 user.FullName = model.FullName;
                 user.PhoneNumber = model.PhoneNumber;
-                user.University = model.University;
-                user.Major = model.Major;
-                user.CompanyName = model.CompanyName;
-                user.Industry = model.Industry;
+                
+                // Update role-specific fields
+                if (!isBusiness) // Student fields
+                {
+                    user.University = model.University;
+                    user.Major = model.Major;
+                }
+                
+                if (isBusiness) // Business fields
+                {
+                    user.CompanyName = model.CompanyName;
+                    user.Industry = model.Industry;
+                }
+                
                 user.UpdatedAt = DateTime.Now;
 
                 if (model.AvatarImage != null)
@@ -373,20 +472,24 @@ namespace StudentFreelance.Controllers
 
                 _context.Users.Update(user);
 
-                var oldSkills = _context.StudentSkills.Where(s => s.UserID == userId);
-                _context.StudentSkills.RemoveRange(oldSkills);
-
-                if (model.Skills != null)
+                // Only update skills for non-business users
+                if (!isBusiness)
                 {
-                    foreach (var skill in model.Skills)
+                    var oldSkills = _context.StudentSkills.Where(s => s.UserID == userId);
+                    _context.StudentSkills.RemoveRange(oldSkills);
+
+                    if (model.Skills != null)
                     {
-                        _context.StudentSkills.Add(new StudentSkill
+                        foreach (var skill in model.Skills)
                         {
-                            UserID = userId,
-                            SkillID = skill.SkillID,
-                            ProficiencyLevelID = skill.ProficiencyLevelID,
-                            IsActive = true
-                        });
+                            _context.StudentSkills.Add(new StudentSkill
+                            {
+                                UserID = userId,
+                                SkillID = skill.SkillID,
+                                ProficiencyLevelID = skill.ProficiencyLevelID,
+                                IsActive = true
+                            });
+                        }
                     }
                 }
 
@@ -468,5 +571,293 @@ namespace StudentFreelance.Controllers
                 return StatusCode(500, new { error = "Failed to retrieve wards" });
             }
         }
+        
+        [HttpGet]
+        public async Task<IActionResult> VipSubscription()
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                if (user == null) return NotFound();
+                
+                // Get user roles
+                var roles = await _userManager.GetRolesAsync(user);
+                var roleId = 0;
+                
+                // Map role names to IDs: 3 for Business, 4 for Student
+                if (roles.Contains("Business"))
+                    roleId = 3;
+                else if (roles.Contains("Student"))
+                    roleId = 4;
+                
+                var baseMonthlyPrice = 100000m; // 100,000 VND per month
+                
+                var viewModel = new VipSubscriptionViewModel
+                {
+                    RoleId = roleId,
+                    WalletBalance = user.WalletBalance,
+                    IsVip = user.VipStatus,
+                    VipExpiryDate = user.VipExpiryDate,
+                    Plans = new List<VipPlanOption>
+                    {
+                        new VipPlanOption
+                        {
+                            Months = 1,
+                            Price = baseMonthlyPrice,
+                            DiscountPercentage = 0,
+                            OriginalPrice = baseMonthlyPrice,
+                            FinalPrice = baseMonthlyPrice,
+                            Description = "1 tháng"
+                        },
+                        new VipPlanOption
+                        {
+                            Months = 3,
+                            Price = baseMonthlyPrice * 3 * 0.68m, // 32% discount
+                            DiscountPercentage = 32,
+                            OriginalPrice = baseMonthlyPrice * 3,
+                            FinalPrice = baseMonthlyPrice * 3 * 0.68m,
+                            Description = "3 tháng (Tiết kiệm 32%)"
+                        },
+                        new VipPlanOption
+                        {
+                            Months = 12,
+                            Price = baseMonthlyPrice * 12 * 0.44m, // 56% discount
+                            DiscountPercentage = 56,
+                            OriginalPrice = baseMonthlyPrice * 12,
+                            FinalPrice = baseMonthlyPrice * 12 * 0.44m,
+                            Description = "12 tháng (Tiết kiệm 56%)"
+                        }
+                    }
+                };
+                
+                if (TempData["Error"] != null)
+                {
+                    viewModel.ErrorMessage = TempData["Error"].ToString();
+                }
+                
+                if (TempData["Success"] != null)
+                {
+                    viewModel.SuccessMessage = TempData["Success"].ToString();
+                }
+                
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] VipSubscription: {ex.Message}");
+                return StatusCode(500);
+            }
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PurchaseVip(int months)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                if (user == null) return NotFound();
+                
+                // Calculate price based on months
+                var baseMonthlyPrice = 100000m; // 100,000 VND per month
+                decimal finalPrice;
+                
+                switch (months)
+                {
+                    case 1:
+                        finalPrice = baseMonthlyPrice;
+                        break;
+                    case 3:
+                        finalPrice = baseMonthlyPrice * 3 * 0.68m; // 32% discount
+                        break;
+                    case 12:
+                        finalPrice = baseMonthlyPrice * 12 * 0.44m; // 56% discount
+                        break;
+                    default:
+                        return BadRequest("Invalid subscription plan");
+                }
+                
+                // Check if user has enough balance
+                if (user.WalletBalance < finalPrice)
+                {
+                    TempData["Error"] = "Số dư không đủ để nâng cấp tài khoản VIP. Vui lòng nạp thêm tiền.";
+                    return RedirectToAction("VipSubscription");
+                }
+                
+                // Deduct balance
+                user.WalletBalance -= finalPrice;
+                
+                // Update VIP status
+                user.VipStatus = true;
+                
+                // Calculate expiry date
+                if (user.VipExpiryDate != null && user.VipExpiryDate > DateTime.Now)
+                {
+                    // Extend existing subscription
+                    user.VipExpiryDate = user.VipExpiryDate.Value.AddMonths(months);
+                }
+                else
+                {
+                    // New subscription
+                    user.VipExpiryDate = DateTime.Now.AddMonths(months);
+                }
+                
+                // Create transaction record
+                var transaction = new Transaction
+                {
+                    UserID = userId,
+                    Amount = finalPrice,
+                    TransactionDate = DateTime.Now,
+                    Description = $"Nâng cấp tài khoản VIP {months} tháng",
+                    TypeID = 5, // Assuming 5 is for VIP subscription
+                    StatusID = 2, // Changed from 1 (Đang xử lý) to 2 (Thành công)
+                    OrderCode = Guid.NewGuid().ToString() // Generate a unique order code
+                };
+                
+                _context.Transactions.Add(transaction);
+                await _context.SaveChangesAsync();
+                
+                TempData["Success"] = $"Đã nâng cấp thành công tài khoản VIP {months} tháng. Hết hạn: {user.VipExpiryDate?.ToString("dd/MM/yyyy")}";
+                return RedirectToAction("VipSubscription");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] PurchaseVip: {ex.Message}");
+                TempData["Error"] = "Đã xảy ra lỗi khi xử lý giao dịch. Vui lòng thử lại sau.";
+                return RedirectToAction("VipSubscription");
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> AllProjectHistory(int page = 1)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                int pageSize = 10;
+
+                var completedProjects = new List<ProjectHistoryItem>();
+
+                // Projects do user làm chủ (Business)
+                var ownedProjects = await _context.Projects
+                    .Include(p => p.Status)
+                    .Include(p => p.Category)
+                    .Include(p => p.Type)
+                    .Where(p => p.BusinessID == userId && p.StatusID == 3)
+                    .OrderByDescending(p => p.EndDate)
+                    .ToListAsync();
+
+                foreach (var proj in ownedProjects)
+                {
+                    completedProjects.Add(new ProjectHistoryItem
+                    {
+                        ProjectID = proj.ProjectID,
+                        Title = proj.Title,
+                        Role = "Business",
+                        CompletedDate = proj.EndDate,
+                        Budget = proj.Budget,
+                        TypeName = proj.Type.TypeName,
+                        IsRemoteWork = proj.IsRemoteWork,
+                        CategoryName = proj.Category.CategoryName,
+                        BusinessName = proj.Business?.FullName ?? "Bạn",
+                        EndDate = proj.EndDate,                                 // Thêm dòng này     
+                    });
+                }
+
+                // Projects do user tham gia (Student)
+                var joinedProjects = await _context.StudentApplications
+                    .Include(a => a.Project).ThenInclude(p => p.Type)
+                    .Include(a => a.Project).ThenInclude(p => p.Category)
+                    .Include(a => a.Project).ThenInclude(p => p.Status)
+                    .Where(a => a.UserID == userId && a.Status == "Completed")
+                    .ToListAsync();
+
+                foreach (var app in joinedProjects)
+                {
+                    var proj = app.Project;
+                    completedProjects.Add(new ProjectHistoryItem
+                    {
+                        ProjectID = proj.ProjectID,
+                        Title = proj.Title,
+                        Role = "Student",
+                        CompletedDate = proj.EndDate,
+                        Budget = proj.Budget,
+                        TypeName = proj.Type.TypeName,
+                        IsRemoteWork = proj.IsRemoteWork,
+                        CategoryName = proj.Category.CategoryName
+                    });
+                }
+
+                var totalProjects = completedProjects.Count;
+
+                var pagedProjects = completedProjects
+                    .OrderByDescending(p => p.CompletedDate)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                var model = new UserProfileViewModel
+                {
+                    ProjectHistoryPreview = pagedProjects,
+                    CurrentPage = page,
+                    TotalPages = (int)Math.Ceiling((double)totalProjects / pageSize)
+                };
+
+                return View("AllProjectHistory", model);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] AllProjectHistory: {ex.Message}");
+                return StatusCode(500);
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> AllReviews(int page = 1)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var ratingsQuery = _context.Ratings
+                    .Include(r => r.Reviewer)
+                    .Where(r => r.RevieweeID == userId && r.IsActive)
+                    .OrderByDescending(r => r.DateRated);
+
+                var totalRatings = await ratingsQuery.CountAsync();
+                var pageSize = 10;
+
+                var ratings = await ratingsQuery
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(r => new RatingViewModel
+                    {
+                        ReviewerName = r.Reviewer.FullName,
+                        ReviewerAvatarPath = string.IsNullOrEmpty(r.Reviewer.ProfilePicturePath) ? "/image/default-avatar.png" : r.Reviewer.ProfilePicturePath,
+                        Score = r.Score,
+                        Comment = r.Comment,
+                        DateRated = r.DateRated
+                    }).ToListAsync();
+
+                var model = new UserProfileViewModel
+                {
+                    UserID = userId,
+                    ReceivedRatings = ratings,
+                    CurrentPage = page,
+                    TotalPages = (int)Math.Ceiling((double)totalRatings / pageSize),
+                    TotalReviews = totalRatings,
+                    AverageRating = totalRatings > 0 ? (double?)await ratingsQuery.AverageAsync(r => r.Score) : null
+                };
+
+                return View("AllReviews", model);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] GET AllReviews: {ex.Message}");
+                return StatusCode(500);
+            }
+        }
+
     }
 }

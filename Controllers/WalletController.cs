@@ -7,6 +7,10 @@ using StudentFreelance.ViewModels;
 using System.Threading.Tasks;
 using StudentFreelance.DbContext;
 namespace StudentFreelance.Controllers;
+using System.Globalization;
+
+
+using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using StudentFreelance.Helpers;
 
@@ -265,7 +269,7 @@ public class WalletController : Controller
 
         // Tạo mã đơn hàng duy nhất
         var orderId = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
-        var amountInVND = ((int)(amount * 100)).ToString(); // VNPAY yêu cầu nhân 100
+        var amountInVND = ((int)(amount * 100)).ToString("F0", CultureInfo.InvariantCulture);// VNPAY yêu cầu nhân 100
 
         vnPay.AddRequestData("vnp_Version", "2.1.0");
         vnPay.AddRequestData("vnp_Command", "pay");
@@ -273,13 +277,20 @@ public class WalletController : Controller
         vnPay.AddRequestData("vnp_Amount", amountInVND);
         vnPay.AddRequestData("vnp_CreateDate", DateTime.Now.ToString("yyyyMMddHHmmss"));
         vnPay.AddRequestData("vnp_CurrCode", "VND");
-        vnPay.AddRequestData("vnp_IpAddr", HttpContext.Connection.RemoteIpAddress?.ToString());
+
+        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+        if (string.IsNullOrWhiteSpace(ipAddress) || ipAddress == "::1")
+        {
+            ipAddress = "127.0.0.1";
+        }
+        vnPay.AddRequestData("vnp_IpAddr", ipAddress);
+        //vnPay.AddRequestData("vnp_IpAddr", HttpContext.Connection.RemoteIpAddress?.ToString());
         vnPay.AddRequestData("vnp_Locale", "vn");
         vnPay.AddRequestData("vnp_OrderInfo", description ?? "Nạp tiền qua VNPAY");
         vnPay.AddRequestData("vnp_OrderType", "other");
         vnPay.AddRequestData("vnp_ReturnUrl", config["ReturnUrl"]);
         vnPay.AddRequestData("vnp_TxnRef", orderId);
-        vnPay.AddRequestData("vnp_SecureHashType", "HMACSHA512");
+        
 
         // ✅ Truy vấn từ DB
         var type = await _context.TransactionTypes.FirstOrDefaultAsync(t => t.TypeName == "Nạp tiền");
@@ -305,18 +316,9 @@ public class WalletController : Controller
         });
         await _context.SaveChangesAsync();
 
+        vnPay.AddRequestData("vnp_SecureHashType", "HMACSHA512");
         // ✅ Tạo URL từ PaymentUrl + HashSecret từ config
         var paymentUrl = vnPay.CreateRequestUrl(config["PaymentUrl"], config["HashSecret"]);
-
-        // ✅ In log để kiểm tra
-        Console.WriteLine("========= VNPay Payment Debug =========");
-        Console.WriteLine("Payment URL: " + paymentUrl);
-        Console.WriteLine("Raw request data (for hash):");
-        foreach (var kv in vnPay.GetRequestData())
-        {
-            Console.WriteLine($"{kv.Key} = {kv.Value}");
-        }
-        Console.WriteLine("=======================================");
 
         return Redirect(paymentUrl);
     }
@@ -370,8 +372,87 @@ public class WalletController : Controller
             await _userManager.UpdateAsync(user);
         }
 
-        return View("PaymentResult", statusName == "Thành công" ? "success" : "fail"); // hoặc view riêng
+        // ✅ Tạo ViewModel để truyền vào View
+        var viewModel = new PaymentResultViewModel
+        {
+            IsSuccess = statusName == "Thành công",
+            OrderCode = orderCode,
+            Amount = transaction.Amount,
+            TransactionDate = transaction.TransactionDate,
+            Description = transaction.Description ?? ""
+        };
+
+        return View("PaymentResult", viewModel);
     }
+
+    //[HttpGet]
+    //public async Task<IActionResult> VnPayCallback()
+    //{
+    //    var config = _configuration.GetSection("VnPay");
+    //    var vnPay = new VnPayLibrary();
+
+    //    // ✅ B1: Lấy tất cả các tham số vnp_ từ VNPay gửi về
+    //    var responseParams = Request.Query;
+    //    foreach (var key in responseParams.Keys)
+    //    {
+    //        if (key.StartsWith("vnp_"))
+    //            vnPay.AddResponseData(key, responseParams[key]);
+    //    }
+
+    //    // ✅ B2: Kiểm tra chữ ký hash có hợp lệ không
+    //    var isValid = vnPay.ValidateSignature(config["HashSecret"]);
+    //    if (!isValid)
+    //    {
+    //        return Content("❌ Sai chữ ký hash – giao dịch bị nghi ngờ giả mạo.");
+    //    }
+
+    //    // ✅ B3: Trích xuất các thông tin từ VNPay callback
+    //    var orderCode = vnPay.GetResponseData("vnp_TxnRef");
+    //    var responseCode = vnPay.GetResponseData("vnp_ResponseCode");
+
+    //    // ✅ B4: Tìm transaction theo mã đơn hàng
+    //    var transaction = await _context.Transactions.FirstOrDefaultAsync(t => t.OrderCode == orderCode);
+    //    if (transaction == null)
+    //    {
+    //        return Content("❌ Không tìm thấy giao dịch trong hệ thống.");
+    //    }
+
+    //    // ✅ B5: Xác định trạng thái dựa theo mã responseCode
+    //    string statusName = responseCode switch
+    //    {
+    //        "00" => "Thành công",
+    //        "24" => "Đã hủy",         // Người dùng hủy
+    //        _ => "Thất bại"          // Các mã lỗi khác
+    //    };
+
+    //    var status = await _context.TransactionStatuses.FirstOrDefaultAsync(s => s.StatusName == statusName);
+    //    if (status == null)
+    //    {
+    //        return Content($"❌ Không tìm thấy trạng thái '{statusName}' trong database.");
+    //    }
+
+    //    // ✅ B6: Cập nhật trạng thái cho giao dịch
+    //    transaction.StatusID = status.StatusID;
+    //    await _context.SaveChangesAsync();
+
+    //    // ✅ B7: Nếu thành công → cộng tiền vào ví
+    //    if (statusName == "Thành công")
+    //    {
+    //        var user = await _userManager.FindByIdAsync(transaction.UserID.ToString());
+    //        user.WalletBalance += transaction.Amount;
+    //        await _userManager.UpdateAsync(user);
+    //    }
+
+    //    // ✅ B8: Trả kết quả ra view (dựa trên status)
+    //    ViewBag.Message = statusName switch
+    //    {
+    //        "Thành công" => "✅ Giao dịch thành công!",
+    //        "Đã hủy" => "⚠️ Giao dịch đã bị hủy.",
+    //        _ => "❌ Giao dịch thất bại. Vui lòng thử lại sau."
+    //    };
+
+    //    return View("PaymentResult"); // Tạo view PaymentResult.cshtml để hiển thị kết quả
+    //}
 
 
 

@@ -13,6 +13,7 @@ namespace StudentFreelance.Models
         public string? FullName { get; set; }
         
         public bool VipStatus { get; set; }
+        public DateTime? VipExpiryDate { get; set; }
         public int? AddressID { get; set; }
         public decimal WalletBalance { get; set; }
         public string? University { get; set; }
@@ -29,6 +30,16 @@ namespace StudentFreelance.Models
         public string? Avatar { get; set; }
         public bool IsActive { get; set; } = true;
         public int StatusID { get; set; }
+        
+        // Verification and flagging properties
+        public bool IsVerified { get; set; } = false;
+        public bool IsFlagged { get; set; } = false;
+        public string? FlagReason { get; set; }
+        public DateTime? VerifiedAt { get; set; }
+        public DateTime? FlaggedAt { get; set; }
+        public int? VerifiedByID { get; set; }
+        public int? FlaggedByID { get; set; }
+        public DateTime? EmailVerificationDeadline { get; set; } // For BR-34
 
         // Navigation properties
 
@@ -39,6 +50,13 @@ namespace StudentFreelance.Models
 
         [ForeignKey(nameof(StatusID))]
         public AccountStatus Status { get; set; }
+        
+        // Navigation properties for who verified/flagged the user
+        [ForeignKey(nameof(VerifiedByID))]
+        public ApplicationUser VerifiedBy { get; set; }
+        
+        [ForeignKey(nameof(FlaggedByID))]
+        public ApplicationUser FlaggedBy { get; set; }
         
         // Notification collections
         public ICollection<UserNotification> UserNotifications { get; set; } = new List<UserNotification>();
