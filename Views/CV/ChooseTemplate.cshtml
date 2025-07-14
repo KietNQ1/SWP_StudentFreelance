@@ -1,0 +1,11 @@
+﻿@{
+    ViewData["Title"] = "Chọn mẫu CV";
+}
+
+<h2>Chọn mẫu CV</h2>
+
+<form asp-action="InputInfo" method="post">
+    <button type="submit" name="template" value="classic" class="btn btn-outline-primary">CV Truyền thống</button>
+    <button type="submit" name="template" value="modern" class="btn btn-outline-success">CV Hiện đại</button>
+    <button type="submit" name="template" value="creative" class="btn btn-outline-danger">CV Sáng tạo</button>
+</form>
