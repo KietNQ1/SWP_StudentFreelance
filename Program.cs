@@ -6,6 +6,7 @@ using StudentFreelance.Data;
 using StudentFreelance.Models.Email;
 using StudentFreelance.Models.PayOS;
 using StudentFreelance.Services.Implementations;
+using StudentFreelance.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSignalR();              // Đăng ký SignalR
@@ -76,6 +77,7 @@ builder.Services.Configure<PayOSConfig>(builder.Configuration.GetSection("PayOS"
 // 4. Add MVC support
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
@@ -104,7 +106,8 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseAuthentication(); // Identity: must come before UseAuthorization
+app.UseAuthentication();// Identity: must come before UseAuthorization
+app.UseMiddleware<AccountStatusMiddleware>(); 
 app.UseAuthorization();
 
 // 7. Configure default routing

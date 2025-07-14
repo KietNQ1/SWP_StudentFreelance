@@ -1,0 +1,27 @@
+﻿@model StudentFreelance.Models.CVInputModel
+
+<div class="container p-4 border rounded shadow">
+    <h2>@Model.FullName</h2>
+    <p><strong>Ngành:</strong> @Model.Industry</p>
+    <p><strong>Vị trí:</strong> @Model.JobTitle</p>
+    <p><strong>Trường:</strong> @Model.University</p>
+    <p><strong>GPA:</strong> @Model.GPA</p>
+
+    <h4>Kỹ năng</h4>
+    <p>@Model.Skills</p>
+
+    <h4>Kinh nghiệm</h4>
+    <p>@Model.Experience</p>
+
+    <h4>Mục tiêu nghề nghiệp</h4>
+    <p>@Model.CareerGoal</p>
+
+    <h4>Dự án</h4>
+    @if (Model.ProjectsRaw != null)
+    {
+        foreach (var line in Model.ProjectsRaw)
+        {
+            <p>@line</p>
+        }
+    }
+</div>
