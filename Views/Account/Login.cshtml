@@ -6,7 +6,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>Login - ST Job</title>
+    <title>Login - STJobs</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/Login.css" />
 </head>
@@ -28,7 +28,13 @@
                         <h2><i class="fas fa-user-circle"></i> Login</h2>
                         <p class="subtitle">Welcome back! Please enter your credentials.</p>
                     </div>                  
-                        @Html.ValidationSummary(true, "", new { @class = "text-danger" })                 
+                        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                    @if (Context.Request.Query["locked"] == "true")
+                    {
+                        <div class="alert alert-danger">
+                            Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.
+                        </div>
+                    }
                     <form asp-controller="Account" asp-action="Login" method="post" class="login-form">
                         <div class="form-group">
                             <label for="Email" class="form-label">

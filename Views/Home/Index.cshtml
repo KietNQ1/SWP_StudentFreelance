@@ -3,135 +3,289 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/home.css" />
+    <link rel="stylesheet" href="~/css/home/home.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 }
 
 <!-- Hero Section -->
-<section class="hero">
+<section class="hero-slideshow">
+    <!-- Slideshow Background -->
+    <div class="slideshow-container">
+        <div class="slide active" style="background-image: url('@Url.Content("~/image/bg1.png")')"></div>
+        <div class="slide" style="background-image: url('@Url.Content("~/image/bg2.png")')"></div>
+        <div class="slide" style="background-image: url('@Url.Content("~/image/bg3.png")')"></div>
+        <div class="slide" style="background-image: url('@Url.Content("~/image/bg4.png")')"></div>
+        <div class="slide" style="background-image: url('@Url.Content("~/image/bg5.png")')"></div>
+        <div class="slide" style="background-image: url('@Url.Content("~/image/bg6.png")')"></div>
+    </div>
+
+
+    <!-- Nội dung -->
     <div class="hero-container">
         <div class="hero-content">
-            <h1 class="hero-title">
-                Let top talent bring <br />
-                your ideas to life
-            </h1>
+            <h1 class="hero-title">Let top talent bring your ideas to life</h1>
 
-            <!-- Search Bar -->
-            <div class="search-container">
-                <form asp-controller="Search" asp-action="SearchJob" method="get">
-                    <div class="search-bar">
-                        <input
-                            type="text"
-                            placeholder="Search for any service..."
-                            class="search-input"
-                            name="query"
-                        />
-                        <button type="submit" class="search-btn">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Popular Searches -->
             <div class="popular-searches">
                 <a asp-controller="Search" asp-action="SearchJob" asp-route-query="website development" class="tag">website development</a>
                 <a asp-controller="Search" asp-action="SearchJob" asp-route-query="architecture & interior design" class="tag">architecture & interior design</a>
                 <a asp-controller="Search" asp-action="SearchJob" asp-route-query="UGC videos" class="tag">UGC videos</a>
                 <a asp-controller="Search" asp-action="SearchJob" asp-route-query="video editing" class="tag">video editing</a>
             </div>
+
+            <!-- Trusted By -->
+            <div class="trusted-by">
+                <span class="trusted-text">Trusted by:</span>
+                <div class="trusted-companies">
+                    <span>Meta</span>
+                    <span>Google</span>
+                    <span>Netflix</span>
+                    <span>P&G</span>
+                    <span>PayPal</span>
+                    <span>Payoneer</span>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
+
+<!-- Top Projects Section -->
+<section class="top-projects">
+    <div class="container">
+        <div class="section-header">
+            <h2>Top Projects</h2>
+            <a href="#" class="view-all-btn">Xem tất cả</a>
+        </div>
+
+        <div class="projects-grid">
+            <div class="project-card">
+                <div class="project-image">
+                    <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="VinFast Logo">
+                </div>
+                <div class="project-content">
+                    <h3 class="project-title">Quality Engineering Executive</h3>
+                    <p class="company-name">Công Ty Cổ Phần Sản Xuất VinFast</p>
+                    <div class="project-meta">
+                        <span class="salary">Thương lượng</span>
+                        <span class="location">Hải Dương, Hải Phòng</span>
+                    </div>
+                    <div class="project-status hot">Hot</div>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="project-image">
+                    <img src="https://images.unsplash.com/photo-1611224923853-80b023f02d71?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Nexon Logo">
+                </div>
+                <div class="project-content">
+                    <h3 class="project-title">UA Media Creator (Contract)</h3>
+                    <p class="company-name">Nexon Networks Vina Co. Ltd.</p>
+                    <div class="project-meta">
+                        <span class="salary">Thương lượng</span>
+                        <span class="location">Hồ Chí Minh</span>
+                    </div>
+                    <div class="project-status hot">Hot</div>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="project-image">
+                    <img src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="IRCA Logo">
+                </div>
+                <div class="project-content">
+                    <h3 class="project-title">Regulatory Specialist</h3>
+                    <p class="company-name">Doha Asia Company Limited</p>
+                    <div class="project-meta">
+                        <span class="salary">Thương lượng</span>
+                        <span class="location">Bà Rịa - Vũng Tàu</span>
+                    </div>
+                    <div class="project-status hot">Hot</div>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="project-image">
+                    <img src="https://images.unsplash.com/photo-1559136555-9303baea8ebd?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="V-Green Logo">
+                </div>
+                <div class="project-content">
+                    <h3 class="project-title">Charging System Analyst</h3>
+                    <p class="company-name">Công Ty Phát Triển Trạm Sạc V-Green</p>
+                    <div class="project-meta">
+                        <span class="salary">Thương lượng</span>
+                        <span class="location">Hà Nội</span>
+                    </div>
+                    <div class="project-status hot">Hot</div>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="project-image">
+                    <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="VinFast Logo">
+                </div>
+                <div class="project-content">
+                    <h3 class="project-title">Process Engineer (2024)</h3>
+                    <p class="company-name">Công Ty Cổ Phần Sản Xuất VinFast</p>
+                    <div class="project-meta">
+                        <span class="salary">Thương lượng</span>
+                        <span class="location">Hải Dương, Hải Phòng</span>
+                    </div>
+                    <div class="project-status hot">Hot</div>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="project-image">
+                    <img src="https://images.unsplash.com/photo-1551434678-e076c223a692?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Eurowindow Logo">
+                </div>
+                <div class="project-content">
+                    <h3 class="project-title">Chuyên Viên Phát Triển Thị Trường</h3>
+                    <p class="company-name">Eurowindow Holding</p>
+                    <div class="project-meta">
+                        <span class="salary">Thương lượng</span>
+                        <span class="location">Hà Nội</span>
+                    </div>
+                    <div class="project-status hot">Hot</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pagination">
+            <button class="pagination-btn prev" disabled>
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <div class="pagination-dots">
+                <span class="dot active"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+            </div>
+            <button class="pagination-btn next">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+</section>
+
+<script>
+    // Pagination functionality
+    const prevBtn = document.querySelector('.pagination-btn.prev');
+    const nextBtn = document.querySelector('.pagination-btn.next');
+    const dots = document.querySelectorAll('.dot');
+    let currentPage = 0;
+    const totalPages = dots.length;
+
+    function updatePagination() {
+        // Update dots
+        dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === currentPage);
+        });
+
+        // Update buttons
+        prevBtn.disabled = currentPage === 0;
+        nextBtn.disabled = currentPage === totalPages - 1;
+    }
+
+    prevBtn.addEventListener('click', () => {
+        if (currentPage > 0) {
+            currentPage--;
+            updatePagination();
+        }
+    });
+
+    nextBtn.addEventListener('click', () => {
+        if (currentPage < totalPages - 1) {
+            currentPage++;
+            updatePagination();
+        }
+    });
+
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+            currentPage = index;
+            updatePagination();
+        });
+    });
+
+    // Initialize pagination
+    updatePagination();
+</script>
 
 <!-- Categories Section -->
 <section class="categories">
     <div class="container">
         <div class="categories-grid">
-            <a asp-controller="Search" asp-action="SearchJob" asp-route-categoryId="1" class="category-link">
-                <div class="category-item">
-                    <div class="category-icon"><i class="fas fa-code"></i></div>
-                    <div class="category-text">
-                        <span>Programming</span>
-                        <span>& Tech</span>
-                    </div>
+            <div class="category-item">
+                <div class="category-icon">
+                    <i class="fas fa-code"></i>
                 </div>
-            </a>
-
-            <a asp-controller="Search" asp-action="SearchJob" asp-route-categoryId="2" class="category-link">
-                <div class="category-item">
-                    <div class="category-icon"><i class="fas fa-palette"></i></div>
-                    <div class="category-text">
-                        <span>Graphics &</span>
-                        <span>Design</span>
-                    </div>
+                <div class="category-text">
+                    <span>Programming</span>
+                    <span>& Tech</span>
                 </div>
-            </a>
-
-            <a asp-controller="Search" asp-action="SearchJob" asp-route-categoryId="3" class="category-link">
-                <div class="category-item">
-                    <div class="category-icon"><i class="fas fa-chart-line"></i></div>
-                    <div class="category-text">
-                        <span>Digital</span>
-                        <span>Marketing</span>
-                    </div>
+            </div>
+            <div class="category-item">
+                <div class="category-icon">
+                    <i class="fas fa-palette"></i>
                 </div>
-            </a>
-
-            <a asp-controller="Search" asp-action="SearchJob" asp-route-categoryId="4" class="category-link">
-                <div class="category-item">
-                    <div class="category-icon"><i class="fas fa-pen-fancy"></i></div>
-                    <div class="category-text">
-                        <span>Writing &</span>
-                        <span>Translation</span>
-                    </div>
+                <div class="category-text">
+                    <span>Graphics &</span>
+                    <span>Design</span>
                 </div>
-            </a>
-
-            <a asp-controller="Search" asp-action="SearchJob" asp-route-categoryId="5" class="category-link">
-                <div class="category-item">
-                    <div class="category-icon"><i class="fas fa-video"></i></div>
-                    <div class="category-text">
-                        <span>Video &</span>
-                        <span>Animation</span>
-                    </div>
+            </div>
+            <div class="category-item">
+                <div class="category-icon">
+                    <i class="fas fa-chart-line"></i>
                 </div>
-            </a>
-
-            <a asp-controller="Search" asp-action="SearchJob" asp-route-categoryId="6" class="category-link">
-                <div class="category-item">
-                    <div class="category-icon"><i class="fas fa-robot"></i></div>
-                    <div class="category-text">
-                        <span>AI Services</span>
-                    </div>
+                <div class="category-text">
+                    <span>Digital</span>
+                    <span>Marketing</span>
                 </div>
-            </a>
-
-            <a asp-controller="Search" asp-action="SearchStudents" class="category-link">
-                <div class="category-item">
-                    <div class="category-icon"><i class="fas fa-music"></i></div>
-                    <div class="category-text">
-                        <span>Music & Audio</span>
-                    </div>
+            </div>
+            <div class="category-item">
+                <div class="category-icon">
+                    <i class="fas fa-pen-fancy"></i>
                 </div>
-            </a>
-
-            <a asp-controller="Search" asp-action="SearchBusinesses" class="category-link">
-                <div class="category-item">
-                    <div class="category-icon"><i class="fas fa-briefcase"></i></div>
-                    <div class="category-text">
-                        <span>Business</span>
-                    </div>
+                <div class="category-text">
+                    <span>Writing &</span>
+                    <span>Translation</span>
                 </div>
-            </a>
-
-            <a asp-controller="Search" asp-action="SearchJob" class="category-link">
-                <div class="category-item">
-                    <div class="category-icon"><i class="fas fa-users"></i></div>
-                    <div class="category-text">
-                        <span>Consulting</span>
-                    </div>
+            </div>
+            <div class="category-item">
+                <div class="category-icon">
+                    <i class="fas fa-video"></i>
                 </div>
-            </a>
+                <div class="category-text">
+                    <span>Video &</span>
+                    <span>Animation</span>
+                </div>
+            </div>
+            <div class="category-item">
+                <div class="category-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="category-text">
+                    <span>AI Services</span>
+                </div>
+            </div>
+            <div class="category-item">
+                <div class="category-icon">
+                    <i class="fas fa-music"></i>
+                </div>
+                <div class="category-text">
+                    <span>Music & Audio</span>
+                </div>
+            </div>
+            <div class="category-item">
+                <div class="category-icon">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <div class="category-text">
+                    <span>Business</span>
+                </div>
+            </div>
         </div>
     </div>
 </section>
@@ -140,7 +294,7 @@
 <section class="popular-services">
     <div class="container">
         <div class="section-header">
-            <h2>Popular services</h2>
+            <h2>Popular Business</h2>
             <button class="arrow-btn">
                 <i class="fas fa-chevron-right"></i>
             </button>
@@ -148,68 +302,56 @@
         <div class="services-grid">
             <div class="service-card green">
                 <div class="card-content">
-                    <h3>Website Development</h3>
+                    <h3>ABC Comapny</h3>
                 </div>
                 <div class="card-image">
-                    <img
-                        src="https://images.unsplash.com/photo-1547658719-da2b51169166?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-                        alt="Website Development"
-                    />
+                    <img src="https://images.unsplash.com/photo-1547658719-da2b51169166?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+                         alt="ABC Comapny" />
                 </div>
             </div>
             <div class="service-card pink">
                 <div class="card-content">
-                    <h3>Logo Design</h3>
+                    <h3>Flower Restaurant</h3>
                 </div>
                 <div class="card-image">
-                    <img
-                        src="https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-                        alt="Logo Design"
-                    />
+                    <img src="https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+                         alt="Flower Restaurant" />
                 </div>
             </div>
             <div class="service-card orange">
                 <div class="card-content">
-                    <h3>Software Development</h3>
+                    <h3>FPT Software</h3>
                 </div>
                 <div class="card-image">
-                    <img
-                        src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-                        alt="Software Development"
-                    />
+                    <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+                         alt="FPT Software" />
                 </div>
             </div>
             <div class="service-card teal">
                 <div class="card-content">
-                    <h3>SEO</h3>
+                    <h3>Golden Gate</h3>
                 </div>
                 <div class="card-image">
-                    <img
-                        src="https://th.bing.com/th/id/OIP.Ui-swQLnQvihRs8U_Kd2pwHaEn?r=0&w=1170&h=730&rs=1&pid=ImgDetMain"
-                        alt="SEO"
-                    />
+                    <img src="https://images.unsplash.com/photo-1432888622747-4eb9a8c2b156?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+                         alt="Golden Gate" />
                 </div>
             </div>
             <div class="service-card purple">
                 <div class="card-content">
-                    <h3>Architecture & Interior Design</h3>
+                    <h3>MTP Entertainment</h3>
                 </div>
                 <div class="card-image">
-                    <img
-                        src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-                        alt="Architecture & Interior Design"
-                    />
+                    <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+                         alt="MTP Entertainment" />
                 </div>
             </div>
             <div class="service-card yellow">
                 <div class="card-content">
-                    <h3>Book Design</h3>
+                    <h3>Malisa Cosmetic</h3>
                 </div>
                 <div class="card-image">
-                    <img
-                        src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-                        alt="Book Design"
-                    />
+                    <img src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+                         alt="Malisa Cosmetic" />
                 </div>
             </div>
         </div>
@@ -238,7 +380,10 @@
                     </div>
                     <div class="feature">
                         <i class="fas fa-check"></i>
-                        <span>Control your workflow: hire, classify and pay your talent</span>
+                        <span>
+                            Control your workflow: hire, classify and pay your
+                            talent
+                        </span>
                     </div>
                     <div class="feature">
                         <i class="fas fa-check"></i>
@@ -248,10 +393,8 @@
                 <button class="btn btn-secondary">Learn more</button>
             </div>
             <div class="enterprise-image">
-                <img
-                    src="https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                    alt="Professional working"
-                />
+                <img src="https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                     alt="Professional working" />
                 <div class="stat-card stat-card-1">
                     <i class="fas fa-users"></i>
                     <div>
@@ -275,7 +418,7 @@
 <section class="find-talent">
     <div class="container">
         <div class="find-talent-card">
-            <div class="find-talent-tag">For clients</div>
+            <button class="btn btn-secondary">For client</button>
             <div class="find-talent-content">
                 <h2>Find talent<br />your way</h2>
                 <p>
@@ -286,25 +429,80 @@
         </div>
     </div>
 </section>
+    </main>
+<div id="footer"></div>
 
-@section Scripts {
-    <script>
-        // Initialize dropdowns
-        document.addEventListener('DOMContentLoaded', function () {
-            // Dropdown functionality
-            const exploreDropdowns = document.querySelectorAll('.explore-dropdown');
-            
-            exploreDropdowns.forEach(dropdown => {
-                const menu = dropdown.querySelector('.dropdown-menu');
-                
-                dropdown.addEventListener('mouseenter', () => {
-                    menu.style.display = 'block';
-                });
-                
-                dropdown.addEventListener('mouseleave', () => {
-                    menu.style.display = 'none';
-                });
-            });
-        });
-    </script>
-}
+<script>
+    // Hiển thị chấm đỏ nếu có thông báo mới
+    const hasNotification = true;
+    const bell = document.getElementById("notificationBell");
+    const dropdown = document.getElementById("notificationDropdown");
+    const dot = document.getElementById("notificationDot");
+
+    if (hasNotification) {
+      dot.style.display = "block";
+    }
+
+    bell.addEventListener("click", function (e) {
+      e.stopPropagation();
+      const isOpen = dropdown.style.display === "block";
+      dropdown.style.display = isOpen ? "none" : "block";
+
+      //  Ẩn dấu đỏ sau khi mở dropdown
+      if (!isOpen) {
+        dot.style.display = "none";
+      }
+    });
+
+    document.addEventListener("click", function () {
+      dropdown.style.display = "none";
+    });
+
+    // Dropdown Explore
+    const exploreBtn = document.getElementById("exploreDropdownBtn");
+    const exploreMenu = document.getElementById("exploreDropdownMenu");
+    let exploreTimeout;
+
+    exploreBtn.addEventListener("mouseenter", () => {
+      clearTimeout(exploreTimeout);
+      exploreMenu.style.display = "block";
+    });
+
+    exploreBtn.addEventListener("mouseleave", () => {
+      exploreTimeout = setTimeout(() => {
+        exploreMenu.style.display = "none";
+      }, 200);
+    });
+
+    exploreMenu.addEventListener("mouseenter", () => {
+      clearTimeout(exploreTimeout);
+      exploreMenu.style.display = "block";
+    });
+
+    exploreMenu.addEventListener("mouseleave", () => {
+      exploreMenu.style.display = "none";
+    });
+</script>
+<script>
+    const slides = document.querySelectorAll('.slide');
+    let current = 0;
+
+    function nextSlide() {
+      slides[current].classList.remove('active');
+      current = (current + 1) % slides.length;
+      slides[current].classList.add('active');
+    }
+
+    setInterval(nextSlide, 4000);
+</script>
+<script>
+    // Load header
+    fetch('header.html')
+      .then(res => res.text())
+      .then(data => document.getElementById('header').innerHTML = data);
+
+    // Load footer
+    fetch('footer.html')
+      .then(res => res.text())
+      .then(data => document.getElementById('footer').innerHTML = data);
+</script>

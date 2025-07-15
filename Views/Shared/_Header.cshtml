@@ -1,0 +1,163 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@using Microsoft.EntityFrameworkCore
+@using StudentFreelance.DbContext
+@using StudentFreelance.Models
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>STJobs - Nơi kết nối sinh viên và doanh nghiệp</title>
+    <link rel="stylesheet" href="~/css/home/header.css" asp-append-version="true" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-container">
+                <!-- Logo -->
+                <div class="logo">
+                    <a asp-area="" asp-controller="Home" asp-action="Index" class="logo-link">
+                        STJobs<span class="logo-dot">.</span>
+                    </a>
+                </div>
+
+                <!-- Search -->
+                <div class="search-container">
+                    <div class="search-bar">
+                        <input type="text" class="search-input" placeholder="Search for any">
+                        <button class="search-btn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Navigation menu -->
+                <!-- Navigation menu - HTML structure cần sửa -->
+                <div class="nav-menu">
+                    <div class="nav-item dropdown explore-dropdown">
+                        <span>Find students</span>
+                        <div class="dropdown-menu">
+                            <a asp-controller="Project" asp-action="Index" class="dropdown-item">Projects <span class="new-label">Hot</span></a>
+                            <a href="#">Development & IT</a>
+                            <a href="#">Design & Creative</a>
+                            <a href="#">Sales & Marketing</a>
+                            <a href="#">Writing & Translation</a>
+                            <a href="#">Engineering & Architecture</a>
+                        </div>
+                    </div>
+
+                    <!-- Sửa lại Business để có cùng structure -->
+                    <div class="nav-item dropdown">
+                        <a asp-controller="Business" asp-action="Index" class="nav-link">Business</a>
+                        <div class="dropdown-menub">
+                            <a href="#">Công nghệ thông tin</a>
+                            <a href="#">Marketing</a>
+                            <a href="#">Thiết kế</a>
+                            <a href="#">Viết lách</a>
+                            <a href="#">Dịch thuật</a>
+                            <a href="#">Kinh doanh</a>
+                        </div>
+                    </div>
+
+                    <div class="nav-item dropdown explore-dropdown" id="exploreDropdownBtn">
+                        <span>Explore</span>
+                        <div class="dropdown-menu" id="exploreDropdownMenu">
+                            <a href="#">STJobs VIP <span class="new-label">New</span></a>
+                            <a href="#">Q&A</a>
+                            <a href="#">Guides</a>
+                            <a asp-controller="Report" asp-action="ListReport">Report</a>
+                            <a asp-controller="Report" asp-action="Create">Create Report</a>
+                        </div>
+                    </div>
+
+                    <div class="nav-item dropdown explore-dropdown">
+                        <span>Search</span>
+                        <div class="dropdown-menu">
+                            <a asp-controller="Search" asp-action="SearchJob">Find Project</a>
+                            <a asp-controller="Search" asp-action="SearchStudents">Search Student</a>
+                            <a asp-controller="Search" asp-action="SearchBusinesses">Search Business</a>
+                        </div>
+                    </div>
+
+                    <!-- User login/logout -->
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        <div class="nav-user-actions">
+                            <div class="notification-wrapper">
+                                <div class="notification-icon" id="notificationBell">
+                                    <i class="fas fa-bell"></i>
+                                    <span class="notification-dot" id="notificationDot"></span>
+                                </div>
+                                <div class="notification-dropdown" id="notificationDropdown">
+                                    <div class="notification-header"><strong>Thông báo</strong></div>
+                                    <div class="notification-list">
+                                        <div class="notification-item">
+                                            <img src="https://i.pravatar.cc/40" />
+                                            <div class="notification-text">
+                                                <p><strong>Trần Hoàng Anh</strong> vừa cập nhật lại thông tin</p>
+                                                <span class="time">53 phút trước</span>
+                                            </div>
+                                        </div>
+                                        <div class="notification-item">
+                                            <img src="https://i.pravatar.cc/41" />
+                                            <div class="notification-text">
+                                                <p><strong>Mega market</strong> vừa đăng bài</p>
+                                                <span class="time">1 ngày trước</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="notification-footer">
+                                        <button>Xem tất cả thông báo</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @{
+                                var currentUser = await UserManager.GetUserAsync(User);
+                                var fullName = currentUser?.FullName ?? "Người dùng";
+                            }
+
+                            <div class="avatar-wrapper">
+                                <img src="https://i.pravatar.cc/36" alt="Avatar" class="avatar-img" />
+                                <span class="user-name">@fullName</span>
+                                <div class="dropdown-menu">
+                                    <a asp-controller="User" asp-action="Profile"><i class="fas fa-user"></i>My Profile</a>
+                                    @if (User.IsInRole("Student"))
+                                    {
+                                        <a asp-controller="Application" asp-action="MyApplications"><i class="fas fa-briefcase"></i>My Application</a>
+                                    }
+                                    <a asp-controller="Wallet" asp-action="Index"><i class="fas fa-wallet"></i>My Wallet</a>
+                                    <a asp-controller="Chat" asp-action="Index"><i class="fas fa-comments"></i>Chatting</a>
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <a asp-controller="AdminUser" asp-action="Index"><i class="fas fa-chart-line"></i>Dashboard</a>
+                                    }
+                                </div>
+                            </div>
+
+                            <form asp-controller="Account" asp-action="Logout" method="post" class="form-inline d-inline">
+                                <button type="submit" class="nav-link btn btn-link text-dark" style="border: none;">Logout</button>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="nav-user-actions">
+                            <a asp-controller="Account" asp-action="Login" class="nav-link">Sign in</a>
+                            <a asp-controller="Account" asp-action="Register" class="btn btn-primary">Join</a>
+                        </div>
+                    }
+                </div> <!-- end nav-menu -->
+            </div> <!-- end nav-container -->
+        </nav>
+    </header>
+</body>
+</html>

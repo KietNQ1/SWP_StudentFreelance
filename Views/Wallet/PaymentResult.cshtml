@@ -1,20 +1,22 @@
-﻿@model string
+﻿@model StudentFreelance.ViewModels.PaymentResultViewModel
 
 @{
     ViewData["Title"] = "Kết quả giao dịch";
 }
 
 <div class="container mt-5">
-    <div class="alert @(Model == "success" ? "alert-success" : "alert-danger")" role="alert">
+    <div class="alert @(Model.IsSuccess ? "alert-success" : "alert-danger")" role="alert">
         <h4 class="alert-heading">
-            @(Model == "success" ? "Thanh toán thành công!" : "Thanh toán thất bại hoặc bị hủy.")
+            @(Model.IsSuccess ? "Thanh toán thành công!" : "Thanh toán thất bại hoặc bị hủy.")
         </h4>
         <p>
-            @(Model == "success"
-                ? "Cảm ơn bạn đã nạp tiền vào hệ thống. Số dư ví đã được cập nhật."
-                : "Giao dịch của bạn không được thực hiện thành công.")
+            Mô tả giao dịch: <strong>@Model.Description</strong><br />
+            Mã giao dịch: <strong>@Model.OrderCode</strong><br />
+            Số tiền: <strong>@Model.Amount.ToString("N0")</strong> VND<br />
+            Ngày giao dịch: <strong>@Model.TransactionDate.ToString("dd/MM/yyyy HH:mm:ss")</strong>
         </p>
         <hr />
         <a href="/Wallet/TransactionHistory" class="btn btn-primary">Xem lịch sử giao dịch</a>
+        <a href="/Wallet" class="btn btn-secondary ms-2">Về trang ví</a>
     </div>
 </div>

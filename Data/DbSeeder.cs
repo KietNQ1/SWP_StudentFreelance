@@ -125,6 +125,13 @@ namespace StudentFreelance.Data
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole<int>> roleManager)
         {
+            // Ensure all existing projects have valid flag values
+            foreach (var project in context.Projects.Where(p => p.IsFlagged && p.FlagReason == null))
+            {
+                project.FlagReason = "Default flag reason";
+            }
+            await context.SaveChangesAsync();
+            
             // 1. Roles
             string[] roleNames = { "Admin", "Moderator", "Business", "Student" };
             foreach (var role in roleNames)
@@ -1489,6 +1496,174 @@ namespace StudentFreelance.Data
                 context.SaveChanges();
             }
 
+            // Add email verification deadline for new users (BR-34)
+            foreach (var user in context.Users.ToList())
+            {
+                if (user.EmailVerificationDeadline == null)
+                {
+                    user.EmailVerificationDeadline = user.CreatedAt.AddDays(1);
+                    await userManager.UpdateAsync(user);
+                }
+            }
+
+            // Seed some verified users
+            var adminUser = await userManager.FindByEmailAsync("admin@example.com");
+            var moderatorUser = await userManager.FindByEmailAsync("moderator@example.com");
+            var businessUser = await userManager.FindByEmailAsync("business@example.com");
+
+            if (adminUser != null && !adminUser.IsVerified)
+            {
+                adminUser.IsVerified = true;
+                adminUser.VerifiedAt = DateTime.Now.AddDays(-30);
+                adminUser.VerifiedByID = adminUser.Id; // Self-verified
+                await userManager.UpdateAsync(adminUser);
+                
+                // Add account action history
+                context.UserAccountActions.Add(new UserAccountAction
+                {
+                    UserID = adminUser.Id,
+                    ActionByID = adminUser.Id,
+                    ActionType = "Verify",
+                    Description = "Self-verification (admin)",
+                    ActionDate = DateTime.Now.AddDays(-30),
+                    IPAddress = "127.0.0.1",
+                    UserAgent = "DbSeeder"
+                });
+            }
+
+            if (moderatorUser != null && !moderatorUser.IsVerified)
+            {
+                moderatorUser.IsVerified = true;
+                moderatorUser.VerifiedAt = DateTime.Now.AddDays(-25);
+                moderatorUser.VerifiedByID = adminUser.Id;
+                await userManager.UpdateAsync(moderatorUser);
+                
+                // Add account action history
+                context.UserAccountActions.Add(new UserAccountAction
+                {
+                    UserID = moderatorUser.Id,
+                    ActionByID = adminUser.Id,
+                    ActionType = "Verify",
+                    Description = "Verified by admin",
+                    ActionDate = DateTime.Now.AddDays(-25),
+                    IPAddress = "127.0.0.1",
+                    UserAgent = "DbSeeder"
+                });
+            }
+
+            if (businessUser != null && !businessUser.IsVerified)
+            {
+                businessUser.IsVerified = true;
+                businessUser.VerifiedAt = DateTime.Now.AddDays(-20);
+                businessUser.VerifiedByID = moderatorUser.Id;
+                await userManager.UpdateAsync(businessUser);
+                
+                // Add account action history
+                context.UserAccountActions.Add(new UserAccountAction
+                {
+                    UserID = businessUser.Id,
+                    ActionByID = moderatorUser.Id,
+                    ActionType = "Verify",
+                    Description = "Verified by moderator",
+                    ActionDate = DateTime.Now.AddDays(-20),
+                    IPAddress = "127.0.0.1",
+                    UserAgent = "DbSeeder"
+                });
+            }
+
+            // Flag a sample user
+            var suspiciousUser = await userManager.FindByEmailAsync("student5@example.com");
+            if (suspiciousUser != null && !suspiciousUser.IsFlagged)
+            {
+                suspiciousUser.IsFlagged = true;
+                suspiciousUser.FlagReason = "Suspicious activity detected";
+                suspiciousUser.FlaggedAt = DateTime.Now.AddDays(-5);
+                suspiciousUser.FlaggedByID = moderatorUser.Id;
+                await userManager.UpdateAsync(suspiciousUser);
+                
+                // Add account action history
+                context.UserAccountActions.Add(new UserAccountAction
+                {
+                    UserID = suspiciousUser.Id,
+                    ActionByID = moderatorUser.Id,
+                    ActionType = "Flag",
+                    Description = "Suspicious activity detected",
+                    ActionDate = DateTime.Now.AddDays(-5),
+                    IPAddress = "127.0.0.1",
+                    UserAgent = "DbSeeder"
+                });
+            }
+
+            // Flag a sample project
+            var projectToFlag = context.Projects.FirstOrDefault(p => p.Title.Contains("Viết nội dung blog"));
+            if (projectToFlag != null)
+            {
+                projectToFlag.IsFlagged = true;
+                projectToFlag.FlagReason = "Potential scam - unrealistic payment terms";
+                projectToFlag.FlaggedAt = DateTime.Now.AddDays(-3);
+                projectToFlag.FlaggedByID = moderatorUser.Id;
+                
+                // Add project flag history
+                context.ProjectFlagActions.Add(new ProjectFlagAction
+                {
+                    ProjectID = projectToFlag.ProjectID,
+                    ActionByID = moderatorUser.Id,
+                    ActionType = "Flag",
+                    Reason = "Potential scam - unrealistic payment terms",
+                    ActionDate = DateTime.Now.AddDays(-3),
+                    IPAddress = "127.0.0.1",
+                    UserAgent = "DbSeeder",
+                    IsActive = true
+                });
+                
+                await context.SaveChangesAsync();
+            }
+            else
+            {
+                // If the specific project doesn't exist, try to flag any project
+                var anyProject = context.Projects.FirstOrDefault();
+                if (anyProject != null)
+                {
+                    anyProject.IsFlagged = true;
+                    anyProject.FlagReason = "Sample flag for testing";
+                    anyProject.FlaggedAt = DateTime.Now.AddDays(-3);
+                    anyProject.FlaggedByID = moderatorUser.Id;
+                    
+                    // Add project flag history
+                    context.ProjectFlagActions.Add(new ProjectFlagAction
+                    {
+                        ProjectID = anyProject.ProjectID,
+                        ActionByID = moderatorUser.Id,
+                        ActionType = "Flag",
+                        Reason = "Sample flag for testing",
+                        ActionDate = DateTime.Now.AddDays(-3),
+                        IPAddress = "127.0.0.1",
+                        UserAgent = "DbSeeder",
+                        IsActive = true
+                    });
+                    
+                    await context.SaveChangesAsync();
+                }
+            }
+            
+            // Fix any projects that might have IsFlagged=true but null FlagReason
+            var flaggedProjectsWithNullReason = context.Projects.Where(p => p.IsFlagged && p.FlagReason == null).ToList();
+            if (flaggedProjectsWithNullReason.Any())
+            {
+                foreach (var project in flaggedProjectsWithNullReason)
+                {
+                    project.FlagReason = "Default flag reason added by DbSeeder";
+                    if (project.FlaggedAt == null)
+                    {
+                        project.FlaggedAt = DateTime.Now;
+                    }
+                    if (project.FlaggedByID == null && moderatorUser != null)
+                    {
+                        project.FlaggedByID = moderatorUser.Id;
+                    }
+                }
+                await context.SaveChangesAsync();
+            }
         }
     }
 }

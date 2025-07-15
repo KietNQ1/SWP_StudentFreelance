@@ -1,0 +1,215 @@
+@model StudentFreelance.ViewModels.UserVerificationDetailsViewModel
+
+@{
+    ViewData["Title"] = "User Details";
+}
+
+<div class="container mt-4">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+    
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+    
+    <div class="row">
+        <div class="col-md-8">
+            <h1>
+                User Details
+                @if (Model.User.IsVerified)
+                {
+                    <span class="badge badge-success ml-2" title="Verified User"><i class="fas fa-check-circle"></i> Verified</span>
+                }
+                @if (Model.User.IsFlagged)
+                {
+                    <span class="badge badge-danger ml-2" title="@Model.User.FlagReason"><i class="fas fa-flag"></i> Flagged</span>
+                }
+            </h1>
+        </div>
+        <div class="col-md-4 text-right">
+            <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>User Information</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Username:</dt>
+                        <dd class="col-sm-8">@Model.User.UserName</dd>
+                        
+                        <dt class="col-sm-4">Full Name:</dt>
+                        <dd class="col-sm-8">@Model.User.FullName</dd>
+                        
+                        <dt class="col-sm-4">Email:</dt>
+                        <dd class="col-sm-8">@Model.User.Email</dd>
+                        
+                        <dt class="col-sm-4">Status:</dt>
+                        <dd class="col-sm-8">@Model.User.Status.StatusName</dd>
+                        
+                        <dt class="col-sm-4">Created:</dt>
+                        <dd class="col-sm-8">@Model.User.CreatedAt.ToString("yyyy-MM-dd HH:mm")</dd>
+                        
+                        <dt class="col-sm-4">Role:</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.User.University != null)
+                            {
+                                <span>Student</span>
+                            }
+                            else if (Model.User.CompanyName != null)
+                            {
+                                <span>Business</span>
+                            }
+                        </dd>
+                        
+                        @if (Model.User.IsVerified)
+                        {
+                            <dt class="col-sm-4">Verified At:</dt>
+                            <dd class="col-sm-8">@Model.User.VerifiedAt?.ToString("yyyy-MM-dd HH:mm")</dd>
+                        }
+                        
+                        @if (Model.User.IsFlagged)
+                        {
+                            <dt class="col-sm-4">Flagged At:</dt>
+                            <dd class="col-sm-8">@Model.User.FlaggedAt?.ToString("yyyy-MM-dd HH:mm")</dd>
+                            
+                            <dt class="col-sm-4">Flag Reason:</dt>
+                            <dd class="col-sm-8">@Model.User.FlagReason</dd>
+                        }
+                    </dl>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5>Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            @if (!Model.User.IsVerified)
+                            {
+                                <form asp-action="Verify" method="post">
+                                    <input type="hidden" name="id" value="@Model.User.Id" />
+                                    <button type="submit" class="btn btn-success btn-block mb-2">
+                                        <i class="fas fa-check-circle"></i> Verify User
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                        <div class="col-md-6">
+                            @if (!Model.User.IsFlagged)
+                            {
+                                <button type="button" class="btn btn-danger btn-block mb-2" data-toggle="modal" data-target="#flagModal">
+                                    <i class="fas fa-flag"></i> Flag User
+                                </button>
+                            }
+                            else
+                            {
+                                <form asp-action="Unflag" method="post">
+                                    <input type="hidden" name="id" value="@Model.User.Id" />
+                                    <button type="submit" class="btn btn-warning btn-block mb-2">
+                                        <i class="fas fa-flag-checkered"></i> Remove Flag
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Account History</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.History.Any())
+                    {
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                    <th>By</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var action in Model.History)
+                                {
+                                    <tr>
+                                        <td>@action.ActionDate.ToString("yyyy-MM-dd HH:mm")</td>
+                                        <td>
+                                            @if (action.ActionType == "Verify")
+                                            {
+                                                <span class="badge badge-success">Verify</span>
+                                            }
+                                            else if (action.ActionType == "Flag")
+                                            {
+                                                <span class="badge badge-danger">Flag</span>
+                                            }
+                                            else if (action.ActionType == "Unflag")
+                                            {
+                                                <span class="badge badge-warning">Unflag</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-secondary">@action.ActionType</span>
+                                            }
+                                        </td>
+                                        <td>@action.ActionBy.FullName</td>
+                                        <td>@action.Description</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No account history available.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Flag Modal -->
+<div class="modal fade" id="flagModal" tabindex="-1" role="dialog" aria-labelledby="flagModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form asp-action="Flag" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="flagModalLabel">Flag User</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" value="@Model.User.Id" />
+                    <div class="form-group">
+                        <label for="reason">Reason for flagging:</label>
+                        <textarea name="reason" id="reason" class="form-control" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Flag User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div> 
