@@ -7,6 +7,7 @@ using StudentFreelance.ViewModels;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
 using StudentFreelance.DbContext;
+using StudentFreelance.Services.Interfaces;
 
 namespace StudentFreelance.Controllers
 {
@@ -16,13 +17,22 @@ namespace StudentFreelance.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly StudentFreelance.Services.Interfaces.IEmailSender _emailSender;
         private readonly ApplicationDbContext _context;
+        private readonly INotificationService _notificationService;
+        
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, StudentFreelance.Services.Interfaces.IEmailSender emailSender, ApplicationDbContext context)
+        public AccountController(
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
+            StudentFreelance.Services.Interfaces.IEmailSender emailSender,
+            ApplicationDbContext context,
+            INotificationService notificationService
+        )
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
             _context = context;
+            _notificationService = notificationService;
         }
 
         // GET: /Account/Register
@@ -32,7 +42,7 @@ namespace StudentFreelance.Controllers
             return View();
         }
 
-       
+
         // POST: /Account/Register
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
@@ -40,8 +50,6 @@ namespace StudentFreelance.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-           
-           
             var user = new ApplicationUser
             {
                 UserName = model.Email,
@@ -50,7 +58,7 @@ namespace StudentFreelance.Controllers
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,
                 IsActive = true,
-                StatusID = 1,              
+                StatusID = 1,
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -58,9 +66,28 @@ namespace StudentFreelance.Controllers
             {
                 // Gán role mặc định (ví dụ: "Student")
                 await _userManager.AddToRoleAsync(user, model.Role);
+
+                // Gửi email chào mừng sau khi đăng ký
+                var subject = "Chào mừng bạn đến với StudentFreelance!";
+                var body = $@"
+            <p>Xin chào <strong>{user.FullName}</strong>,</p>
+            <p>Cảm ơn bạn đã đăng ký tài khoản tại <strong>StudentFreelance</strong>.</p>
+            <p>Bạn có thể đăng nhập ngay tại đây: 
+                <a href='{Url.Action("Login", "Account", null, Request.Scheme)}'>Đăng nhập</a>.
+            </p>
+            <p>Chúc bạn một ngày tốt lành!</p>
+        ";
+
+                await _emailSender.SendEmailAsync(user.Email, subject, body);
+
+                // Gửi notification hệ thống cho user mới
+                await _notificationService.SendNotificationToUserAsync(
+                    user.Id,
+                    "Chào mừng bạn đến với StudentFreelance!",
+                    "Cảm ơn bạn đã đăng ký tài khoản. Hãy cập nhật hồ sơ để bắt đầu nhận dự án.",
+                    1 // TypeID: hệ thống (bạn có thể điều chỉnh cho đúng với DB)
+                );
                 TempData["SuccessMessage"] = "Đăng ký thành công. Vui lòng đăng nhập.";
-                // ❌ Không đăng nhập ngay
-                // ✅ Chuyển sang trang đăng nhập
                 return RedirectToAction("Login");
             }
 
@@ -69,6 +96,7 @@ namespace StudentFreelance.Controllers
 
             return View(model);
         }
+
 
         //Login
         [HttpGet]
