@@ -96,15 +96,19 @@
     }
 
     .btn-outline-primary {
-        border-color: var(--primary);
+        border: 2px solid var(--primary); /* tăng độ dày viền */
         color: var(--primary);
+        background-color: #fff;
         font-weight: 600;
+        transition: background 0.2s, color 0.2s, border-color 0.2s;
     }
 
         .btn-outline-primary:hover {
             background-color: var(--primary);
-            color: white;
+            color: #fff;
+            border-color: var(--primary);
         }
+
 
     .btn-outline-secondary {
         border-color: var(--accent1);
@@ -471,9 +475,10 @@
 
                     <div class="mt-3">
                         <a asp-controller="User" asp-action="Profile" asp-route-id="@Model.BusinessID"
-                           class="btn btn-outline-secondary btn-sm w-100">
+                           class="btn btn-outline-primary btn-sm w-100">
                             <i class="bi bi-person"></i> View Profile
                         </a>
+
 
                         <form asp-controller="Chat" asp-action="StartProjectChat" method="post">
                             <input type="hidden" name="projectId" value="@Model.ProjectID" />

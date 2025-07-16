@@ -23,15 +23,22 @@ namespace StudentFreelance.Controllers
         private readonly IProjectService _projectService;
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly INotificationService _notificationService;
+        private readonly IEmailSender _emailSender;
 
         public ProjectController(
             IProjectService projectService, 
             ApplicationDbContext context,
-            IWebHostEnvironment webHostEnvironment)
+            IWebHostEnvironment webHostEnvironment,
+            INotificationService notificationService,
+            IEmailSender emailSender
+        )
         {
             _projectService = projectService;
             _context = context;
             _webHostEnvironment = webHostEnvironment;
+            _notificationService = notificationService;
+            _emailSender = emailSender;
         }
 
         // GET: Projects
@@ -800,76 +807,108 @@ namespace StudentFreelance.Controllers
         }
 
         // POST: Projects/ConfirmCompletion
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [Authorize]
-        public async Task<IActionResult> ConfirmCompletion(int projectId, int applicationId)
-        {
-            if (projectId <= 0 || applicationId <= 0)
-                return NotFound();
+[HttpPost]
+[ValidateAntiForgeryToken]
+[Authorize]
+public async Task<IActionResult> ConfirmCompletion(int projectId, int applicationId)
+{
+    if (projectId <= 0 || applicationId <= 0)
+        return NotFound();
 
-            // Get current user ID
-            var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            
-            // Get project and application
-            var project = await _context.Projects.FindAsync(projectId);
-            var application = await _context.StudentApplications.FindAsync(applicationId);
-            
-            if (project == null || application == null)
-                return NotFound();
-            
-            if (application.ProjectID != projectId)
-                return NotFound();
-            
-            // Check if user is authorized (either business owner or the student)
-            bool isBusinessConfirmation = false;
-            
-            if (project.BusinessID == currentUserId)
+    // Get current user ID
+    var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+    
+    // Get project and application
+    var project = await _context.Projects.FindAsync(projectId);
+    var application = await _context.StudentApplications.FindAsync(applicationId);
+    
+    if (project == null || application == null)
+        return NotFound();
+    
+    if (application.ProjectID != projectId)
+        return NotFound();
+    
+    // Check if user is authorized (either business owner or the student)
+    bool isBusinessConfirmation = false;
+    
+    if (project.BusinessID == currentUserId)
+    {
+        isBusinessConfirmation = true;
+    }
+    else if (application.UserID == currentUserId)
+    {
+        isBusinessConfirmation = false;
+    }
+    else
+    {
+        // User is neither the business owner nor the student
+        return Forbid();
+    }
+    
+    try
+    {
+        // Call the service to confirm completion
+        var result = await _projectService.ConfirmProjectCompletionAsync(projectId, applicationId, isBusinessConfirmation);
+        
+        if (result)
+        {
+            // Gửi thông báo theo người xác nhận
+            var business = await _context.Users.FindAsync(project.BusinessID);
+            var student = await _context.Users.FindAsync(application.UserID);
+
+            if (isBusinessConfirmation)
             {
-                isBusinessConfirmation = true;
-            }
-            else if (application.UserID == currentUserId)
-            {
-                isBusinessConfirmation = false;
+                TempData["SuccessMessage"] = "Bạn đã xác nhận hoàn thành dự án. Đang chờ xác nhận từ sinh viên.";
+
+                if (business != null && student != null)
+                {
+                    await _notificationService.SendNotificationToUserAsync(
+                        student.Id,
+                        "Doanh nghiệp xác nhận hoàn thành dự án",
+                        $"Doanh nghiệp đã xác nhận hoàn thành dự án '{project.Title}'.",
+                        1,
+                        project.ProjectID,
+                        business.Id,
+                        true // gửi email
+                    );
+                }
             }
             else
             {
-                // User is neither the business owner nor the student
-                return Forbid();
-            }
-            
-            try
-            {
-                // Call the service to confirm completion
-                var result = await _projectService.ConfirmProjectCompletionAsync(projectId, applicationId, isBusinessConfirmation);
-                
-                if (result)
+                TempData["SuccessMessage"] = "Bạn đã xác nhận hoàn thành dự án. Đang chờ xác nhận từ doanh nghiệp.";
+
+                if (business != null && student != null)
                 {
-                    if (application.BusinessConfirmedCompletion && application.StudentConfirmedCompletion)
-                    {
-                        TempData["SuccessMessage"] = "Dự án đã được xác nhận hoàn thành bởi cả hai bên. Thanh toán đã được chuyển.";
-                    }
-                    else if (isBusinessConfirmation)
-                    {
-                        TempData["SuccessMessage"] = "Bạn đã xác nhận hoàn thành dự án. Đang chờ xác nhận từ sinh viên.";
-                    }
-                    else
-                    {
-                        TempData["SuccessMessage"] = "Bạn đã xác nhận hoàn thành dự án. Đang chờ xác nhận từ doanh nghiệp.";
-                    }
-                }
-                else
-                {
-                    TempData["ErrorMessage"] = "Có lỗi xảy ra khi xác nhận hoàn thành dự án.";
+                    await _notificationService.SendNotificationToUserAsync(
+                        business.Id,
+                        "Sinh viên xác nhận hoàn thành dự án",
+                        $"Sinh viên {student.FullName} đã xác nhận hoàn thành dự án '{project.Title}'.",
+                        1,
+                        project.ProjectID,
+                        student.Id,
+                        true // gửi email
+                    );
                 }
             }
-            catch (Exception ex)
+
+            if (application.BusinessConfirmedCompletion && application.StudentConfirmedCompletion)
             {
-                TempData["ErrorMessage"] = "Lỗi: " + ex.Message;
+                TempData["SuccessMessage"] = "Dự án đã được xác nhận hoàn thành bởi cả hai bên. Thanh toán đã được chuyển.";
             }
-            
-            return RedirectToAction(nameof(Details), new { id = projectId });
         }
+        else
+        {
+            TempData["ErrorMessage"] = "Có lỗi xảy ra khi xác nhận hoàn thành dự án.";
+        }
+    }
+    catch (Exception ex)
+    {
+        TempData["ErrorMessage"] = "Lỗi: " + ex.Message;
+    }
+    
+    return RedirectToAction(nameof(Details), new { id = projectId });
+}
+
 
         // POST: Projects/CancelConfirmation
         [HttpPost]

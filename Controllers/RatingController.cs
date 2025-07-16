@@ -8,16 +8,20 @@ using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using StudentFreelance.Services;
+using StudentFreelance.Services.Interfaces;
 
 namespace StudentFreelance.Controllers
 {
     public class RatingController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly INotificationService _notificationService;
 
-        public RatingController(ApplicationDbContext context)
+        public RatingController(ApplicationDbContext context, INotificationService notificationService)
         {
             _context = context;
+            _notificationService = notificationService;
         }
 
         // STUDENT → BUSINESS
@@ -90,6 +94,21 @@ namespace StudentFreelance.Controllers
             _context.Ratings.Add(rating);
             await _context.SaveChangesAsync();
 
+            // Gửi thông báo cho doanh nghiệp được đánh giá
+            var business = await _context.Users.FindAsync(model.RevieweeID);
+            if (business != null)
+            {
+                await _notificationService.SendNotificationToUserAsync(
+                    business.Id,
+                    "Bạn vừa nhận được một đánh giá mới",
+                    $"Bạn vừa nhận được đánh giá {model.Score}/5 từ sinh viên cho dự án '{model.ProjectTitle}'.",
+                    1, // TypeID hệ thống
+                    model.ProjectID,
+                    model.ReviewerID,
+                    false // chỉ notification, không gửi email
+                );
+            }
+
             TempData["SuccessMessage"] = "Đã gửi đánh giá thành công.";
             return RedirectToAction("MySubmissions", "ProjectSubmission", new { applicationId = model.ApplicationId }); // ✅ Ứng dụng sẽ không bị lỗi 404 nữa
         }
@@ -157,6 +176,21 @@ namespace StudentFreelance.Controllers
 
             _context.Ratings.Add(rating);
             await _context.SaveChangesAsync();
+
+            // Gửi thông báo cho sinh viên được đánh giá
+            var student = await _context.Users.FindAsync(model.RevieweeID);
+            if (student != null)
+            {
+                await _notificationService.SendNotificationToUserAsync(
+                    student.Id,
+                    "Bạn vừa nhận được một đánh giá mới",
+                    $"Bạn vừa nhận được đánh giá {model.Score}/5 từ doanh nghiệp cho dự án '{model.ProjectTitle}'.",
+                    1, // TypeID hệ thống
+                    model.ProjectID,
+                    model.ReviewerID,
+                    false // chỉ notification, không gửi email
+                );
+            }
 
             TempData["SuccessMessage"] = "Đã gửi đánh giá thành công.";
             return RedirectToAction("Details", "Project", new { id = model.ProjectID });
