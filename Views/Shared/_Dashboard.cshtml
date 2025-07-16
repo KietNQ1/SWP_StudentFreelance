@@ -29,6 +29,7 @@
             <a href="#">Applications</a>
             <a href="#">Payments</a>
             <a href="#">Reviews & Reports</a>
+            <a asp-controller="Advertisement" asp-action="ManageAdvertisements">Manage Advertisements</a>
             <a href="#">System Settings</a>
         </nav>
     </aside>
@@ -43,6 +44,8 @@
             dropdown.classList.toggle("open");
         }
     </script>
+    
+    @RenderSection("Scripts", required: false)
 </div>
 
 

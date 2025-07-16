@@ -67,6 +67,9 @@
         padding: 20px;
         text-align: center;
         border-bottom: 1px solid #eee;
+        height: 200px;
+        display: grid;
+;
     }
 
     .plan-title {
@@ -97,10 +100,13 @@
         font-size: 12px;
         font-weight: 600;
         display: inline-block;
+        margin-left: 28%;
+        width: 42%;
     }
 
     .plan-body {
         padding: 20px;
+        
     }
 
     .plan-features {
@@ -279,6 +285,15 @@
                 <li><i class="bi bi-check-circle-fill"></i> Tiếp cận nhiều ứng viên tiềm năng hơn</li>
                 <li><i class="bi bi-check-circle-fill"></i> Hỗ trợ ưu tiên từ đội ngũ chăm sóc khách hàng</li>
             </ul>
+            
+            <div class="mt-4">
+                <h3 class="h5 mb-3">Dịch vụ bổ sung cho doanh nghiệp</h3>
+                <div class="d-flex gap-3 flex-wrap">
+                    <a href="@Url.Action("MyAdvertisements", "Advertisement")" class="btn btn-outline-primary">
+                        <i class="bi bi-megaphone-fill me-2"></i>Quảng cáo trong slideshow trang chủ
+                    </a>
+                </div>
+            </div>
         }
     </div>
 </div> 

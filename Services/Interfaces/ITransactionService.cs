@@ -20,8 +20,11 @@ namespace StudentFreelance.Services.Interfaces
         Task<bool> ProcessDepositAsync(int userId, decimal amount, string description);
         Task<bool> ProcessWithdrawalAsync(int userId, decimal amount, string description);
 
-        //m?i th�m
+        //mới thêm
         Task<bool> ConfirmDepositFromPayOS(long orderCode);
-
+        
+        // Advertisement transaction
+        Task<bool> CreateAdvertisementTransactionAsync(int userId, int advertisementId, decimal amount);
+        Task<bool> CreateAdvertisementRenewalTransactionAsync(int userId, int advertisementId, decimal amount);
     }
 } 
