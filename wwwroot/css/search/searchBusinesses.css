@@ -119,8 +119,15 @@ h2.mb-4.text-primary {
     border: none;
     transition: all 0.3s ease;
     font-weight: 500;
-    padding: 8px 12px;
+    padding: 8px 16px;
     border-radius: 20px;
+    width: 100%;
+    text-align: center;
+    white-space: nowrap;
+    font-size: 0.95rem;
+    min-width: 90px;
+    display: block;
+    margin-left: -26px;
 }
 
 .btn-view-profile:hover, .btn-view-profile:focus {
@@ -128,6 +135,14 @@ h2.mb-4.text-primary {
     color: white;
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(137, 172, 70, 0.3);
+}
+
+/* Button container styles */
+.profile-button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-right: 0;
 }
 
 .alert-warning {
