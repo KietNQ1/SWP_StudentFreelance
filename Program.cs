@@ -7,6 +7,7 @@ using StudentFreelance.Models.Email;
 using StudentFreelance.Models.PayOS;
 using StudentFreelance.Services.Implementations;
 using StudentFreelance.Middleware;
+using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSignalR();              // Đăng ký SignalR
@@ -67,6 +68,7 @@ builder.Services.AddScoped<StudentFreelance.Services.Interfaces.INotificationSer
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IProjectSubmissionService, StudentFreelance.Services.Implementations.ProjectSubmissionService>();
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.ITransactionService, StudentFreelance.Services.Implementations.TransactionService>();
 builder.Services.AddScoped<IBankAccountService, BankAccountService>();
+builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IAdvertisementService, StudentFreelance.Services.Implementations.AdvertisementService>();
 //builder.Services.AddScoped<IPayOSService, PayOSService>();
 builder.Services.AddHttpClient<IPayOSService, PayOSService>();
 builder.Services.Configure<PayOSConfig>(
@@ -99,6 +101,18 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
+}
+
+// Ensure upload directories exist
+var uploadsPath = Path.Combine(app.Environment.WebRootPath, "uploads");
+var advertisementsPath = Path.Combine(uploadsPath, "advertisements");
+if (!Directory.Exists(uploadsPath))
+{
+    Directory.CreateDirectory(uploadsPath);
+}
+if (!Directory.Exists(advertisementsPath))
+{
+    Directory.CreateDirectory(advertisementsPath);
 }
 
 app.UseHttpsRedirection();
