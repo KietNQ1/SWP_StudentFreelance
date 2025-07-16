@@ -612,58 +612,6 @@
             }
         });
     </script>
-    // Hiển thị chấm đỏ nếu có thông báo mới
-    const hasNotification = true;
-    const bell = document.getElementById("notificationBell");
-    const dropdown = document.getElementById("notificationDropdown");
-    const dot = document.getElementById("notificationDot");
-
-    if (hasNotification && bell && dropdown && dot) {
-      dot.style.display = "block";
-      
-      bell.addEventListener("click", function (e) {
-        e.stopPropagation();
-        const isOpen = dropdown.style.display === "block";
-        dropdown.style.display = isOpen ? "none" : "block";
-
-        //  Ẩn dấu đỏ sau khi mở dropdown
-        if (!isOpen) {
-          dot.style.display = "none";
-        }
-      });
-
-      document.addEventListener("click", function () {
-        dropdown.style.display = "none";
-      });
-    }
-
-    // Dropdown Explore
-    const exploreBtn = document.getElementById("exploreDropdownBtn");
-    const exploreMenu = document.getElementById("exploreDropdownMenu");
-    
-    if (exploreBtn && exploreMenu) {
-      let exploreTimeout;
-
-      exploreBtn.addEventListener("mouseenter", () => {
-        clearTimeout(exploreTimeout);
-        exploreMenu.style.display = "block";
-      });
-
-      exploreBtn.addEventListener("mouseleave", () => {
-        exploreTimeout = setTimeout(() => {
-          exploreMenu.style.display = "none";
-        }, 200);
-      });
-
-      exploreMenu.addEventListener("mouseenter", () => {
-        clearTimeout(exploreTimeout);
-        exploreMenu.style.display = "block";
-      });
-
-      exploreMenu.addEventListener("mouseleave", () => {
-        exploreMenu.style.display = "none";
-      });
-    }
 </script>
 
 <script>
