@@ -40,6 +40,9 @@ namespace StudentFreelance.DbContext
         public DbSet<BankAccount> BankAccounts { get; set; }
         public DbSet<UserAccountAction> UserAccountActions { get; set; }
         public DbSet<ProjectFlagAction> ProjectFlagActions { get; set; }
+        public DbSet<Advertisement> Advertisements { get; set; }
+        public DbSet<AdvertisementPackageType> AdvertisementPackageTypes { get; set; }
+        public DbSet<AdvertisementStatus> AdvertisementStatuses { get; set; }
 
 
         // Enum DbSets
@@ -409,6 +412,19 @@ namespace StudentFreelance.DbContext
                 .HasOne(pfa => pfa.ActionBy)
                 .WithMany()
                 .HasForeignKey(pfa => pfa.ActionByID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Advertisement relationships
+            modelBuilder.Entity<Advertisement>()
+                .HasOne(a => a.Business)
+                .WithMany()
+                .HasForeignKey(a => a.BusinessId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Advertisement>()
+                .HasOne(a => a.ApprovedBy)
+                .WithMany()
+                .HasForeignKey(a => a.ApprovedById)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Global query filters for soft-delete
