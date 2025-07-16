@@ -18,7 +18,7 @@ namespace StudentFreelance.Controllers
         private readonly StudentFreelance.Services.Interfaces.IEmailSender _emailSender;
         private readonly ApplicationDbContext _context;
         private readonly INotificationService _notificationService;
-        
+
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
@@ -42,7 +42,6 @@ namespace StudentFreelance.Controllers
             return View();
         }
 
-
         // POST: /Account/Register
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
@@ -64,10 +63,8 @@ namespace StudentFreelance.Controllers
             var result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
             {
-                // Gán role mặc định (ví dụ: "Student")
                 await _userManager.AddToRoleAsync(user, model.Role);
 
-                // Gửi email chào mừng sau khi đăng ký
                 var subject = "Chào mừng bạn đến với StudentFreelance!";
                 var body = $@"
             <p>Xin chào <strong>{user.FullName}</strong>,</p>
@@ -80,13 +77,13 @@ namespace StudentFreelance.Controllers
 
                 await _emailSender.SendEmailAsync(user.Email, subject, body);
 
-                // Gửi notification hệ thống cho user mới
                 await _notificationService.SendNotificationToUserAsync(
                     user.Id,
                     "Chào mừng bạn đến với StudentFreelance!",
                     "Cảm ơn bạn đã đăng ký tài khoản. Hãy cập nhật hồ sơ để bắt đầu nhận dự án.",
-                    1 // TypeID: hệ thống (bạn có thể điều chỉnh cho đúng với DB)
+                    1
                 );
+
                 TempData["SuccessMessage"] = "Đăng ký thành công. Vui lòng đăng nhập.";
                 return RedirectToAction("Login");
             }
@@ -97,13 +94,13 @@ namespace StudentFreelance.Controllers
             return View(model);
         }
 
-
         //Login
         [HttpGet]
         public IActionResult Login()
         {
             return View();
         }
+
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
         {
@@ -114,6 +111,18 @@ namespace StudentFreelance.Controllers
 
             if (result.Succeeded)
             {
+                var user = await _userManager.FindByEmailAsync(model.Email);
+
+                // Chỉ gửi email thông báo đăng nhập thành công
+                var subject = "Đăng nhập thành công";
+                var body = $@"
+                    <p>Xin chào <strong>{user.FullName}</strong>,</p>
+                    <p>Bạn vừa đăng nhập thành công vào hệ thống StudentFreelance lúc {DateTime.Now:HH:mm:ss dd/MM/yyyy}.</p>
+                    <p>Nếu không phải bạn, vui lòng đổi mật khẩu ngay lập tức.</p>";
+                await _emailSender.SendEmailAsync(user.Email, subject, body);
+
+                // KHÔNG gọi notificationService ở đây nữa!
+
                 return RedirectToLocal(returnUrl);
             }
             else if (result.IsLockedOut)
@@ -125,7 +134,7 @@ namespace StudentFreelance.Controllers
                 ModelState.AddModelError("", "Đăng nhập không hợp lệ.");
             }
 
-            return View(model); 
+            return View(model);
         }
 
         private IActionResult RedirectToLocal(string? returnUrl)
@@ -135,6 +144,7 @@ namespace StudentFreelance.Controllers
 
             return RedirectToAction("Index", "Home");
         }
+
         //Logout
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -143,15 +153,14 @@ namespace StudentFreelance.Controllers
             await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
         }
+
         //Forgot pass
-        // GET: /Account/ForgotPassword
         [HttpGet]
         public IActionResult ForgotPassword()
         {
             return View();
         }
 
-        // POST: /Account/ForgotPassword
         [HttpPost]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {
@@ -159,15 +168,14 @@ namespace StudentFreelance.Controllers
                 return View(model);
 
             var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user == null )
-            {               
+            if (user == null)
+            {
                 return RedirectToAction("ForgotPasswordConfirmation");
             }
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             var resetLink = Url.Action("ResetPassword", "Account", new { token, email = model.Email }, Request.Scheme);
 
-            // Gửi email
             var subject = "Reset your password";
             var body = $"Vui lòng bấm vào link sau để đặt lại mật khẩu của bạn:<br/><a href='{resetLink}'>{resetLink}</a>";
             await _emailSender.SendEmailAsync(model.Email, subject, body);
@@ -175,13 +183,11 @@ namespace StudentFreelance.Controllers
             return RedirectToAction("ForgotPasswordConfirmation");
         }
 
-
-        // GET: /Account/ForgotPasswordConfirmation
         public IActionResult ForgotPasswordConfirmation()
         {
             return View();
         }
-        // GET: /Account/ResetPassword
+
         [HttpGet]
         public IActionResult ResetPassword(string token, string email)
         {
@@ -192,7 +198,6 @@ namespace StudentFreelance.Controllers
             return View(model);
         }
 
-        // POST: /Account/ResetPassword
         [HttpPost]
         public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
         {
@@ -209,6 +214,21 @@ namespace StudentFreelance.Controllers
             var result = await _userManager.ResetPasswordAsync(user, model.Token, model.Password);
             if (result.Succeeded)
             {
+                // 🔔 Notification: gửi khi đổi mật khẩu thành công
+                var subject = "Mật khẩu đã được cập nhật";
+                var body = $@"
+                    <p>Xin chào <strong>{user.FullName}</strong>,</p>
+                    <p>Mật khẩu tài khoản StudentFreelance của bạn đã được cập nhật thành công lúc {DateTime.Now:HH:mm:ss dd/MM/yyyy}.</p>
+                    <p>Nếu không phải bạn thực hiện thao tác này, hãy liên hệ hỗ trợ ngay.</p>";
+                await _emailSender.SendEmailAsync(user.Email, subject, body);
+
+                await _notificationService.SendNotificationToUserAsync(
+                    user.Id,
+                    "Mật khẩu đã thay đổi",
+                    "Mật khẩu của bạn đã được cập nhật thành công. Nếu không phải bạn thay đổi, hãy liên hệ quản trị viên.",
+                    1
+                );
+
                 TempData["SuccessMessage"] = "Mật khẩu đã được cập nhật thành công.";
                 return RedirectToAction("Login");
             }
@@ -227,7 +247,6 @@ namespace StudentFreelance.Controllers
             return Challenge(properties, provider);
         }
 
-        // Xử lý callback từ Google
         [HttpGet]
         public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null, string? remoteError = null)
         {
@@ -245,7 +264,6 @@ namespace StudentFreelance.Controllers
                 return RedirectToAction("Login");
             }
 
-            // Đăng nhập nếu đã có tài khoản
             var signInResult = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
 
             if (signInResult.Succeeded)
@@ -254,12 +272,10 @@ namespace StudentFreelance.Controllers
             }
             else
             {
-                // Nếu chưa có, tạo mới user
                 var email = info.Principal.FindFirstValue(ClaimTypes.Email);
                 var user = await _userManager.FindByEmailAsync(email);
                 if (user == null)
                 {
-                    // Lấy tên nếu có
                     var name = info.Principal.FindFirstValue(ClaimTypes.Name);
 
                     user = new ApplicationUser
@@ -276,8 +292,7 @@ namespace StudentFreelance.Controllers
                     var result = await _userManager.CreateAsync(user);
                     if (result.Succeeded)
                     {
-                        // Gán role mặc định
-                        await _userManager.AddToRoleAsync(user, "Student"); // hoặc "Business" tùy logic của bạn
+                        await _userManager.AddToRoleAsync(user, "Student");
                         await _userManager.AddLoginAsync(user, info);
                     }
                     else
@@ -291,7 +306,6 @@ namespace StudentFreelance.Controllers
                     await _userManager.AddLoginAsync(user, info);
                 }
 
-                // Kiểm tra và tạo địa chỉ nếu chưa có
                 if (user.AddressID == null)
                 {
                     var address = new Address
@@ -306,21 +320,17 @@ namespace StudentFreelance.Controllers
                         FullAddress = "Số nhà mặc định, Phường Phúc Xá, Quận Ba Đình, Hà Nội",
                         IsActive = true
                     };
-                    
+
                     _context.Addresses.Add(address);
                     await _context.SaveChangesAsync();
-                    
+
                     user.AddressID = address.AddressID;
                     await _userManager.UpdateAsync(user);
                 }
 
-                // Đăng nhập
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 return Redirect(returnUrl);
             }
         }
-
     }
 }
-
-
