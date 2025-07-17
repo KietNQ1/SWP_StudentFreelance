@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -9,6 +10,7 @@ using StudentFreelance.Services.Interfaces;
 using StudentFreelance.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -22,15 +24,18 @@ namespace StudentFreelance.Controllers
         private readonly IApplicationService _applicationService;
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly INotificationService _notificationService;
 
         public ApplicationController(
             IApplicationService applicationService, 
             ApplicationDbContext context,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            INotificationService notificationService)
         {
             _applicationService = applicationService;
             _context = context;
             _userManager = userManager;
+            _notificationService = notificationService;
         }
 
         // GET: /Application/Apply/{projectId}
@@ -81,7 +86,7 @@ namespace StudentFreelance.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Student")]
-        public async Task<IActionResult> Apply(CreateApplicationViewModel model)
+        public async Task<IActionResult> Apply(CreateApplicationViewModel model, IFormFile resumeFile)
         {
             // Debug: Kiểm tra ModelState trước khi xóa các lỗi
             var initialErrors = ModelState.Where(x => x.Value.Errors.Count > 0)
@@ -164,6 +169,55 @@ namespace StudentFreelance.Controllers
                     return RedirectToAction("Details", "Project", new { id = model.ProjectID });
                 }
                 
+                // Xử lý tải lên CV nếu có
+                string resumeAttachmentPath = model.ResumeAttachment;
+                if (resumeFile != null && resumeFile.Length > 0)
+                {
+                    // Kiểm tra định dạng file
+                    var allowedExtensions = new[] { ".pdf", ".doc", ".docx" };
+                    var fileExtension = Path.GetExtension(resumeFile.FileName).ToLowerInvariant();
+                    
+                    if (!allowedExtensions.Contains(fileExtension))
+                    {
+                        ModelState.AddModelError("resumeFile", "Chỉ chấp nhận file PDF, DOC hoặc DOCX.");
+                        
+                        // Lấy lại thông tin dự án nếu model không hợp lệ
+                        var projectInfo = await _context.Projects
+                            .Include(p => p.Business)
+                            .FirstOrDefaultAsync(p => p.ProjectID == model.ProjectID && p.IsActive);
+                        
+                        if (projectInfo != null)
+                        {
+                            model.ProjectTitle = projectInfo.Title;
+                            model.BusinessName = projectInfo.Business?.FullName ?? projectInfo.Business?.CompanyName ?? "Không xác định";
+                            model.ProjectBudget = projectInfo.Budget;
+                        }
+                        
+                        return View(model);
+                    }
+                    
+                    // Tạo tên file duy nhất
+                    var fileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(resumeFile.FileName);
+                    var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "submissions");
+                    
+                    // Đảm bảo thư mục tồn tại
+                    if (!Directory.Exists(uploadPath))
+                    {
+                        Directory.CreateDirectory(uploadPath);
+                    }
+                    
+                    var filePath = Path.Combine(uploadPath, fileName);
+                    
+                    // Lưu file
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await resumeFile.CopyToAsync(stream);
+                    }
+                    
+                    // Cập nhật đường dẫn CV
+                    resumeAttachmentPath = "/uploads/submissions/" + fileName;
+                }
+                
                 // Sử dụng service để tạo đơn ứng tuyển
                 var application = new StudentApplication
                 {
@@ -174,7 +228,7 @@ namespace StudentFreelance.Controllers
                     DateApplied = DateTime.Now,
                     Status = "Pending",
                     PortfolioLink = model.PortfolioLink,
-                    ResumeAttachment = model.ResumeAttachment,
+                    ResumeAttachment = resumeAttachmentPath,
                     LastStatusUpdate = DateTime.Now,
                     BusinessConfirmedCompletion = false,
                     StudentConfirmedCompletion = false
@@ -187,6 +241,22 @@ namespace StudentFreelance.Controllers
                 {
                     TempData["SuccessMessage"] = "Đơn ứng tuyển của bạn đã được gửi thành công!";
                     TempData["DebugInfo"] = $"Đã tạo đơn ứng tuyển với ID: {result.ApplicationID}";
+                    
+                    // Gửi thông báo cho doanh nghiệp
+                    var projectWithBusiness = await _context.Projects.Include(p => p.Business).FirstOrDefaultAsync(p => p.ProjectID == model.ProjectID);
+                    if (projectWithBusiness?.Business != null)
+                    {
+                        await _notificationService.SendNotificationToUserAsync(
+                            projectWithBusiness.Business.Id,
+                            "Có ứng viên mới cho dự án",
+                            $"Sinh viên {User.Identity.Name} vừa ứng tuyển vào dự án '{projectWithBusiness.Title}'.",
+                            1, // TypeID hệ thống
+                            projectWithBusiness.ProjectID,
+                            userId,
+                            true // chỉ notification, không gửi email
+                        );
+                    }
+
                     return RedirectToAction("MyApplications");
                 }
                 else
@@ -361,6 +431,34 @@ namespace StudentFreelance.Controllers
             int projectIdValue = application.ProjectID;
             
             try {
+                // Nếu đang chấp nhận ứng viên, kiểm tra ngân sách dự án
+                if (model.Status == "Accepted" && application.Status != "Accepted")
+                {
+                    // Inject ProjectService để sử dụng
+                    var projectService = HttpContext.RequestServices.GetService<IProjectService>();
+                    
+                    // Kiểm tra ngân sách
+                    var budgetCheck = await projectService.CheckProjectBudgetForAcceptedStudentsAsync(
+                        projectIdValue, application.ApplicationID);
+                    
+                    if (!budgetCheck.IsEnough)
+                    {
+                        // Nếu ngân sách không đủ, lưu thông tin vào TempData để hiển thị modal
+                        TempData["BudgetNotEnough"] = "true";
+                        TempData["MissingAmount"] = budgetCheck.MissingAmount.ToString();
+                        TempData["ApplicationID"] = application.ApplicationID.ToString();
+                        TempData["ProjectID"] = projectIdValue.ToString();
+                        TempData["BusinessNotes"] = model.BusinessNotes;
+                        
+                        // Redirect để hiển thị modal xác nhận
+                        return RedirectToAction("ConfirmAcceptStudent", new { 
+                            applicationId = application.ApplicationID,
+                            missingAmount = budgetCheck.MissingAmount,
+                            businessNotes = model.BusinessNotes
+                        });
+                    }
+                }
+                
                 // Cập nhật trạng thái
                 var result = await _applicationService.UpdateApplicationStatusAsync(model.ApplicationID, model.Status);
                 
@@ -379,6 +477,23 @@ namespace StudentFreelance.Controllers
                     }
                     
                     TempData["SuccessMessage"] = "Thông tin đơn ứng tuyển đã được cập nhật thành công.";
+
+                    // Gửi thông báo cho sinh viên
+                    var student = await _context.Users.FindAsync(application.UserID);
+                    if (student != null)
+                    {
+                        string title = "Cập nhật trạng thái đơn ứng tuyển";
+                        string content = $"Trạng thái đơn ứng tuyển của bạn cho dự án '{application.Project.Title}' đã được cập nhật thành '{model.Status}'.";
+                        await _notificationService.SendNotificationToUserAsync(
+                            student.Id,
+                            title,
+                            content,
+                            1,
+                            application.ProjectID,
+                            application.Project.BusinessID,
+                            true // chỉ notification, không gửi email
+                        );
+                    }
                 }
             }
             catch (Exception ex) {
@@ -386,6 +501,130 @@ namespace StudentFreelance.Controllers
             }
             
             return RedirectToAction("ProjectApplications", new { projectId = projectIdValue });
+        }
+        
+        // GET: /Application/ConfirmAcceptStudent
+        [Authorize(Roles = "Business")]
+        public async Task<IActionResult> ConfirmAcceptStudent(int applicationId, decimal missingAmount, string businessNotes)
+        {
+            var application = await _applicationService.GetApplicationByIdAsync(applicationId);
+            if (application == null)
+                return NotFound();
+            
+            // Kiểm tra người dùng có phải là chủ dự án
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            if (application.Project.BusinessID != userId)
+                return Forbid();
+            
+            // Lấy thông tin doanh nghiệp để kiểm tra số dư ví
+            var business = await _context.Users.FindAsync(userId);
+            
+            var model = new ConfirmAcceptStudentViewModel
+            {
+                ApplicationID = applicationId,
+                ProjectID = application.ProjectID,
+                StudentName = application.User.FullName,
+                ProjectTitle = application.Project.Title,
+                StudentSalary = application.Salary,
+                MissingAmount = missingAmount,
+                BusinessNotes = businessNotes,
+                WalletBalance = business.WalletBalance
+            };
+            
+            return View(model);
+        }
+        
+        // POST: /Application/ConfirmAcceptStudent
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Business")]
+        public async Task<IActionResult> ConfirmAcceptStudent(ConfirmAcceptStudentViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Form validation failed. Please check the form and try again.";
+                return View(model);
+            }
+            
+            var application = await _applicationService.GetApplicationByIdAsync(model.ApplicationID);
+            if (application == null)
+                return NotFound();
+            
+            // Kiểm tra người dùng có phải là chủ dự án
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            if (application.Project.BusinessID != userId)
+                return Forbid();
+            
+            try
+            {
+                if (model.ConfirmAddFunds)
+                {
+                    // Inject ProjectService để sử dụng
+                    var projectService = HttpContext.RequestServices.GetService<IProjectService>();
+                    
+                    // Thêm tiền vào dự án từ ví
+                    var addFundsResult = await projectService.AddFundsToProjectFromWalletAsync(
+                        model.ProjectID, userId, model.MissingAmount);
+                    
+                    if (!addFundsResult)
+                    {
+                        TempData["ErrorMessage"] = "Không thể bổ sung ngân sách cho dự án. Vui lòng kiểm tra số dư ví của bạn.";
+                        return View(model);
+                    }
+                    
+                    TempData["SuccessMessage"] = $"Đã bổ sung {model.MissingAmount:N0} VNĐ vào ngân sách dự án.";
+                }
+                else if (!model.ConfirmAccept)
+                {
+                    // Nếu không xác nhận, quay lại trang chi tiết đơn ứng tuyển
+                    return RedirectToAction("ViewApplication", new { id = model.ApplicationID });
+                }
+                
+                // Cập nhật trạng thái đơn ứng tuyển
+                var result = await _applicationService.UpdateApplicationStatusAsync(model.ApplicationID, "Accepted");
+                
+                if (result == null)
+                {
+                    TempData["ErrorMessage"] = "Không thể cập nhật trạng thái đơn ứng tuyển.";
+                }
+                else
+                {
+                    // Cập nhật ghi chú nếu có
+                    if (!string.IsNullOrEmpty(model.BusinessNotes))
+                    {
+                        await _applicationService.UpdateBusinessFeedbackAsync(
+                            model.ApplicationID, 
+                            model.BusinessNotes);
+                    }
+                    
+                    TempData["SuccessMessage"] = "Đã chấp nhận ứng viên thành công.";
+
+                    // Gửi thông báo cho sinh viên
+                    var student = await _context.Users.FindAsync(application.UserID);
+                    if (student != null)
+                    {
+                        string title = "Đơn ứng tuyển của bạn đã được chấp nhận";
+                        string content = $"Chúc mừng! Đơn ứng tuyển của bạn cho dự án '{application.Project.Title}' đã được chấp nhận.";
+                        await _notificationService.SendNotificationToUserAsync(
+                            student.Id,
+                            title,
+                            content,
+                            1,
+                            application.ProjectID,
+                            application.Project.BusinessID,
+                            true // chỉ notification, không gửi email
+                        );
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Lỗi: {ex.Message}";
+                return View(model);
+            }
+            
+            return RedirectToAction("ProjectApplications", new { projectId = model.ProjectID });
         }
         
         // GET: /Application/ScheduleInterview/{id}
@@ -448,7 +687,7 @@ namespace StudentFreelance.Controllers
         }
         
         // GET: /Application/ViewApplication/{id}
-        [Authorize(Roles = "Business")]
+        [Authorize(Roles = "Business,Student")]
         public async Task<IActionResult> ViewApplication(int id)
         {
             // Kiểm tra xem đơn ứng tuyển có tồn tại không
@@ -456,13 +695,209 @@ namespace StudentFreelance.Controllers
             if (application == null)
                 return NotFound();
                 
-            // Kiểm tra xem người dùng hiện tại có phải là chủ dự án không
+            // Kiểm tra quyền truy cập
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            if (application.Project.BusinessID != userId)
+            
+            // Cho phép sinh viên xem đơn ứng tuyển của chính họ
+            if (User.IsInRole("Student") && application.UserID != userId)
+                return Forbid();
+            
+            // Cho phép doanh nghiệp xem đơn ứng tuyển cho dự án của họ
+            if (User.IsInRole("Business") && application.Project.BusinessID != userId)
                 return Forbid();
                 
             return View(application);
         }
+        
+        // GET: /Application/UpdateStudentApplication/{id}
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> UpdateStudentApplication(int id)
+        {
+            // Lấy thông tin người dùng hiện tại
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            
+            // Lấy thông tin đơn ứng tuyển
+            var application = await _applicationService.GetApplicationByIdAsync(id);
+            if (application == null)
+                return NotFound();
+            
+            // Kiểm tra xem đơn ứng tuyển có thuộc về sinh viên này không
+            if (application.UserID != userId)
+                return Forbid();
+            
+            // Kiểm tra trạng thái đơn ứng tuyển, chỉ cho phép cập nhật nếu đang ở trạng thái Pending
+            if (application.Status != "Pending")
+            {
+                TempData["ErrorMessage"] = "Bạn chỉ có thể cập nhật đơn ứng tuyển khi đơn đang ở trạng thái chờ xử lý.";
+                return RedirectToAction("ViewApplication", new { id });
+            }
+            
+            // Tạo model cho view
+            var model = new UpdateStudentApplicationViewModel
+            {
+                ApplicationID = application.ApplicationID,
+                ProjectID = application.ProjectID,
+                CoverLetter = application.CoverLetter,
+                Salary = application.Salary,
+                PortfolioLink = application.PortfolioLink,
+                ResumeAttachment = application.ResumeAttachment
+            };
+            
+            // Lấy thông tin dự án
+            var project = await _context.Projects
+                .Include(p => p.Business)
+                .FirstOrDefaultAsync(p => p.ProjectID == application.ProjectID);
+            
+            if (project != null)
+            {
+                model.ProjectTitle = project.Title;
+                model.BusinessName = project.Business?.FullName ?? project.Business?.CompanyName ?? "Không xác định";
+                model.ProjectBudget = project.Budget;
+            }
+            
+            return View(model);
+        }
+
+        // POST: /Application/UpdateStudentApplication
+[HttpPost]
+[ValidateAntiForgeryToken]
+[Authorize(Roles = "Student")]
+public async Task<IActionResult> UpdateStudentApplication(UpdateStudentApplicationViewModel model, IFormFile newResumeFile)
+{
+    // Lấy thông tin người dùng hiện tại
+    var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+    
+    // Lấy thông tin đơn ứng tuyển
+    var application = await _applicationService.GetApplicationByIdAsync(model.ApplicationID);
+    if (application == null)
+        return NotFound();
+    
+    // Kiểm tra xem đơn ứng tuyển có thuộc về sinh viên này không
+    if (application.UserID != userId)
+        return Forbid();
+    
+    // Kiểm tra trạng thái đơn ứng tuyển, chỉ cho phép cập nhật nếu đang ở trạng thái Pending
+    if (application.Status != "Pending")
+    {
+        TempData["ErrorMessage"] = "Bạn chỉ có thể cập nhật đơn ứng tuyển khi đơn đang ở trạng thái chờ xử lý.";
+        return RedirectToAction("ViewApplication", new { id = model.ApplicationID });
+    }
+    
+    // Xóa các lỗi không liên quan đến việc cập nhật đơn ứng tuyển
+    ModelState.Remove("ProjectTitle");
+    ModelState.Remove("BusinessName");
+    ModelState.Remove("ProjectBudget");
+    
+    if (!ModelState.IsValid)
+    {
+        // Lấy thông tin dự án
+        var project = await _context.Projects
+            .Include(p => p.Business)
+            .FirstOrDefaultAsync(p => p.ProjectID == application.ProjectID);
+        
+        if (project != null)
+        {
+            model.ProjectTitle = project.Title;
+            model.BusinessName = project.Business?.FullName ?? project.Business?.CompanyName ?? "Không xác định";
+            model.ProjectBudget = project.Budget;
+        }
+        
+        return View(model);
+    }
+    
+    try
+    {
+        // Xử lý tải lên CV mới nếu có
+        if (newResumeFile != null && newResumeFile.Length > 0)
+        {
+            // Kiểm tra định dạng file
+            var allowedExtensions = new[] { ".pdf", ".doc", ".docx" };
+            var fileExtension = Path.GetExtension(newResumeFile.FileName).ToLowerInvariant();
+            
+            if (!allowedExtensions.Contains(fileExtension))
+            {
+                                 ModelState.AddModelError("newResumeFile", "Chỉ chấp nhận file PDF, DOC hoặc DOCX.");
+                 
+                 // Lấy lại thông tin dự án
+                 var projectDetails = await _context.Projects
+                     .Include(p => p.Business)
+                     .FirstOrDefaultAsync(p => p.ProjectID == application.ProjectID);
+                 
+                 if (projectDetails != null)
+                 {
+                     model.ProjectTitle = projectDetails.Title;
+                     model.BusinessName = projectDetails.Business?.FullName ?? projectDetails.Business?.CompanyName ?? "Không xác định";
+                     model.ProjectBudget = projectDetails.Budget;
+                 }
+                
+                return View(model);
+            }
+            
+            // Tạo tên file duy nhất
+            var fileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(newResumeFile.FileName);
+            var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "submissions");
+            
+            // Đảm bảo thư mục tồn tại
+            if (!Directory.Exists(uploadPath))
+            {
+                Directory.CreateDirectory(uploadPath);
+            }
+            
+            var filePath = Path.Combine(uploadPath, fileName);
+            
+            // Lưu file
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await newResumeFile.CopyToAsync(stream);
+            }
+            
+            // Cập nhật đường dẫn CV trong model
+            model.ResumeAttachment = "/uploads/submissions/" + fileName;
+        }
+        
+        // Cập nhật thông tin đơn ứng tuyển
+        application.CoverLetter = model.CoverLetter;
+        application.Salary = model.Salary;
+        application.PortfolioLink = model.PortfolioLink;
+        
+        // Chỉ cập nhật ResumeAttachment nếu có file mới được tải lên
+        if (!string.IsNullOrEmpty(model.ResumeAttachment) && model.ResumeAttachment != application.ResumeAttachment)
+        {
+            application.ResumeAttachment = model.ResumeAttachment;
+        }
+        
+        // Lưu thay đổi vào database
+        _context.StudentApplications.Update(application);
+        await _context.SaveChangesAsync();
+        
+        TempData["SuccessMessage"] = "Đơn ứng tuyển của bạn đã được cập nhật thành công!";
+        
+        // Gửi thông báo cho doanh nghiệp
+        var project = await _context.Projects
+            .Include(p => p.Business)
+            .FirstOrDefaultAsync(p => p.ProjectID == application.ProjectID);
+            
+        if (project?.Business != null)
+        {
+            await _notificationService.SendNotificationToUserAsync(
+                project.Business.Id,
+                "Đơn ứng tuyển đã được cập nhật",
+                $"Sinh viên {User.Identity.Name} vừa cập nhật đơn ứng tuyển vào dự án '{project.Title}'.",
+                1, // TypeID hệ thống
+                project.ProjectID,
+                userId,
+                true // chỉ notification, không gửi email
+            );
+        }
+        
+        return RedirectToAction("ViewApplication", new { id = model.ApplicationID });
+    }
+    catch (Exception ex)
+    {
+        TempData["ErrorMessage"] = $"Đã xảy ra lỗi khi cập nhật đơn ứng tuyển: {ex.Message}";
+        return View(model);
+    }
+}
         
         // Helper method to format time ago
         private string GetTimeAgo(DateTime dateTime)

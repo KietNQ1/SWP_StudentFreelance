@@ -11,7 +11,14 @@
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Index">Dự án</a></li>
                     <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Details" asp-route-id="@Model.ProjectID">Chi tiết dự án</a></li>
-                    <li class="breadcrumb-item"><a asp-controller="Application" asp-action="ProjectApplications" asp-route-projectId="@Model.ProjectID">Danh sách ứng viên</a></li>
+                    @if (User.IsInRole("Business"))
+                    {
+                        <li class="breadcrumb-item"><a asp-controller="Application" asp-action="ProjectApplications" asp-route-projectId="@Model.ProjectID">Danh sách ứng viên</a></li>
+                    }
+                    else
+                    {
+                        <li class="breadcrumb-item"><a asp-controller="Application" asp-action="MyApplications">Đơn ứng tuyển của tôi</a></li>
+                    }
                     <li class="breadcrumb-item active" aria-current="page">Chi tiết đơn ứng tuyển</li>
                 </ol>
             </nav>
@@ -20,9 +27,18 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Chi tiết đơn ứng tuyển</h2>
-        <a asp-controller="Application" asp-action="ProjectApplications" asp-route-projectId="@Model.ProjectID" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Quay lại danh sách ứng viên
-        </a>
+        @if (User.IsInRole("Business"))
+        {
+            <a asp-controller="Application" asp-action="ProjectApplications" asp-route-projectId="@Model.ProjectID" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Quay lại danh sách ứng viên
+            </a>
+        }
+        else
+        {
+            <a asp-controller="Application" asp-action="MyApplications" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Quay lại đơn ứng tuyển của tôi
+            </a>
+        }
     </div>
 
     <div class="row">
@@ -182,32 +198,34 @@
                     }
 
                     <div class="action-buttons mt-4">
-                        <a asp-action="UpdateStatus" asp-route-id="@Model.ApplicationID" 
-                           class="btn btn-primary w-100 mb-2">
-                            <i class="bi bi-pencil-square"></i> Cập nhật trạng thái
-                        </a>
-                        
-                        <a href="mailto:@Model.UserEmail" class="btn btn-outline-primary w-100 mb-2">
-                            <i class="bi bi-envelope"></i> Liên hệ qua email
-                        </a>
+                        @if (User.IsInRole("Business"))
+                        {
+                            <a asp-action="UpdateStatus" asp-route-id="@Model.ApplicationID" 
+                               class="btn btn-primary w-100 mb-2">
+                                <i class="bi bi-pencil-square"></i> Cập nhật trạng thái
+                            </a>
+                            
+                            <a href="/Chat/Room/User/@Model.UserID" 
+                               class="btn btn-outline-primary w-100 mb-2">
+                                <i class="bi bi-chat-dots"></i> Nhắn tin với sinh viên
+                            </a>
+                        }
+                        else if (User.IsInRole("Student"))
+                        {
+                            @if (Model.Status == "Pending")
+                            {
+                                <a asp-action="UpdateStudentApplication" asp-route-id="@Model.ApplicationID" 
+                                   class="btn btn-primary w-100 mb-2">
+                                    <i class="bi bi-pencil-square"></i> Cập nhật đơn ứng tuyển
+                                </a>
+                            }
+                            
+                            <a href="/Chat/Room/User/@Model.Project.BusinessID" 
+                               class="btn btn-outline-primary w-100 mb-2">
+                                <i class="bi bi-chat-dots"></i> Nhắn tin với doanh nghiệp
+                            </a>
+                        }
                     </div>
-
-                    @if (Model.Status == "Accepted" || Model.Status == "InProgress")
-                    {
-                        <div class="mt-3">
-                            <a asp-controller="ProjectSubmission" asp-action="Create" asp-route-applicationId="@Model.ApplicationID" class="btn btn-primary">
-                                <i class="fas fa-upload"></i> Nộp kết quả dự án
-                            </a>
-                        </div>
-                    }
-                    @if (Model.Status == "Accepted" || Model.Status == "InProgress" || Model.Status == "PendingReview" || Model.Status == "Completed")
-                    {
-                        <div class="mt-3">
-                            <a asp-controller="ProjectSubmission" asp-action="MySubmissions" asp-route-applicationId="@Model.ApplicationID" class="btn btn-info">
-                                <i class="fas fa-list"></i> Xem kết quả đã nộp
-                            </a>
-                        </div>
-                    }
                 </div>
             </div>
         </div>

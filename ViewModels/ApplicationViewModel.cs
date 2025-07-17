@@ -31,6 +31,51 @@ namespace StudentFreelance.ViewModels
         public string? ResumeAttachment { get; set; }
     }
     
+    // ViewModel cho xác nhận chấp nhận sinh viên
+    public class ConfirmAcceptStudentViewModel
+    {
+        public int ApplicationID { get; set; }
+        public int ProjectID { get; set; }
+        public string? StudentName { get; set; }
+        public string? ProjectTitle { get; set; }
+        public decimal StudentSalary { get; set; }
+        public decimal MissingAmount { get; set; }
+        public decimal WalletBalance { get; set; }
+        public string? BusinessNotes { get; set; }
+        
+        [Display(Name = "Xác nhận chấp nhận ứng viên")]
+        public bool ConfirmAccept { get; set; } = true;
+        
+        [Display(Name = "Bổ sung ngân sách từ ví")]
+        public bool ConfirmAddFunds { get; set; } = true;
+    }
+    
+    // ViewModel cho sinh viên cập nhật đơn ứng tuyển
+    public class UpdateStudentApplicationViewModel
+    {
+        public int ApplicationID { get; set; }
+        public int ProjectID { get; set; }
+        public string? ProjectTitle { get; set; }
+        public string? BusinessName { get; set; }
+        public decimal ProjectBudget { get; set; }
+        
+        [Required(ErrorMessage = "Vui lòng nhập thư ứng tuyển")]
+        [MinLength(50, ErrorMessage = "Thư ứng tuyển phải có ít nhất 50 ký tự")]
+        [Display(Name = "Thư ứng tuyển")]
+        public string CoverLetter { get; set; } = "";
+        
+        [Required(ErrorMessage = "Vui lòng nhập mức lương đề xuất")]
+        [Range(1, 1000000000, ErrorMessage = "Mức lương đề xuất phải lớn hơn 0")]
+        [Display(Name = "Mức lương đề xuất (VNĐ)")]
+        public decimal Salary { get; set; }
+        
+        [Display(Name = "Đường dẫn đến portfolio")]
+        public string? PortfolioLink { get; set; }
+        
+        [Display(Name = "CV đính kèm")]
+        public string? ResumeAttachment { get; set; }
+    }
+    
     // ViewModel cho đơn ứng tuyển của sinh viên (sử dụng trong danh sách đơn ứng tuyển)
     public class StudentApplicationViewModel : ApplicationDetailViewModel
     {

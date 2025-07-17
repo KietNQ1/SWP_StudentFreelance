@@ -291,5 +291,82 @@ namespace StudentFreelance.Services.Implementations
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<(bool IsEnough, decimal MissingAmount)> CheckProjectBudgetForAcceptedStudentsAsync(int projectId, int newStudentApplicationId)
+        {
+            // Lấy thông tin dự án
+            var project = await _context.Projects.FindAsync(projectId);
+            if (project == null)
+                return (false, 0);
+
+            // Lấy tất cả đơn ứng tuyển đã được chấp nhận (bao gồm cả đơn mới)
+            var acceptedApplications = await _context.StudentApplications
+                .Where(a => a.ProjectID == projectId && 
+                           (a.Status == "Accepted" || a.ApplicationID == newStudentApplicationId))
+                .ToListAsync();
+
+            if (!acceptedApplications.Any())
+                return (true, 0);
+
+            // Tính tổng số tiền lương của tất cả ứng viên được chấp nhận
+            decimal totalSalary = acceptedApplications.Sum(a => a.Salary);
+
+            // So sánh với ngân sách dự án
+            if (totalSalary <= project.Budget)
+                return (true, 0);
+            else
+                return (false, totalSalary - project.Budget);
+        }
+
+        public async Task<bool> AddFundsToProjectFromWalletAsync(int projectId, int businessId, decimal amount)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Lấy thông tin dự án
+                var project = await _context.Projects.FindAsync(projectId);
+                if (project == null || project.BusinessID != businessId)
+                    return false;
+
+                // Lấy thông tin doanh nghiệp
+                var business = await _context.Users.FindAsync(businessId);
+                if (business == null || business.WalletBalance < amount)
+                    return false;
+
+                // Trừ tiền từ ví doanh nghiệp
+                business.WalletBalance -= amount;
+
+                // Tăng ngân sách dự án
+                project.Budget += amount;
+
+                // Tạo giao dịch
+                // Sử dụng loại giao dịch "Thanh toán" (ID = 3)
+                var paymentTypeId = 3; // ID của loại giao dịch "Thanh toán"
+                var completedStatusId = _context.TransactionStatuses.FirstOrDefault(s => s.StatusName == "Completed")?.StatusID ?? 1;
+                
+                var txn = new Transaction
+                {
+                    UserID = businessId,
+                    Amount = amount,
+                    Description = $"Bổ sung ngân sách cho dự án: {project.Title}",
+                    TransactionDate = DateTime.UtcNow,
+                    TypeID = paymentTypeId,
+                    StatusID = completedStatusId,
+                    ProjectID = projectId,
+                    IsActive = true
+                };
+
+                _context.Transactions.Add(txn);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                return false;
+            }
+        }
     }
 } 

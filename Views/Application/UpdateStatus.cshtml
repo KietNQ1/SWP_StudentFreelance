@@ -12,13 +12,13 @@
                     <h5 class="mb-0">Cập nhật trạng thái ứng tuyển</h5>
                 </div>
                 <div class="card-body">
-                    <form asp-action="UpdateStatus" method="post">
+                    <form asp-action="UpdateStatus" method="post" id="updateStatusForm">
                         <input type="hidden" asp-for="ApplicationID" />
                         <input type="hidden" name="projectId" value="@ViewBag.ProjectID" />
                         
                         <div class="mb-3">
                             <label asp-for="Status" class="form-label">Trạng thái</label>
-                            <select asp-for="Status" class="form-select" asp-items="Model.StatusOptions"></select>
+                            <select asp-for="Status" class="form-select" asp-items="Model.StatusOptions" id="statusSelect"></select>
                             <span asp-validation-for="Status" class="text-danger"></span>
                         </div>
                         
@@ -33,7 +33,7 @@
                                class="btn btn-outline-secondary">
                                 <i class="bi bi-arrow-left"></i> Quay lại
                             </a>
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary" id="submitButton">
                                 <i class="bi bi-check-circle"></i> Cập nhật trạng thái
                             </button>
                         </div>
@@ -43,6 +43,8 @@
         </div>
     </div>
 </div>
+
+
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

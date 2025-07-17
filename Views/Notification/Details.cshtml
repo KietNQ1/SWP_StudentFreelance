@@ -1,5 +1,7 @@
 ﻿@model StudentFreelance.Models.Notification
 
+<link rel="stylesheet" href="~/css/notification/detail.css" asp-append-version="true" />
+
 @{
     ViewData["Title"] = "Chi tiết thông báo";
 }
@@ -12,7 +14,7 @@
     <div class="card-body">
         <p class="text-muted">
             📅 Gửi lúc: @Model.NotificationDate.ToString("dd/MM/yyyy HH:mm")<br />
-            👤 Bởi: @Model.Sender?.FullName ?? "Hệ thống"<br />
+            👤 Bởi: @(Model.Sender?.FullName ?? "Hệ thống")<br />
             🏷️ Loại: @Model.Type?.TypeName
         </p>
 

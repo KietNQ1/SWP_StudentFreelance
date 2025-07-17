@@ -60,10 +60,16 @@
                                 </div>
                             </div>
                             
-                            <a asp-controller="Project" asp-action="Details" asp-route-id="@application.ProjectID" 
-                               class="btn btn-outline-primary btn-sm">
-                                <i class="bi bi-eye"></i> Xem dự án
-                            </a>
+                            <div class="d-flex gap-2">
+                                <a asp-controller="Project" asp-action="Details" asp-route-id="@application.ProjectID" 
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-eye"></i> Xem dự án
+                                </a>
+                                <a asp-controller="Application" asp-action="ViewApplication" asp-route-id="@application.ApplicationID" 
+                                   class="btn btn-primary btn-sm">
+                                    <i class="bi bi-file-earmark-text"></i> Xem chi tiết
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
