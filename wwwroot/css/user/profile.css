@@ -1,0 +1,141 @@
+﻿:root {
+    --primary: #89ac46; /* Màu chủ đạo StudentFreelance */
+    --accent1: #f0f9ff;
+    --accent2: #eaf4fc;
+    --accent3: #28a745;
+    --warning: #f1c40f; /* Vàng cho đánh giá sao */
+    --light-gray: #f8f9fa;
+}
+
+/* -------------------- Font & Layout Reset -------------------- */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #F8F8F8;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+/* -------------------- Avatar -------------------- */
+.avatar-img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid var(--primary);
+}
+
+    .avatar-img[src=""],
+    .avatar-img:not([src]) {
+        content: url('/images/default-avatar.png');
+    }
+
+/* -------------------- Form layout -------------------- */
+.profile-form {
+    background-color: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+    .profile-form label {
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+
+    .profile-form input,
+    .profile-form select,
+    .profile-form textarea {
+        border-radius: 8px;
+    }
+
+/* -------------------- Section Title -------------------- */
+.section-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--primary);
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+/* -------------------- Skill Entries -------------------- */
+.skill-entry {
+    margin-bottom: 1rem;
+    border: 1px solid #e0e0e0;
+    padding: 1rem;
+    border-radius: 8px;
+    background-color: #fafafa;
+}
+
+/* -------------------- Buttons -------------------- */
+.btn-outline-primary,
+.btn-outline-secondary,
+.btn-outline-info {
+    border: 1px solid var(--primary);
+    background-color: transparent;
+    color: var(--primary);
+    transition: 0.2s ease-in-out;
+}
+
+    .btn-outline-primary:hover,
+    .btn-outline-secondary:hover,
+    .btn-outline-info:hover {
+        background-color: var(--primary);
+        color: white;
+    }
+
+/* -------------------- Star Rating -------------------- */
+.star-rating .fas,
+.star-rating .far,
+.star-rating .fa-star-half-alt {
+    color: var(--warning);
+    margin-right: 2px;
+}
+
+.star-rating .filled {
+    color: var(--warning);
+}
+
+/* -------------------- Rating Cards -------------------- */
+.rating-card {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: #ffffff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+}
+
+    .rating-card h6 {
+        margin-bottom: 0.25rem;
+        font-weight: 600;
+    }
+
+    .rating-card small {
+        color: #888;
+    }
+
+/* -------------------- Responsive -------------------- */
+@media (max-width: 768px) {
+    .avatar-img {
+        width: 100px;
+        height: 100px;
+    }
+
+    .profile-form {
+        padding: 1rem;
+    }
+}
+
+/* -------------------- Button Fix -------------------- */
+.btn.btn-outline-primary {
+    border: 1px solid var(--primary) !important;
+    background-color: transparent !important;
+    color: var(--primary) !important;
+}
+
+    .btn.btn-outline-primary:hover {
+        background-color: var(--primary) !important;
+        color: white !important;
+    }
+
