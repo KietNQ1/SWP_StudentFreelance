@@ -2,6 +2,9 @@
 @using Microsoft.AspNetCore.Identity
 @inject UserManager<StudentFreelance.Models.ApplicationUser> UserManager
 
+<link rel="stylesheet" href="~/css/notification/create.css" asp-append-version="true" />
+
+
 @{
     ViewData["Title"] = "Gửi thông báo";
     var isAdmin = User.IsInRole("Admin");

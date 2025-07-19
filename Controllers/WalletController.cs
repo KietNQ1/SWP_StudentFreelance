@@ -24,6 +24,7 @@ public class WalletController : Controller
     private readonly ITransactionService _transactionService;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ApplicationDbContext _context;
+    private readonly INotificationService _notificationService;
 
     public WalletController(
         ITransactionService transactionService,
@@ -31,7 +32,8 @@ public class WalletController : Controller
         IBankAccountService bankAccountService,
         IPayOSService payOSService,
         ApplicationDbContext context,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        INotificationService notificationService)
     {
         _transactionService = transactionService;
         _userManager = userManager;
@@ -39,6 +41,7 @@ public class WalletController : Controller
         _payOSService = payOSService;
         _context = context;
         _configuration = configuration;
+        _notificationService = notificationService;
     }
 
 
@@ -348,6 +351,16 @@ public class WalletController : Controller
             var user = await _userManager.FindByIdAsync(transaction.UserID.ToString());
             user.WalletBalance += transaction.Amount;
             await _userManager.UpdateAsync(user);
+
+            await _notificationService.SendNotificationToUserAsync(
+                user.Id,
+                "Nạp tiền thành công",
+                $"Bạn đã nạp thành công {transaction.Amount:N0} vào ví.",
+                1, // TypeID hệ thống
+                transaction.TransactionID,
+                null,
+                true // chỉ notification, không gửi email
+            );
         }
 
         // ✅ Tạo ViewModel để truyền vào View
@@ -402,6 +415,15 @@ public class WalletController : Controller
 
         if (success)
         {
+            await _notificationService.SendNotificationToUserAsync(
+                user.Id,
+                "Rút tiền thành công",
+                $"Bạn đã rút thành công {model.Amount:N0} từ ví.",
+                1, // TypeID hệ thống
+                null,
+                null,
+                true // chỉ notification, không gửi email
+            );
             TempData["SuccessMessage"] = $"Successfully withdrew {model.Amount:C} from your wallet.";
             return RedirectToAction(nameof(Index));
         }

@@ -1,0 +1,308 @@
+@model StudentFreelance.ViewModels.AdvertisementListViewModel
+
+@{
+    ViewData["Title"] = "Advertisement Management";
+    Layout = "_Dashboard";
+}
+
+<link rel="stylesheet" href="~/css/AdvertisementManage.css" />
+
+<div class="topbar">
+    <h1><i class="fas fa-ad"></i> Advertisement Management</h1>
+
+    <div class="ad-tabs">
+        <div class="ad-tab active" onclick="switchTab('pending')">
+            Pending
+            <span class="ad-badge ad-badge-warning">
+                @Model.Advertisements.Count(a => !a.IsApproved && a.IsActive)
+            </span>
+        </div>
+        <div class="ad-tab" onclick="switchTab('active')">
+            Active
+            <span class="ad-badge ad-badge-success">
+                @Model.Advertisements.Count(a => a.IsApproved && a.IsActive && a.EndDate >= DateTime.Now)
+            </span>
+        </div>
+        <div class="ad-tab" onclick="switchTab('inactive')">
+            Inactive
+            <span class="ad-badge ad-badge-danger">
+                @Model.Advertisements.Count(a => !a.IsActive)
+            </span>
+        </div>
+        <div class="ad-tab" onclick="switchTab('expired')">
+            Expired
+            <span class="ad-badge ad-badge-secondary">
+                @Model.Advertisements.Count(a => a.IsApproved && a.IsActive && a.EndDate < DateTime.Now)
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="tab-content" id="advertisementTabsContent">
+    <!-- Pending Advertisements Tab -->
+    <div class="table-container" id="pending-tab">
+        @if (!Model.Advertisements.Any(a => !a.IsApproved && a.IsActive))
+        {
+            <div class="no-data">
+                No pending advertisements found.
+            </div>
+        }
+        else
+        {
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Image</th>
+                        <th>Business</th>
+                        <th>Package Type</th>
+                        <th>Created Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var ad in Model.Advertisements.Where(a => !a.IsApproved && a.IsActive))
+                    {
+                        <tr>
+                            <td>@ad.Id</td>
+                            <td>
+                                <img src="~/uploads/advertisements/@ad.ImagePath" alt="Advertisement" class="ad-image" style="width: 100px; height: 60px;" />
+                            </td>
+                            <td>@(string.IsNullOrEmpty(ad.BusinessName) ? "N/A" : ad.BusinessName)</td>
+                            <td>
+                                @if (ad.PackageTypeID == 2)
+                                {
+                                    <span class="package-type package-premium">Premium Package</span>
+                                }
+                                else
+                                {
+                                    <span class="package-type package-basic">Basic Package</span>
+                                }
+                            </td>
+                            <td>@ad.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                <form asp-action="Approve" asp-route-id="@ad.Id" method="post" style="display:inline;">
+                                    <button type="submit" class="action-btn approve">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                </form>
+                                <form asp-action="Reject" asp-route-id="@ad.Id" method="post" style="display:inline;">
+                                    <button type="submit" class="action-btn reject">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    <!-- Active Advertisements Tab -->
+    <div class="table-container" id="active-tab" style="display: none;">
+        @if (!Model.Advertisements.Any(a => a.IsApproved && a.IsActive && a.EndDate >= DateTime.Now))
+        {
+            <div class="no-data">
+                No active advertisements found.
+            </div>
+        }
+        else
+        {
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Image</th>
+                        <th>Business</th>
+                        <th>Package Type</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Approved By</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var ad in Model.Advertisements.Where(a => a.IsApproved && a.IsActive && a.EndDate >= DateTime.Now))
+                    {
+                        <tr>
+                            <td>@ad.Id</td>
+                            <td>
+                                <img src="~/uploads/advertisements/@ad.ImagePath" alt="Advertisement" class="ad-image" style="width: 100px; height: 60px;" />
+                            </td>
+                            <td>@(string.IsNullOrEmpty(ad.BusinessName) ? "N/A" : ad.BusinessName)</td>
+                            <td>
+                                @if (ad.PackageTypeID == 2)
+                                {
+                                    <span class="package-type package-premium">Premium Package</span>
+                                }
+                                else
+                                {
+                                    <span class="package-type package-basic">Basic Package</span>
+                                }
+                            </td>
+                            <td>@ad.StartDate.ToString("dd/MM/yyyy")</td>
+                            <td>@ad.EndDate.ToString("dd/MM/yyyy")</td>
+                            <td>@ad.ApprovedByName</td>
+                            <td>
+                                <form asp-action="Reject" asp-route-id="@ad.Id" method="post" style="display:inline;">
+                                    <button type="submit" class="action-btn delete">
+                                        <i class="fas fa-ban"></i> Deactivate
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    <!-- Inactive Advertisements Tab -->
+    <div class="table-container" id="inactive-tab" style="display: none;">
+        @if (!Model.Advertisements.Any(a => !a.IsActive))
+        {
+            <div class="no-data">
+                No inactive advertisements found.
+            </div>
+        }
+        else
+        {
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Image</th>
+                        <th>Business</th>
+                        <th>Package Type</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var ad in Model.Advertisements.Where(a => !a.IsActive))
+                    {
+                        <tr>
+                            <td>@ad.Id</td>
+                            <td>
+                                <img src="~/uploads/advertisements/@ad.ImagePath" alt="Advertisement" class="ad-image" style="width: 100px; height: 60px;" />
+                            </td>
+                            <td>@(string.IsNullOrEmpty(ad.BusinessName) ? "N/A" : ad.BusinessName)</td>
+                            <td>
+                                @if (ad.PackageTypeID == 2)
+                                {
+                                    <span class="package-type package-premium">Premium Package</span>
+                                }
+                                else
+                                {
+                                    <span class="package-type package-basic">Basic Package</span>
+                                }
+                            </td>
+                            <td>@ad.StartDate.ToString("dd/MM/yyyy")</td>
+                            <td>@ad.EndDate.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <span class="status-rejected">Inactive</span>
+                            </td>
+                            <td>
+                                <form asp-action="Activate" asp-route-id="@ad.Id" method="post" style="display:inline;">
+                                    <button type="submit" class="action-btn approve">
+                                        <i class="fas fa-play"></i> Reactivate
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    <!-- Expired Advertisements Tab -->
+    <div class="table-container" id="expired-tab" style="display: none;">
+        @if (!Model.Advertisements.Any(a => a.IsApproved && a.IsActive && a.EndDate < DateTime.Now))
+        {
+            <div class="no-data">
+                No expired advertisements found.
+            </div>
+        }
+        else
+        {
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Image</th>
+                        <th>Business</th>
+                        <th>Package Type</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var ad in Model.Advertisements.Where(a => a.IsApproved && a.IsActive && a.EndDate < DateTime.Now))
+                    {
+                        <tr>
+                            <td>@ad.Id</td>
+                            <td>
+                                <img src="~/uploads/advertisements/@ad.ImagePath" alt="Advertisement" class="ad-image" style="width: 100px; height: 60px;" />
+                            </td>
+                            <td>@(string.IsNullOrEmpty(ad.BusinessName) ? "N/A" : ad.BusinessName)</td>
+                            <td>
+                                @if (ad.PackageTypeID == 2)
+                                {
+                                    <span class="package-type package-premium">Premium Package</span>
+                                }
+                                else
+                                {
+                                    <span class="package-type package-basic">Basic Package</span>
+                                }
+                            </td>
+                            <td>@ad.StartDate.ToString("dd/MM/yyyy")</td>
+                            <td>@ad.EndDate.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <span class="status-expired">Expired</span>
+                            </td>
+                            <td>
+                                <form asp-action="Renew" asp-route-id="@ad.Id" method="post" style="display:inline;">
+                                    <button type="submit" class="action-btn renew">
+                                        <i class="fas fa-sync"></i> Renew
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.table-container').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.ad-tab').forEach(tabBtn => {
+                tabBtn.classList.remove('active');
+            });
+            
+            // Show the selected tab
+            document.getElementById(tabId + '-tab').style.display = 'block';
+            
+            // Add active class to the clicked tab button
+            document.querySelectorAll('.ad-tab').forEach(tabBtn => {
+                if (tabBtn.textContent.trim().toLowerCase().startsWith(tabId.toLowerCase())) {
+                    tabBtn.classList.add('active');
+                }
+            });
+        }
+    </script>
+} 

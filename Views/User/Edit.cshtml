@@ -135,11 +135,11 @@
             <!-- Avatar -->
             <div class="col-md-4 text-center mb-4">
                 <div class="avatar-preview mb-3">
-                    <img src="@(!string.IsNullOrEmpty(Model.AvatarPath) ? Model.AvatarPath : "/image/default-avatar.png")" />
+                    <img id="avatarPreviewImg" src="@(!string.IsNullOrEmpty(Model.AvatarPath) ? Model.AvatarPath : "/image/default-avatar.png")" />
                 </div>
                 <div class="form-group">
                     <label asp-for="AvatarImage" class="form-label">Chọn ảnh đại diện</label>
-                    <input asp-for="AvatarImage" type="file" class="form-control" accept="image/*" />
+                    <input asp-for="AvatarImage" type="file" class="form-control" accept="image/*" onchange="previewAvatar(event)" />
                 </div>
             </div>
 
@@ -317,6 +317,16 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <partial name="_ValidationScriptsPartial" />
     <script>
+        function previewAvatar(event) {
+            const input = event.target;
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('avatarPreviewImg').src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
         @if (Model.RoleId != 3) // Only include skills JavaScript for non-business users
         {
             <text>

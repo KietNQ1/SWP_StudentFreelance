@@ -1,0 +1,52 @@
+﻿@model StudentFreelance.Models.CVInputModel
+@{
+    ViewData["Title"] = "Nhập thông tin CV";
+}
+
+<h2>Nhập thông tin để tạo CV</h2>
+
+<form asp-controller="CV" asp-action="Preview" method="post">
+    <input type="hidden" asp-for="Template" />
+
+    <div class="form-group">
+        <label>Họ tên</label>
+        <input asp-for="FullName" class="form-control" required />
+    </div>
+
+    <div class="form-group">
+        <label>Ngành nghề</label>
+        <input asp-for="Industry" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label>Vị trí ứng tuyển</label>
+        <input asp-for="JobTitle" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label>Trường Đại học</label>
+        <input asp-for="University" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label>GPA</label>
+        <input asp-for="GPA" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label>Kỹ năng</label>
+        <textarea asp-for="Skills" class="form-control"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label>Kinh nghiệm</label>
+        <textarea asp-for="Experience" class="form-control"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label>Mục tiêu nghề nghiệp</label>
+        <textarea asp-for="CareerGoal" class="form-control"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Tạo CV</button>
+</form>

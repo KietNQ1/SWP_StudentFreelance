@@ -6,6 +6,8 @@ using StudentFreelance.Data;
 using StudentFreelance.Models.Email;
 using StudentFreelance.Models.PayOS;
 using StudentFreelance.Services.Implementations;
+using StudentFreelance.Middleware;
+using System.IO;
 using StudentFreelance.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -68,6 +70,7 @@ builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IProjectSubmissi
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.ITransactionService, StudentFreelance.Services.Implementations.TransactionService>();
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.ISkillService, StudentFreelance.Services.Implementations.SkillService>();
 builder.Services.AddScoped<IBankAccountService, BankAccountService>();
+builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IAdvertisementService, StudentFreelance.Services.Implementations.AdvertisementService>();
 //builder.Services.AddScoped<IPayOSService, PayOSService>();
 builder.Services.AddHttpClient<IPayOSService, PayOSService>();
 builder.Services.Configure<PayOSConfig>(
@@ -78,6 +81,7 @@ builder.Services.Configure<PayOSConfig>(builder.Configuration.GetSection("PayOS"
 // 4. Add MVC support
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
@@ -101,12 +105,25 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+// Ensure upload directories exist
+var uploadsPath = Path.Combine(app.Environment.WebRootPath, "uploads");
+var advertisementsPath = Path.Combine(uploadsPath, "advertisements");
+if (!Directory.Exists(uploadsPath))
+{
+    Directory.CreateDirectory(uploadsPath);
+}
+if (!Directory.Exists(advertisementsPath))
+{
+    Directory.CreateDirectory(advertisementsPath);
+}
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseAuthentication(); // Identity: must come before UseAuthorization
+app.UseAuthentication();// Identity: must come before UseAuthorization
+app.UseMiddleware<AccountStatusMiddleware>(); 
 app.UseAuthorization();
 
 // 7. Configure default routing

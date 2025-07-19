@@ -22,15 +22,18 @@ namespace StudentFreelance.Controllers
         private readonly IApplicationService _applicationService;
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly INotificationService _notificationService;
 
         public ApplicationController(
             IApplicationService applicationService, 
             ApplicationDbContext context,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            INotificationService notificationService)
         {
             _applicationService = applicationService;
             _context = context;
             _userManager = userManager;
+            _notificationService = notificationService;
         }
 
         // GET: /Application/Apply/{projectId}
@@ -187,6 +190,22 @@ namespace StudentFreelance.Controllers
                 {
                     TempData["SuccessMessage"] = "Đơn ứng tuyển của bạn đã được gửi thành công!";
                     TempData["DebugInfo"] = $"Đã tạo đơn ứng tuyển với ID: {result.ApplicationID}";
+                    
+                    // Gửi thông báo cho doanh nghiệp
+                    var projectWithBusiness = await _context.Projects.Include(p => p.Business).FirstOrDefaultAsync(p => p.ProjectID == model.ProjectID);
+                    if (projectWithBusiness?.Business != null)
+                    {
+                        await _notificationService.SendNotificationToUserAsync(
+                            projectWithBusiness.Business.Id,
+                            "Có ứng viên mới cho dự án",
+                            $"Sinh viên {User.Identity.Name} vừa ứng tuyển vào dự án '{projectWithBusiness.Title}'.",
+                            1, // TypeID hệ thống
+                            projectWithBusiness.ProjectID,
+                            userId,
+                            true // chỉ notification, không gửi email
+                        );
+                    }
+
                     return RedirectToAction("MyApplications");
                 }
                 else
@@ -379,6 +398,23 @@ namespace StudentFreelance.Controllers
                     }
                     
                     TempData["SuccessMessage"] = "Thông tin đơn ứng tuyển đã được cập nhật thành công.";
+
+                    // Gửi thông báo cho sinh viên
+                    var student = await _context.Users.FindAsync(application.UserID);
+                    if (student != null)
+                    {
+                        string title = "Cập nhật trạng thái đơn ứng tuyển";
+                        string content = $"Trạng thái đơn ứng tuyển của bạn cho dự án '{application.Project.Title}' đã được cập nhật thành '{model.Status}'.";
+                        await _notificationService.SendNotificationToUserAsync(
+                            student.Id,
+                            title,
+                            content,
+                            1,
+                            application.ProjectID,
+                            application.Project.BusinessID,
+                            true // chỉ notification, không gửi email
+                        );
+                    }
                 }
             }
             catch (Exception ex) {

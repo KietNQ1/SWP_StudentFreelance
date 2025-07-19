@@ -13,18 +13,61 @@
 <section class="hero-slideshow">
     <!-- Slideshow Background -->
     <div class="slideshow-container">
-        <div class="slide active" style="background-image: url('@Url.Content("~/image/bg1.png")')"></div>
-        <div class="slide" style="background-image: url('@Url.Content("~/image/bg2.png")')"></div>
-        <div class="slide" style="background-image: url('@Url.Content("~/image/bg3.png")')"></div>
-        <div class="slide" style="background-image: url('@Url.Content("~/image/bg4.png")')"></div>
-        <div class="slide" style="background-image: url('@Url.Content("~/image/bg5.png")')"></div>
-        <div class="slide" style="background-image: url('@Url.Content("~/image/bg6.png")')"></div>
+        @{
+            var defaultImages = new List<string> { "bg1.png", "bg2.png", "bg3.png", "bg4.png", "bg5.png", "bg6.png" };
+            var advertisements = ViewBag.Advertisements as List<StudentFreelance.Models.Advertisement> ?? new List<StudentFreelance.Models.Advertisement>();
+            
+            // Display advertisements first
+            foreach (var ad in advertisements)
+            {
+                string imageUrl = $"~/uploads/advertisements/{ad.ImagePath}";
+                string linkUrl = $"/User/Profile/{ad.BusinessId}";
+                bool isFirst = ad == advertisements.FirstOrDefault();
+                
+                <div class="slide @(isFirst ? "active" : "")" style="background-image: url('@Url.Content(imageUrl)')">
+                    <a href="@linkUrl" class="ad-link" title="Xem thêm về @ad.Business.CompanyName"></a>
+                </div>
+            }
+            
+            // If there are fewer than 6 ads, display default images to fill up to 6 slides
+            if (advertisements.Count < 6)
+            {
+                for (int i = 0; i < Math.Min(6 - advertisements.Count, defaultImages.Count); i++)
+                {
+                    bool isFirst = advertisements.Count == 0 && i == 0;
+                    <div class="slide @(isFirst ? "active" : "")" style="background-image: url('@Url.Content($"~/image/{defaultImages[i]}")')"></div>
+                }
+            }
+        }
+        
+        <!-- Navigation arrows -->
+        <button class="slideshow-prev" aria-label="Previous slide">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="slideshow-next" aria-label="Next slide">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        
+        <!-- Slide indicators -->
+        <div class="slideshow-dots">
+            @{
+                int totalSlides = advertisements.Count;
+                if (totalSlides < 6)
+                {
+                    totalSlides += Math.Min(6 - advertisements.Count, defaultImages.Count);
+                }
+                
+                for (int i = 0; i < totalSlides; i++)
+                {
+                    <span class="slideshow-dot @(i == 0 ? "active" : "")" data-slide="@i"></span>
+                }
+            }
+        </div>
     </div>
 
-
     <!-- Nội dung -->
-    <div class="hero-container">
-        <div class="hero-content">
+    <div class="hero-container" style="pointer-events: none;">
+        <div class="hero-content" style="pointer-events: auto;">
             <h1 class="hero-title">Let top talent bring your ideas to life</h1>
 
             <div class="popular-searches">
@@ -349,76 +392,212 @@
 <div id="footer"></div>
 
 <script>
+        // Slideshow functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const slides = document.querySelectorAll('.slide');
+            const dots = document.querySelectorAll('.slideshow-dot');
+            const prevButton = document.querySelector('.slideshow-prev');
+            const nextButton = document.querySelector('.slideshow-next');
+            const slideshowContainer = document.querySelector('.slideshow-container');
+            let current = 0;
+            let timer;
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            // Initialize slideshow
+            function showSlide(index) {
+                if (!slides || slides.length === 0) return;
+                
+                // Ensure index is within bounds
+                if (index >= slides.length) index = 0;
+                if (index < 0) index = slides.length - 1;
+                
+                // Remove active class from all slides and dots
+                slides.forEach(slide => {
+                    slide.classList.remove('active');
+                });
+                
+                dots.forEach(dot => dot.classList.remove('active'));
+                
+                // Add active class to current slide and dot
+                slides[index].classList.add('active');
+                if (dots[index]) {
+                    dots[index].classList.add('active');
+                }
+                
+                // Update current index
+                current = index;
+                
+                console.log('Changed to slide', index);
+            }
+            
+            // Next slide
+            function nextSlide() {
+                if (!slides || slides.length === 0) return;
+                
+                let next = (current + 1) % slides.length;
+                showSlide(next);
+            }
+            
+            // Previous slide
+            function prevSlide() {
+                if (!slides || slides.length === 0) return;
+                
+                let prev = current - 1;
+                if (prev < 0) prev = slides.length - 1;
+                showSlide(prev);
+            }
+            
+            // Start timer for automatic slideshow
+            function startTimer() {
+                clearInterval(timer);
+                timer = setInterval(nextSlide, 5000);
+            }
+            
+            // Reset timer when user interacts with slideshow
+            function resetTimer() {
+                clearInterval(timer);
+                startTimer();
+            }
+            
+            // Touch support for mobile devices
+            if (slideshowContainer) {
+                slideshowContainer.addEventListener('touchstart', function(e) {
+                    touchStartX = e.changedTouches[0].screenX;
+                }, {passive: true});
+                
+                slideshowContainer.addEventListener('touchend', function(e) {
+                    touchEndX = e.changedTouches[0].screenX;
+                    handleSwipe();
+                }, {passive: true});
+            }
+            
+            function handleSwipe() {
+                let swipeDistance = touchEndX - touchStartX;
+                
+                if (Math.abs(swipeDistance) > 50) {
+                    if (swipeDistance > 0) {
+                        prevSlide();
+                    } else {
+                        nextSlide();
+                    }
+                    resetTimer();
+                }
+            }
+            
+            // Event listeners
+            if (prevButton) {
+                prevButton.addEventListener('click', function() {
+                    prevSlide();
+                    resetTimer();
+                });
+            }
+            
+            if (nextButton) {
+                nextButton.addEventListener('click', function() {
+                    nextSlide();
+                    resetTimer();
+                });
+            }
+            
+            if (dots && dots.length > 0) {
+                dots.forEach(function(dot, index) {
+                    dot.addEventListener('click', function() {
+                        showSlide(index);
+                        resetTimer();
+                    });
+                });
+            }
+            
+            // Pause slideshow on hover
+            if (slideshowContainer) {
+                slideshowContainer.addEventListener('mouseenter', function() {
+                    clearInterval(timer);
+                });
+                
+                slideshowContainer.addEventListener('mouseleave', function() {
+                    startTimer();
+                });
+            }
+            
+            // Initialize slideshow
+            if (slides && slides.length > 0) {
+                showSlide(0);
+                startTimer();
+                console.log('Slideshow initialized with', slides.length, 'slides');
+            }
+        });
+    </script>
     // Hiển thị chấm đỏ nếu có thông báo mới
     const hasNotification = true;
     const bell = document.getElementById("notificationBell");
     const dropdown = document.getElementById("notificationDropdown");
     const dot = document.getElementById("notificationDot");
 
-    if (hasNotification) {
+    if (hasNotification && bell && dropdown && dot) {
       dot.style.display = "block";
+      
+      bell.addEventListener("click", function (e) {
+        e.stopPropagation();
+        const isOpen = dropdown.style.display === "block";
+        dropdown.style.display = isOpen ? "none" : "block";
+
+        //  Ẩn dấu đỏ sau khi mở dropdown
+        if (!isOpen) {
+          dot.style.display = "none";
+        }
+      });
+
+      document.addEventListener("click", function () {
+        dropdown.style.display = "none";
+      });
     }
-
-    bell.addEventListener("click", function (e) {
-      e.stopPropagation();
-      const isOpen = dropdown.style.display === "block";
-      dropdown.style.display = isOpen ? "none" : "block";
-
-      //  Ẩn dấu đỏ sau khi mở dropdown
-      if (!isOpen) {
-        dot.style.display = "none";
-      }
-    });
-
-    document.addEventListener("click", function () {
-      dropdown.style.display = "none";
-    });
 
     // Dropdown Explore
     const exploreBtn = document.getElementById("exploreDropdownBtn");
     const exploreMenu = document.getElementById("exploreDropdownMenu");
-    let exploreTimeout;
+    
+    if (exploreBtn && exploreMenu) {
+      let exploreTimeout;
 
-    exploreBtn.addEventListener("mouseenter", () => {
-      clearTimeout(exploreTimeout);
-      exploreMenu.style.display = "block";
-    });
+      exploreBtn.addEventListener("mouseenter", () => {
+        clearTimeout(exploreTimeout);
+        exploreMenu.style.display = "block";
+      });
 
-    exploreBtn.addEventListener("mouseleave", () => {
-      exploreTimeout = setTimeout(() => {
+      exploreBtn.addEventListener("mouseleave", () => {
+        exploreTimeout = setTimeout(() => {
+          exploreMenu.style.display = "none";
+        }, 200);
+      });
+
+      exploreMenu.addEventListener("mouseenter", () => {
+        clearTimeout(exploreTimeout);
+        exploreMenu.style.display = "block";
+      });
+
+      exploreMenu.addEventListener("mouseleave", () => {
         exploreMenu.style.display = "none";
-      }, 200);
-    });
-
-    exploreMenu.addEventListener("mouseenter", () => {
-      clearTimeout(exploreTimeout);
-      exploreMenu.style.display = "block";
-    });
-
-    exploreMenu.addEventListener("mouseleave", () => {
-      exploreMenu.style.display = "none";
-    });
-</script>
-<script>
-    const slides = document.querySelectorAll('.slide');
-    let current = 0;
-
-    function nextSlide() {
-      slides[current].classList.remove('active');
-      current = (current + 1) % slides.length;
-      slides[current].classList.add('active');
+      });
     }
-
-    setInterval(nextSlide, 4000);
 </script>
-<script>
-    // Load header
-    fetch('header.html')
-      .then(res => res.text())
-      .then(data => document.getElementById('header').innerHTML = data);
 
-    // Load footer
-    fetch('footer.html')
-      .then(res => res.text())
-      .then(data => document.getElementById('footer').innerHTML = data);
+<script>
+    // Load header and footer if needed
+    const headerEl = document.getElementById('header');
+    const footerEl = document.getElementById('footer');
+    
+    if (headerEl) {
+      fetch('header.html')
+        .then(res => res.text())
+        .then(data => headerEl.innerHTML = data)
+        .catch(err => console.log('Error loading header:', err));
+    }
+    
+    if (footerEl) {
+      fetch('footer.html')
+        .then(res => res.text())
+        .then(data => footerEl.innerHTML = data)
+        .catch(err => console.log('Error loading footer:', err));
+    }
 </script>

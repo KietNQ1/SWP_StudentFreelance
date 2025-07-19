@@ -38,12 +38,37 @@
   "signature": "c42f89d9011add957d83e1bf6f5518383684613ec8087c9ad686b9dba649c11e"
 }
 
+<<<<<<< HEAD
+[7/12/2025 10:49:05 PM] PayOS Response:
+{
+  "code": "401",
+  "desc": "API Key or Client Key not found. Please contact https://casso.vn to access this API.",
+  "data": null
+}
+
+[7/12/2025 10:51:07 PM] PayOS Response:
+=======
 [12/07/2025 7:57:43 CH] PayOS Response:
+>>>>>>> dev
 {
   "code": "00",
   "desc": "success",
   "data": {
     "bin": "970422",
+<<<<<<< HEAD
+    "accountNumber": "VQRQADHCS0090",
+    "accountName": "TRAN THI NGOC VY",
+    "amount": 10000,
+    "description": "sadasdasd",
+    "orderCode": 1752335464814,
+    "currency": "VND",
+    "paymentLinkId": "00cdea9cf845450ab6d59def70644059",
+    "status": "PENDING",
+    "checkoutUrl": "https://pay.payos.vn/web/00cdea9cf845450ab6d59def70644059",
+    "qrCode": "00020101021238570010A000000727012700069704220113VQRQADHCS00900208QRIBFTTA53037045405100005802VN62130809sadasdasd630449B9"
+  },
+  "signature": "9ce4ff22d769c53072013bdefe4e10f7102910445f6558212d2d348f01c8299a"
+=======
     "accountNumber": "VQRQADHBI7661",
     "accountName": "TRAN THI NGOC VY",
     "amount": 10000,
@@ -76,6 +101,27 @@
     "qrCode": "00020101021238570010A000000727012700069704220113VQRQADHNU38850208QRIBFTTA530370454065000005802VN62100806nzkjhf6304DE79"
   },
   "signature": "ff026b6ef6c6975ef14d9f935b9b0dad14f25b69e0ca8fbeead37d3db216314b"
+>>>>>>> dev
+}
+
+[7/14/2025 2:21:32 AM] PayOS Response:
+{
+  "code": "00",
+  "desc": "success",
+  "data": {
+    "bin": "970422",
+    "accountNumber": "VQRQADHNZ0541",
+    "accountName": "TRAN THI NGOC VY",
+    "amount": 200000,
+    "description": "a",
+    "orderCode": 1752434492160,
+    "currency": "VND",
+    "paymentLinkId": "439e6be483dc404f9d9dd11b26204d33",
+    "status": "PENDING",
+    "checkoutUrl": "https://pay.payos.vn/web/439e6be483dc404f9d9dd11b26204d33",
+    "qrCode": "00020101021238570010A000000727012700069704220113VQRQADHNZ05410208QRIBFTTA530370454062000005802VN62050801a6304B7FE"
+  },
+  "signature": "075fa13e64c307efa3830dc76baf21a2565b5ad5f36f39d8422e5f1c6f6c691d"
 }
 
 [14/07/2025 12:59:11 CH] PayOS Response:
