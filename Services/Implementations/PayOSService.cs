@@ -119,12 +119,6 @@ public class PayOSService : IPayOSService
     }
 
 
-
-
-
-
-
-
     public async Task<bool> TransferToBankAsync(string bankCode, string accountNumber, decimal amount, string description)
     {
         var body = new

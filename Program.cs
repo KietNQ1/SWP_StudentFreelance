@@ -8,6 +8,7 @@ using StudentFreelance.Models.PayOS;
 using StudentFreelance.Services.Implementations;
 using StudentFreelance.Middleware;
 using System.IO;
+using StudentFreelance.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSignalR();              // Đăng ký SignalR
@@ -67,6 +68,7 @@ builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IApplicationServ
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.INotificationService, StudentFreelance.Services.Implementations.NotificationService>();
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IProjectSubmissionService, StudentFreelance.Services.Implementations.ProjectSubmissionService>();
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.ITransactionService, StudentFreelance.Services.Implementations.TransactionService>();
+builder.Services.AddScoped<StudentFreelance.Services.Interfaces.ISkillService, StudentFreelance.Services.Implementations.SkillService>();
 builder.Services.AddScoped<IBankAccountService, BankAccountService>();
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IAdvertisementService, StudentFreelance.Services.Implementations.AdvertisementService>();
 //builder.Services.AddScoped<IPayOSService, PayOSService>();
