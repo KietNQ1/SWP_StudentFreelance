@@ -1,7 +1,9 @@
 ﻿@{
     ViewData["Title"] = "Trang chủ";
 }
-
+@{
+    var topProjects = ViewBag.TopProjects as List<StudentFreelance.Models.Project>;
+}
 @section Styles {
     <link rel="stylesheet" href="~/css/home/home.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
@@ -53,118 +55,31 @@
     <div class="container">
         <div class="section-header">
             <h2>Top Projects</h2>
-            <a href="#" class="view-all-btn">Xem tất cả</a>
+            <a href="@Url.Action("Index", "Project")" class="view-all-btn">View all</a>
         </div>
 
         <div class="projects-grid">
-            <div class="project-card">
-                <div class="project-image">
-                    <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="VinFast Logo">
-                </div>
-                <div class="project-content">
-                    <h3 class="project-title">Quality Engineering Executive</h3>
-                    <p class="company-name">Công Ty Cổ Phần Sản Xuất VinFast</p>
-                    <div class="project-meta">
-                        <span class="salary">Thương lượng</span>
-                        <span class="location">Hải Dương, Hải Phòng</span>
+            @foreach (var project in topProjects)
+            {
+                <a asp-controller="Project" asp-action="Details" asp-route-id="@project.ProjectID" class="text-decoration-none text-dark">
+                    <div class="project-card">
+                        <div class="project-image">
+                            <img src="~/image/project-default.jpg" alt="@project.Business?.FullName" />
+                        </div>
+                        <div class="project-content">
+                            <h3 class="project-title">@project.Title</h3>
+                            <p class="company-name">@project.Business?.FullName</p>
+                            <div class="project-meta">
+                                <span class="salary">@($"{project.Budget:N0} đ")</span>
+                                <span class="location">
+                                    @(project.IsRemoteWork ? "Remote" : project.Address?.ProvinceName ?? "Unidentified location")
+                                </span>
+                            </div>
+                            <div class="project-status hot">Hot</div>
+                        </div>
                     </div>
-                    <div class="project-status hot">Hot</div>
-                </div>
-            </div>
-
-            <div class="project-card">
-                <div class="project-image">
-                    <img src="https://images.unsplash.com/photo-1611224923853-80b023f02d71?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Nexon Logo">
-                </div>
-                <div class="project-content">
-                    <h3 class="project-title">UA Media Creator (Contract)</h3>
-                    <p class="company-name">Nexon Networks Vina Co. Ltd.</p>
-                    <div class="project-meta">
-                        <span class="salary">Thương lượng</span>
-                        <span class="location">Hồ Chí Minh</span>
-                    </div>
-                    <div class="project-status hot">Hot</div>
-                </div>
-            </div>
-
-            <div class="project-card">
-                <div class="project-image">
-                    <img src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="IRCA Logo">
-                </div>
-                <div class="project-content">
-                    <h3 class="project-title">Regulatory Specialist</h3>
-                    <p class="company-name">Doha Asia Company Limited</p>
-                    <div class="project-meta">
-                        <span class="salary">Thương lượng</span>
-                        <span class="location">Bà Rịa - Vũng Tàu</span>
-                    </div>
-                    <div class="project-status hot">Hot</div>
-                </div>
-            </div>
-
-            <div class="project-card">
-                <div class="project-image">
-                    <img src="https://images.unsplash.com/photo-1559136555-9303baea8ebd?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="V-Green Logo">
-                </div>
-                <div class="project-content">
-                    <h3 class="project-title">Charging System Analyst</h3>
-                    <p class="company-name">Công Ty Phát Triển Trạm Sạc V-Green</p>
-                    <div class="project-meta">
-                        <span class="salary">Thương lượng</span>
-                        <span class="location">Hà Nội</span>
-                    </div>
-                    <div class="project-status hot">Hot</div>
-                </div>
-            </div>
-
-            <div class="project-card">
-                <div class="project-image">
-                    <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="VinFast Logo">
-                </div>
-                <div class="project-content">
-                    <h3 class="project-title">Process Engineer (2024)</h3>
-                    <p class="company-name">Công Ty Cổ Phần Sản Xuất VinFast</p>
-                    <div class="project-meta">
-                        <span class="salary">Thương lượng</span>
-                        <span class="location">Hải Dương, Hải Phòng</span>
-                    </div>
-                    <div class="project-status hot">Hot</div>
-                </div>
-            </div>
-
-            <div class="project-card">
-                <div class="project-image">
-                    <img src="https://images.unsplash.com/photo-1551434678-e076c223a692?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Eurowindow Logo">
-                </div>
-                <div class="project-content">
-                    <h3 class="project-title">Chuyên Viên Phát Triển Thị Trường</h3>
-                    <p class="company-name">Eurowindow Holding</p>
-                    <div class="project-meta">
-                        <span class="salary">Thương lượng</span>
-                        <span class="location">Hà Nội</span>
-                    </div>
-                    <div class="project-status hot">Hot</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="pagination">
-            <button class="pagination-btn prev" disabled>
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <div class="pagination-dots">
-                <span class="dot active"></span>
-                <span class="dot"></span>
-                <span class="dot"></span>
-                <span class="dot"></span>
-                <span class="dot"></span>
-                <span class="dot"></span>
-                <span class="dot"></span>
-                <span class="dot"></span>
-            </div>
-            <button class="pagination-btn next">
-                <i class="fas fa-chevron-right"></i>
-            </button>
+                </a>
+            }
         </div>
     </div>
 </section>
@@ -363,7 +278,8 @@
     <div class="container">
         <div class="enterprise-content">
             <div class="enterprise-text">
-                <div class="enterprise-tag">Enterprise Suite</div>
+                <button class="btn btn-secondary">Enterprise Suite</button>
+                @* <button  class="enterprise-tag"></button> *@
                 <h2 class="enterprise-title">
                     This is how<br />
                     <span class="highlight">good companies</span><br />

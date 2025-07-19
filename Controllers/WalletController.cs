@@ -206,28 +206,6 @@ public class WalletController : Controller
        
     }
 
-    //[HttpPost]
-    //[ValidateAntiForgeryToken]
-    //public async Task<IActionResult> CreateDeposit(DepositViewModel model)
-    //{
-    //    if (!ModelState.IsValid) return View("Deposit", model);
-
-    //    var user = await _userManager.GetUserAsync(User);
-    //    // orderCode phải là số nguyên duy nhất, dùng timestamp kiểu long
-    //    long orderCode = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-
-    //    var checkoutUrl = await _payOSService.CreatePaymentLink(
-    //        model.Amount,
-    //        model.Description ?? $"Deposit {model.Amount:C}",
-    //        orderCode
-    //    );
-
-    //    // Optionally: lưu transaction với trạng thái "Pending" trước
-    //    await _transactionService.CreatePendingDeposit(user.Id, model.Amount, model.Description, orderCode);
-
-    //    return Redirect(checkoutUrl);
-    //}
-
 
     //mới thêm 
     [HttpPost]
@@ -385,75 +363,7 @@ public class WalletController : Controller
         return View("PaymentResult", viewModel);
     }
 
-    //[HttpGet]
-    //public async Task<IActionResult> VnPayCallback()
-    //{
-    //    var config = _configuration.GetSection("VnPay");
-    //    var vnPay = new VnPayLibrary();
-
-    //    // ✅ B1: Lấy tất cả các tham số vnp_ từ VNPay gửi về
-    //    var responseParams = Request.Query;
-    //    foreach (var key in responseParams.Keys)
-    //    {
-    //        if (key.StartsWith("vnp_"))
-    //            vnPay.AddResponseData(key, responseParams[key]);
-    //    }
-
-    //    // ✅ B2: Kiểm tra chữ ký hash có hợp lệ không
-    //    var isValid = vnPay.ValidateSignature(config["HashSecret"]);
-    //    if (!isValid)
-    //    {
-    //        return Content("❌ Sai chữ ký hash – giao dịch bị nghi ngờ giả mạo.");
-    //    }
-
-    //    // ✅ B3: Trích xuất các thông tin từ VNPay callback
-    //    var orderCode = vnPay.GetResponseData("vnp_TxnRef");
-    //    var responseCode = vnPay.GetResponseData("vnp_ResponseCode");
-
-    //    // ✅ B4: Tìm transaction theo mã đơn hàng
-    //    var transaction = await _context.Transactions.FirstOrDefaultAsync(t => t.OrderCode == orderCode);
-    //    if (transaction == null)
-    //    {
-    //        return Content("❌ Không tìm thấy giao dịch trong hệ thống.");
-    //    }
-
-    //    // ✅ B5: Xác định trạng thái dựa theo mã responseCode
-    //    string statusName = responseCode switch
-    //    {
-    //        "00" => "Thành công",
-    //        "24" => "Đã hủy",         // Người dùng hủy
-    //        _ => "Thất bại"          // Các mã lỗi khác
-    //    };
-
-    //    var status = await _context.TransactionStatuses.FirstOrDefaultAsync(s => s.StatusName == statusName);
-    //    if (status == null)
-    //    {
-    //        return Content($"❌ Không tìm thấy trạng thái '{statusName}' trong database.");
-    //    }
-
-    //    // ✅ B6: Cập nhật trạng thái cho giao dịch
-    //    transaction.StatusID = status.StatusID;
-    //    await _context.SaveChangesAsync();
-
-    //    // ✅ B7: Nếu thành công → cộng tiền vào ví
-    //    if (statusName == "Thành công")
-    //    {
-    //        var user = await _userManager.FindByIdAsync(transaction.UserID.ToString());
-    //        user.WalletBalance += transaction.Amount;
-    //        await _userManager.UpdateAsync(user);
-    //    }
-
-    //    // ✅ B8: Trả kết quả ra view (dựa trên status)
-    //    ViewBag.Message = statusName switch
-    //    {
-    //        "Thành công" => "✅ Giao dịch thành công!",
-    //        "Đã hủy" => "⚠️ Giao dịch đã bị hủy.",
-    //        _ => "❌ Giao dịch thất bại. Vui lòng thử lại sau."
-    //    };
-
-    //    return View("PaymentResult"); // Tạo view PaymentResult.cshtml để hiển thị kết quả
-    //}
-
+    
 
 
     // GET: /Wallet/Withdraw
@@ -546,14 +456,6 @@ public class WalletController : Controller
         return View(transaction);
     }
 
-    // GET: /Wallet/DepositSuccess
-    //public IActionResult DepositSuccess(string orderCode)
-    //{
-    //    // TODO: Có thể kiểm tra trạng thái giao dịch với PayOS hoặc cập nhật trạng thái giao dịch trong DB nếu cần
-    //    ViewBag.OrderCode = orderCode;
-    //    ViewBag.Message = "Nạp tiền thành công!";
-    //    return View();
-    //}
 
     // GET: /Wallet/DepositSuccess
     public async Task<IActionResult> DepositSuccess(string orderCode)
