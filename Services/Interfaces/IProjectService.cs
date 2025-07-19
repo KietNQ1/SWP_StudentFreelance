@@ -24,5 +24,14 @@ namespace StudentFreelance.Services.Interfaces
         
         // Add funds to project from business wallet
         Task<bool> AddFundsToProjectFromWalletAsync(int projectId, int businessId, decimal amount);
+
+        // Check if user has enough money in wallet
+        Task<bool> CheckUserHasEnoughFundsAsync(int userId, decimal amount);
+
+        // Create project with wallet transaction
+        Task<(bool Success, Project Project, string ErrorMessage)> CreateProjectWithTransactionAsync(Project project);
+
+        // Update project with wallet transaction (if budget increased)
+        Task<(bool Success, Project Project, string ErrorMessage)> UpdateProjectWithTransactionAsync(Project project, decimal originalBudget);
     }
 } 

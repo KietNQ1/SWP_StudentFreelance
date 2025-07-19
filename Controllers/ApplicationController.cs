@@ -897,7 +897,7 @@ public async Task<IActionResult> UpdateStudentApplication(UpdateStudentApplicati
         TempData["ErrorMessage"] = $"Đã xảy ra lỗi khi cập nhật đơn ứng tuyển: {ex.Message}";
         return View(model);
     }
-}
+        }
         
         // Helper method to format time ago
         private string GetTimeAgo(DateTime dateTime)

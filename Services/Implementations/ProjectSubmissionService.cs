@@ -223,13 +223,23 @@ namespace StudentFreelance.Services.Implementations
             application.IsPaid = true;
             _context.StudentApplications.Update(application);
 
+            // Cập nhật số dư ví của sinh viên
+            if (application.User != null)
+            {
+                application.User.WalletBalance += application.Salary;
+                _context.Users.Update(application.User);
+            }
+
             // Tạo giao dịch thanh toán cho sinh viên
+            // Lấy loại giao dịch "Thanh toán cho sinh viên"
+            var paymentTypeId = _context.TransactionTypes.FirstOrDefault(t => t.TypeName == "Thanh toán cho sinh viên")?.TypeID ?? 7;
+            
             var transaction = new Transaction
             {
                 UserID = application.UserID,
                 ProjectID = application.ProjectID,
                 Amount = application.Salary,
-                TypeID = 1, // Payment
+                TypeID = paymentTypeId, // Thanh toán cho sinh viên
                 TransactionDate = DateTime.Now,
                 Description = $"Thanh toán cho dự án '{application.Project.Title}'",
                 StatusID = 1, // Completed

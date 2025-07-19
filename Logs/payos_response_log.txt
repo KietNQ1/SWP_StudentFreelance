@@ -124,3 +124,23 @@
   "signature": "075fa13e64c307efa3830dc76baf21a2565b5ad5f36f39d8422e5f1c6f6c691d"
 }
 
+[7/19/2025 12:11:32 PM] PayOS Response:
+{
+  "code": "00",
+  "desc": "success",
+  "data": {
+    "bin": "970422",
+    "accountNumber": "VQRQADJTQ3631",
+    "accountName": "TRAN THI NGOC VY",
+    "amount": 200000,
+    "description": "200000",
+    "orderCode": 1752901892370,
+    "currency": "VND",
+    "paymentLinkId": "1c7eaa9b53964d6f97ec7d6b0dec34fe",
+    "status": "PENDING",
+    "checkoutUrl": "https://pay.payos.vn/web/1c7eaa9b53964d6f97ec7d6b0dec34fe",
+    "qrCode": "00020101021238570010A000000727012700069704220113VQRQADJTQ36310208QRIBFTTA530370454062000005802VN62100806200000630483E2"
+  },
+  "signature": "9b992bb5f110f86120e5fd00ec8cff67d2fca88cc4602d64da9272576efa9b5d"
+}
+

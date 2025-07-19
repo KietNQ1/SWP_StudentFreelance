@@ -60,8 +60,8 @@
                                 <tr class="transaction-row" onclick="location.href='@Url.Action("TransactionDetail", "Wallet", new { id = transaction.TransactionID })'">
                                     <td>@transaction.TransactionDate.ToString("yyyy-MM-dd HH:mm")</td>
                                     <td>@transaction.Type.TypeName</td>
-                                    <td class="@(transaction.TypeID == 1 ? "text-success" : "text-danger")">
-                                        @(transaction.TypeID == 1 ? "+" : "-")@transaction.Amount.ToString("C")
+                                    <td class="@(transaction.TypeID == 1 || transaction.Type.TypeName == "Thanh toán cho sinh viên" ? "text-success" : "text-danger")">
+                                        @(transaction.TypeID == 1 || transaction.Type.TypeName == "Thanh toán cho sinh viên" ? "+" : "-")@transaction.Amount.ToString("C")
                                     </td>
                                     <td>@transaction.Description</td>
                                     <td>

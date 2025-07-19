@@ -258,70 +258,18 @@ namespace StudentFreelance.Controllers
                     };
 
                     Project createdProject;
-                    try
+                    
+                    // Check if user has enough money and create project with transaction
+                    var result = await _projectService.CreateProjectWithTransactionAsync(project);
+                    
+                    if (!result.Success)
                     {
-                        createdProject = await _projectService.CreateProjectAsync(project);
-                    }
-                    catch (DbUpdateException dbEx)
-                    {
-                        if (dbEx.InnerException != null)
-                        {
-                            string innerMessage = dbEx.InnerException.Message.ToLower();
-                            if (innerMessage.Contains("foreign key"))
-                            {
-                                if (innerMessage.Contains("categoryid"))
-                                {
-                                    ModelState.AddModelError("CategoryID", "Danh mục đã chọn không tồn tại trong cơ sở dữ liệu.");
-                                }
-                                else if (innerMessage.Contains("statusid"))
-                                {
-                                    ModelState.AddModelError("StatusID", "Trạng thái đã chọn không tồn tại trong cơ sở dữ liệu.");
-                                }
-                                else if (innerMessage.Contains("typeid"))
-                                {
-                                    ModelState.AddModelError("TypeID", "Loại dự án đã chọn không tồn tại trong cơ sở dữ liệu.");
-                                }
-                                else if (innerMessage.Contains("businessid"))
-                                {
-                                    ModelState.AddModelError("BusinessID", "Người dùng không tồn tại trong cơ sở dữ liệu.");
-                                }
-                                else if (innerMessage.Contains("addressid"))
-                                {
-                                    ModelState.AddModelError("AddressID", "Địa chỉ đã chọn không tồn tại trong cơ sở dữ liệu.");
-                                }
-                                else
-                                {
-                                    ModelState.AddModelError("", "Lỗi khóa ngoại: Một trong các giá trị tham chiếu không tồn tại trong cơ sở dữ liệu.");
-                                }
-                            }
-                            else if (innerMessage.Contains("unique") || innerMessage.Contains("duplicate"))
-                            {
-                                ModelState.AddModelError("", "Lỗi dữ liệu trùng lặp: Dự án với thông tin tương tự đã tồn tại.");
-                            }
-                            else if (innerMessage.Contains("null") && innerMessage.Contains("allow"))
-                            {
-                                ModelState.AddModelError("", "Lỗi dữ liệu: Một số thông tin bắt buộc bị thiếu.");
-                            }
-                            else
-                            {
-                                ModelState.AddModelError("", "Đã có lỗi khi tạo dự án. Vui lòng thử lại.");
-                            }
-                        }
-                        else
-                        {
-                            ModelState.AddModelError("", "Đã có lỗi khi tạo dự án. Vui lòng thử lại.");
-                        }
-                        
-                        // Re-populate form data and return to view
+                        ModelState.AddModelError("", result.ErrorMessage);
                         await PopulateFormDataAsync(viewModel);
                         return View(viewModel);
                     }
-                    catch (Exception innerEx)
-                    {
-                        ModelState.AddModelError("", "Đã có lỗi khi tạo dự án. Vui lòng thử lại.");
-                        await PopulateFormDataAsync(viewModel);
-                        return View(viewModel);
-                    }
+                    
+                    createdProject = result.Project;
 
                     // Add skills
                     if (viewModel.SelectedSkills != null && viewModel.SelectedSkills.Any())
@@ -566,21 +514,56 @@ namespace StudentFreelance.Controllers
                         return Forbid();
                     }
 
-                    // Update project properties
-                    project.CategoryID = viewModel.CategoryID;
-                    project.Title = viewModel.Title;
-                    project.Description = viewModel.Description;
-                    project.Budget = viewModel.Budget;
-                    project.Deadline = viewModel.Deadline;
-                    project.StatusID = viewModel.StatusID;
-                    project.IsHighlighted = viewModel.IsHighlighted;
-                    project.TypeID = viewModel.TypeID;
-                    project.AddressID = viewModel.AddressID;
-                    project.IsRemoteWork = viewModel.IsRemoteWork;
-                    project.StartDate = viewModel.StartDate;
-                    project.EndDate = viewModel.EndDate;
-
-                    await _projectService.UpdateProjectAsync(project);
+                    // Store the original budget to compare
+                    decimal originalBudget = project.Budget;
+                    
+                    // Create new project object with updated values
+                    var updatedProject = new Project
+                    {
+                        ProjectID = id,
+                        BusinessID = project.BusinessID,
+                        CategoryID = viewModel.CategoryID,
+                        Title = viewModel.Title,
+                        Description = viewModel.Description,
+                        Budget = viewModel.Budget,
+                        Deadline = viewModel.Deadline,
+                        StatusID = viewModel.StatusID,
+                        IsHighlighted = viewModel.IsHighlighted,
+                        TypeID = viewModel.TypeID,
+                        AddressID = viewModel.AddressID,
+                        IsRemoteWork = viewModel.IsRemoteWork,
+                        StartDate = viewModel.StartDate,
+                        EndDate = viewModel.EndDate,
+                        CreatedAt = project.CreatedAt,
+                        IsActive = project.IsActive
+                    };
+                    
+                    // Update project with transaction if budget changed
+                    var result = await _projectService.UpdateProjectWithTransactionAsync(updatedProject, originalBudget);
+                    
+                    if (!result.Success)
+                    {
+                        ModelState.AddModelError("", result.ErrorMessage);
+                        
+                        // Re-populate form data
+                        viewModel.Categories = await _context.Categories.Where(c => c.IsActive).ToListAsync();
+                        viewModel.ProjectStatuses = await _context.ProjectStatuses.Where(s => s.IsActive).ToListAsync();
+                        viewModel.ProjectTypes = await _context.ProjectTypes.Where(t => t.IsActive).ToListAsync();
+                        viewModel.Skills = await _context.Skills.Where(s => s.IsActive).ToListAsync();
+                        ViewBag.ImportanceLevels = await _context.ImportanceLevels.Where(il => il.IsActive).ToListAsync();
+                        viewModel.ExistingAttachments = await _context.ProjectAttachments
+                            .Where(pa => pa.ProjectID == id)
+                            .ToListAsync();
+                        viewModel.ExistingSkills = await _context.ProjectSkillsRequired
+                            .Include(ps => ps.Skill)
+                            .Where(ps => ps.ProjectID == id)
+                            .ToListAsync();
+                        
+                        return View(viewModel);
+                    }
+                    
+                    // Get the updated project
+                    project = result.Project;
 
                     // Update skills
                     var existingSkills = await _context.ProjectSkillsRequired

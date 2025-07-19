@@ -349,7 +349,7 @@ namespace StudentFreelance.Services.Implementations
                     UserID = businessId,
                     Amount = amount,
                     Description = $"Bổ sung ngân sách cho dự án: {project.Title}",
-                    TransactionDate = DateTime.UtcNow,
+                    TransactionDate = DateTime.Now,
                     TypeID = paymentTypeId,
                     StatusID = completedStatusId,
                     ProjectID = projectId,
@@ -366,6 +366,139 @@ namespace StudentFreelance.Services.Implementations
             {
                 await transaction.RollbackAsync();
                 return false;
+            }
+        }
+
+        public async Task<bool> CheckUserHasEnoughFundsAsync(int userId, decimal amount)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            return user != null && user.WalletBalance >= amount;
+        }
+
+        public async Task<(bool Success, Project Project, string ErrorMessage)> CreateProjectWithTransactionAsync(Project project)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Check if user has enough funds
+                var user = await _context.Users.FindAsync(project.BusinessID);
+                if (user == null)
+                    return (false, null, "Không tìm thấy thông tin người dùng");
+                    
+                if (user.WalletBalance < project.Budget)
+                    return (false, null, "Số dư ví không đủ để tạo dự án");
+                    
+                // Create project
+                project.CreatedAt = DateTime.UtcNow;
+                project.UpdatedAt = DateTime.UtcNow;
+                project.IsActive = true;
+                
+                _context.Projects.Add(project);
+                await _context.SaveChangesAsync();
+                
+                // Create transaction
+                var paymentTypeId = 3; // ID của loại giao dịch "Thanh toán"
+                var completedStatusId = _context.TransactionStatuses.FirstOrDefault(s => s.StatusName == "Completed")?.StatusID ?? 1;
+                
+                var txn = new Transaction
+                {
+                    UserID = project.BusinessID,
+                    ProjectID = project.ProjectID,
+                    Amount = project.Budget,
+                    Description = $"Thanh toán cho dự án: {project.Title}",
+                    TransactionDate = DateTime.Now,
+                    TypeID = paymentTypeId,
+                    StatusID = completedStatusId,
+                    IsActive = true
+                };
+
+                // Subtract from user wallet
+                user.WalletBalance -= project.Budget;
+                _context.Users.Update(user);
+                
+                _context.Transactions.Add(txn);
+                await _context.SaveChangesAsync();
+                
+                await transaction.CommitAsync();
+                return (true, project, null);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return (false, null, $"Lỗi khi tạo dự án: {ex.Message}");
+            }
+        }
+
+        public async Task<(bool Success, Project Project, string ErrorMessage)> UpdateProjectWithTransactionAsync(Project project, decimal originalBudget)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Find the existing project
+                var existingProject = await _context.Projects.FindAsync(project.ProjectID);
+                if (existingProject == null)
+                    return (false, null, "Không tìm thấy dự án");
+                    
+                // Calculate budget difference
+                decimal budgetDifference = project.Budget - originalBudget;
+                
+                // If budget is increased, check wallet balance
+                if (budgetDifference > 0)
+                {
+                    var user = await _context.Users.FindAsync(project.BusinessID);
+                    if (user == null)
+                        return (false, null, "Không tìm thấy thông tin người dùng");
+                        
+                    if (user.WalletBalance < budgetDifference)
+                        return (false, null, "Số dư ví không đủ để tăng ngân sách dự án");
+                        
+                    // Deduct from wallet
+                    user.WalletBalance -= budgetDifference;
+                    _context.Users.Update(user);
+                    
+                    // Create transaction for the additional budget
+                    var paymentTypeId = 3; // ID của loại giao dịch "Thanh toán"
+                    var completedStatusId = _context.TransactionStatuses.FirstOrDefault(s => s.StatusName == "Completed")?.StatusID ?? 1;
+                    
+                    var txn = new Transaction
+                    {
+                        UserID = project.BusinessID,
+                        ProjectID = project.ProjectID,
+                        Amount = budgetDifference,
+                                            Description = $"Bổ sung ngân sách cho dự án: {project.Title}",
+                    TransactionDate = DateTime.Now,
+                    TypeID = paymentTypeId,
+                        StatusID = completedStatusId,
+                        IsActive = true
+                    };
+                    
+                    _context.Transactions.Add(txn);
+                }
+                
+                // Update project properties
+                existingProject.Title = project.Title;
+                existingProject.Description = project.Description;
+                existingProject.Budget = project.Budget;
+                existingProject.Deadline = project.Deadline;
+                existingProject.StatusID = project.StatusID;
+                existingProject.IsHighlighted = project.IsHighlighted;
+                existingProject.TypeID = project.TypeID;
+                existingProject.AddressID = project.AddressID;
+                existingProject.IsRemoteWork = project.IsRemoteWork;
+                existingProject.CategoryID = project.CategoryID;
+                existingProject.StartDate = project.StartDate;
+                existingProject.EndDate = project.EndDate;
+                existingProject.UpdatedAt = DateTime.UtcNow;
+                
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                
+                return (true, existingProject, null);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return (false, null, $"Lỗi khi cập nhật dự án: {ex.Message}");
             }
         }
     }
