@@ -7,8 +7,17 @@ using StudentFreelance.Models.Email;
 using StudentFreelance.Models.PayOS;
 using StudentFreelance.Services.Implementations;
 using StudentFreelance.Middleware;
+using DinkToPdf;
+using DinkToPdf.Contracts;
 
 var builder = WebApplication.CreateBuilder(args);
+// Load native library libwkhtmltox.dll
+var context = new CustomAssemblyLoadContext();
+context.LoadUnmanagedLibrary(Path.Combine(Directory.GetCurrentDirectory(), "DinkToPdfLib", "libwkhtmltox.dll"));
+
+// Đăng ký dịch vụ DinkToPdf
+builder.Services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
+
 builder.Services.AddSignalR();              // Đăng ký SignalR
 // 1. Configure Entity Framework Core (SQL Server)
 builder.Services.AddDbContext<ApplicationDbContext>(options =>

@@ -1,140 +1,116 @@
-﻿@model StudentFreelance.Models.ApplicationUser
+﻿@model StudentFreelance.Models.CVInputModel
 @{
-    ViewData["Title"] = "Edit User";
     Layout = null;
-    var currentRole = ViewBag.CurrentRole as string;
-    var allRoles = ViewBag.AllRoles as List<string> ?? new List<string>();
 }
-
+<!DOCTYPE html>
+<html lang="vi">
 <head>
-    <link href="~/css/Editst.css" rel="stylesheet" />
+    <meta charset="UTF-8">
+    <title>CV @Model.FullName</title>
+    <link rel="stylesheet" href="~/css/cv1.css" />
 </head>
 <body>
-<div class="container">
-    <div class="form-card">
-        <div class="card-header">
-            <h3>
-                <i class="fas fa-user-edit"></i>
-                Edit User
-            </h3>
+    <form method="post" asp-action="ExportToPDF">
+        <div class="container">
+            <!-- Cột trái -->
+            <div class="left-column">
+                <img src="https://wallpapercave.com/wp/wp7171957.jpg" alt="@Model.FullName" class="profile-img">
+
+                <div class="section name">
+                    <h2 contenteditable="true" class="editable-block" data-field="FullName">@Model.FullName.ToUpper()</h2>
+                    <input type="hidden" name="FullName" />
+
+                    <div class="editable-block" contenteditable="true" data-field="CareerGoal">
+                        @Model.CareerGoal
+                    </div>
+                    <input type="hidden" name="CareerGoal" />
+                </div>
+
+                <div class="section">
+                    <h3>Kinh nghiệm</h3>
+                    <div class="editable-block" contenteditable="true" data-field="Experience">
+                        @Model.Experience
+                    </div>
+                    <input type="hidden" name="Experience" />
+                </div>
+
+                <div class="section">
+                    <h3>Học vấn</h3>
+                    <div>
+                        <strong contenteditable="true" class="editable-block" data-field="University">
+                            @Model.University
+                        </strong><br />
+                        GPA:
+                        <span contenteditable="true" class="editable-block" data-field="GPA">
+                            @Model.GPA
+                        </span>
+                        <input type="hidden" name="University" />
+                        <input type="hidden" name="GPA" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cột phải -->
+            <div class="right-column">
+                <div class="section">
+                    <h3>Thông tin</h3>
+                    <p>
+                        <strong>Ngành:</strong>
+                        <span contenteditable="true" class="editable-block" data-field="Industry">
+                            @Model.Industry
+                        </span>
+                        <input type="hidden" name="Industry" />
+                    </p>
+                    <p>
+                        <strong>Vị trí:</strong>
+                        <span contenteditable="true" class="editable-block" data-field="JobTitle">
+                            @Model.JobTitle
+                        </span>
+                        <input type="hidden" name="JobTitle" />
+                    </p>
+                </div>
+
+                <div class="section brown">
+                    <h3>Kỹ năng chuyên môn</h3>
+                    <div class="editable-block" contenteditable="true" data-field="Skills">
+                        @Model.Skills
+                    </div>
+                    <input type="hidden" name="Skills" />
+                </div>
+
+                <div class="section brown">
+                    <h3>Kỹ năng mềm</h3>
+                    <div class="editable-block" contenteditable="true" data-field="SoftSkills">
+                        @Model.SoftSkills
+                    </div>
+                    <input type="hidden" name="SoftSkills" />
+                </div>
+
+                <div class="section brown">
+                    <h3>Dự án</h3>
+                    <div class="editable-block" contenteditable="true" data-field="ProjectsText">
+                        @string.Join("\n", Model.ProjectsRaw ?? new List<string>())
+                    </div>
+                    <input type="hidden" name="ProjectsText" />
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-            <form asp-action="Edit" method="post">
-                <input type="hidden" asp-for="Id" />
 
-                <div class="form-group">
-                    <label class="form-label" asp-for="FullName">
-                        <i class="fas fa-user"></i> Full Name
-                    </label>
-                    <div style="position: relative;">
-                        <input asp-for="FullName" class="form-control" placeholder="Enter full name" />
-                        <i class="fas fa-user input-icon"></i>
-                    </div>
-                    <span asp-validation-for="FullName" class="validation-error"></span>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" asp-for="Email">
-                        <i class="fas fa-envelope"></i> Email
-                    </label>
-                    <div style="position: relative;">
-                        <input asp-for="Email" class="form-control" placeholder="Enter email" />
-                        <i class="fas fa-envelope input-icon"></i>
-                    </div>
-                    <span asp-validation-for="Email" class="validation-error"></span>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" asp-for="PhoneNumber">
-                        <i class="fas fa-phone"></i> Phone Number
-                    </label>
-                    <div style="position: relative;">
-                        <input asp-for="PhoneNumber" class="form-control" placeholder="Enter phone number" />
-                        <i class="fas fa-phone input-icon"></i>
-                    </div>
-                    <span asp-validation-for="PhoneNumber" class="validation-error"></span>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="selectedRole">
-                        <i class="fas fa-user-tag"></i> Role
-                    </label>
-                    <select name="selectedRole" id="selectedRole" class="form-select">
-                        @foreach (var role in allRoles)
-                        {
-                            <option value="@role" selected="@(role == currentRole)">
-                                @role
-                            </option>
-                        }
-                    </select>
-                </div>
-
-                <div class="button-group">
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-save"></i> Save Changes
-                    </button>
-                    <a asp-action="Index" class="btn btn-outline-secondary">
-                        <i class="fas fa-times"></i> Cancel
-                    </a>
-                </div>
-            </form>
+        <div class="submit-btn">
+            <button type="submit">Xuất PDF</button>
         </div>
-    </div>
-</div>
-</body>
-@section Scripts {
+    </form>
+
     <script>
-         document.getElementById('editUserForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const submitBtn = this.querySelector('.btn-success');
-            submitBtn.classList.add('loading');
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-
-            // Simulate form submission
-            setTimeout(() => {
-                submitBtn.classList.remove('loading');
-                submitBtn.innerHTML = '<i class="fas fa-check"></i> Saved!';
-                submitBtn.style.background = 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)';
-
-                setTimeout(() => {
-                    submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
-                }, 2000);
-            }, 2000);
-        });
-
-        // Enhanced form interactions
-        document.querySelectorAll('.form-control, .form-select').forEach(input => {
-            input.addEventListener('focus', function() {
-                this.closest('.form-group').querySelector('.form-label').style.color = '#667eea';
-            });
-
-            input.addEventListener('blur', function() {
-                this.closest('.form-group').querySelector('.form-label').style.color = '#2d3748';
-            });
-        });
-
-        // Cancel button function
-        function goBack() {
-            if (confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
-                // Simulate navigation back
-                console.log('Navigating back to user list...');
-            }
-        }
-
-        // Add subtle animations when page loads
-        window.addEventListener('load', function() {
-            const formGroups = document.querySelectorAll('.form-group');
-            formGroups.forEach((group, index) => {
-                group.style.opacity = '0';
-                group.style.transform = 'translateY(20px)';
-
-                setTimeout(() => {
-                    group.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
-                    group.style.opacity = '1';
-                    group.style.transform = 'translateY(0)';
-                }, index * 100 + 300);
+        document.querySelector('form').addEventListener('submit', function () {
+            document.querySelectorAll('.editable-block').forEach(block => {
+                const field = block.getAttribute('data-field');
+                const input = document.querySelector(`input[name="${field}"]`);
+                if (input) {
+                    input.value = block.innerText.trim();
+                }
             });
         });
     </script>
-}
+</body>
+</html>
