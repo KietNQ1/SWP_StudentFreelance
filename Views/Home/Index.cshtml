@@ -1,7 +1,9 @@
 ﻿@{
     ViewData["Title"] = "Trang chủ";
 }
-
+@{
+    var topProjects = ViewBag.TopProjects as List<StudentFreelance.Models.Project>;
+}
 @section Styles {
     <link rel="stylesheet" href="~/css/home/home.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
@@ -11,18 +13,61 @@
 <section class="hero-slideshow">
     <!-- Slideshow Background -->
     <div class="slideshow-container">
-        <div class="slide active" style="background-image: url('@Url.Content("~/image/bg1.png")')"></div>
-        <div class="slide" style="background-image: url('@Url.Content("~/image/bg2.png")')"></div>
-        <div class="slide" style="background-image: url('@Url.Content("~/image/bg3.png")')"></div>
-        <div class="slide" style="background-image: url('@Url.Content("~/image/bg4.png")')"></div>
-        <div class="slide" style="background-image: url('@Url.Content("~/image/bg5.png")')"></div>
-        <div class="slide" style="background-image: url('@Url.Content("~/image/bg6.png")')"></div>
+        @{
+            var defaultImages = new List<string> { "bg1.png", "bg2.png", "bg3.png", "bg4.png", "bg5.png", "bg6.png" };
+            var advertisements = ViewBag.Advertisements as List<StudentFreelance.Models.Advertisement> ?? new List<StudentFreelance.Models.Advertisement>();
+            
+            // Display advertisements first
+            foreach (var ad in advertisements)
+            {
+                string imageUrl = $"~/uploads/advertisements/{ad.ImagePath}";
+                string linkUrl = $"/User/Profile/{ad.BusinessId}";
+                bool isFirst = ad == advertisements.FirstOrDefault();
+                
+                <div class="slide @(isFirst ? "active" : "")" style="background-image: url('@Url.Content(imageUrl)')">
+                    <a href="@linkUrl" class="ad-link" title="Xem thêm về @ad.Business.CompanyName"></a>
+                </div>
+            }
+            
+            // If there are fewer than 6 ads, display default images to fill up to 6 slides
+            if (advertisements.Count < 6)
+            {
+                for (int i = 0; i < Math.Min(6 - advertisements.Count, defaultImages.Count); i++)
+                {
+                    bool isFirst = advertisements.Count == 0 && i == 0;
+                    <div class="slide @(isFirst ? "active" : "")" style="background-image: url('@Url.Content($"~/image/{defaultImages[i]}")')"></div>
+                }
+            }
+        }
+        
+        <!-- Navigation arrows -->
+        <button class="slideshow-prev" aria-label="Previous slide">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="slideshow-next" aria-label="Next slide">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        
+        <!-- Slide indicators -->
+        <div class="slideshow-dots">
+            @{
+                int totalSlides = advertisements.Count;
+                if (totalSlides < 6)
+                {
+                    totalSlides += Math.Min(6 - advertisements.Count, defaultImages.Count);
+                }
+                
+                for (int i = 0; i < totalSlides; i++)
+                {
+                    <span class="slideshow-dot @(i == 0 ? "active" : "")" data-slide="@i"></span>
+                }
+            }
+        </div>
     </div>
 
-
     <!-- Nội dung -->
-    <div class="hero-container">
-        <div class="hero-content">
+    <div class="hero-container" style="pointer-events: none;">
+        <div class="hero-content" style="pointer-events: auto;">
             <h1 class="hero-title">Let top talent bring your ideas to life</h1>
 
             <div class="popular-searches">
@@ -53,118 +98,31 @@
     <div class="container">
         <div class="section-header">
             <h2>Top Projects</h2>
-            <a href="#" class="view-all-btn">Xem tất cả</a>
+            <a href="@Url.Action("Index", "Project")" class="view-all-btn">View all</a>
         </div>
 
         <div class="projects-grid">
-            <div class="project-card">
-                <div class="project-image">
-                    <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="VinFast Logo">
-                </div>
-                <div class="project-content">
-                    <h3 class="project-title">Quality Engineering Executive</h3>
-                    <p class="company-name">Công Ty Cổ Phần Sản Xuất VinFast</p>
-                    <div class="project-meta">
-                        <span class="salary">Thương lượng</span>
-                        <span class="location">Hải Dương, Hải Phòng</span>
+            @foreach (var project in topProjects)
+            {
+                <a asp-controller="Project" asp-action="Details" asp-route-id="@project.ProjectID" class="text-decoration-none text-dark">
+                    <div class="project-card">
+                        <div class="project-image">
+                            <img src="~/image/project-default.jpg" alt="@project.Business?.FullName" />
+                        </div>
+                        <div class="project-content">
+                            <h3 class="project-title">@project.Title</h3>
+                            <p class="company-name">@project.Business?.FullName</p>
+                            <div class="project-meta">
+                                <span class="salary">@($"{project.Budget:N0} đ")</span>
+                                <span class="location">
+                                    @(project.IsRemoteWork ? "Remote" : project.Address?.ProvinceName ?? "Unidentified location")
+                                </span>
+                            </div>
+                            <div class="project-status hot">Hot</div>
+                        </div>
                     </div>
-                    <div class="project-status hot">Hot</div>
-                </div>
-            </div>
-
-            <div class="project-card">
-                <div class="project-image">
-                    <img src="https://images.unsplash.com/photo-1611224923853-80b023f02d71?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Nexon Logo">
-                </div>
-                <div class="project-content">
-                    <h3 class="project-title">UA Media Creator (Contract)</h3>
-                    <p class="company-name">Nexon Networks Vina Co. Ltd.</p>
-                    <div class="project-meta">
-                        <span class="salary">Thương lượng</span>
-                        <span class="location">Hồ Chí Minh</span>
-                    </div>
-                    <div class="project-status hot">Hot</div>
-                </div>
-            </div>
-
-            <div class="project-card">
-                <div class="project-image">
-                    <img src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="IRCA Logo">
-                </div>
-                <div class="project-content">
-                    <h3 class="project-title">Regulatory Specialist</h3>
-                    <p class="company-name">Doha Asia Company Limited</p>
-                    <div class="project-meta">
-                        <span class="salary">Thương lượng</span>
-                        <span class="location">Bà Rịa - Vũng Tàu</span>
-                    </div>
-                    <div class="project-status hot">Hot</div>
-                </div>
-            </div>
-
-            <div class="project-card">
-                <div class="project-image">
-                    <img src="https://images.unsplash.com/photo-1559136555-9303baea8ebd?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="V-Green Logo">
-                </div>
-                <div class="project-content">
-                    <h3 class="project-title">Charging System Analyst</h3>
-                    <p class="company-name">Công Ty Phát Triển Trạm Sạc V-Green</p>
-                    <div class="project-meta">
-                        <span class="salary">Thương lượng</span>
-                        <span class="location">Hà Nội</span>
-                    </div>
-                    <div class="project-status hot">Hot</div>
-                </div>
-            </div>
-
-            <div class="project-card">
-                <div class="project-image">
-                    <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="VinFast Logo">
-                </div>
-                <div class="project-content">
-                    <h3 class="project-title">Process Engineer (2024)</h3>
-                    <p class="company-name">Công Ty Cổ Phần Sản Xuất VinFast</p>
-                    <div class="project-meta">
-                        <span class="salary">Thương lượng</span>
-                        <span class="location">Hải Dương, Hải Phòng</span>
-                    </div>
-                    <div class="project-status hot">Hot</div>
-                </div>
-            </div>
-
-            <div class="project-card">
-                <div class="project-image">
-                    <img src="https://images.unsplash.com/photo-1551434678-e076c223a692?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Eurowindow Logo">
-                </div>
-                <div class="project-content">
-                    <h3 class="project-title">Chuyên Viên Phát Triển Thị Trường</h3>
-                    <p class="company-name">Eurowindow Holding</p>
-                    <div class="project-meta">
-                        <span class="salary">Thương lượng</span>
-                        <span class="location">Hà Nội</span>
-                    </div>
-                    <div class="project-status hot">Hot</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="pagination">
-            <button class="pagination-btn prev" disabled>
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <div class="pagination-dots">
-                <span class="dot active"></span>
-                <span class="dot"></span>
-                <span class="dot"></span>
-                <span class="dot"></span>
-                <span class="dot"></span>
-                <span class="dot"></span>
-                <span class="dot"></span>
-                <span class="dot"></span>
-            </div>
-            <button class="pagination-btn next">
-                <i class="fas fa-chevron-right"></i>
-            </button>
+                </a>
+            }
         </div>
     </div>
 </section>
@@ -363,7 +321,8 @@
     <div class="container">
         <div class="enterprise-content">
             <div class="enterprise-text">
-                <div class="enterprise-tag">Enterprise Suite</div>
+                <button class="btn btn-secondary">Enterprise Suite</button>
+                @* <button  class="enterprise-tag"></button> *@
                 <h2 class="enterprise-title">
                     This is how<br />
                     <span class="highlight">good companies</span><br />
@@ -433,76 +392,212 @@
 <div id="footer"></div>
 
 <script>
+        // Slideshow functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const slides = document.querySelectorAll('.slide');
+            const dots = document.querySelectorAll('.slideshow-dot');
+            const prevButton = document.querySelector('.slideshow-prev');
+            const nextButton = document.querySelector('.slideshow-next');
+            const slideshowContainer = document.querySelector('.slideshow-container');
+            let current = 0;
+            let timer;
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            // Initialize slideshow
+            function showSlide(index) {
+                if (!slides || slides.length === 0) return;
+                
+                // Ensure index is within bounds
+                if (index >= slides.length) index = 0;
+                if (index < 0) index = slides.length - 1;
+                
+                // Remove active class from all slides and dots
+                slides.forEach(slide => {
+                    slide.classList.remove('active');
+                });
+                
+                dots.forEach(dot => dot.classList.remove('active'));
+                
+                // Add active class to current slide and dot
+                slides[index].classList.add('active');
+                if (dots[index]) {
+                    dots[index].classList.add('active');
+                }
+                
+                // Update current index
+                current = index;
+                
+                console.log('Changed to slide', index);
+            }
+            
+            // Next slide
+            function nextSlide() {
+                if (!slides || slides.length === 0) return;
+                
+                let next = (current + 1) % slides.length;
+                showSlide(next);
+            }
+            
+            // Previous slide
+            function prevSlide() {
+                if (!slides || slides.length === 0) return;
+                
+                let prev = current - 1;
+                if (prev < 0) prev = slides.length - 1;
+                showSlide(prev);
+            }
+            
+            // Start timer for automatic slideshow
+            function startTimer() {
+                clearInterval(timer);
+                timer = setInterval(nextSlide, 5000);
+            }
+            
+            // Reset timer when user interacts with slideshow
+            function resetTimer() {
+                clearInterval(timer);
+                startTimer();
+            }
+            
+            // Touch support for mobile devices
+            if (slideshowContainer) {
+                slideshowContainer.addEventListener('touchstart', function(e) {
+                    touchStartX = e.changedTouches[0].screenX;
+                }, {passive: true});
+                
+                slideshowContainer.addEventListener('touchend', function(e) {
+                    touchEndX = e.changedTouches[0].screenX;
+                    handleSwipe();
+                }, {passive: true});
+            }
+            
+            function handleSwipe() {
+                let swipeDistance = touchEndX - touchStartX;
+                
+                if (Math.abs(swipeDistance) > 50) {
+                    if (swipeDistance > 0) {
+                        prevSlide();
+                    } else {
+                        nextSlide();
+                    }
+                    resetTimer();
+                }
+            }
+            
+            // Event listeners
+            if (prevButton) {
+                prevButton.addEventListener('click', function() {
+                    prevSlide();
+                    resetTimer();
+                });
+            }
+            
+            if (nextButton) {
+                nextButton.addEventListener('click', function() {
+                    nextSlide();
+                    resetTimer();
+                });
+            }
+            
+            if (dots && dots.length > 0) {
+                dots.forEach(function(dot, index) {
+                    dot.addEventListener('click', function() {
+                        showSlide(index);
+                        resetTimer();
+                    });
+                });
+            }
+            
+            // Pause slideshow on hover
+            if (slideshowContainer) {
+                slideshowContainer.addEventListener('mouseenter', function() {
+                    clearInterval(timer);
+                });
+                
+                slideshowContainer.addEventListener('mouseleave', function() {
+                    startTimer();
+                });
+            }
+            
+            // Initialize slideshow
+            if (slides && slides.length > 0) {
+                showSlide(0);
+                startTimer();
+                console.log('Slideshow initialized with', slides.length, 'slides');
+            }
+        });
+    </script>
     // Hiển thị chấm đỏ nếu có thông báo mới
     const hasNotification = true;
     const bell = document.getElementById("notificationBell");
     const dropdown = document.getElementById("notificationDropdown");
     const dot = document.getElementById("notificationDot");
 
-    if (hasNotification) {
+    if (hasNotification && bell && dropdown && dot) {
       dot.style.display = "block";
+      
+      bell.addEventListener("click", function (e) {
+        e.stopPropagation();
+        const isOpen = dropdown.style.display === "block";
+        dropdown.style.display = isOpen ? "none" : "block";
+
+        //  Ẩn dấu đỏ sau khi mở dropdown
+        if (!isOpen) {
+          dot.style.display = "none";
+        }
+      });
+
+      document.addEventListener("click", function () {
+        dropdown.style.display = "none";
+      });
     }
-
-    bell.addEventListener("click", function (e) {
-      e.stopPropagation();
-      const isOpen = dropdown.style.display === "block";
-      dropdown.style.display = isOpen ? "none" : "block";
-
-      //  Ẩn dấu đỏ sau khi mở dropdown
-      if (!isOpen) {
-        dot.style.display = "none";
-      }
-    });
-
-    document.addEventListener("click", function () {
-      dropdown.style.display = "none";
-    });
 
     // Dropdown Explore
     const exploreBtn = document.getElementById("exploreDropdownBtn");
     const exploreMenu = document.getElementById("exploreDropdownMenu");
-    let exploreTimeout;
+    
+    if (exploreBtn && exploreMenu) {
+      let exploreTimeout;
 
-    exploreBtn.addEventListener("mouseenter", () => {
-      clearTimeout(exploreTimeout);
-      exploreMenu.style.display = "block";
-    });
+      exploreBtn.addEventListener("mouseenter", () => {
+        clearTimeout(exploreTimeout);
+        exploreMenu.style.display = "block";
+      });
 
-    exploreBtn.addEventListener("mouseleave", () => {
-      exploreTimeout = setTimeout(() => {
+      exploreBtn.addEventListener("mouseleave", () => {
+        exploreTimeout = setTimeout(() => {
+          exploreMenu.style.display = "none";
+        }, 200);
+      });
+
+      exploreMenu.addEventListener("mouseenter", () => {
+        clearTimeout(exploreTimeout);
+        exploreMenu.style.display = "block";
+      });
+
+      exploreMenu.addEventListener("mouseleave", () => {
         exploreMenu.style.display = "none";
-      }, 200);
-    });
-
-    exploreMenu.addEventListener("mouseenter", () => {
-      clearTimeout(exploreTimeout);
-      exploreMenu.style.display = "block";
-    });
-
-    exploreMenu.addEventListener("mouseleave", () => {
-      exploreMenu.style.display = "none";
-    });
-</script>
-<script>
-    const slides = document.querySelectorAll('.slide');
-    let current = 0;
-
-    function nextSlide() {
-      slides[current].classList.remove('active');
-      current = (current + 1) % slides.length;
-      slides[current].classList.add('active');
+      });
     }
-
-    setInterval(nextSlide, 4000);
 </script>
-<script>
-    // Load header
-    fetch('header.html')
-      .then(res => res.text())
-      .then(data => document.getElementById('header').innerHTML = data);
 
-    // Load footer
-    fetch('footer.html')
-      .then(res => res.text())
-      .then(data => document.getElementById('footer').innerHTML = data);
+<script>
+    // Load header and footer if needed
+    const headerEl = document.getElementById('header');
+    const footerEl = document.getElementById('footer');
+    
+    if (headerEl) {
+      fetch('header.html')
+        .then(res => res.text())
+        .then(data => headerEl.innerHTML = data)
+        .catch(err => console.log('Error loading header:', err));
+    }
+    
+    if (footerEl) {
+      fetch('footer.html')
+        .then(res => res.text())
+        .then(data => footerEl.innerHTML = data)
+        .catch(err => console.log('Error loading footer:', err));
+    }
 </script>

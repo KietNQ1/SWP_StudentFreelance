@@ -36,7 +36,8 @@ namespace StudentFreelance.Data
                     new TransactionType { TypeName = "Rút tiền", IsActive = true },
                     new TransactionType { TypeName = "Thanh toán", IsActive = true },
                     new TransactionType { TypeName = "Hoàn tiền", IsActive = true },
-                    new TransactionType { TypeName = "Nâng cấp VIP", IsActive = true }
+                    new TransactionType { TypeName = "Nâng cấp VIP", IsActive = true },
+                    new TransactionType { TypeName = "Thanh toán quảng cáo", IsActive = true }
                 );
             }
 
@@ -104,6 +105,34 @@ namespace StudentFreelance.Data
                     new ImportanceLevel { LevelName = "Bắt buộc", IsActive = true },
                     new ImportanceLevel { LevelName = "Quan trọng", IsActive = true },
                     new ImportanceLevel { LevelName = "Ưu tiên", IsActive = true }
+                );
+            }
+
+            if (!context.AdvertisementStatuses.Any())
+            {
+                context.AdvertisementStatuses.AddRange(
+                    new AdvertisementStatus { StatusName = "Chờ duyệt", IsActive = true },
+                    new AdvertisementStatus { StatusName = "Đã duyệt", IsActive = true },
+                    new AdvertisementStatus { StatusName = "Từ chối", IsActive = true },
+                    new AdvertisementStatus { StatusName = "Hết hạn", IsActive = true }
+                );
+            }
+
+            if (!context.AdvertisementPackageTypes.Any())
+            {
+                context.AdvertisementPackageTypes.AddRange(
+                    new AdvertisementPackageType { 
+                        PackageTypeName = "Basic", 
+                        Price = 100000, 
+                        DurationDays = 7, 
+                        IsActive = true 
+                    },
+                    new AdvertisementPackageType { 
+                        PackageTypeName = "Featured", 
+                        Price = 200000, 
+                        DurationDays = 7, 
+                        IsActive = true 
+                    }
                 );
             }
 

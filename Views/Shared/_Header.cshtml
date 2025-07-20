@@ -1,10 +1,32 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
+@inject StudentFreelance.Services.Interfaces.INotificationService NotificationService
 
 @using Microsoft.EntityFrameworkCore
 @using StudentFreelance.DbContext
 @using StudentFreelance.Models
+
+@{
+    ApplicationUser currentUser = null;
+    string fullName = "Người dùng";
+    string avatarPath = "/image/default-avatar.png";
+    var notifications = new List<StudentFreelance.Models.Notification>();
+    int unreadCount = 0;
+    if (SignInManager.IsSignedIn(User))
+    {
+        currentUser = await UserManager.GetUserAsync(User);
+        fullName = currentUser?.FullName ?? "Người dùng";
+        avatarPath = !string.IsNullOrEmpty(currentUser?.Avatar)
+            ? currentUser.Avatar
+            : (!string.IsNullOrEmpty(currentUser?.ProfilePicturePath)
+                ? currentUser.ProfilePicturePath
+                : "/image/default-avatar.png");
+        notifications = (await NotificationService.GetNotificationsByUserIdAsync(currentUser.Id))
+            .OrderByDescending(n => n.NotificationDate).Take(2).ToList();
+        unreadCount = (await NotificationService.GetUnreadNotificationsByUserIdAsync(currentUser.Id)).Count();
+    }
+}
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -40,7 +62,6 @@
                 </div>
 
                 <!-- Navigation menu -->
-                <!-- Navigation menu - HTML structure cần sửa -->
                 <div class="nav-menu">
                     <div class="nav-item dropdown explore-dropdown">
                         <span>Find students</span>
@@ -53,8 +74,6 @@
                             <a href="#">Engineering & Architecture</a>
                         </div>
                     </div>
-
-                    <!-- Sửa lại Business để có cùng structure -->
                     <div class="nav-item dropdown">
                         <a asp-controller="Business" asp-action="Index" class="nav-link">Business</a>
                         <div class="dropdown-menub">
@@ -66,17 +85,16 @@
                             <a href="#">Kinh doanh</a>
                         </div>
                     </div>
-
                     <div class="nav-item dropdown explore-dropdown" id="exploreDropdownBtn">
                         <span>Explore</span>
                         <div class="dropdown-menu" id="exploreDropdownMenu">
                             <a href="#">STJobs VIP <span class="new-label">New</span></a>
                             <a href="#">Q&A</a>
                             <a href="#">Guides</a>
-                            <a href="#">Report</a>
+                            <a asp-controller="Report" asp-action="ListReport">Report</a>
+                            <a asp-controller="Report" asp-action="Create">Create Report</a>
                         </div>
                     </div>
-
                     <div class="nav-item dropdown explore-dropdown">
                         <span>Search</span>
                         <div class="dropdown-menu">
@@ -85,47 +103,51 @@
                             <a asp-controller="Search" asp-action="SearchBusinesses">Search Business</a>
                         </div>
                     </div>
-
-                    <!-- User login/logout -->
                     @if (SignInManager.IsSignedIn(User))
                     {
                         <div class="nav-user-actions">
                             <div class="notification-wrapper">
                                 <div class="notification-icon" id="notificationBell">
                                     <i class="fas fa-bell"></i>
-                                    <span class="notification-dot" id="notificationDot"></span>
+                                    @if (unreadCount > 0)
+                                    {
+                                        <span class="notification-dot" id="notificationDot"></span>
+                                    }
                                 </div>
                                 <div class="notification-dropdown" id="notificationDropdown">
                                     <div class="notification-header"><strong>Thông báo</strong></div>
                                     <div class="notification-list">
-                                        <div class="notification-item">
-                                            <img src="https://i.pravatar.cc/40" />
-                                            <div class="notification-text">
-                                                <p><strong>Trần Hoàng Anh</strong> vừa cập nhật lại thông tin</p>
-                                                <span class="time">53 phút trước</span>
+                                        @if (notifications.Any())
+                                        {
+                                            foreach (var n in notifications)
+                                            {
+                                                <div class="notification-item">
+                                                    <img src="@(n.Sender?.Avatar ?? "/image/default-avatar.png")" style="width:32px;height:32px;border-radius:50%;" />
+                                                    <div class="notification-text">
+                                                        <p>
+                                                            <strong>@(n.Sender?.FullName ?? "Hệ thống")</strong>: @n.Title
+                                                        </p>
+                                                        <span class="time">@n.NotificationDate.ToString("dd/MM/yyyy HH:mm")</span>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <div class="notification-item">
+                                                <div class="notification-text">
+                                                    <p>Không có thông báo mới.</p>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="notification-item">
-                                            <img src="https://i.pravatar.cc/41" />
-                                            <div class="notification-text">
-                                                <p><strong>Mega market</strong> vừa đăng bài</p>
-                                                <span class="time">1 ngày trước</span>
-                                            </div>
-                                        </div>
+                                        }
                                     </div>
                                     <div class="notification-footer">
-                                        <button>Xem tất cả thông báo</button>
+                                        <a href="@Url.Action("Index", "Notification")" class="btn btn-link w-100">Xem tất cả thông báo</a>
                                     </div>
                                 </div>
                             </div>
-
-                            @{
-                                var currentUser = await UserManager.GetUserAsync(User);
-                                var fullName = currentUser?.FullName ?? "Người dùng";
-                            }
-
                             <div class="avatar-wrapper">
-                                <img src="https://i.pravatar.cc/36" alt="Avatar" class="avatar-img" />
+                                <img src="@avatarPath" alt="Avatar" class="avatar-img" onerror="this.onerror=null;this.src='/image/default-avatar.png';" />
                                 <span class="user-name">@fullName</span>
                                 <div class="dropdown-menu">
                                     <a asp-controller="User" asp-action="Profile"><i class="fas fa-user"></i>My Profile</a>
@@ -141,7 +163,6 @@
                                     }
                                 </div>
                             </div>
-
                             <form asp-controller="Account" asp-action="Logout" method="post" class="form-inline d-inline">
                                 <button type="submit" class="nav-link btn btn-link text-dark" style="border: none;">Logout</button>
                             </form>
