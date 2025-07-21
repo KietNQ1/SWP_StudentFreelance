@@ -10,10 +10,25 @@
 <div class="container airbnb-profile py-4">
     <!-- Wrapper chia 2 bên -->
     <div class="d-flex flex-wrap profile-wrapper">
-        <!-- Bên trái: Avatar -->
+        <!-- Bên trái: Avatar + Nút -->
         <div class="avatar-section">
-            <img src="@(!string.IsNullOrEmpty(Model.AvatarPath) ? Url.Content(Model.AvatarPath) : Url.Content("~/image/default-avatar.png"))"
-                 class="avatar-img" alt="Avatar" />
+            <div>
+                <img src="@(!string.IsNullOrEmpty(Model.AvatarPath) ? Url.Content(Model.AvatarPath) : Url.Content("~/image/default-avatar.png"))"
+                     class="avatar-img" alt="Avatar" />
+
+                <!-- Các nút chuyển xuống dưới avatar -->
+                <div class="d-flex flex-column mt-3 gap-2">
+                    @if (Model.IsCurrentUser)
+                    {
+                        <a href="/User/Edit" class="btn btn-outline-primary btn-sm">✏️ Chỉnh sửa hồ sơ</a>
+                    }
+                    <a href="/User/AllProjectHistory?userId=@Model.UserID" class="btn btn-outline-secondary btn-sm">📜 Lịch sử dự án</a>
+                    @if (Model.IsCurrentUser)
+                    {
+                        <a href="/User/VipSubscription" class="btn btn-warning btn-sm">🚀 Nâng cấp VIP</a>
+                    }
+                </div>
+            </div>
         </div>
 
         <!-- Bên phải: Nội dung -->
@@ -21,45 +36,6 @@
             <!-- Header -->
             <div class="profile-header">
                 <h2 class="fw-bold mb-1">@Model.FullName</h2>
-
-                @if (Model.AverageRating.HasValue)
-                {
-                    var rating = Model.AverageRating.Value;
-                    <div class="average-rating mb-2">
-                        <div class="star-rating">
-                            @for (int i = 1; i <= 5; i++)
-                            {
-                                if (i <= Math.Floor(rating))
-                                {
-                                    <i class="fas fa-star filled"></i>
-                                }
-                                else if (i - rating < 1)
-                                {
-                                    <i class="fas fa-star-half-alt filled"></i>
-                                }
-                                else
-                                {
-                                    <i class="far fa-star"></i>
-                                }
-                            }
-                        </div>
-                        <span class="rating-number">(@rating.ToString("0.0"))</span>
-                    </div>
-
-                }
-                else
-                {
-                    <div class="text-muted mb-2">Chưa có đánh giá</div>
-                }
-
-                <div class="d-flex flex-wrap gap-2 mb-3">
-                    @if (Model.IsCurrentUser)
-                    {
-                        <a href="/User/Edit" class="btn btn-outline-primary btn-sm">✏️ Chỉnh sửa hồ sơ</a>
-                        <a href="/User/VipSubscription" class="btn btn-warning btn-sm">🚀 Nâng cấp VIP</a>
-                    }
-                    <a href="/User/AllProjectHistory?userId=@Model.UserID" class="btn btn-outline-secondary btn-sm">📜 Lịch sử dự án</a>
-                </div>
             </div>
 
             <!-- Thông tin cá nhân -->
@@ -85,26 +61,40 @@
                 </div>
             </div>
 
-            <!-- Kỹ năng -->
+            <!-- Đánh giá trung bình -->
             <div class="profile-info-box">
-                <div class="section-title">🛠️ Kỹ năng</div>
-
-                @if (Model.Skills.Any())
+                <div class="section-title">Đánh giá</div>
+                @if (Model.AverageRating.HasValue)
                 {
-                    <div class="skill-list">
-                        @foreach (var skill in Model.Skills)
-                        {
-                            <span class="skill-tag">@skill.SkillName (@skill.ProficiencyLevelName)</span>
-                        }
+                    var rating = Model.AverageRating.Value;
+                    <div class="average-rating mb-2">
+                        <div class="star-rating">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                if (i <= Math.Floor(rating))
+                                {
+                                    <i class="fas fa-star filled"></i>
+                                }
+                                else if (i - rating < 1)
+                                {
+                                    <i class="fas fa-star-half-alt filled"></i>
+                                }
+                                else
+                                {
+                                    <i class="far fa-star"></i>
+                                }
+                            }
+                        </div>
+                        <span class="rating-number">(@rating.ToString("0.0"))</span>
                     </div>
                 }
                 else
                 {
-                    <p class="text-muted">Chưa cập nhật kỹ năng.</p>
+                    <div class="text-muted mb-2">Chưa có đánh giá</div>
                 }
             </div>
 
-            <!-- Đánh giá -->
+            <!-- Đánh giá gần đây -->
             @if (Model.ReceivedRatings?.Any() == true)
             {
                 <div class="profile-info-box">
@@ -141,6 +131,28 @@
                     }
 
                     <a href="/User/AllReviews?userId=@Model.UserID" class="btn btn-sm btn-outline-info">🔍 Xem tất cả đánh giá</a>
+                </div>
+            }
+
+            <!-- Kỹ năng -->
+            @if (Model.RoleId != 3)
+            {
+                <div class="profile-info-box">
+                    <div class="section-title">Kỹ năng</div>
+
+                    @if (Model.Skills.Any())
+                    {
+                        <div class="skill-list">
+                            @foreach (var skill in Model.Skills)
+                            {
+                                <span class="skill-tag">@skill.SkillName (@skill.ProficiencyLevelName)</span>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Chưa cập nhật kỹ năng.</p>
+                    }
                 </div>
             }
         </div>
