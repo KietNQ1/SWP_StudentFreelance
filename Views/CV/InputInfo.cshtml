@@ -3,50 +3,147 @@
     ViewData["Title"] = "Nhập thông tin CV";
 }
 
-<h2>Nhập thông tin để tạo CV</h2>
+<style>
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        background-color: #f8f9fa;
+    }
 
-<form asp-controller="CV" asp-action="Preview" method="post">
-    <input type="hidden" asp-for="Template" />
+    h2 {
+        text-align: center;
+        color: #89AC46;
+        margin-bottom: 30px;
+    }
 
-    <div class="form-group">
-        <label>Họ tên</label>
-        <input asp-for="FullName" class="form-control" required />
-    </div>
+    .cv-form-container {
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 40px;
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+        border-top: 5px solid #89AC46;
+    }
 
-    <div class="form-group">
-        <label>Ngành nghề</label>
-        <input asp-for="Industry" class="form-control" />
-    </div>
+    .form-group {
+        margin-bottom: 20px;
+    }
 
-    <div class="form-group">
-        <label>Vị trí ứng tuyển</label>
-        <input asp-for="JobTitle" class="form-control" />
-    </div>
+        .form-group label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+            display: block;
+        }
 
-    <div class="form-group">
-        <label>Trường Đại học</label>
-        <input asp-for="University" class="form-control" />
-    </div>
+    .form-control, textarea {
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        padding: 10px;
+        width: 100%;
+        transition: border 0.3s ease;
+    }
 
-    <div class="form-group">
-        <label>GPA</label>
-        <input asp-for="GPA" class="form-control" />
-    </div>
+        .form-control:focus, textarea:focus {
+            border-color: #89AC46;
+            outline: none;
+        }
 
-    <div class="form-group">
-        <label>Kỹ năng</label>
-        <textarea asp-for="Skills" class="form-control"></textarea>
-    </div>
+    textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
 
-    <div class="form-group">
-        <label>Kinh nghiệm</label>
-        <textarea asp-for="Experience" class="form-control"></textarea>
-    </div>
+    input[type="file"] {
+        padding: 6px;
+        border: none;
+    }
 
-    <div class="form-group">
-        <label>Mục tiêu nghề nghiệp</label>
-        <textarea asp-for="CareerGoal" class="form-control"></textarea>
-    </div>
+    .btn-primary {
+        background-color: #FF8989;
+        border-color: #FF8989;
+        color: white;
+        padding: 10px 25px;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: background-color 0.3s ease;
+    }
 
-    <button type="submit" class="btn btn-primary">Tạo CV</button>
-</form>
+        .btn-primary:hover {
+            background-color: #e27171;
+            border-color: #e27171;
+        }
+
+    .section-title {
+        color: #89AC46;
+        font-size: 18px;
+        border-left: 5px solid #89AC46;
+        padding-left: 10px;
+        margin-top: 30px;
+        margin-bottom: 15px;
+    }
+</style>
+
+<div class="cv-form-container">
+    <h2>Nhập thông tin để tạo CV</h2>
+
+    <form asp-controller="CV" asp-action="Preview" method="post" enctype="multipart/form-data">
+        <input type="hidden" asp-for="Template" />
+
+        <div class="form-group">
+            <label>Họ tên</label>
+            <input asp-for="FullName" class="form-control" required />
+        </div>
+
+        <div class="form-group">
+            <label>Ngành nghề</label>
+            <input asp-for="Industry" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label>Vị trí ứng tuyển</label>
+            <input asp-for="JobTitle" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label>Trường Đại học</label>
+            <input asp-for="University" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label>GPA</label>
+            <input asp-for="GPA" class="form-control" />
+        </div>
+
+        <div class="section-title">Thông tin chi tiết</div>
+
+        <div class="form-group">
+            <label>Kỹ năng</label>
+            <textarea asp-for="Skills" class="form-control"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Kinh nghiệm</label>
+            <textarea asp-for="Experience" class="form-control"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Dự án đã làm</label>
+            <textarea asp-for="CareerGoal" class="form-control"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Mục tiêu nghề nghiệp</label>
+            <textarea asp-for="CareerGoal" class="form-control"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="avatar">Ảnh đại diện (JPG/PNG):</label>
+            <input type="file" name="AvatarFile" accept=".jpg,.jpeg,.png" class="form-control" />
+        </div>
+
+        <div style="text-align: center;">
+            <button type="submit" class="btn btn-primary">Tạo CV</button>
+        </div>
+    </form>
+</div>

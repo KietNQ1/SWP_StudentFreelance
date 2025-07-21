@@ -7,9 +7,21 @@ using StudentFreelance.Models.Email;
 using StudentFreelance.Models.PayOS;
 using StudentFreelance.Services.Implementations;
 using StudentFreelance.Middleware;
+using DinkToPdf;
+using DinkToPdf.Contracts;
+
 using System.IO;
+using StudentFreelance.Services.Interfaces;
+
 
 var builder = WebApplication.CreateBuilder(args);
+// Load native library libwkhtmltox.dll
+var context = new CustomAssemblyLoadContext();
+context.LoadUnmanagedLibrary(Path.Combine(Directory.GetCurrentDirectory(), "DinkToPdfLib", "libwkhtmltox.dll"));
+
+// Đăng ký dịch vụ DinkToPdf
+builder.Services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
+
 builder.Services.AddSignalR();              // Đăng ký SignalR
 // 1. Configure Entity Framework Core (SQL Server)
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -67,6 +79,7 @@ builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IApplicationServ
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.INotificationService, StudentFreelance.Services.Implementations.NotificationService>();
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IProjectSubmissionService, StudentFreelance.Services.Implementations.ProjectSubmissionService>();
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.ITransactionService, StudentFreelance.Services.Implementations.TransactionService>();
+builder.Services.AddScoped<StudentFreelance.Services.Interfaces.ISkillService, StudentFreelance.Services.Implementations.SkillService>();
 builder.Services.AddScoped<IBankAccountService, BankAccountService>();
 builder.Services.AddScoped<StudentFreelance.Services.Interfaces.IAdvertisementService, StudentFreelance.Services.Implementations.AdvertisementService>();
 //builder.Services.AddScoped<IPayOSService, PayOSService>();

@@ -1,0 +1,115 @@
+﻿* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #fdfaf7;
+    color: #333;
+}
+
+.container {
+    display: table;
+    width: 800px;
+    margin: 0 auto;
+    background: white;
+    border: 1px solid #ddd;
+    table-layout: fixed;
+}
+
+.left-column, .right-column {
+    display: table-cell;
+    vertical-align: top;
+    padding: 20px;
+}
+
+.left-column {
+    width: 35%;
+    background-color: #f1e9df;
+}
+
+.right-column {
+    width: 65%;
+}
+
+.profile-img {
+    width: 100%;
+    height: auto;
+    max-height: 200px;
+    object-fit: cover;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+.section {
+    margin-bottom: 25px;
+}
+
+    .section h2 {
+        font-size: 22px;
+        color: #6e4c2b;
+        margin-bottom: 10px;
+    }
+
+    .section h3 {
+        font-size: 18px;
+        color: #6e4c2b;
+        margin-bottom: 10px;
+    }
+
+.brown {
+    background-color: #a97c50;
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+    .brown h3 {
+        color: white;
+    }
+
+.editable-block {
+    min-height: 100px;
+    padding: 10px;
+    white-space: pre-wrap;
+    line-height: 1.5;
+    background: transparent;
+    color: white;
+    border: 1px dashed #ddd;
+}
+
+.submit-btn {
+    text-align: center;
+    margin: 30px 0;
+}
+
+button {
+    padding: 10px 25px;
+    background-color: #6e4c2b;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+    button:hover {
+        background-color: #5c3d22;
+    }
+
+.contact-info {
+    margin-bottom: 20px;
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-size: 14px;
+    line-height: 1.6;
+    background-color: #a97c50;
+    color: white;
+}
+
+    .contact-info i {
+        margin-right: 8px;
+        color: white;
+    }

@@ -1,0 +1,143 @@
+﻿@model StudentFreelance.Models.CVInputModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>CV @Model.FullName</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #fdfaf7;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .left-column {
+            width: 35%;
+            background-color: #f1e9df;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .right-column {
+            width: 65%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .profile-img {
+            width: 100%;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+            .section h2 {
+                font-size: 22px;
+                color: #6e4c2b;
+            }
+
+            .section h3 {
+                font-size: 18px;
+                color: #6e4c2b;
+                margin-bottom: 10px;
+            }
+
+        .brown {
+            background-color: #a97c50;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+            .brown h3 {
+                color: white;
+            }
+
+        .contact-info {
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            line-height: 1.6;
+            background-color: #a97c50;
+            color: white;
+        }
+
+            .contact-info i {
+                margin-right: 8px;
+                color: white;
+            }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-column">
+            @if (!string.IsNullOrEmpty(Model.AvatarPath))
+            {
+                <img src="~/uploads/submissions/@Model.AvatarPath" alt="Avatar" class="avatar" style="width:150px;" />
+            }
+
+            <div class="section name">
+                <h2>@Model.FullName</h2>
+                <div>@Model.CareerGoal</div>
+            </div>
+
+            <div class="section">
+                <h3>Kinh nghiệm</h3>
+                <div>@Model.Experience</div>
+            </div>
+
+            <div class="section">
+                <h3>Học vấn</h3>
+                <div>@Model.University</div>
+                <div>GPA: @Model.GPA</div>
+            </div>
+        </div>
+
+        <div class="right-column">
+            <div class="contact-info">
+                <p><i class="fas fa-envelope"></i> @Model.Email</p>
+                <p><i class="fas fa-phone"></i> @Model.Phone</p>
+                <p><i class="fas fa-map-marker-alt"></i> @Model.Address</p>
+            </div>
+
+            <div class="section">
+                <h3>Thông tin</h3>
+                <p><strong>Ngành:</strong> @Model.Industry</p>
+                <p><strong>Vị trí:</strong> @Model.JobTitle</p>
+            </div>
+
+            <div class="section brown">
+                <h3>Kỹ năng chuyên môn</h3>
+                <div>@Model.Skills</div>
+            </div>
+
+            <div class="section brown">
+                <h3>Kỹ năng mềm</h3>
+                <div>@Model.SoftSkills</div>
+            </div>
+
+            <div class="section brown">
+                <h3>Dự án</h3>
+                <div contenteditable="true" class="editable" data-field="ProjectsRaw">@string.Join("\n", Model.ProjectsRaw ?? new List<string>())</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

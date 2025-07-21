@@ -1,27 +1,112 @@
 ﻿@model StudentFreelance.Models.CVInputModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>CV @Model.FullName</title>
+    <link rel="stylesheet" href="~/css/cv1.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
 
-<div class="container p-4 border rounded shadow">
-    <h2>@Model.FullName</h2>
-    <p><strong>Ngành:</strong> @Model.Industry</p>
-    <p><strong>Vị trí:</strong> @Model.JobTitle</p>
-    <p><strong>Trường:</strong> @Model.University</p>
-    <p><strong>GPA:</strong> @Model.GPA</p>
+    <!-- ✅ Form duy nhất để xuất PDF -->
+    <form method="post" asp-action="ExportToPDF" id="exportForm">
+        <div class="container">
+            <div class="left-column">
+                @if (!string.IsNullOrEmpty(Model.AvatarPath))
+                {
+                    <img src="~/uploads/submissions/@Model.AvatarPath" alt="Avatar" class="avatar" style="width:150px;" />
+                }
 
-    <h4>Kỹ năng</h4>
-    <p>@Model.Skills</p>
 
-    <h4>Kinh nghiệm</h4>
-    <p>@Model.Experience</p>
 
-    <h4>Mục tiêu nghề nghiệp</h4>
-    <p>@Model.CareerGoal</p>
 
-    <h4>Dự án</h4>
-    @if (Model.ProjectsRaw != null)
-    {
-        foreach (var line in Model.ProjectsRaw)
+                <div class="section name">
+                    <h2 contenteditable="true" class="editable" data-field="FullName">@Model.FullName</h2>
+                    <div contenteditable="true" class="editable" data-field="CareerGoal">@Model.CareerGoal</div>
+                </div>
+
+                <div class="section">
+                    <h3>Kinh nghiệm</h3>
+                    <div contenteditable="true" class="editable" data-field="Experience">@Model.Experience</div>
+                </div>
+
+                <div class="section">
+                    <h3>Học vấn</h3>
+                    <div contenteditable="true" class="editable" data-field="University">@Model.University</div>
+                    <div>GPA: <span contenteditable="true" class="editable" data-field="GPA">@Model.GPA</span></div>
+                </div>
+            </div>
+
+            <div class="right-column">
+                <div class="contact-info section">
+                    <p>
+                        <i class="fas fa-envelope"></i>
+                        <span contenteditable="true" class="editable" data-field="Email">
+                            @(!string.IsNullOrWhiteSpace(Model.Email) ? Model.Email : "Nhập email...")
+                        </span>
+                    </p>
+                    <p>
+                        <i class="fas fa-phone"></i>
+                        <span contenteditable="true" class="editable" data-field="Phone">
+                            @(!string.IsNullOrWhiteSpace(Model.Phone) ? Model.Phone : "Nhập số điện thoại...")
+                        </span>
+                    </p>
+                    <p>
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span contenteditable="true" class="editable" data-field="Address">
+                            @(!string.IsNullOrWhiteSpace(Model.Address) ? Model.Address : "Nhập địa chỉ...")
+                        </span>
+                    </p>
+                </div>
+
+
+                <div class="section">
+                    <h3>Thông tin</h3>
+                    <p><strong>Ngành:</strong> <span contenteditable="true" class="editable" data-field="Industry">@Model.Industry</span></p>
+                    <p><strong>Vị trí:</strong> <span contenteditable="true" class="editable" data-field="JobTitle">@Model.JobTitle</span></p>
+                </div>
+
+                <div class="section brown">
+                    <h3>Kỹ năng chuyên môn</h3>
+                    <div contenteditable="true" class="editable" data-field="Skills">@Model.Skills</div>
+                </div>
+
+                <div class="section brown">
+                    <h3>Kỹ năng mềm</h3>
+                    <div contenteditable="true" class="editable" data-field="SoftSkills">@Model.SoftSkills</div>
+                </div>
+
+                <div class="section brown">
+                    <h3>Dự án</h3>
+                    <div contenteditable="true" class="editable" data-field="ProjectsRaw">@string.Join("\n", Model.ProjectsRaw ?? new List<string>())</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hidden inputs để đẩy dữ liệu vào model -->
+        @foreach (var name in new[] { "FullName", "CareerGoal", "Experience", "University", "GPA", "Industry", "JobTitle", "Skills", "SoftSkills", "ProjectsText", "Email", "Phone", "Address", "Template" })
         {
-            <p>@line</p>
+            <input type="hidden" name="@name" />
         }
-    }
-</div>
+
+        <div style="text-align:center; margin-top:20px;">
+            <button type="submit" class="btn btn-primary">📄 Xuất PDF</button>
+        </div>
+    </form>
+
+    <!-- ✅ Đồng bộ dữ liệu khi submit -->
+    <script>
+        document.getElementById('exportForm').addEventListener('submit', function () {
+            document.querySelectorAll('.editable').forEach(el => {
+                const field = el.getAttribute('data-field');
+                const input = this.querySelector(`input[name="${field}"]`);
+                if (input) input.value = el.innerText.trim();
+            });
+        });
+    </script>
+</body>
+</html>
