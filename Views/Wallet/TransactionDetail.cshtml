@@ -20,7 +20,7 @@
         <div class="card-body">
             <div class="text-center mb-4">
                 @{
-                    string typeClass = Model.TypeID == 1 ? "deposit" : "withdrawal";
+                    string typeClass = Model.TypeID == 1 || Model.Type.TypeName == "Hoàn tiền" ? "deposit" : "withdrawal";
                     string statusClass = Model.StatusID == 1 ? "completed" : (Model.StatusID == 2 ? "failed" : "pending");
                 }
                 
@@ -30,7 +30,7 @@
                 </div>
                 
                 <div class="transaction-amount @typeClass">
-                    @(Model.TypeID == 1 ? "+" : "-")@Model.Amount.ToString("C")
+                    @(Model.TypeID == 1 || Model.Type.TypeName == "Hoàn tiền" ? "+" : "-")@Model.Amount.ToString("C")
                 </div>
                 
                 <div class="text-muted">

@@ -31,6 +31,10 @@ namespace StudentFreelance.Models
         [Column(TypeName = "decimal(15,2)")]
         public decimal Budget { get; set; }
 
+        /// Ví dự án - Số tiền thực tế còn lại của dự án (decimal(15,2))
+        [Column(TypeName = "decimal(15,2)")]
+        public decimal ProjectWallet { get; set; }
+
         /// Hạn nộp (deadline)
         public DateTime Deadline { get; set; }
 

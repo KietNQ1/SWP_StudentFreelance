@@ -130,9 +130,11 @@ namespace StudentFreelance.Services.Implementations
                 application.DateApplied = DateTime.Now;
                 application.Status = "Pending";
                 application.LastStatusUpdate = DateTime.Now;
+                
+                // ResumeAttachment có thể null, không cần kiểm tra
 
                 // Debug info
-                Console.WriteLine($"Thêm đơn ứng tuyển: ProjectID={application.ProjectID}, UserID={application.UserID}");
+                Console.WriteLine($"Thêm đơn ứng tuyển: ProjectID={application.ProjectID}, UserID={application.UserID}, ResumeAttachment={application.ResumeAttachment ?? "null"}");
                 
                 // Thêm entity trực tiếp thay vì sử dụng SQL raw
                 _context.StudentApplications.Add(application);
