@@ -1,0 +1,142 @@
+@model StudentFreelance.ViewModels.UpdateStudentApplicationViewModel
+
+@{
+    ViewData["Title"] = "Cập nhật đơn ứng tuyển";
+}
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Index">Dự án</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Details" asp-route-id="@Model.ProjectID">Chi tiết dự án</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Application" asp-action="MyApplications">Đơn ứng tuyển của tôi</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Application" asp-action="ViewApplication" asp-route-id="@Model.ApplicationID">Chi tiết đơn ứng tuyển</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Cập nhật đơn ứng tuyển</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Cập nhật đơn ứng tuyển</h2>
+        <a asp-controller="Application" asp-action="ViewApplication" asp-route-id="@Model.ApplicationID" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Quay lại chi tiết đơn ứng tuyển
+        </a>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Thông tin dự án</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h5>@Model.ProjectTitle</h5>
+                        <div class="text-muted">Doanh nghiệp: @Model.BusinessName</div>
+                        <div class="text-success fw-bold">Ngân sách: @Model.ProjectBudget.ToString("N0") VNĐ</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Cập nhật đơn ứng tuyển</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="UpdateStudentApplication" method="post" enctype="multipart/form-data">
+                        <input type="hidden" asp-for="ApplicationID" />
+                        <input type="hidden" asp-for="ProjectID" />
+                        <input type="hidden" asp-for="ProjectTitle" />
+                        <input type="hidden" asp-for="BusinessName" />
+                        <input type="hidden" asp-for="ProjectBudget" />
+                        <input type="hidden" asp-for="CurrentResumeAttachment" />
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="CoverLetter" class="form-label">Thư ứng tuyển</label>
+                            <textarea asp-for="CoverLetter" class="form-control" rows="6" placeholder="Viết thư ứng tuyển của bạn..."></textarea>
+                            <span asp-validation-for="CoverLetter" class="text-danger"></span>
+                            <div class="form-text">Thư ứng tuyển nên có ít nhất 50 ký tự. Hãy nêu rõ kinh nghiệm, kỹ năng và lý do bạn phù hợp với dự án này.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Salary" class="form-label">Mức lương đề xuất (VNĐ)</label>
+                            <input asp-for="Salary" type="number" class="form-control" min="1" step="1" value="@((int)Model.Salary)" />
+                            <span asp-validation-for="Salary" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="PortfolioLink" class="form-label">Đường dẫn đến portfolio (không bắt buộc)</label>
+                            <input asp-for="PortfolioLink" type="url" class="form-control" placeholder="https://..." />
+                            <span asp-validation-for="PortfolioLink" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">CV đính kèm hiện tại (không bắt buộc)</label>
+                            <div class="input-group mb-2">
+                                <input type="text" value="@Model.CurrentResumeAttachment" class="form-control" readonly />
+                                @if (!string.IsNullOrEmpty(Model.CurrentResumeAttachment))
+                                {
+                                    <a href="@Model.CurrentResumeAttachment" target="_blank" class="btn btn-outline-primary">
+                                        <i class="bi bi-eye"></i> Xem
+                                    </a>
+                                }
+                            </div>
+                            <label asp-for="ResumeAttachment" class="form-label">Tải lên CV mới (không bắt buộc)</label>
+                            <input asp-for="ResumeAttachment" type="file" class="form-control" accept=".pdf,.doc,.docx" />
+                            <span asp-validation-for="ResumeAttachment" class="text-danger"></span>
+                            <div class="form-text">Để thay đổi CV đính kèm, hãy tải lên tệp mới (không bắt buộc). Định dạng hỗ trợ: PDF, DOC, DOCX.</div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="ViewApplication" asp-route-id="@Model.ApplicationID" class="btn btn-outline-secondary">Hủy</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Cập nhật đơn ứng tuyển
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Hướng dẫn</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="fw-bold">Thư ứng tuyển</h6>
+                        <p>Viết thư ứng tuyển ngắn gọn, súc tích nhưng đầy đủ thông tin về kinh nghiệm, kỹ năng và lý do bạn phù hợp với dự án.</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="fw-bold">Mức lương đề xuất</h6>
+                        <p>Đề xuất mức lương phù hợp với kỹ năng và kinh nghiệm của bạn. Tham khảo ngân sách dự án để đưa ra mức lương hợp lý.</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="fw-bold">Portfolio</h6>
+                        <p>Cung cấp đường dẫn đến portfolio của bạn để doanh nghiệp có thể xem các dự án bạn đã thực hiện trước đây.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 

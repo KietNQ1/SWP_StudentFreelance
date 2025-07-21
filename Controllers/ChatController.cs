@@ -197,6 +197,71 @@ namespace StudentFreelance.Controllers
             return View(vm);
         }
 
+        // GET: /Chat/Room/User/5 - Tạo hoặc tìm cuộc trò chuyện với người dùng có ID = 5
+        [HttpGet("Chat/Room/User/{userId}")]
+        public async Task<IActionResult> StartUserChat(int userId)
+        {
+            var currentUserId = int.Parse(_userMgr.GetUserId(User));
+            
+            // Không thể chat với chính mình
+            if (currentUserId == userId)
+                return RedirectToAction("Index");
+
+            // Kiểm tra người dùng tồn tại
+            var otherUser = await _userMgr.FindByIdAsync(userId.ToString());
+            if (otherUser == null)
+                return NotFound();
+
+            // Tìm cuộc trò chuyện giữa 2 người dùng
+            var conv = await _db.Conversations.FirstOrDefaultAsync(c =>
+                (c.ParticipantAID == currentUserId && c.ParticipantBID == userId) ||
+                (c.ParticipantBID == currentUserId && c.ParticipantAID == userId)
+            );
+
+            // Nếu chưa có, tạo mới cuộc trò chuyện
+            if (conv == null)
+            {
+                // Tìm dự án liên quan giữa 2 người
+                int? projectId = null;
+                
+                if (User.IsInRole("Student"))
+                {
+                    // Nếu là sinh viên, tìm dự án của doanh nghiệp mà sinh viên đã ứng tuyển
+                    projectId = await _db.Projects
+                        .Where(p => p.BusinessID == userId)
+                        .Join(_db.StudentApplications.Where(a => a.UserID == currentUserId),
+                            p => p.ProjectID,
+                            a => a.ProjectID,
+                            (p, a) => p.ProjectID)
+                        .FirstOrDefaultAsync();
+                }
+                else if (User.IsInRole("Business"))
+                {
+                    // Nếu là doanh nghiệp, tìm dự án của doanh nghiệp mà sinh viên đã ứng tuyển
+                    projectId = await _db.Projects
+                        .Where(p => p.BusinessID == currentUserId)
+                        .Join(_db.StudentApplications.Where(a => a.UserID == userId),
+                            p => p.ProjectID,
+                            a => a.ProjectID,
+                            (p, a) => p.ProjectID)
+                        .FirstOrDefaultAsync();
+                }
+
+                conv = new Conversation
+                {
+                    ProjectID = projectId ?? 0, // Nếu không tìm thấy dự án liên quan, gán ProjectID = 0
+                    ParticipantAID = currentUserId,
+                    ParticipantBID = userId,
+                    CreatedAt = DateTime.UtcNow
+                };
+                
+                _db.Conversations.Add(conv);
+                await _db.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Room), new { id = conv.ConversationID });
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Send(int conversationID, string content)

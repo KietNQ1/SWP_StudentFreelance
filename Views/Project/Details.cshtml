@@ -74,6 +74,13 @@
                 <div><i class="bi bi-hourglass-split"></i> Deadline: @Model.Deadline.ToString("dd/MM/yyyy")</div>
                 <div><i class="bi bi-currency-dollar"></i> Budget: @Model.Budget.ToString("C")</div>
             </div>
+            @if (User.IsInRole("Admin") || User.IsInRole("Moderator") || User.FindFirstValue(ClaimTypes.NameIdentifier) == Model.BusinessID.ToString())
+            {
+                <div class="mt-2">
+                    <i class="bi bi-wallet2"></i> Project Wallet: 
+                    <span class="badge bg-success">@Model.ProjectWallet.ToString("C")</span>
+                </div>
+            }
         </div>
 
         <div class="col-md-4 text-end">
@@ -274,6 +281,45 @@
 
     if (isOwner || isAdmin)
     {
+        // Thêm nút hoàn thành và hủy dự án
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Quản lý dự án</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex gap-2">
+                    @if (Model.StatusID != 3 && Model.StatusID != 4) // Nếu dự án chưa hoàn thành và chưa bị hủy
+                    {
+                        <form asp-controller="Project" asp-action="CompleteProject" method="post" class="d-inline">
+                            <input type="hidden" name="id" value="@Model.ProjectID" />
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Đánh dấu dự án đã hoàn thành
+                            </button>
+                        </form>
+                        
+                        <form asp-controller="Project" asp-action="CancelProject" method="post" class="d-inline">
+                            <input type="hidden" name="id" value="@Model.ProjectID" />
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('Bạn có chắc chắn muốn hủy dự án này? Hành động này không thể hoàn tác.');">
+                                <i class="bi bi-x-circle"></i> Hủy dự án
+                            </button>
+                        </form>
+                    }
+                    else if (Model.StatusID == 3) // Dự án đã hoàn thành
+                    {
+                        <div class="alert alert-success mb-0">
+                            <i class="bi bi-check-circle"></i> Dự án đã được đánh dấu là hoàn thành.
+                        </div>
+                    }
+                    else if (Model.StatusID == 4) // Dự án đã bị hủy
+                    {
+                        <div class="alert alert-danger mb-0">
+                            <i class="bi bi-x-circle"></i> Dự án đã bị hủy.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        
         if (Model.StudentApplications != null && Model.StudentApplications.Any(a =>
             a.Status == "InProgress" || a.Status == "PendingReview" || a.Status == "Completed"))
         {
@@ -334,14 +380,6 @@
                                                 <div class="alert alert-success py-1 mt-2 mb-0">
                                                     <small><i class="bi bi-check-circle"></i> Đã hoàn thành. Cả hai bên đã xác nhận.</small>
                                                 </div>
-
-                                                <form asp-controller="Project" asp-action="TransferPayment" method="post" class="d-inline mt-2">
-                                                    <input type="hidden" name="projectId" value="@Model.ProjectID" />
-                                                    <input type="hidden" name="applicationId" value="@app.ApplicationID" />
-                                                    <button type="submit" class="btn btn-primary btn-sm">
-                                                        <i class="bi bi-cash"></i> Thanh toán cho sinh viên
-                                                    </button>
-                                                </form>
                                             }
                                         }
                                     </div>

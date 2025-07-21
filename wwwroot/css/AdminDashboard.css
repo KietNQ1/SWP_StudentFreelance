@@ -1,0 +1,81 @@
+﻿:root {
+    --primary: #89AC46;
+    --accent1: #D3E671;
+    --accent2: #F8ED8C;
+    --accent3: #FF8989;
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #F8F8F8;
+}
+
+.layout {
+    display: flex;
+}
+
+.main {
+    flex: 1;
+    padding: 2rem;
+}
+
+.dashboard-header {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary);
+    margin-bottom: 2rem;
+}
+
+.card-metric {
+    background-color: white;
+    border-left: 6px solid var(--primary);
+    border-radius: 10px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+    .card-metric h5 {
+        font-size: 1rem;
+        color: #444;
+        margin-bottom: 0.5rem;
+    }
+
+    .card-metric .value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #222;
+    }
+
+.section-title {
+    margin-top: 2rem;
+    font-weight: 600;
+    color: var(--primary);
+    font-size: 1.25rem;
+}
+
+.list-group-item {
+    background-color: white;
+    border: none;
+    border-bottom: 1px solid #eee;
+}
+
+    .list-group-item strong {
+        color: #222;
+    }
+
+.text-success {
+    color: #4CAF50 !important;
+}
+
+.text-warning {
+    color: #FFC107 !important;
+}
+
+canvas {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}

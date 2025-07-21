@@ -31,10 +31,16 @@
                     </p>
                 </div>
             </div>
-            @if (Model.ApplicationStatus == "Completed" && !Model.Submissions.Any(s => s.Status != "Approved"))
+            @if (Model.ApplicationStatus == "Completed" && Model.HasBothConfirmed && !Model.IsPaid && !Model.Submissions.Any(s => s.Status != "Approved"))
             {
                 <div class="mt-3">
                     <a asp-action="Finalize" asp-route-applicationId="@Model.ApplicationID" class="btn btn-success">Thanh toán cho sinh viên</a>
+                </div>
+            }
+            @if (Model.IsPaid)
+            {
+                <div class="alert alert-success mt-3">
+                    <i class="bi bi-check-circle"></i> Đã thanh toán cho sinh viên.
                 </div>
             }
         </div>

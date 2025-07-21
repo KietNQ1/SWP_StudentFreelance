@@ -1,7 +1,7 @@
 ﻿@model StudentFreelance.ViewModels.AdminDashboardViewModel
 @using System.Text.Json
 @{
-    Layout = null;
+    Layout = "~/Views/Shared/_Dashboard.cshtml";
     ViewData["Title"] = "Admin Dashboard";
 }
 
@@ -28,38 +28,6 @@
 
         .layout {
             display: flex;
-        }
-
-        .sidebar {
-            width: 260px;
-            background-color: #fff;
-            height: 100vh;
-            border-right: 1px solid #ddd;
-            padding: 1.5rem 1rem;
-        }
-
-        .sidebar-menu a,
-        .dropdown-toggle {
-            display: block;
-            padding: 10px 15px;
-            color: #333;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 500;
-        }
-
-            .sidebar-menu a:hover,
-            .dropdown.open > .dropdown-toggle {
-                background-color: #f0f0f0;
-            }
-
-        .dropdown-menu {
-            display: none;
-            padding-left: 1rem;
-        }
-
-        .dropdown.open .dropdown-menu {
-            display: block;
         }
 
         .main {
@@ -126,40 +94,10 @@
             padding: 1rem;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
+
     </style>
 </head>
-<body>
-    <div class="layout">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <nav class="sidebar-menu">
-                <a href="#">Dashboard</a>
-                <a href="#">Calendar</a>
-                <div class="dropdown">
-                    <button class="dropdown-toggle" onclick="toggleDropdown(this)">Profile</button>
-                    <div class="dropdown-menu">
-                        <a href="#">My Profile</a>
-                        <a href="#">Freelancers</a>
-                        <a href="#">Companies</a>
-                    </div>
-                </div>
-                <div class="dropdown">
-                    <button class="dropdown-toggle" onclick="toggleDropdown(this)">Customer Management</button>
-                    <div class="dropdown-menu">
-                        <a href="#">Freelancers</a>
-                        <a href="#">Companies</a>
-                    </div>
-                </div>
-                <a href="#">Project Management</a>
-                <a href="#">Applications</a>
-                <a href="#">Payments</a>
-                <a href="#">Reviews & Reports</a>
-                <a href="#">System Settings</a>
-            </nav>
-        </aside>
 
-        <!-- Main content -->
-        <main class="main container-fluid">
             <div class="dashboard-header">📊 Admin Dashboard</div>
 
             <!-- Charts -->
@@ -214,8 +152,8 @@
                     </li>
                 }
             </ul>
-        </main>
-    </div>
+      
+   
 
     <script>
         function toggleDropdown(button) {
@@ -277,5 +215,3 @@
             options: { responsive: true }
         });
     </script>
-</body>
-</html>

@@ -258,70 +258,18 @@ namespace StudentFreelance.Controllers
                     };
 
                     Project createdProject;
-                    try
+                    
+                    // Check if user has enough money and create project with transaction
+                    var result = await _projectService.CreateProjectWithTransactionAsync(project);
+                    
+                    if (!result.Success)
                     {
-                        createdProject = await _projectService.CreateProjectAsync(project);
-                    }
-                    catch (DbUpdateException dbEx)
-                    {
-                        if (dbEx.InnerException != null)
-                        {
-                            string innerMessage = dbEx.InnerException.Message.ToLower();
-                            if (innerMessage.Contains("foreign key"))
-                            {
-                                if (innerMessage.Contains("categoryid"))
-                                {
-                                    ModelState.AddModelError("CategoryID", "Danh mục đã chọn không tồn tại trong cơ sở dữ liệu.");
-                                }
-                                else if (innerMessage.Contains("statusid"))
-                                {
-                                    ModelState.AddModelError("StatusID", "Trạng thái đã chọn không tồn tại trong cơ sở dữ liệu.");
-                                }
-                                else if (innerMessage.Contains("typeid"))
-                                {
-                                    ModelState.AddModelError("TypeID", "Loại dự án đã chọn không tồn tại trong cơ sở dữ liệu.");
-                                }
-                                else if (innerMessage.Contains("businessid"))
-                                {
-                                    ModelState.AddModelError("BusinessID", "Người dùng không tồn tại trong cơ sở dữ liệu.");
-                                }
-                                else if (innerMessage.Contains("addressid"))
-                                {
-                                    ModelState.AddModelError("AddressID", "Địa chỉ đã chọn không tồn tại trong cơ sở dữ liệu.");
-                                }
-                                else
-                                {
-                                    ModelState.AddModelError("", "Lỗi khóa ngoại: Một trong các giá trị tham chiếu không tồn tại trong cơ sở dữ liệu.");
-                                }
-                            }
-                            else if (innerMessage.Contains("unique") || innerMessage.Contains("duplicate"))
-                            {
-                                ModelState.AddModelError("", "Lỗi dữ liệu trùng lặp: Dự án với thông tin tương tự đã tồn tại.");
-                            }
-                            else if (innerMessage.Contains("null") && innerMessage.Contains("allow"))
-                            {
-                                ModelState.AddModelError("", "Lỗi dữ liệu: Một số thông tin bắt buộc bị thiếu.");
-                            }
-                            else
-                            {
-                                ModelState.AddModelError("", "Đã có lỗi khi tạo dự án. Vui lòng thử lại.");
-                            }
-                        }
-                        else
-                        {
-                            ModelState.AddModelError("", "Đã có lỗi khi tạo dự án. Vui lòng thử lại.");
-                        }
-                        
-                        // Re-populate form data and return to view
+                        ModelState.AddModelError("", result.ErrorMessage);
                         await PopulateFormDataAsync(viewModel);
                         return View(viewModel);
                     }
-                    catch (Exception innerEx)
-                    {
-                        ModelState.AddModelError("", "Đã có lỗi khi tạo dự án. Vui lòng thử lại.");
-                        await PopulateFormDataAsync(viewModel);
-                        return View(viewModel);
-                    }
+                    
+                    createdProject = result.Project;
 
                     // Add skills
                     if (viewModel.SelectedSkills != null && viewModel.SelectedSkills.Any())
@@ -566,21 +514,56 @@ namespace StudentFreelance.Controllers
                         return Forbid();
                     }
 
-                    // Update project properties
-                    project.CategoryID = viewModel.CategoryID;
-                    project.Title = viewModel.Title;
-                    project.Description = viewModel.Description;
-                    project.Budget = viewModel.Budget;
-                    project.Deadline = viewModel.Deadline;
-                    project.StatusID = viewModel.StatusID;
-                    project.IsHighlighted = viewModel.IsHighlighted;
-                    project.TypeID = viewModel.TypeID;
-                    project.AddressID = viewModel.AddressID;
-                    project.IsRemoteWork = viewModel.IsRemoteWork;
-                    project.StartDate = viewModel.StartDate;
-                    project.EndDate = viewModel.EndDate;
-
-                    await _projectService.UpdateProjectAsync(project);
+                    // Store the original budget to compare
+                    decimal originalBudget = project.Budget;
+                    
+                    // Create new project object with updated values
+                    var updatedProject = new Project
+                    {
+                        ProjectID = id,
+                        BusinessID = project.BusinessID,
+                        CategoryID = viewModel.CategoryID,
+                        Title = viewModel.Title,
+                        Description = viewModel.Description,
+                        Budget = viewModel.Budget,
+                        Deadline = viewModel.Deadline,
+                        StatusID = viewModel.StatusID,
+                        IsHighlighted = viewModel.IsHighlighted,
+                        TypeID = viewModel.TypeID,
+                        AddressID = viewModel.AddressID,
+                        IsRemoteWork = viewModel.IsRemoteWork,
+                        StartDate = viewModel.StartDate,
+                        EndDate = viewModel.EndDate,
+                        CreatedAt = project.CreatedAt,
+                        IsActive = project.IsActive
+                    };
+                    
+                    // Update project with transaction if budget changed
+                    var result = await _projectService.UpdateProjectWithTransactionAsync(updatedProject, originalBudget);
+                    
+                    if (!result.Success)
+                    {
+                        ModelState.AddModelError("", result.ErrorMessage);
+                        
+                        // Re-populate form data
+                        viewModel.Categories = await _context.Categories.Where(c => c.IsActive).ToListAsync();
+                        viewModel.ProjectStatuses = await _context.ProjectStatuses.Where(s => s.IsActive).ToListAsync();
+                        viewModel.ProjectTypes = await _context.ProjectTypes.Where(t => t.IsActive).ToListAsync();
+                        viewModel.Skills = await _context.Skills.Where(s => s.IsActive).ToListAsync();
+                        ViewBag.ImportanceLevels = await _context.ImportanceLevels.Where(il => il.IsActive).ToListAsync();
+                        viewModel.ExistingAttachments = await _context.ProjectAttachments
+                            .Where(pa => pa.ProjectID == id)
+                            .ToListAsync();
+                        viewModel.ExistingSkills = await _context.ProjectSkillsRequired
+                            .Include(ps => ps.Skill)
+                            .Where(ps => ps.ProjectID == id)
+                            .ToListAsync();
+                        
+                        return View(viewModel);
+                    }
+                    
+                    // Get the updated project
+                    project = result.Project;
 
                     // Update skills
                     var existingSkills = await _context.ProjectSkillsRequired
@@ -1004,49 +987,66 @@ public async Task<IActionResult> ConfirmCompletion(int projectId, int applicatio
         [Authorize(Roles = "Business,Admin")]
         public async Task<IActionResult> TransferPayment(int projectId, int applicationId)
         {
-            if (projectId <= 0 || applicationId <= 0)
+            // Chuyển hướng người dùng đến trang ProjectSubmission/ProjectSubmissions để thanh toán
+            TempData["InfoMessage"] = "Vui lòng sử dụng trang kết quả dự án để thanh toán cho sinh viên.";
+            return RedirectToAction("ProjectSubmissions", "ProjectSubmission", new { applicationId });
+        }
+        
+        // POST: Projects/CompleteProject
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Business,Admin")]
+        public async Task<IActionResult> CompleteProject(int id)
+        {
+            if (id <= 0)
                 return NotFound();
 
             // Get current user ID
             var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             
-            // Get project and application
-            var project = await _context.Projects.FindAsync(projectId);
-            var application = await _context.StudentApplications
-                .Include(a => a.User)
-                .FirstOrDefaultAsync(a => a.ApplicationID == applicationId);
-            
-            if (project == null || application == null)
-                return NotFound();
-            
-            if (application.ProjectID != projectId)
+            // Get project
+            var project = await _context.Projects.FindAsync(id);
+            if (project == null)
                 return NotFound();
             
             // Check if user is authorized (business owner or admin)
-            if (project.BusinessID != currentUserId && !User.IsInRole("Admin"))
+            bool isAdmin = User.IsInRole("Admin");
+            if (project.BusinessID != currentUserId && !isAdmin)
             {
                 return Forbid();
             }
             
-            // Check if both parties have confirmed completion
-            if (!application.BusinessConfirmedCompletion || !application.StudentConfirmedCompletion)
-            {
-                TempData["ErrorMessage"] = "Cả hai bên phải xác nhận hoàn thành dự án trước khi thanh toán.";
-                return RedirectToAction(nameof(Details), new { id = projectId });
-            }
-            
             try
             {
-                // Complete the project and transfer funds
-                var result = await _projectService.CompleteProjectAndTransferFundsAsync(projectId, applicationId);
+                // Complete the project
+                var result = await _projectService.CompleteProjectByBusinessAsync(id, isAdmin ? project.BusinessID : currentUserId);
                 
-                if (result)
+                if (result.Success)
                 {
-                    TempData["SuccessMessage"] = "Thanh toán đã được chuyển thành công cho sinh viên.";
+                    TempData["SuccessMessage"] = "Dự án đã được đánh dấu là hoàn thành thành công.";
+                    
+                    // Gửi thông báo cho tất cả sinh viên đã tham gia dự án
+                    var completedApplications = await _context.StudentApplications
+                        .Where(a => a.ProjectID == id && a.Status == "Completed")
+                        .Include(a => a.User)
+                        .ToListAsync();
+                        
+                    foreach (var application in completedApplications)
+                    {
+                        await _notificationService.SendNotificationToUserAsync(
+                            application.UserID,
+                            "Dự án đã hoàn thành",
+                            $"Dự án '{project.Title}' đã được đánh dấu là hoàn thành bởi doanh nghiệp.",
+                            1, // Loại thông báo: Dự án
+                            project.ProjectID,
+                            project.BusinessID,
+                            true // Gửi email
+                        );
+                    }
                 }
                 else
                 {
-                    TempData["ErrorMessage"] = "Có lỗi xảy ra khi chuyển thanh toán.";
+                    TempData["ErrorMessage"] = result.ErrorMessage;
                 }
             }
             catch (Exception ex)
@@ -1054,7 +1054,72 @@ public async Task<IActionResult> ConfirmCompletion(int projectId, int applicatio
                 TempData["ErrorMessage"] = "Lỗi: " + ex.Message;
             }
             
-            return RedirectToAction(nameof(Details), new { id = projectId });
+            return RedirectToAction(nameof(Details), new { id });
+        }
+        
+        // POST: Projects/CancelProject
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Business,Admin")]
+        public async Task<IActionResult> CancelProject(int id)
+        {
+            if (id <= 0)
+                return NotFound();
+
+            // Get current user ID
+            var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            
+            // Get project
+            var project = await _context.Projects.FindAsync(id);
+            if (project == null)
+                return NotFound();
+            
+            // Check if user is authorized (business owner or admin)
+            bool isAdmin = User.IsInRole("Admin");
+            if (project.BusinessID != currentUserId && !isAdmin)
+            {
+                return Forbid();
+            }
+            
+            try
+            {
+                // Cancel the project
+                var result = await _projectService.CancelProjectByBusinessAsync(id, isAdmin ? project.BusinessID : currentUserId);
+                
+                if (result.Success)
+                {
+                    TempData["SuccessMessage"] = "Dự án đã được hủy thành công.";
+                    
+                    // Gửi thông báo cho tất cả sinh viên đã ứng tuyển vào dự án
+                    var applications = await _context.StudentApplications
+                        .Where(a => a.ProjectID == id)
+                        .Include(a => a.User)
+                        .ToListAsync();
+                        
+                    foreach (var application in applications)
+                    {
+                        await _notificationService.SendNotificationToUserAsync(
+                            application.UserID,
+                            "Dự án đã bị hủy",
+                            $"Dự án '{project.Title}' đã bị hủy bởi doanh nghiệp.",
+                            1, // Loại thông báo: Dự án
+                            project.ProjectID,
+                            project.BusinessID,
+                            true // Gửi email
+                        );
+                    }
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = result.ErrorMessage;
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Lỗi: " + ex.Message;
+            }
+            
+            return RedirectToAction(nameof(Details), new { id });
         }
 
         // GET: Projects/Debug
