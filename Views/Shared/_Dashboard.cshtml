@@ -1,38 +1,6 @@
 ﻿@{
-    Layout = null; // hoặc _Layout không có sidebar nếu bạn muốn
+    Layout = null;
 }
-<link href="~/css/AdminSidebar.css" rel="stylesheet" />
-
-<div class="layout">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <nav class="sidebar-menu">
-            <a href="#">Dashboard</a>
-            <a href="#">Calendar</a>
-            <div class="dropdown">
-                <button class="dropdown-toggle" onclick="toggleDropdown(this)">Profile</button>
-                <div class="dropdown-menu">
-                    <a href="#">My Profile</a>
-                    <a href="#">Freelancers</a>
-                    <a href="#">Companies</a>
-                </div>
-            </div>
-            <div class="dropdown">
-                <button class="dropdown-toggle" onclick="toggleDropdown(this)">Customer Management</button>
-                <div class="dropdown-menu">
-                    <a href="#">Freelancers</a>
-                    <a href="#">Companies</a>
-                    <a asp-controller="UserVerification" asp-action="Index">User Verification</a>
-                </div>
-            </div>
-            <a href="#">Project Management</a>
-            <a href="#">Applications</a>
-            <a href="#">Payments</a>
-            <a href="#">Reviews & Reports</a>
-            <a asp-controller="Advertisement" asp-action="ManageAdvertisements">Manage Advertisements</a>
-            <a href="#">System Settings</a>
-        </nav>
-    </aside>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -46,7 +14,7 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <nav class="sidebar-menu">
-                <a asp-controller="Dashboard" asp-action="Index">DashBoard</a>
+                <a asp-controller="Dashboard" asp-action="Index">Dashboard</a>
                 <a href="#">Calendar</a>
                 <div class="dropdown">
                     <button class="dropdown-toggle" onclick="toggleDropdown(this)">Profile</button>
@@ -68,6 +36,7 @@
                 <a href="#">Applications</a>
                 <a href="#">Payments</a>
                 <a href="#">Reviews & Reports</a>
+                <a asp-controller="Advertisement" asp-action="ManageAdvertisements">Manage Advertisements</a>
                 <a href="#">System Settings</a>
             </nav>
         </aside>
@@ -86,10 +55,6 @@
         }
     </script>
     
-    @RenderSection("Scripts", required: false)
-</div>
-
-
     @RenderSection("Scripts", required: false)
 </body>
 </html>
