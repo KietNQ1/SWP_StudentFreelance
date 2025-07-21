@@ -731,13 +731,12 @@ namespace StudentFreelance.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> AllProjectHistory(int page = 1)
+        public async Task<IActionResult> AllProjectHistory(int page = 1, int? userId = null)
         {
             try
             {
-                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                int targetUserId = userId ?? int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
                 int pageSize = 10;
-
                 var completedProjects = new List<ProjectHistoryItem>();
 
                 // Projects do user làm chủ (Business)
@@ -745,7 +744,7 @@ namespace StudentFreelance.Controllers
                     .Include(p => p.Status)
                     .Include(p => p.Category)
                     .Include(p => p.Type)
-                    .Where(p => p.BusinessID == userId && p.StatusID == 3)
+                    .Where(p => p.BusinessID == targetUserId && p.StatusID == 3)
                     .OrderByDescending(p => p.EndDate)
                     .ToListAsync();
 
@@ -761,8 +760,8 @@ namespace StudentFreelance.Controllers
                         TypeName = proj.Type.TypeName,
                         IsRemoteWork = proj.IsRemoteWork,
                         CategoryName = proj.Category.CategoryName,
-                        BusinessName = proj.Business?.FullName ?? "Bạn",
-                        EndDate = proj.EndDate,                                 // Thêm dòng này     
+                        BusinessName = proj.Business?.FullName ?? "Người dùng",
+                        EndDate = proj.EndDate,
                     });
                 }
 
@@ -771,7 +770,7 @@ namespace StudentFreelance.Controllers
                     .Include(a => a.Project).ThenInclude(p => p.Type)
                     .Include(a => a.Project).ThenInclude(p => p.Category)
                     .Include(a => a.Project).ThenInclude(p => p.Status)
-                    .Where(a => a.UserID == userId && a.Status == "Completed")
+                    .Where(a => a.UserID == targetUserId && a.Status == "Completed")
                     .ToListAsync();
 
                 foreach (var app in joinedProjects)
@@ -802,7 +801,9 @@ namespace StudentFreelance.Controllers
                 {
                     ProjectHistoryPreview = pagedProjects,
                     CurrentPage = page,
-                    TotalPages = (int)Math.Ceiling((double)totalProjects / pageSize)
+                    TotalPages = (int)Math.Ceiling((double)totalProjects / pageSize),
+                    UserID = targetUserId,
+                    IsCurrentUser = targetUserId == int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier))
                 };
 
                 return View("AllProjectHistory", model);
@@ -814,15 +815,16 @@ namespace StudentFreelance.Controllers
             }
         }
 
+
         [HttpGet]
-        public async Task<IActionResult> AllReviews(int page = 1)
+        public async Task<IActionResult> AllReviews(int page = 1, int? userId = null)
         {
             try
             {
-                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                int targetUserId = userId ?? int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
                 var ratingsQuery = _context.Ratings
                     .Include(r => r.Reviewer)
-                    .Where(r => r.RevieweeID == userId && r.IsActive)
+                    .Where(r => r.RevieweeID == targetUserId && r.IsActive)
                     .OrderByDescending(r => r.DateRated);
 
                 var totalRatings = await ratingsQuery.CountAsync();
@@ -842,12 +844,13 @@ namespace StudentFreelance.Controllers
 
                 var model = new UserProfileViewModel
                 {
-                    UserID = userId,
+                    UserID = targetUserId,
                     ReceivedRatings = ratings,
                     CurrentPage = page,
                     TotalPages = (int)Math.Ceiling((double)totalRatings / pageSize),
                     TotalReviews = totalRatings,
-                    AverageRating = totalRatings > 0 ? (double?)await ratingsQuery.AverageAsync(r => r.Score) : null
+                    AverageRating = totalRatings > 0 ? (double?)await ratingsQuery.AverageAsync(r => r.Score) : null,
+                    IsCurrentUser = targetUserId == int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier))
                 };
 
                 return View("AllReviews", model);
@@ -858,6 +861,7 @@ namespace StudentFreelance.Controllers
                 return StatusCode(500);
             }
         }
+
 
     }
 }
