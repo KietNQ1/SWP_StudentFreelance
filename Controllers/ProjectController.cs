@@ -987,49 +987,66 @@ public async Task<IActionResult> ConfirmCompletion(int projectId, int applicatio
         [Authorize(Roles = "Business,Admin")]
         public async Task<IActionResult> TransferPayment(int projectId, int applicationId)
         {
-            if (projectId <= 0 || applicationId <= 0)
+            // Chuyển hướng người dùng đến trang ProjectSubmission/ProjectSubmissions để thanh toán
+            TempData["InfoMessage"] = "Vui lòng sử dụng trang kết quả dự án để thanh toán cho sinh viên.";
+            return RedirectToAction("ProjectSubmissions", "ProjectSubmission", new { applicationId });
+        }
+        
+        // POST: Projects/CompleteProject
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Business,Admin")]
+        public async Task<IActionResult> CompleteProject(int id)
+        {
+            if (id <= 0)
                 return NotFound();
 
             // Get current user ID
             var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             
-            // Get project and application
-            var project = await _context.Projects.FindAsync(projectId);
-            var application = await _context.StudentApplications
-                .Include(a => a.User)
-                .FirstOrDefaultAsync(a => a.ApplicationID == applicationId);
-            
-            if (project == null || application == null)
-                return NotFound();
-            
-            if (application.ProjectID != projectId)
+            // Get project
+            var project = await _context.Projects.FindAsync(id);
+            if (project == null)
                 return NotFound();
             
             // Check if user is authorized (business owner or admin)
-            if (project.BusinessID != currentUserId && !User.IsInRole("Admin"))
+            bool isAdmin = User.IsInRole("Admin");
+            if (project.BusinessID != currentUserId && !isAdmin)
             {
                 return Forbid();
             }
             
-            // Check if both parties have confirmed completion
-            if (!application.BusinessConfirmedCompletion || !application.StudentConfirmedCompletion)
-            {
-                TempData["ErrorMessage"] = "Cả hai bên phải xác nhận hoàn thành dự án trước khi thanh toán.";
-                return RedirectToAction(nameof(Details), new { id = projectId });
-            }
-            
             try
             {
-                // Complete the project and transfer funds
-                var result = await _projectService.CompleteProjectAndTransferFundsAsync(projectId, applicationId);
+                // Complete the project
+                var result = await _projectService.CompleteProjectByBusinessAsync(id, isAdmin ? project.BusinessID : currentUserId);
                 
-                if (result)
+                if (result.Success)
                 {
-                    TempData["SuccessMessage"] = "Thanh toán đã được chuyển thành công cho sinh viên.";
+                    TempData["SuccessMessage"] = "Dự án đã được đánh dấu là hoàn thành thành công.";
+                    
+                    // Gửi thông báo cho tất cả sinh viên đã tham gia dự án
+                    var completedApplications = await _context.StudentApplications
+                        .Where(a => a.ProjectID == id && a.Status == "Completed")
+                        .Include(a => a.User)
+                        .ToListAsync();
+                        
+                    foreach (var application in completedApplications)
+                    {
+                        await _notificationService.SendNotificationToUserAsync(
+                            application.UserID,
+                            "Dự án đã hoàn thành",
+                            $"Dự án '{project.Title}' đã được đánh dấu là hoàn thành bởi doanh nghiệp.",
+                            1, // Loại thông báo: Dự án
+                            project.ProjectID,
+                            project.BusinessID,
+                            true // Gửi email
+                        );
+                    }
                 }
                 else
                 {
-                    TempData["ErrorMessage"] = "Có lỗi xảy ra khi chuyển thanh toán.";
+                    TempData["ErrorMessage"] = result.ErrorMessage;
                 }
             }
             catch (Exception ex)
@@ -1037,7 +1054,72 @@ public async Task<IActionResult> ConfirmCompletion(int projectId, int applicatio
                 TempData["ErrorMessage"] = "Lỗi: " + ex.Message;
             }
             
-            return RedirectToAction(nameof(Details), new { id = projectId });
+            return RedirectToAction(nameof(Details), new { id });
+        }
+        
+        // POST: Projects/CancelProject
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Business,Admin")]
+        public async Task<IActionResult> CancelProject(int id)
+        {
+            if (id <= 0)
+                return NotFound();
+
+            // Get current user ID
+            var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            
+            // Get project
+            var project = await _context.Projects.FindAsync(id);
+            if (project == null)
+                return NotFound();
+            
+            // Check if user is authorized (business owner or admin)
+            bool isAdmin = User.IsInRole("Admin");
+            if (project.BusinessID != currentUserId && !isAdmin)
+            {
+                return Forbid();
+            }
+            
+            try
+            {
+                // Cancel the project
+                var result = await _projectService.CancelProjectByBusinessAsync(id, isAdmin ? project.BusinessID : currentUserId);
+                
+                if (result.Success)
+                {
+                    TempData["SuccessMessage"] = "Dự án đã được hủy thành công.";
+                    
+                    // Gửi thông báo cho tất cả sinh viên đã ứng tuyển vào dự án
+                    var applications = await _context.StudentApplications
+                        .Where(a => a.ProjectID == id)
+                        .Include(a => a.User)
+                        .ToListAsync();
+                        
+                    foreach (var application in applications)
+                    {
+                        await _notificationService.SendNotificationToUserAsync(
+                            application.UserID,
+                            "Dự án đã bị hủy",
+                            $"Dự án '{project.Title}' đã bị hủy bởi doanh nghiệp.",
+                            1, // Loại thông báo: Dự án
+                            project.ProjectID,
+                            project.BusinessID,
+                            true // Gửi email
+                        );
+                    }
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = result.ErrorMessage;
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Lỗi: " + ex.Message;
+            }
+            
+            return RedirectToAction(nameof(Details), new { id });
         }
 
         // GET: Projects/Debug

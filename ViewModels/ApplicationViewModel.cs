@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using StudentFreelance.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace StudentFreelance.ViewModels
 {
@@ -28,7 +29,7 @@ namespace StudentFreelance.ViewModels
         public string? PortfolioLink { get; set; }
         
         [Display(Name = "CV đính kèm")]
-        public string? ResumeAttachment { get; set; }
+        public IFormFile? ResumeAttachment { get; set; }
     }
     
     // ViewModel cho xác nhận chấp nhận sinh viên
@@ -73,7 +74,10 @@ namespace StudentFreelance.ViewModels
         public string? PortfolioLink { get; set; }
         
         [Display(Name = "CV đính kèm")]
-        public string? ResumeAttachment { get; set; }
+        public IFormFile? ResumeAttachment { get; set; }
+        
+        // Thêm trường để lưu đường dẫn CV hiện tại
+        public string? CurrentResumeAttachment { get; set; }
     }
     
     // ViewModel cho đơn ứng tuyển của sinh viên (sử dụng trong danh sách đơn ứng tuyển)

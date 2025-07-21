@@ -61,7 +61,8 @@ namespace StudentFreelance.ViewModels
         public int ProjectID { get; set; }
         public int BusinessID { get; set; }
         public int StudentID { get; set; }        // ID sinh viên để đánh giá
-
+        public bool IsPaid { get; set; } = false; // Đánh dấu đã thanh toán chưa
+        public bool HasBothConfirmed { get; set; } = false; // Đánh dấu cả hai bên đã xác nhận hoàn thành chưa
     }
 
     public class ProjectSubmissionFeedbackViewModel

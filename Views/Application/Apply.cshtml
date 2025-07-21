@@ -154,7 +154,7 @@
                         <div class="mb-3">
                             <label asp-for="Salary" class="form-label">Mức lương đề xuất (VNĐ)</label>
                             <div class="input-group">
-                                <input asp-for="Salary" class="form-control" type="number" min="1" />
+                                <input asp-for="Salary" class="form-control" type="number" min="1" step="1" />
                                 <span class="input-group-text">VNĐ</span>
                             </div>
                             <span asp-validation-for="Salary" class="text-danger"></span>
@@ -185,11 +185,10 @@
                         
                         <div class="mb-4">
                             <label asp-for="ResumeAttachment" class="form-label">CV của bạn (không bắt buộc)</label>
-                            <input type="file" name="resumeFile" id="resumeFile" class="form-control" accept=".pdf,.doc,.docx" />
-                            <input asp-for="ResumeAttachment" type="hidden" />
+                            <input asp-for="ResumeAttachment" type="file" class="form-control" accept=".pdf,.doc,.docx" />
                             <span asp-validation-for="ResumeAttachment" class="text-danger"></span>
                             <div class="form-text">
-                                <i class="bi bi-file-earmark-pdf"></i> Tải lên CV của bạn. Định dạng hỗ trợ: PDF, DOC, DOCX.
+                                <i class="bi bi-file-earmark-pdf"></i> Tải lên CV của bạn (không bắt buộc). Định dạng hỗ trợ: PDF, DOC, DOCX.
                             </div>
                         </div>
                         

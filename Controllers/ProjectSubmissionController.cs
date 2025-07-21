@@ -330,6 +330,8 @@ namespace StudentFreelance.Controllers
                 ProjectTitle = application.Project?.Title ?? "Không xác định",
                 StudentName = application.User?.FullName ?? "Không xác định",
                 ApplicationStatus = application.Status ?? "Không xác định",
+                IsPaid = application.IsPaid, // Thêm thông tin đã thanh toán chưa
+                HasBothConfirmed = application.BusinessConfirmedCompletion && application.StudentConfirmedCompletion, // Thêm thông tin cả hai bên đã xác nhận chưa
                 Submissions = submissions.Select(s => new ProjectSubmissionViewModel
                 {
                     SubmissionID = s.SubmissionID,

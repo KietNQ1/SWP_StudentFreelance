@@ -60,6 +60,7 @@
                         <input type="hidden" asp-for="ProjectTitle" />
                         <input type="hidden" asp-for="BusinessName" />
                         <input type="hidden" asp-for="ProjectBudget" />
+                        <input type="hidden" asp-for="CurrentResumeAttachment" />
 
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
@@ -72,7 +73,7 @@
 
                         <div class="mb-3">
                             <label asp-for="Salary" class="form-label">Mức lương đề xuất (VNĐ)</label>
-                            <input asp-for="Salary" type="number" class="form-control" min="1" step="1000" />
+                            <input asp-for="Salary" type="number" class="form-control" min="1" step="1" value="@((int)Model.Salary)" />
                             <span asp-validation-for="Salary" class="text-danger"></span>
                         </div>
 
@@ -83,19 +84,20 @@
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="ResumeAttachment" class="form-label">CV đính kèm hiện tại (không bắt buộc)</label>
+                            <label class="form-label">CV đính kèm hiện tại (không bắt buộc)</label>
                             <div class="input-group mb-2">
-                                <input asp-for="ResumeAttachment" type="text" class="form-control" readonly />
-                                @if (!string.IsNullOrEmpty(Model.ResumeAttachment))
+                                <input type="text" value="@Model.CurrentResumeAttachment" class="form-control" readonly />
+                                @if (!string.IsNullOrEmpty(Model.CurrentResumeAttachment))
                                 {
-                                    <a href="@Model.ResumeAttachment" target="_blank" class="btn btn-outline-primary">
+                                    <a href="@Model.CurrentResumeAttachment" target="_blank" class="btn btn-outline-primary">
                                         <i class="bi bi-eye"></i> Xem
                                     </a>
                                 }
                             </div>
-                            <input type="file" name="newResumeFile" id="newResumeFile" class="form-control" accept=".pdf,.doc,.docx" />
+                            <label asp-for="ResumeAttachment" class="form-label">Tải lên CV mới (không bắt buộc)</label>
+                            <input asp-for="ResumeAttachment" type="file" class="form-control" accept=".pdf,.doc,.docx" />
                             <span asp-validation-for="ResumeAttachment" class="text-danger"></span>
-                            <div class="form-text">Để thay đổi CV đính kèm, hãy tải lên tệp mới. Định dạng hỗ trợ: PDF, DOC, DOCX.</div>
+                            <div class="form-text">Để thay đổi CV đính kèm, hãy tải lên tệp mới (không bắt buộc). Định dạng hỗ trợ: PDF, DOC, DOCX.</div>
                         </div>
 
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">

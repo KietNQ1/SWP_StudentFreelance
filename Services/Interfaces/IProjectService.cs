@@ -33,5 +33,11 @@ namespace StudentFreelance.Services.Interfaces
 
         // Update project with wallet transaction (if budget increased)
         Task<(bool Success, Project Project, string ErrorMessage)> UpdateProjectWithTransactionAsync(Project project, decimal originalBudget);
+        
+        // Complete project by business owner
+        Task<(bool Success, string ErrorMessage)> CompleteProjectByBusinessAsync(int projectId, int businessId);
+        
+        // Cancel project by business owner
+        Task<(bool Success, string ErrorMessage)> CancelProjectByBusinessAsync(int projectId, int businessId);
     }
 } 
