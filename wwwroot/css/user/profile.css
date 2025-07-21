@@ -1,141 +1,217 @@
 ﻿:root {
-    --primary: #89ac46; /* Màu chủ đạo StudentFreelance */
-    --accent1: #f0f9ff;
-    --accent2: #eaf4fc;
-    --accent3: #28a745;
-    --warning: #f1c40f; /* Vàng cho đánh giá sao */
-    --light-gray: #f8f9fa;
+    --primary-color: #3C6E47;
+    --primary-light: #d4e8dc;
+    --text-dark: #333;
+    --text-light: #fff;
+    --gray-border: #ccc;
 }
 
-/* -------------------- Font & Layout Reset -------------------- */
-body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: #F8F8F8;
-    color: #333;
-    margin: 0;
-    padding: 0;
+.airbnb-profile {
+    max-width: 1200px;
+    margin: auto;
+    padding: 2rem;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
 }
 
-/* -------------------- Avatar -------------------- */
+.profile-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.avatar-container {
+    flex: 0 0 33.3333%;
+    max-width: 33.3333%;
+}
+
 .avatar-img {
-    width: 120px;
-    height: 120px;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    height: auto !important;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 4px solid var(--primary-color);
+    display: block;
+}
+
+.profile-content {
+    flex: 1;
+}
+
+.profile-main-info {
+    flex: 1;
+}
+
+.star-rating i,
+.star-rating .fa-star.filled {
+    color: #ffc107;
+    font-size: 1.2rem;
+}
+
+.star-rating .fa-star {
+    color: #ccc;
+}
+
+.section-title {
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+    color: var(--primary-color);
+}
+
+.profile-info-box {
+    border-top: 1px solid #ddd;
+    padding-top: 1rem;
+    margin-top: 1rem;
+}
+
+.info-row {
+    display: flex;
+    margin-bottom: 0.5rem;
+}
+
+.info-label {
+    width: 160px;
+    font-weight: 500;
+    color: #555;
+}
+
+.info-value {
+    flex: 1;
+    color: #333;
+}
+
+.skill-tag {
+    display: inline-block;
+    background: var(--primary-light);
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    padding: 0.3rem 0.6rem;
+    margin: 0.2rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    transition: all 0.3s;
+}
+
+    .skill-tag:hover {
+        background: var(--primary-color);
+        color: var(--text-light);
+    }
+
+.rating-card {
+    margin-bottom: 1rem;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+    .profile-header img.avatar-img {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 4px solid var(--primary-color);
+        height: auto;
+        max-width: 100%;
+    }
+
+.avatar-section {
+    flex: 0 0 33.3333%;
+    max-width: 33.3333%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.avatar-img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 4px solid var(--primary-color);
+    max-width: 100%;
+}
+
+.content-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.rating-avatar-img {
+    width: 48px;
+    height: 48px;
     object-fit: cover;
     border-radius: 50%;
-    border: 3px solid var(--primary);
+    display: block;
+    border: 2px solid var(--primary-color);
 }
 
-    .avatar-img[src=""],
-    .avatar-img:not([src]) {
-        content: url('/images/default-avatar.png');
-    }
-
-/* -------------------- Form layout -------------------- */
-.profile-form {
-    background-color: white;
-    border-radius: 12px;
-    padding: 2rem;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+.average-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+    flex-wrap: nowrap;
+    font-size: 1.1rem;
 }
 
-    .profile-form label {
-        font-weight: 500;
-        margin-bottom: 0.25rem;
+    .average-rating .star-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.2rem;
     }
 
-    .profile-form input,
-    .profile-form select,
-    .profile-form textarea {
-        border-radius: 8px;
-    }
-
-/* -------------------- Section Title -------------------- */
-.section-title {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--primary);
-    margin-top: 1.5rem;
-    margin-bottom: 0.75rem;
+.rating-number {
+    font-weight: 500;
+    color: #333;
 }
 
-/* -------------------- Skill Entries -------------------- */
-.skill-entry {
-    margin-bottom: 1rem;
-    border: 1px solid #e0e0e0;
-    padding: 1rem;
+/* ==== Nút chung ==== */
+.btn {
+    padding: 0.4rem 0.85rem;
     border-radius: 8px;
-    background-color: #fafafa;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: 0.3s;
+    text-decoration: none;
 }
 
-/* -------------------- Buttons -------------------- */
+/* Nút mặc định với viền olive */
 .btn-outline-primary,
 .btn-outline-secondary,
 .btn-outline-info {
-    border: 1px solid var(--primary);
-    background-color: transparent;
-    color: var(--primary);
-    transition: 0.2s ease-in-out;
+    background: transparent;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
 }
 
     .btn-outline-primary:hover,
     .btn-outline-secondary:hover,
     .btn-outline-info:hover {
-        background-color: var(--primary);
-        color: white;
+        background: var(--primary-color);
+        color: var(--text-light);
     }
 
-/* -------------------- Star Rating -------------------- */
-.star-rating .fas,
-.star-rating .far,
-.star-rating .fa-star-half-alt {
-    color: var(--warning);
-    margin-right: 2px;
+    /* Nút xem tất cả đánh giá: nền xanh chữ trắng từ đầu */
+    .btn-outline-info[href*="/AllReviews"] {
+        background: var(--primary-color);
+        color: var(--text-light);
+        border: none;
+    }
+
+/* Nút nâng cấp VIP giữ nguyên màu vàng */
+.btn-warning {
+    background-color: #ffc107;
+    border: none;
+    color: #333;
 }
 
-.star-rating .filled {
-    color: var(--warning);
-}
-
-/* -------------------- Rating Cards -------------------- */
-.rating-card {
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    background-color: #ffffff;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.03);
-}
-
-    .rating-card h6 {
-        margin-bottom: 0.25rem;
-        font-weight: 600;
+    .btn-warning:hover {
+        background-color: #e0aa00;
+        color: #000;
     }
-
-    .rating-card small {
-        color: #888;
-    }
-
-/* -------------------- Responsive -------------------- */
-@media (max-width: 768px) {
-    .avatar-img {
-        width: 100px;
-        height: 100px;
-    }
-
-    .profile-form {
-        padding: 1rem;
-    }
-}
-
-/* -------------------- Button Fix -------------------- */
-.btn.btn-outline-primary {
-    border: 1px solid var(--primary) !important;
-    background-color: transparent !important;
-    color: var(--primary) !important;
-}
-
-    .btn.btn-outline-primary:hover {
-        background-color: var(--primary) !important;
-        color: white !important;
-    }
-
