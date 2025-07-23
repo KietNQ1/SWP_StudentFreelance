@@ -48,6 +48,7 @@ namespace StudentFreelance.Controllers
         }
 
         // Sửa người dùng
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> Edit(string id)
         {
