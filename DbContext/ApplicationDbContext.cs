@@ -17,10 +17,6 @@ namespace StudentFreelance.DbContext
 
         // DbSet declarations
 
-
-        public DbSet<Province> Provinces { get; set; }
-        public DbSet<District> Districts { get; set; }
-        public DbSet<Ward> Wards { get; set; }
         public DbSet<Address> Addresses { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Skill> Skills { get; set; }
@@ -102,20 +98,6 @@ namespace StudentFreelance.DbContext
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Relationships
-
-            // Provinces → Districts
-            modelBuilder.Entity<District>()
-                .HasOne(d => d.Province)
-                .WithMany(p => p.Districts)
-                .HasForeignKey(d => d.ProvinceID)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Districts → Wards
-            modelBuilder.Entity<Ward>()
-                .HasOne(w => w.District)
-                .WithMany(d => d.Wards)
-                .HasForeignKey(w => w.DistrictID)
-                .OnDelete(DeleteBehavior.Restrict);
 
             // Users → Address
             modelBuilder.Entity<ApplicationUser>()

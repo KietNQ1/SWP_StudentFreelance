@@ -1,9 +1,9 @@
-@model IEnumerable<StudentFreelance.Models.Province>
+@model IEnumerable<string>
 
 <select name="location" id="provinceDropdown" class="form-control location-input">
     <option value="">Chọn tỉnh/thành phố</option>
-    @foreach (var province in Model)
+    @foreach (var provinceName in Model)
     {
-        <option value="@province.Name">@province.Name</option>
+        <option value="@provinceName">@provinceName</option>
     }
 </select> 

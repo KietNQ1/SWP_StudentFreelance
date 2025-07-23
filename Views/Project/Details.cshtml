@@ -4,267 +4,8 @@
 @{
     ViewData["Title"] = Model.Title;
 }
+<link rel="stylesheet" href="~/css/project/detail.css" />
 
-
-<style>
-    :root {
-        --primary: #89AC46;
-        --accent1: #D3E671;
-        --accent2: #F8ED8C;
-        --accent3: #FF8989;
-    }
-
-    body {
-        background-color: #F8F8F8;
-        color: #222;
-        font-family: 'Segoe UI', sans-serif;
-    }
-
-    h1, h5, h6 {
-        font-weight: 600;
-        color: #222;
-    }
-
-    .breadcrumb {
-        background-color: transparent;
-        font-size: 0.95rem;
-        color: #555;
-    }
-
-    .card {
-        border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        border-left: 5px solid var(--primary);
-        background-color: #ffffff;
-        border: 1px solid #ddd;
-    }
-
-    .card-header {
-        background-color: var(--accent1);
-        color: #222;
-        font-weight: 600;
-        border-top-left-radius: 12px;
-        border-top-right-radius: 12px;
-        border-bottom: 1px solid #ddd;
-    }
-
-    .badge {
-        font-size: 0.85rem;
-        padding: 0.4em 0.7em;
-        border-radius: 20px;
-        font-weight: 500;
-    }
-
-        .badge.bg-primary {
-            background-color: var(--primary) !important;
-            color: white;
-        }
-
-        .badge.bg-warning {
-            background-color: var(--accent2);
-            color: #222;
-        }
-
-        .badge.bg-info {
-            background-color: #A3DFF2;
-            color: #222;
-        }
-
-        .badge.bg-secondary {
-            background-color: #e0f4d7; /* xanh nhạt pastel */
-            color: #1a1a1a;
-            font-weight: 600;
-            border: 1px solid #c4eac2;
-        }
-
-
-        .badge.bg-danger {
-            background-color: var(--accent3);
-            color: white;
-        }
-
-        .badge.bg-success {
-            background-color: #6FCF97;
-            color: white;
-        }
-
-    .list-group-item {
-        background-color: #fff;
-        border: 1px solid #ddd;
-        padding: 12px 15px;
-        color: #222;
-    }
-
-    .btn-outline-primary {
-        border: 2px solid var(--primary); /* tăng độ dày viền */
-        color: var(--primary);
-        background-color: #fff;
-        font-weight: 600;
-        transition: background 0.2s, color 0.2s, border-color 0.2s;
-    }
-
-        .btn-outline-primary:hover {
-            background-color: var(--primary);
-            color: #fff;
-            border-color: var(--primary);
-        }
-
-
-    .btn-outline-secondary {
-        border-color: var(--accent1);
-        color: var(--primary);
-        background-color: #fff;
-    }
-
-        .btn-outline-secondary:hover {
-            background-color: var(--accent1);
-            color: #111;
-        }
-
-    .btn-outline-success {
-        border-color: #6FCF97;
-        color: #6FCF97;
-    }
-
-        .btn-outline-success:hover {
-            background-color: #6FCF97;
-            color: white;
-        }
-
-    .btn-success {
-        background-color: var(--accent3);
-        border-color: var(--accent3);
-        font-weight: 600;
-        color: white;
-    }
-
-        .btn-success:hover {
-            background-color: #e55b5b;
-            border-color: #e55b5b;
-            color: white;
-        }
-
-    .btn-primary {
-        background-color: var(--primary);
-        border-color: var(--primary);
-        color: white;
-    }
-
-        .btn-primary:hover {
-            background-color: #6d9138;
-            border-color: #6d9138;
-        }
-
-    .btn-warning {
-        background-color: var(--accent2);
-        border-color: var(--accent2);
-        color: #222;
-    }
-
-        .btn-warning:hover {
-            background-color: #f7e464;
-            border-color: #f7e464;
-        }
-
-    .btn-info {
-        background-color: #A3DFF2;
-        border-color: #A3DFF2;
-        color: #222;
-    }
-
-        .btn-info:hover {
-            background-color: #91cde1;
-            border-color: #91cde1;
-            color: #000;
-        }
-
-    .avatar-placeholder {
-        background-color: var(--accent1);
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        color: #333;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        font-size: 1.2rem;
-    }
-
-    .formatted-content p {
-        margin-bottom: 1rem;
-        color: #222;
-    }
-
-    .formatted-content ul {
-        padding-left: 1.2rem;
-    }
-
-    .formatted-content li {
-        margin-bottom: 0.5rem;
-    }
-
-    .alert-info {
-        background-color: #D3E67166;
-        border-left: 4px solid var(--primary);
-        color: #333;
-    }
-
-    .alert-success {
-        background-color: #BFF5C0;
-        border-left: 4px solid #6FCF97;
-        color: #234;
-    }
-
-    .alert-danger {
-        background-color: #FFBFBF;
-        border-left: 4px solid var(--accent3);
-        color: #222;
-    }
-
-    .alert-warning {
-        background-color: #FFF9C4;
-        border-left: 4px solid var(--accent2);
-        color: #222;
-    }
-
-    .btn-group .btn {
-        font-size: 0.9rem;
-    }
-
-    .alert {
-        border-radius: 10px;
-        border: 1px solid #ccc;
-    }
-
-    @@media (max-width: 768px) {
-        .btn-group
-
-    {
-        flex-direction: column;
-        width: 100%;
-    }
-
-    .btn-group .btn {
-        width: 100%;
-        margin-bottom: 0.5rem;
-    }
-
-    }
-
-    .skill-badge {
-        background-color: #e6f9d9;
-        color: #222;
-        border: 1px solid #cceccc;
-        font-weight: 600;
-    }
-
-</style>
-
-
-@{
-    ViewData["Title"] = Model.Title;
-}
 
 <div class="container mt-4">
     <nav aria-label="breadcrumb">
@@ -387,7 +128,7 @@
                 @if (User.IsInRole("Student"))
                 {
                     <a asp-controller="Application" asp-action="Apply" asp-route-projectId="@Model.ProjectID"
-                       class="btn btn-success">
+                       class="btn-apply">
                         <i class="bi bi-send"></i> Ứng tuyển vào dự án
                     </a>
                 }
@@ -461,10 +202,14 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-3">
                         <div class="avatar me-3">
-                            <div class="avatar-placeholder">
-                                @(Model.Business.UserName != null ? Model.Business.UserName.Substring(0, 1).ToUpper() : "U")
-                            </div>
+                            <img src="@(!string.IsNullOrEmpty(Model.Business.Avatar)
+    ? Url.Content($"~/uploads/avatars/{Model.Business.Avatar}")
+    : Url.Content("~/image/default-avatar.png"))"
+                                 alt="Avatar"
+                                 class="img-fluid rounded-circle avatar-img" />
+
                         </div>
+
                         <div>
                             <h6 class="mb-0">@Model.Business.FullName</h6>
                             <small class="text-muted">Member since @(Model.Business.CreatedAt.ToString("MMM yyyy"))</small>
@@ -481,18 +226,20 @@
                     }
 
                     <div class="mt-3">
-                        <a asp-controller="User" asp-action="Profile" asp-route-id="@Model.BusinessID"
-                           class="btn btn-outline-primary btn-sm w-100">
-                            <i class="bi bi-person"></i> View Profile
-                        </a>
+                        <div class="d-flex justify-content-between gap-2 flex-wrap mt-3">
+                            <a asp-controller="User" asp-action="Profile" asp-route-id="@Model.BusinessID"
+                               class="btn btn-view-profile flex-fill">
+                                <i class="bi bi-person"></i> View Profile
+                            </a>
 
+                            <form asp-controller="Chat" asp-action="StartProjectChat" method="post" class="flex-fill">
+                                <input type="hidden" name="projectId" value="@Model.ProjectID" />
+                                <button type="submit" class="btn btn-apply w-100">
+                                    <i class="bi bi-chat-dots"></i> Nhắn tin với chủ dự án
+                                </button>
+                            </form>
+                        </div>
 
-                        <form asp-controller="Chat" asp-action="StartProjectChat" method="post">
-                            <input type="hidden" name="projectId" value="@Model.ProjectID" />
-                            <button type="submit" class="btn btn-success mt-2 w-100">
-                                <i class="bi bi-chat-dots"></i> Nhắn tin với chủ dự án
-                            </button>
-                        </form>
                     </div>
                 </div>
             </div>
@@ -721,3 +468,5 @@ else
     </div>
 }
 </div>
+
+

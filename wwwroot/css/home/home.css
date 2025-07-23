@@ -71,21 +71,28 @@ body {
     pointer-events: auto;
 }
 
-/* Navigation Controls */
+/* Slideshow navigation controls */
 .slideshow-prev,
 .slideshow-next {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(0, 0, 0, 0.5);
+    z-index: 20; /* Higher z-index than slides and ad-links */
+    background: rgba(255, 255, 255, 0.3);
     color: white;
     border: none;
-    padding: 15px 20px;
-    cursor: pointer;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
     font-size: 1.5rem;
+    cursor: pointer;
     transition: all 0.3s ease;
-    z-index: 10;
-    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .slideshow-prev {
@@ -98,11 +105,10 @@ body {
 
 .slideshow-prev:hover,
 .slideshow-next:hover {
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(255, 255, 255, 0.5);
     transform: translateY(-50%) scale(1.1);
 }
 
-/* Slide indicators */
 .slideshow-dots {
     position: absolute;
     bottom: 20px;
@@ -110,7 +116,7 @@ body {
     transform: translateX(-50%);
     display: flex;
     gap: 10px;
-    z-index: 10;
+    z-index: 20; /* Higher z-index than slides and ad-links */
 }
 
 .slideshow-dot {
@@ -120,6 +126,7 @@ body {
     background: rgba(255, 255, 255, 0.5);
     cursor: pointer;
     transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .slideshow-dot.active {
@@ -129,6 +136,32 @@ body {
 
 .slideshow-dot:hover {
     background: rgba(255, 255, 255, 0.8);
+}
+
+@media (max-width: 768px) {
+    .slideshow-prev,
+    .slideshow-next {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+    
+    .slideshow-prev {
+        left: 10px;
+    }
+    
+    .slideshow-next {
+        right: 10px;
+    }
+    
+    .slideshow-dots {
+        bottom: 15px;
+    }
+    
+    .slideshow-dot {
+        width: 10px;
+        height: 10px;
+    }
 }
 
 /* Hero Content */
@@ -339,57 +372,37 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    background: white;
 }
 
-    .service-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
-    }
-
-    .service-card.green {
-        background: linear-gradient(135deg, #89AC46 0%, #D3E671 100%);
-    }
-
-    .service-card.pink {
-        background: linear-gradient(135deg, #FF8989 0%, #FFB6B6 100%);
-    }
-
-    .service-card.orange {
-        background: linear-gradient(135deg, #F8ED8C 0%, #FFD93D 100%);
-    }
-
-    .service-card.teal {
-        background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
-    }
-
-    .service-card.purple {
-        background: linear-gradient(135deg, #A8E6CF 0%, #88D8A3 100%);
-    }
-
-    .service-card.yellow {
-        background: linear-gradient(135deg, #F8ED8C 0%, #D3E671 100%);
-    }
-
-.card-content {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2;
+.service-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
 }
 
-    .card-content h3 {
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: white;
-        text-align: center;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-    }
+.service-card.green {
+    background: linear-gradient(135deg, #89AC46 0%, #D3E671 100%);
+}
+
+.service-card.pink {
+    background: linear-gradient(135deg, #FF8989 0%, #FFB6B6 100%);
+}
+
+.service-card.orange {
+    background: linear-gradient(135deg, #F8ED8C 0%, #FFD93D 100%);
+}
+
+.service-card.teal {
+    background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
+}
+
+.service-card.purple {
+    background: linear-gradient(135deg, #A8E6CF 0%, #88D8A3 100%);
+}
+
+.service-card.yellow {
+    background: linear-gradient(135deg, #F8ED8C 0%, #D3E671 100%);
+}
 
 .card-image {
     position: absolute;
@@ -397,18 +410,52 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    opacity: 0.2;
+    opacity: 1;
     transition: opacity 0.3s ease;
-}
-
-.service-card:hover .card-image {
-    opacity: 0.3;
+    z-index: 1;
 }
 
 .card-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center;
+}
+
+.card-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0) 100%);
+    z-index: 2;
+    pointer-events: none;
+}
+
+.card-content h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+    margin-bottom: 0.5rem;
+    pointer-events: none;
+}
+
+.card-link {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    cursor: pointer;
+}
+
+.vip-badge {
+    z-index: 11;
+    position: relative;
+    pointer-events: none;
 }
 
 /* Enterprise Section */
@@ -646,8 +693,6 @@ body {
         gap: 1rem;
     }
 }
-
-
 
 /* Top Projects Section */
 .top-projects {
@@ -929,95 +974,46 @@ body {
     }
 }
 
-/* Add styles for the slideshow navigation controls */
-.slideshow-prev,
-.slideshow-next {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 20; /* Higher z-index than slides and ad-links */
-    background: rgba(255, 255, 255, 0.3);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    font-size: 1.5rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    -webkit-backdrop-filter: blur(5px);
-    backdrop-filter: blur(5px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+/* VIP Badge */
+.vip-badge {
+  display: inline-block;
+  background-color: #ffd700;
+  color: #000;
+  font-size: 0.8rem;
+  font-weight: bold;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: 8px;
+  text-transform: uppercase;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.slideshow-prev {
-    left: 20px;
+/* Make service cards clickable */
+.service-card {
+  position: relative;
 }
 
-.slideshow-next {
-    right: 20px;
+.card-link {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  cursor: pointer;
 }
 
-.slideshow-prev:hover,
-.slideshow-next:hover {
-    background: rgba(255, 255, 255, 0.5);
-    transform: translateY(-50%) scale(1.1);
+.card-content {
+    z-index: 5;
+    pointer-events: none;
 }
 
-.slideshow-dots {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 10px;
-    z-index: 20; /* Higher z-index than slides and ad-links */
+.card-content h3 {
+    pointer-events: none;
 }
 
-.slideshow-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.5);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.slideshow-dot.active {
-    background: white;
-    transform: scale(1.2);
-}
-
-.slideshow-dot:hover {
-    background: rgba(255, 255, 255, 0.8);
-}
-
-@media (max-width: 768px) {
-    .slideshow-prev,
-    .slideshow-next {
-        width: 40px;
-        height: 40px;
-        font-size: 1.2rem;
-    }
-    
-    .slideshow-prev {
-        left: 10px;
-    }
-    
-    .slideshow-next {
-        right: 10px;
-    }
-    
-    .slideshow-dots {
-        bottom: 15px;
-    }
-    
-    .slideshow-dot {
-        width: 10px;
-        height: 10px;
-    }
+.vip-badge {
+    z-index: 11;
+    position: relative;
+    pointer-events: none;
 }
