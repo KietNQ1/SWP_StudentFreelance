@@ -89,17 +89,18 @@
             User.FindFirst(ClaimTypes.NameIdentifier)?.Value == Model.BusinessID.ToString()))
             {
                 <div class="btn-group">
-                    <a asp-action="Edit" asp-route-id="@Model.ProjectID" class="btn btn-outline-primary">
-                        <i class="bi bi-pencil"></i> Edit Project
+                    <a asp-action="Edit" asp-route-id="@Model.ProjectID" class="btn btn-outline-theme me-2">
+                        <i class="bi bi-pencil"></i> Chỉnh sửa
                     </a>
-                    <a asp-action="Delete" asp-route-id="@Model.ProjectID" class="btn btn-outline-danger">
-                        <i class="bi bi-trash"></i> Delete
+                    <a asp-action="Delete" asp-route-id="@Model.ProjectID" class="btn btn-outline-theme me-2">
+                        <i class="bi bi-trash"></i> Xoá
                     </a>
                     <a asp-controller="Application" asp-action="ProjectApplications" asp-route-projectId="@Model.ProjectID"
-                       class="btn btn-outline-success">
+                       class="btn btn-outline-theme">
                         <i class="bi bi-people"></i> Xem ứng viên (@Model.StudentApplications.Count)
                     </a>
                 </div>
+
             }
             @if (User.Identity != null && User.Identity.IsAuthenticated && 
                  (User.IsInRole("Admin") || User.IsInRole("Moderator")))
@@ -283,7 +284,7 @@
     {
         // Thêm nút hoàn thành và hủy dự án
         <div class="card mb-3">
-            <div class="card-header bg-primary text-white">
+                <div class="card-header project-header">
                 <h5 class="mb-0">Quản lý dự án</h5>
             </div>
             <div class="card-body">
@@ -324,7 +325,7 @@
             a.Status == "InProgress" || a.Status == "PendingReview" || a.Status == "Completed"))
         {
             <div class="card mb-3">
-                <div class="card-header bg-success text-white">
+                    <div class="card-header project-header">
                     <h5 class="mb-0">Kết quả dự án</h5>
                 </div>
                 <div class="card-body">
