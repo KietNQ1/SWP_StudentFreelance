@@ -1,35 +1,39 @@
 ﻿@model StudentFreelance.Models.Skill
 
 @{
-    ViewData["Title"] = "Chỉnh sửa kỹ năng";
+    ViewData["Title"] = "Edit Skill";
 }
+<link rel="stylesheet" href="~/css/skills/edit.css" />
 
-<h2>@ViewData["Title"]</h2>
+<h2 class="page-title">@ViewData["Title"]</h2>
 
 @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
 
 @using (Html.BeginForm())
 {
     @Html.AntiForgeryToken()
+
     @Html.HiddenFor(m => m.SkillID)
 
     <div class="form-group">
-        @Html.LabelFor(m => m.SkillName)
+        @Html.LabelFor(m => m.SkillName, htmlAttributes: new { @class = "form-label" })
         @Html.TextBoxFor(m => m.SkillName, new { @class = "form-control" })
         @Html.ValidationMessageFor(m => m.SkillName, "", new { @class = "text-danger" })
     </div>
 
     <div class="form-group">
-        @Html.LabelFor(m => m.CategoryID)
-        @Html.DropDownListFor(m => m.CategoryID, ViewData["CategoryID"] as SelectList, "-- Chọn danh mục --", new { @class = "form-control" })
+        @Html.LabelFor(m => m.CategoryID, htmlAttributes: new { @class = "form-label" })
+        @Html.DropDownListFor(m => m.CategoryID, ViewData["CategoryID"] as SelectList, "-- Select Category --", new { @class = "form-control" })
         @Html.ValidationMessageFor(m => m.CategoryID, "", new { @class = "text-danger" })
     </div>
 
     <div class="form-check mb-3">
         @Html.CheckBoxFor(m => m.IsActive, new { @class = "form-check-input" })
-        @Html.LabelFor(m => m.IsActive, new { @class = "form-check-label" })
+        @Html.LabelFor(m => m.IsActive, htmlAttributes: new { @class = "form-check-label" })
     </div>
 
-    <button type="submit" class="btn btn-success">Lưu thay đổi</button>
-    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+    <div class="form-btn-group">
+        <button type="submit" class="btn btn-save">Save Changes</button>
+        <a href="javascript:history.back()" class="btn btn-cancel">Cancel</a>
+    </div>
 }
