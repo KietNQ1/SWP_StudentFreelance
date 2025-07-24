@@ -57,7 +57,12 @@
 
                 <div class="info-row">
                     <div class="info-label">Địa chỉ:</div>
-                    <div class="info-value">@Model.DetailAddress, @Model.WardName, @Model.DistrictName, @Model.ProvinceName</div>
+                    @{
+                        var addressParts = new[] { Model.DetailAddress, Model.WardName, Model.DistrictName, Model.ProvinceName };
+                        var fullAddress = string.Join(", ", addressParts.Where(p => !string.IsNullOrWhiteSpace(p)));
+                    }
+                    <div class="info-value">@fullAddress</div>
+
                 </div>
             </div>
 
