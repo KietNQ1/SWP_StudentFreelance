@@ -1,0 +1,136 @@
+﻿:root {
+    --primary: #89AC46;
+    --accent1: #D3E671;
+    --accent2: #F8ED8C;
+    --accent3: #FF8989;
+    --text-light: #fff;
+    --text-dark: #333;
+}
+
+body {
+    background-color: #f8f8f8;
+    color: var(--text-dark);
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Reuse card & header styling */
+.card {
+    border: 1px solid #ddd;
+    border-radius: 16px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.card-header {
+    background-color: var(--primary) !important;
+    color: var(--text-light);
+    font-weight: 600;
+    border-radius: 16px 16px 0 0;
+}
+
+/* Section headings */
+h2 {
+    color: var(--primary);
+    font-weight: bold;
+}
+
+/* Divider */
+hr {
+    border-top: 2px solid var(--accent1);
+}
+
+/* Badge styling */
+.badge {
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    border-radius: 8px;
+}
+
+.bg-success {
+    background-color: #28a745 !important;
+    color: #fff;
+}
+
+.bg-danger {
+    background-color: var(--accent3) !important;
+    color: #fff;
+}
+
+.bg-warning {
+    background-color: var(--accent2) !important;
+    color: #333;
+}
+
+/* Styled text */
+.text-muted {
+    color: #777 !important;
+    font-size: 0.95rem;
+}
+
+/* Content block */
+.border.bg-light {
+    background-color: #f9f9f9 !important;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    color: var(--text-dark);
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+/* Table customization */
+.table {
+    font-size: 0.95rem;
+}
+
+    .table th {
+        background-color: var(--accent1);
+        color: #333;
+        font-weight: 600;
+    }
+
+    .table td, .table th {
+        vertical-align: middle;
+    }
+
+/* Buttons */
+.btn-info {
+    background-color: var(--accent2);
+    border: 2px solid var(--accent2);
+    color: #333;
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 8px 18px;
+    transition: 0.2s ease;
+}
+
+    .btn-info:hover {
+        background-color: transparent;
+        color: var(--accent2);
+        border-color: var(--accent2);
+    }
+
+.btn-sm.btn-primary {
+    background-color: var(--primary);
+    border: none;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+    .btn-sm.btn-primary:hover {
+        background-color: transparent;
+        color: var(--primary);
+        border: 1px solid var(--primary);
+    }
+
+/* Spacing on return buttons */
+.mt-3 .btn {
+    margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+    .btn {
+        width: 100%;
+    }
+}
