@@ -1,29 +1,39 @@
 ﻿@model StudentFreelance.Models.Skill
-
 @{
-    ViewData["Title"] = "Ngừng sử dụng kỹ năng";
+    ViewData["Title"] = "Disable Skill";
 }
 
-<h2>@ViewData["Title"]</h2>
+<link rel="stylesheet" href="~/css/skills/hide.css" />
 
-<h4>Bạn có chắc muốn ngừng sử dụng kỹ năng này không?</h4>
-<p>
-    Kỹ năng sẽ không bị xóa khỏi hệ thống nhưng sẽ không thể được sử dụng trong tuyển dụng, tạo dự án hoặc gán cho sinh viên nữa.
-</p>
+<div class="disable-skill-container">
+    <div class="header-section">
+        <h2>@ViewData["Title"]</h2>
+        <span class="warning-icon">⚠️</span>
+    </div>
 
-<div>
-    <dl class="row">
-        <dt class="col-sm-3">Tên kỹ năng</dt>
-        <dd class="col-sm-9">@Model.SkillName</dd>
+    <div class="confirmation-card">
+        <h4>Are you sure you want to disable this skill?</h4>
+        <p class="info-text">
+            The skill will not be deleted from the system but will no longer be available for recruitment,
+            project creation, or assignment to students.
+        </p>
 
-        <dt class="col-sm-3">Thể loại</dt>
-        <dd class="col-sm-9">@Model.Category?.CategoryName</dd>
-    </dl>
+        <div class="skill-details">
+            <dl class="row">
+                <dt class="col-sm-3">Skill Name</dt>
+                <dd class="col-sm-9">@Model.SkillName</dd>
+                <dt class="col-sm-3">Category</dt>
+                <dd class="col-sm-9">@Model.Category?.CategoryName</dd>
+            </dl>
+        </div>
 
-    <form asp-action="Delete" method="post">
-        @Html.AntiForgeryToken()
-        <input type="hidden" asp-for="SkillID" />
-        <button type="submit" class="btn btn-danger">Xác nhận ngừng sử dụng</button>
-        <a asp-action="Index" class="btn btn-secondary">Hủy</a>
-    </form>
+        <form asp-action="Delete" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="SkillID" />
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-danger">Confirm Disable</button>
+                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
 </div>

@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using StudentFreelance.ViewModels;
 using System;
+using System.Security.Claims;
 
 namespace StudentFreelance.Controllers
 {
@@ -49,6 +50,53 @@ namespace StudentFreelance.Controllers
 
         public async Task<IActionResult> SearchJob(string query, string location, int? categoryId, List<int> skillIds, int? userId, string provinceCode)
         {
+            List<Project> topProjects;
+
+            var baseQuery = _context.Projects
+                .Where(p => p.IsActive && p.StatusID == 1)
+                .Include(p => p.ProjectSkillsRequired)
+                .ThenInclude(ps => ps.Skill)
+                .Include(p => p.Business)
+                .Include(p => p.Address)
+                .Include(p => p.Category)
+                .Include(p => p.Type)
+                .Include(p => p.Status);
+
+            if (User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Student"))
+            {
+                var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (int.TryParse(userIdStr, out int studentUserId))
+                {
+                    // Lấy danh sách skillID mà sinh viên đang có
+                    var studentSkillIds = await _context.StudentSkills
+                        .Where(ss => ss.UserID == studentUserId)
+                        .Select(ss => ss.SkillID)
+                        .ToListAsync();
+
+                    // Ưu tiên dự án có kỹ năng trùng
+                    topProjects = baseQuery
+                        .AsEnumerable()
+                        .OrderByDescending(p => p.ProjectSkillsRequired.Any(ps => studentSkillIds.Contains(ps.SkillID))) // true trước
+                        .ThenByDescending(p => p.CreatedAt)
+                        .Take(6)
+                        .ToList();
+                }
+                else
+                {
+                    topProjects = await baseQuery.OrderByDescending(p => p.CreatedAt).Take(6).ToListAsync();
+                }
+            }
+            else
+            {
+                topProjects = await baseQuery.OrderByDescending(p => p.CreatedAt).Take(6).ToListAsync();
+            }
+
+            ViewBag.TopProjects = topProjects;
+
+
+            ViewBag.TopProjects = topProjects;
+
+
             Console.WriteLine($"[DEBUG] SearchJob called with provinceCode: {provinceCode}");
             
             // Lấy danh sách dự án
