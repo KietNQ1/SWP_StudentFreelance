@@ -1,0 +1,213 @@
+@model StudentFreelance.Models.Transaction
+
+@{
+    ViewData["Title"] = "Transaction Detail";
+    Layout = "_Dashboard";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/AdminPayments.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        .transaction-detail-card {
+            background: rgba(255, 255, 255, 0.95);
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            padding: 30px;
+        }
+        
+        .transaction-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .transaction-amount {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 15px 0;
+        }
+        
+        .transaction-amount.deposit {
+            color: #38a169;
+        }
+        
+        .transaction-amount.withdrawal {
+            color: #e53e3e;
+        }
+        
+        .transaction-type, .transaction-status {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-weight: 600;
+            margin: 0 5px;
+        }
+        
+        .transaction-type.deposit {
+            background-color: rgba(56, 161, 105, 0.1);
+            color: #38a169;
+        }
+        
+        .transaction-type.withdrawal {
+            background-color: rgba(229, 62, 62, 0.1);
+            color: #e53e3e;
+        }
+        
+        .transaction-status.completed {
+            background-color: rgba(56, 161, 105, 0.1);
+            color: #38a169;
+        }
+        
+        .transaction-status.failed {
+            background-color: rgba(229, 62, 62, 0.1);
+            color: #e53e3e;
+        }
+        
+        .transaction-status.pending {
+            background-color: rgba(214, 158, 46, 0.1);
+            color: #d69e2e;
+        }
+        
+        .detail-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .detail-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .detail-value {
+            text-align: right;
+            color: #2d3748;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            gap: 15px;
+        }
+    </style>
+}
+
+<div class="container-fluid">
+    <div class="topbar">
+        <h1><i class="fas fa-receipt"></i> Transaction Detail</h1>
+        <div class="filter-row">
+            <a asp-action="Payments" class="filter-btn">
+                <i class="fas fa-arrow-left"></i> Back to Payments
+            </a>
+        </div>
+    </div>
+    
+    <div class="transaction-detail-card">
+        <div class="transaction-header">
+            @{
+                string typeClass = Model.TypeID == 1 || Model.Type.TypeName == "Hoàn tiền" ? "deposit" : "withdrawal";
+                string statusClass = Model.StatusID == 2 ? "completed" : (Model.StatusID == 3 ? "failed" : "pending");
+            }
+            
+            <div class="d-flex justify-content-center">
+                <span class="transaction-type @typeClass">@Model.Type.TypeName</span>
+                <span class="transaction-status @statusClass">@Model.Status.StatusName</span>
+            </div>
+            
+            <div class="transaction-amount @typeClass">
+                @(Model.TypeID == 1 || Model.Type.TypeName == "Hoàn tiền" ? "+" : "-")@Model.Amount.ToString("C")
+            </div>
+            
+            <div class="text-muted">
+                @Model.TransactionDate.ToString("dddd, MMMM d, yyyy h:mm tt")
+            </div>
+        </div>
+        
+        <hr>
+        
+        <ul class="detail-list">
+            <li>
+                <span class="detail-label">Transaction ID</span>
+                <span class="detail-value">@Model.TransactionID</span>
+            </li>
+            <li>
+                <span class="detail-label">Order Code</span>
+                <span class="detail-value">@(string.IsNullOrEmpty(Model.OrderCode) ? "N/A" : Model.OrderCode)</span>
+            </li>
+            <li>
+                <span class="detail-label">Description</span>
+                <span class="detail-value">@(string.IsNullOrEmpty(Model.Description) ? "No description provided" : Model.Description)</span>
+            </li>
+            <li>
+                <span class="detail-label">User</span>
+                <span class="detail-value">
+                    <span class="user-info">
+                        <i class="fas fa-user-circle me-2"></i>
+                        @Model.User.FullName (@Model.User.Email)
+                    </span>
+                </span>
+            </li>
+            
+            @if (Model.Project != null)
+            {
+                <li>
+                    <span class="detail-label">Related Project</span>
+                    <span class="detail-value">
+                        <a asp-controller="Project" asp-action="Details" asp-route-id="@Model.ProjectID" class="action-btn edit">
+                            <i class="fas fa-project-diagram"></i> @Model.Project.Title
+                        </a>
+                    </span>
+                </li>
+            }
+            
+            <!-- Additional security information -->
+            @if (ViewBag.TransactionHistory != null)
+            {
+                <li>
+                    <span class="detail-label">IP Address</span>
+                    <span class="detail-value">@ViewBag.TransactionHistory.IPAddress</span>
+                </li>
+                <li>
+                    <span class="detail-label">Device</span>
+                    <span class="detail-value">@ViewBag.TransactionHistory.UserAgent</span>
+                </li>
+            }
+        </ul>
+        
+        @if (Model.StatusID == 1) // Pending transaction
+        {
+            <div class="action-buttons">
+                <form asp-action="ProcessTransaction" method="post">
+                    <input type="hidden" name="transactionId" value="@Model.TransactionID" />
+                    <button type="submit" class="action-btn restore" onclick="return confirm('Are you sure you want to process this transaction?')">
+                        <i class="fas fa-check-circle"></i> Process Transaction
+                    </button>
+                </form>
+                <form asp-action="CancelTransaction" method="post">
+                    <input type="hidden" name="transactionId" value="@Model.TransactionID" />
+                    <button type="submit" class="action-btn delete" onclick="return confirm('Are you sure you want to cancel this transaction?')">
+                        <i class="fas fa-times-circle"></i> Cancel Transaction
+                    </button>
+                </form>
+            </div>
+        }
+    </div>
+</div> 

@@ -1,4 +1,5 @@
 using StudentFreelance.Models;
+using StudentFreelance.Models.Enums;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -19,6 +20,7 @@ namespace StudentFreelance.Services.Interfaces
         Task<bool> UpdateTransactionStatusAsync(int transactionId, int statusId);
         Task<bool> ProcessDepositAsync(int userId, decimal amount, string description);
         Task<bool> ProcessWithdrawalAsync(int userId, decimal amount, string description);
+        Task<IEnumerable<TransactionStatus>> GetAllTransactionStatusesAsync();
 
         //mới thêm
         Task<bool> ConfirmDepositFromPayOS(long orderCode);
