@@ -140,16 +140,6 @@ namespace StudentFreelance.Data
             context.SaveChanges();
         }
 
-        // Helper method to ensure we have location data in the database
-        // This is needed even though we're using the API for location data in the application
-        // because the database still has foreign key constraints
-        private static void EnsureLocationData(ApplicationDbContext context)
-        {
-            // We no longer need to seed location data since we're using the API
-            // The Address model has been updated to store API IDs and names directly
-            Console.WriteLine("Using API for location data - no need to seed location tables");
-        }
-
         public static async Task SeedSampleDataAsync(
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
@@ -181,11 +171,7 @@ namespace StudentFreelance.Data
                 context.SaveChanges();
             }
 
-            // 3. Ensure we have location data for foreign key constraints
-            // This is now a no-op since we're using the API
-            EnsureLocationData(context);
-
-            // 4. Default Users
+            // 3. Default Users
             var usersToSeed = new List<(string Email, string Password, string Role, string FullName)>
             {
                 ("admin@example.com", "Admin@123", "Admin", "Admin"),
@@ -300,7 +286,7 @@ namespace StudentFreelance.Data
                 return industries[new Random().Next(0, industries.Length)];
             }
 
-            // 5. Seed Categories if empty
+            // 4. Seed Categories if empty
             if (!context.Categories.Any())
             {
                 var parentCategories = new[]
@@ -351,7 +337,7 @@ namespace StudentFreelance.Data
                 context.SaveChanges();
             }
 
-            // 6. Seed Skills
+            // 5. Seed Skills
             if (!context.Skills.Any())
             {
                 // Get categories
@@ -457,7 +443,7 @@ namespace StudentFreelance.Data
                 context.SaveChanges();
             }
 
-            // 7. Seed Project
+            // 6. Seed Project
             if (!context.Projects.Any())
             {
                 // Get business users
@@ -735,7 +721,7 @@ namespace StudentFreelance.Data
                 context.SaveChanges();
             }
 
-            // 8. Seed ProjectSkillRequired
+            // 7. Seed ProjectSkillRequired
             if (!context.ProjectSkillsRequired.Any())
             {
                 var projects = context.Projects.ToList();
@@ -843,7 +829,7 @@ namespace StudentFreelance.Data
                 context.SaveChanges();
             }
 
-            // 9. Seed StudentSkills
+            // 8. Seed StudentSkills
             if (!context.StudentSkills.Any())
             {
                 var students = await userManager.GetUsersInRoleAsync("Student");
@@ -928,7 +914,7 @@ namespace StudentFreelance.Data
                 context.SaveChanges();
             }
 
-            // 10. Seed StudentApplications
+            // 9. Seed StudentApplications
             if (!context.StudentApplications.Any())
             {
                 var students = await userManager.GetUsersInRoleAsync("Student");
@@ -1038,7 +1024,7 @@ namespace StudentFreelance.Data
                 return resumeLinks[new Random().Next(resumeLinks.Length)];
             }
 
-            // 11. Seed Messages
+            // 10. Seed Messages
             if (!context.Messages.Any())
             {
                 var student = await userManager.FindByEmailAsync("student@example.com");
@@ -1086,7 +1072,7 @@ namespace StudentFreelance.Data
             }
 
 
-            // 12. Seed Transactions
+            // 11. Seed Transactions
             if (!context.Transactions.Any())
             {
                 var student = await userManager.FindByEmailAsync("student@example.com");
@@ -1126,7 +1112,7 @@ namespace StudentFreelance.Data
                 context.SaveChanges();
             }
 
-            // 13. Seed Ratings
+            // 12. Seed Ratings
             if (!context.Ratings.Any())
             {
                 var project = context.Projects.First();
@@ -1158,7 +1144,7 @@ namespace StudentFreelance.Data
                 context.SaveChanges();
             }
 
-            // 14. Seed Reports
+            // 13. Seed Reports
             if (!context.Reports.Any())
             {
                 var students = await userManager.GetUsersInRoleAsync("Student");
@@ -1270,7 +1256,7 @@ namespace StudentFreelance.Data
                 }
             }
 
-            // 15. Seed Notifications
+            // 14. Seed Notifications
             if (!context.Notifications.Any())
             {
                 var students = await userManager.GetUsersInRoleAsync("Student");

@@ -105,8 +105,16 @@
                 const field = el.getAttribute('data-field');
                 const input = this.querySelector(`input[name="${field}"]`);
                 if (input) input.value = el.innerText.trim();
+                if (field === "ProjectsRaw") {
+                const hiddenProjectsInput = this.querySelector('input[name="ProjectsText"]');
+                if (hiddenProjectsInput) {
+                    hiddenProjectsInput.value = el.innerText.trim();
+                }
+            }
             });
         });
+
+
     </script>
 </body>
 </html>

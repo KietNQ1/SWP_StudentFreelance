@@ -134,7 +134,8 @@ namespace StudentFreelance.Controllers
                 await _db.SaveChangesAsync();
             }
 
-            return RedirectToAction(nameof(Room), new { id = conv.ConversationID });
+            return RedirectToAction("Chat", new { conversationId = conv.ConversationID });
+
         }
 
         // GET: /Chat/Room/5
@@ -313,5 +314,127 @@ namespace StudentFreelance.Controllers
 
             return RedirectToAction(nameof(Room), new { id = conversationID });
         }
+        public async Task<IActionResult> Chat(int? conversationId = null, int? projectId = null)
+        {
+            var userId = int.Parse(_userMgr.GetUserId(User));
+
+            // Lấy danh sách conversation
+            var convs = await _db.Conversations
+                .Include(c => c.Messages)
+                .Where(c =>
+                    (c.ParticipantAID == userId || c.ParticipantBID == userId) &&
+                    (!projectId.HasValue || c.ProjectID == projectId)
+                )
+                .AsNoTracking()
+                .ToListAsync();
+
+            var items = convs.Select(c =>
+            {
+                var otherId = c.ParticipantAID == userId ? c.ParticipantBID : c.ParticipantAID;
+                var other = _userMgr.Users
+                    .Where(u => u.Id == otherId)
+                    .Select(u => new { u.UserName, u.Avatar })
+                    .FirstOrDefault();
+
+                var last = c.Messages.OrderByDescending(m => m.SentAt).FirstOrDefault();
+                var unread = c.Messages.Count(m => !m.IsRead && m.SenderID != userId);
+
+                var title = _db.Projects
+                    .Where(p => p.ProjectID == c.ProjectID)
+                    .Select(p => p.Title)
+                    .FirstOrDefault();
+
+                return new ConversationDto
+                {
+                    ConversationID = c.ConversationID,
+                    OtherUserID = otherId,
+                    OtherUserName = other?.UserName,
+                    OtherUserAvatar = other?.Avatar,
+                    ProjectID = c.ProjectID,
+                    ProjectTitle = title,
+                    LastMessage = last?.Content,
+                    LastMessageAt = last?.SentAt ?? c.CreatedAt,
+                    UnreadCount = unread
+                };
+            }).ToList();
+
+            // Lấy danh sách project liên quan
+            var bizProjects = await _db.Projects
+                .Where(p => p.BusinessID == userId && p.IsActive)
+                .ToListAsync();
+
+            var appliedProjectIds = await _db.StudentApplications
+                .Where(a => a.UserID == userId)
+                .Select(a => a.ProjectID)
+                .Distinct()
+                .ToListAsync();
+
+            var studentProjects = await _db.Projects
+                .Where(p => appliedProjectIds.Contains(p.ProjectID) && p.IsActive)
+                .ToListAsync();
+
+            var projects = bizProjects
+                .Concat(studentProjects)
+                .GroupBy(p => p.ProjectID)
+                .Select(g => g.First())
+                .ToList();
+
+            // Nếu có conversationId → load nội dung chat
+            ChatRoomViewModel chatRoom = null;
+
+            if (conversationId.HasValue)
+            {
+                var conv = await _db.Conversations
+                    .Include(c => c.Messages)
+                    .FirstOrDefaultAsync(c => c.ConversationID == conversationId.Value);
+
+                if (conv != null && (conv.ParticipantAID == userId || conv.ParticipantBID == userId))
+                {
+                    var otherId = conv.ParticipantAID == userId ? conv.ParticipantBID : conv.ParticipantAID;
+                    var other = await _userMgr.Users
+                        .Where(u => u.Id == otherId)
+                        .Select(u => new { u.UserName })
+                        .FirstOrDefaultAsync();
+
+                    var senderIds = conv.Messages.Select(m => m.SenderID).Distinct().ToList();
+                    var users = await _userMgr.Users
+                        .Where(u => senderIds.Contains(u.Id))
+                        .Select(u => new { u.Id, u.UserName })
+                        .ToListAsync();
+
+                    var userDict = users.ToDictionary(u => u.Id, u => u.UserName);
+
+                    var messageDtos = conv.Messages
+                        .OrderBy(m => m.SentAt)
+                        .Select(m => new MessageDto
+                        {
+                            SenderID = m.SenderID,
+                            SenderName = userDict.TryGetValue(m.SenderID, out var name) ? name : "Invalid",
+                            Content = m.Content,
+                            MessageType = m.MessageType,
+                            SentAt = m.SentAt,
+                            IsMine = m.SenderID == userId
+                        }).ToList();
+
+                    chatRoom = new ChatRoomViewModel
+                    {
+                        ConversationID = conv.ConversationID,
+                        Messages = messageDtos,
+                        OtherUserName = other?.UserName ?? "Invalid"
+                    };
+                }
+            }
+
+            var vm = new ChatPageViewModel
+            {
+                Conversations = items,
+                Projects = projects,
+                SelectedProjectID = projectId,
+                ChatRoom = chatRoom
+            };
+
+            return View(vm);
+        }
+
     }
 }

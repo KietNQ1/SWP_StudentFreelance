@@ -1,7 +1,9 @@
 
 @model IEnumerable<StudentFreelance.Models.Project>
+
 @{
-    ViewData["Title"] = "Kết quả tìm kiếm";
+    ViewData["Title"] = "Tìm kiếm dự án";
+    Layout = "~/Views/Shared/_Layout.cshtml";
     
     var topProjects = ViewBag.TopProjects as List<StudentFreelance.Models.Project>;
     var importanceLevels = ViewBag.ImportanceLevels as List<StudentFreelance.Models.Enums.ImportanceLevel> ?? new List<StudentFreelance.Models.Enums.ImportanceLevel>();
@@ -12,45 +14,27 @@
     var location = ViewBag.Location as string ?? string.Empty;
     var categoryId = ViewBag.CategoryId as int? ?? null;
     var skillIds = ViewBag.SkillIds as List<int> ?? new List<int>();
-    var userId = ViewBag.UserId as int? ?? null;
-    var provinceCode = ViewBag.ProvinceCode as string ?? null;
+    var userId = ViewBag.UserId as int?;
+    var provinceCode = ViewBag.ProvinceCode as string;
     
-    var categories = ViewBag.Categories as List<StudentFreelance.Models.Category> ?? new List<StudentFreelance.Models.Category>();
-    var skills = ViewBag.Skills as List<StudentFreelance.Models.Skill> ?? new List<StudentFreelance.Models.Skill>();
-    var businessUsers = ViewBag.BusinessUsers as List<StudentFreelance.Models.ApplicationUser> ?? new List<StudentFreelance.Models.ApplicationUser>();
-    var provinces = ViewBag.Provinces as dynamic ?? new List<dynamic>();
+    var categories = ViewBag.Categories as List<StudentFreelance.Models.Category>;
+    var skills = ViewBag.Skills as List<StudentFreelance.Models.Skill>;
+    var businessUsers = ViewBag.BusinessUsers as List<StudentFreelance.Models.ApplicationUser>;
+    var provinces = ViewBag.Provinces as List<dynamic>;
     
-    var selectedCategory = categoryId.HasValue ? categories.FirstOrDefault(c => c.CategoryID == categoryId) : null;
-    var selectedBusiness = userId.HasValue ? businessUsers.FirstOrDefault(u => u.Id == userId) : null;
+    var selectedCategory = categories?.FirstOrDefault(c => c.CategoryID == categoryId);
+    var selectedSkills = skills?.Where(s => skillIds.Contains(s.SkillID)).ToList() ?? new List<StudentFreelance.Models.Skill>();
+    var selectedBusiness = businessUsers?.FirstOrDefault(b => b.Id == userId);
+    var selectedProvinceName = string.Empty;
     
-    // Tìm province theo ID mà không sử dụng lambda với dynamic
-    dynamic selectedProvince = null;
     if (!string.IsNullOrEmpty(provinceCode) && provinces != null)
     {
-        foreach (var province in provinces)
+        var selectedProvince = provinces.FirstOrDefault(p => p.ID.ToString() == provinceCode);
+        if (selectedProvince != null)
         {
-            if (province.ID == provinceCode)
-            {
-                selectedProvince = province;
-                break;
-            }
+            selectedProvinceName = selectedProvince.Name;
         }
     }
-    
-    var selectedSkills = skills.Where(s => skillIds.Contains(s.SkillID)).ToList();
-    
-    // Nhóm các danh mục theo loại
-    var fieldCategories = categories.Where(c => c.CategoryType == "Field" && c.ParentCategoryID == null).ToList();
-    var skillCategories = categories.Where(c => c.CategoryType == "Skill").ToList();
-    
-    // Lấy danh sách danh mục chính và danh mục con
-    var mainCategories = categories.Where(c => c.CategoryType == "Field" && c.ParentCategoryID == null).ToList();
-    var subCategories = categories.Where(c => c.ParentCategoryID != null).ToList();
-    
-    // Nhóm kỹ năng theo danh mục
-    var skillsByCategory = skills
-        .GroupBy(s => s.CategoryID)
-        .ToDictionary(g => g.Key, g => g.ToList());
 }
 
 @section Styles {
@@ -231,7 +215,7 @@
                                         <div class="col-md-4 p-0 category-list">
                                             <div class="list-group list-group-flush">
                                                 <div class="list-group-item fw-bold filter-header">NHÓM NGHỀ</div>
-                                                @foreach (var category in mainCategories)
+                                                @foreach (var category in categories.Where(c => c.CategoryType == "Field" && c.ParentCategoryID == null))
                                                 {
                                                     string activeClass = categoryId == category.CategoryID ? "active" : "";
                                                     <a href="#" class="list-group-item list-group-item-action category-item @activeClass" 
@@ -246,11 +230,11 @@
                                         <div class="col-md-4 p-0 subcategory-list">
                                             <div class="list-group list-group-flush">
                                                 <div class="list-group-item fw-bold filter-header">NGHỀ</div>
-                                                @foreach (var mainCategory in mainCategories)
+                                                @foreach (var mainCategory in categories.Where(c => c.CategoryType == "Field" && c.ParentCategoryID == null))
                                                 {
                                                     <div class="subcategory-group" id="subcategory-@mainCategory.CategoryID" style="display: @(categoryId == mainCategory.CategoryID ? "block" : "none");">
                                                         @{
-                                                            var categorySubCategories = subCategories.Where(sc => sc.ParentCategoryID == mainCategory.CategoryID).ToList();
+                                                            var categorySubCategories = categories.Where(sc => sc.ParentCategoryID == mainCategory.CategoryID).ToList();
                                                             if (categorySubCategories.Any())
                                                             {
                                                                 foreach (var subCategory in categorySubCategories)
@@ -298,9 +282,9 @@
                                                 @foreach (var category in categories)
                                                 {
                                                     <div class="skill-group" id="skills-@category.CategoryID" style="display: none;">
-                                                        @if (skillsByCategory.ContainsKey(category.CategoryID))
+                                                        @if (skills.Any(s => s.CategoryID == category.CategoryID))
                                                         {
-                                                            var orderedSkills = skillsByCategory[category.CategoryID].OrderBy(s => s.SkillName).ToList();
+                                                            var orderedSkills = skills.Where(s => s.CategoryID == category.CategoryID).OrderBy(s => s.SkillName).ToList();
                                                             foreach (var skill in orderedSkills)
                                                             {
                                                                 string selectedClass = skillIds.Contains(skill.SkillID) ? "selected" : "";
@@ -449,7 +433,7 @@
                             }
                         }
                         @if (selectedBusiness != null) { <span class="badge bg-secondary me-1">Công ty: @selectedBusiness.CompanyName</span> }
-                        @if (selectedProvince != null) { <span class="badge bg-secondary me-1">Địa điểm: @selectedProvince.Name</span> }
+                        @if (!string.IsNullOrEmpty(selectedProvinceName)) { <span class="badge bg-secondary me-1">Địa điểm: @selectedProvinceName</span> }
                     </p>
                 }
             </div>
