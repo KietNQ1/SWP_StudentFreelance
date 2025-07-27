@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "User Verification";
+    var currentStatus = ViewData["StatusFilter"]?.ToString() ?? "";
 }
 
 <div class="container mt-4">
@@ -11,12 +12,58 @@
         <div class="col-md-6">
             <form asp-action="Index" method="get" class="form-inline">
                 <div class="input-group">
-                    <input type="text" name="searchString" class="form-control" placeholder="Search by name, email..." />
+                    <input type="text" name="searchString" class="form-control" placeholder="Search by name, email..." value="@ViewData["CurrentFilter"]" />
                     <div class="input-group-append">
                         <button type="submit" class="btn btn-primary">Search</button>
                     </div>
                 </div>
             </form>
+        </div>
+        <div class="col-md-6">
+            <div class="d-flex justify-content-end">
+                <form asp-action="Index" method="get" class="form-inline">
+                    <div class="input-group">
+                        <select name="statusFilter" class="form-control" onchange="this.form.submit()">
+                            <option value="">All Statuses</option>
+                            @if (currentStatus == "active")
+                            {
+                                <option value="active" selected>Active</option>
+                            }
+                            else
+                            {
+                                <option value="active">Active</option>
+                            }
+                            
+                            @if (currentStatus == "inactive")
+                            {
+                                <option value="inactive" selected>Inactive</option>
+                            }
+                            else
+                            {
+                                <option value="inactive">Inactive</option>
+                            }
+                            
+                            @if (currentStatus == "verified")
+                            {
+                                <option value="verified" selected>Verified</option>
+                            }
+                            else
+                            {
+                                <option value="verified">Verified</option>
+                            }
+                            
+                            @if (currentStatus == "flagged")
+                            {
+                                <option value="flagged" selected>Flagged</option>
+                            }
+                            else
+                            {
+                                <option value="flagged">Flagged</option>
+                            }
+                        </select>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
     
@@ -39,11 +86,11 @@
                             <div class="d-flex align-items-center">
                                 @if (item.IsVerified)
                                 {
-                                    <span class="badge badge-success mr-2" title="Verified User"><i class="fas fa-check-circle"></i></span>
+                                    <span class="badge bg-success text-white me-2" title="Verified User"><i class="fas fa-check-circle"></i> Verified</span>
                                 }
                                 @if (item.IsFlagged)
                                 {
-                                    <span class="badge badge-danger mr-2" title="@item.FlagReason"><i class="fas fa-flag"></i></span>
+                                    <span class="badge bg-danger text-white me-2" title="@item.FlagReason"><i class="fas fa-flag"></i> Flagged</span>
                                 }
                                 @item.FullName
                             </div>
@@ -53,16 +100,16 @@
                         <td>
                             @if (item.IsActive)
                             {
-                                <span class="badge badge-success">Active</span>
+                                <span class="badge bg-success text-white">Active</span>
                             }
                             else
                             {
-                                <span class="badge badge-danger">Inactive</span>
+                                <span class="badge bg-danger text-white">Inactive</span>
                             }
                         </td>
                         <td>@item.CreatedAt.ToString("yyyy-MM-dd")</td>
                         <td>
-                            <a asp-action="Details" asp-route-id="@item.UserID" class="btn btn-sm btn-info">
+                            <a asp-action="Details" asp-route-id="@item.UserID" class="btn btn-sm btn-info text-white">
                                 <i class="fas fa-eye"></i> Details
                             </a>
                         </td>
@@ -71,4 +118,23 @@
             </tbody>
         </table>
     </div>
-</div> 
+</div>
+
+<!-- Thêm Font Awesome nếu chưa có -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<!-- Thêm style cho badge -->
+<style>
+    .badge {
+        padding: 0.5em 0.75em;
+        font-size: 0.85em;
+        font-weight: 500;
+        border-radius: 4px;
+    }
+    .me-2 {
+        margin-right: 0.5rem;
+    }
+    .btn-info {
+        background-color: #17a2b8;
+    }
+</style> 
