@@ -304,5 +304,12 @@ namespace StudentFreelance.Services.Implementations
             
             return true;
         }
+        
+        public async Task<IEnumerable<TransactionStatus>> GetAllTransactionStatusesAsync()
+        {
+            return await _context.TransactionStatuses
+                .Where(s => s.IsActive)
+                .ToListAsync();
+        }
     }
 } 

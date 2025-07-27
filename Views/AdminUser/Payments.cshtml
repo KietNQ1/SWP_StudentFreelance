@@ -1,0 +1,151 @@
+@model IEnumerable<StudentFreelance.Models.Transaction>
+@using StudentFreelance.Models.Enums
+
+@{
+    ViewData["Title"] = "Payment Management";
+    Layout = "_Dashboard";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/AdminPayments.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+}
+
+<div class="container-fluid">
+    <form asp-action="Payments" method="get" class="topbar">
+        <h1><i class="fas fa-money-bill-wave"></i> Payment Management</h1>
+
+        <div class="filter-row">
+            <div class="filter-group">
+                <input type="text" name="searchUser" placeholder="🔍 Search by user..." value="@Context.Request.Query["searchUser"]" />
+            </div>
+
+            <div class="filter-group">
+                <select name="statusId" onchange="this.form.submit()">
+                    <option value="">📊 All Statuses</option>
+                    @foreach (var status in ViewBag.Statuses)
+                    {
+                        <option value="@status.StatusID" selected="@(Context.Request.Query["statusId"] == status.StatusID.ToString())">
+                            @status.StatusName
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <button type="submit" class="filter-btn">
+                <i class="fas fa-filter"></i> Filter
+            </button>
+            
+            <a asp-action="Index" class="filter-btn">
+                <i class="fas fa-arrow-left"></i> Back to Users
+            </a>
+        </div>
+    </form>
+    
+    <div class="table-container">
+        @if (Model != null && Model.Any())
+        {
+            <table class="styled-table" id="transactionsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Date</th>
+                        <th>User</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var transaction in Model)
+                    {
+                        <tr class="transaction-row" data-transaction-id="@transaction.TransactionID" onclick="viewTransactionDetail(event, @transaction.TransactionID)">
+                            <td>@transaction.TransactionID</td>
+                            <td>@transaction.TransactionDate.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>
+                                <span class="d-inline-block text-truncate" style="max-width: 150px;">
+                                    @transaction.User.FullName (@transaction.User.Email)
+                                </span>
+                            </td>
+                            <td>@transaction.Type.TypeName</td>
+                            <td class="@(transaction.TypeID == 1 || transaction.Type.TypeName == "Thanh toán cho sinh viên" || transaction.Type.TypeName == "Hoàn tiền" ? "text-success" : "text-danger")">
+                                @(transaction.TypeID == 1 || transaction.Type.TypeName == "Thanh toán cho sinh viên" || transaction.Type.TypeName == "Hoàn tiền" ? "+" : "-")@transaction.Amount.ToString("C")
+                            </td>
+                            <td>
+                                @if (transaction.StatusID == 2) // Thành công
+                                {
+                                    <span class="status-active">@transaction.Status.StatusName</span>
+                                }
+                                else if (transaction.StatusID == 3) // Thất bại
+                                {
+                                    <span class="status-inactive">@transaction.Status.StatusName</span>
+                                }
+                                else // Đang xử lý or other status
+                                {
+                                    <span class="status-pending">@transaction.Status.StatusName</span>
+                                }
+                            </td>
+                            <td class="action-cell">
+                                @if (transaction.StatusID == 1) // Only show actions for pending transactions
+                                {
+                                    <form asp-action="ProcessTransaction" method="post" style="display: inline;">
+                                        <input type="hidden" name="transactionId" value="@transaction.TransactionID" />
+                                        <button type="submit" class="action-btn restore" onclick="event.stopPropagation(); return confirm('Are you sure you want to process this transaction?')">
+                                            <i class="fas fa-check-circle"></i> Process
+                                        </button>
+                                    </form>
+                                    <form asp-action="CancelTransaction" method="post" style="display: inline;">
+                                        <input type="hidden" name="transactionId" value="@transaction.TransactionID" />
+                                        <button type="submit" class="action-btn delete" onclick="event.stopPropagation(); return confirm('Are you sure you want to cancel this transaction?')">
+                                            <i class="fas fa-times-circle"></i> Cancel
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                No transactions found matching the criteria.
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        // Function to handle row clicks
+        function viewTransactionDetail(event, transactionId) {
+            // Don't navigate if clicking on buttons or forms
+            if ($(event.target).closest('button, form, input, select, a').length === 0) {
+                window.location.href = '/AdminUser/TransactionDetail/' + transactionId;
+            }
+        }
+        
+        $(document).ready(function() {
+            // Initialize DataTable for better searching and pagination
+            var table = $('#transactionsTable').DataTable({
+                "order": [[1, "desc"]], // Sort by date descending
+                "pageLength": 25,
+                "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                "dom": '<"top"lf>rt<"bottom"ip>',
+                "language": {
+                    "search": "Quick search:",
+                    "lengthMenu": "Show _MENU_ entries",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ transactions"
+                }
+            });
+            
+            // Add hover effect to rows
+            $('#transactionsTable tbody tr').css('cursor', 'pointer');
+        });
+    </script>
+} 

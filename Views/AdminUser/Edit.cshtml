@@ -1,116 +1,76 @@
-﻿@model StudentFreelance.Models.CVInputModel
+﻿@model StudentFreelance.Models.ApplicationUser
 @{
-    Layout = null;
+    ViewData["Title"] = "Edit User";
+    Layout = "~/Views/Shared/_Dashboard.cshtml";
 }
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <title>CV @Model.FullName</title>
-    <link rel="stylesheet" href="~/css/cv1.css" />
-</head>
-<body>
-    <form method="post" asp-action="ExportToPDF">
-        <div class="container">
-            <!-- Cột trái -->
-            <div class="left-column">
-                <img src="https://wallpapercave.com/wp/wp7171957.jpg" alt="@Model.FullName" class="profile-img">
 
-                <div class="section name">
-                    <h2 contenteditable="true" class="editable-block" data-field="FullName">@Model.FullName.ToUpper()</h2>
-                    <input type="hidden" name="FullName" />
+@section Styles {
+    <link rel="stylesheet" href="~/css/UserEdit.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+}
 
-                    <div class="editable-block" contenteditable="true" data-field="CareerGoal">
-                        @Model.CareerGoal
-                    </div>
-                    <input type="hidden" name="CareerGoal" />
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-user-edit me-2"></i> Edit User</h4>
                 </div>
-
-                <div class="section">
-                    <h3>Kinh nghiệm</h3>
-                    <div class="editable-block" contenteditable="true" data-field="Experience">
-                        @Model.Experience
-                    </div>
-                    <input type="hidden" name="Experience" />
-                </div>
-
-                <div class="section">
-                    <h3>Học vấn</h3>
-                    <div>
-                        <strong contenteditable="true" class="editable-block" data-field="University">
-                            @Model.University
-                        </strong><br />
-                        GPA:
-                        <span contenteditable="true" class="editable-block" data-field="GPA">
-                            @Model.GPA
-                        </span>
-                        <input type="hidden" name="University" />
-                        <input type="hidden" name="GPA" />
-                    </div>
-                </div>
-            </div>
-
-            <!-- Cột phải -->
-            <div class="right-column">
-                <div class="section">
-                    <h3>Thông tin</h3>
-                    <p>
-                        <strong>Ngành:</strong>
-                        <span contenteditable="true" class="editable-block" data-field="Industry">
-                            @Model.Industry
-                        </span>
-                        <input type="hidden" name="Industry" />
-                    </p>
-                    <p>
-                        <strong>Vị trí:</strong>
-                        <span contenteditable="true" class="editable-block" data-field="JobTitle">
-                            @Model.JobTitle
-                        </span>
-                        <input type="hidden" name="JobTitle" />
-                    </p>
-                </div>
-
-                <div class="section brown">
-                    <h3>Kỹ năng chuyên môn</h3>
-                    <div class="editable-block" contenteditable="true" data-field="Skills">
-                        @Model.Skills
-                    </div>
-                    <input type="hidden" name="Skills" />
-                </div>
-
-                <div class="section brown">
-                    <h3>Kỹ năng mềm</h3>
-                    <div class="editable-block" contenteditable="true" data-field="SoftSkills">
-                        @Model.SoftSkills
-                    </div>
-                    <input type="hidden" name="SoftSkills" />
-                </div>
-
-                <div class="section brown">
-                    <h3>Dự án</h3>
-                    <div class="editable-block" contenteditable="true" data-field="ProjectsText">
-                        @string.Join("\n", Model.ProjectsRaw ?? new List<string>())
-                    </div>
-                    <input type="hidden" name="ProjectsText" />
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        
+                        <div class="mb-4">
+                            <label asp-for="FullName" class="form-label"><i class="fas fa-user me-2"></i>Full Name</label>
+                            <input asp-for="FullName" class="form-control" placeholder="Enter full name" />
+                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label asp-for="Email" class="form-label"><i class="fas fa-envelope me-2"></i>Email</label>
+                            <input asp-for="Email" class="form-control" placeholder="Enter email address" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label asp-for="PhoneNumber" class="form-label"><i class="fas fa-phone me-2"></i>Phone Number</label>
+                            <input asp-for="PhoneNumber" class="form-control" placeholder="Enter phone number" />
+                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="selectedRole" class="form-label"><i class="fas fa-user-tag me-2"></i>Role</label>
+                            <select name="selectedRole" id="selectedRole" class="form-select">
+                                @foreach (var role in ViewBag.AllRoles)
+                                {
+                                    <option value="@role" selected="@(role == ViewBag.CurrentRole)">@role</option>
+                                }
+                            </select>
+                        </div>
+                        
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" asp-for="IsActive" />
+                            <label class="form-check-label" asp-for="IsActive">
+                                <i class="fas fa-toggle-on me-2"></i>Active Account
+                            </label>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-5">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to List
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
+    </div>
+</div>
 
-        <div class="submit-btn">
-            <button type="submit">Xuất PDF</button>
-        </div>
-    </form>
-
-    <script>
-        document.querySelector('form').addEventListener('submit', function () {
-            document.querySelectorAll('.editable-block').forEach(block => {
-                const field = block.getAttribute('data-field');
-                const input = document.querySelector(`input[name="${field}"]`);
-                if (input) {
-                    input.value = block.innerText.trim();
-                }
-            });
-        });
-    </script>
-</body>
-</html>
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
