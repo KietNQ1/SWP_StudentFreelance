@@ -263,7 +263,7 @@ namespace StudentFreelance.Controllers
                     var result = await _projectService.CreateProjectWithTransactionAsync(project);
                     
                     if (!result.Success)
-                    {
+                            {
                         ModelState.AddModelError("", result.ErrorMessage);
                         await PopulateFormDataAsync(viewModel);
                         return View(viewModel);
@@ -790,58 +790,58 @@ namespace StudentFreelance.Controllers
         }
 
         // POST: Projects/ConfirmCompletion
-[HttpPost]
-[ValidateAntiForgeryToken]
-[Authorize]
-public async Task<IActionResult> ConfirmCompletion(int projectId, int applicationId)
-{
-    if (projectId <= 0 || applicationId <= 0)
-        return NotFound();
-
-    // Get current user ID
-    var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-    
-    // Get project and application
-    var project = await _context.Projects.FindAsync(projectId);
-    var application = await _context.StudentApplications.FindAsync(applicationId);
-    
-    if (project == null || application == null)
-        return NotFound();
-    
-    if (application.ProjectID != projectId)
-        return NotFound();
-    
-    // Check if user is authorized (either business owner or the student)
-    bool isBusinessConfirmation = false;
-    
-    if (project.BusinessID == currentUserId)
-    {
-        isBusinessConfirmation = true;
-    }
-    else if (application.UserID == currentUserId)
-    {
-        isBusinessConfirmation = false;
-    }
-    else
-    {
-        // User is neither the business owner nor the student
-        return Forbid();
-    }
-    
-    try
-    {
-        // Call the service to confirm completion
-        var result = await _projectService.ConfirmProjectCompletionAsync(projectId, applicationId, isBusinessConfirmation);
-        
-        if (result)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public async Task<IActionResult> ConfirmCompletion(int projectId, int applicationId)
         {
+            if (projectId <= 0 || applicationId <= 0)
+                return NotFound();
+
+            // Get current user ID
+            var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            
+            // Get project and application
+            var project = await _context.Projects.FindAsync(projectId);
+            var application = await _context.StudentApplications.FindAsync(applicationId);
+            
+            if (project == null || application == null)
+                return NotFound();
+            
+            if (application.ProjectID != projectId)
+                return NotFound();
+            
+            // Check if user is authorized (either business owner or the student)
+            bool isBusinessConfirmation = false;
+            
+            if (project.BusinessID == currentUserId)
+            {
+                isBusinessConfirmation = true;
+            }
+            else if (application.UserID == currentUserId)
+            {
+                isBusinessConfirmation = false;
+            }
+            else
+            {
+                // User is neither the business owner nor the student
+                return Forbid();
+            }
+            
+            try
+            {
+                // Call the service to confirm completion
+                var result = await _projectService.ConfirmProjectCompletionAsync(projectId, applicationId, isBusinessConfirmation);
+                
+                if (result)
+                {
             // Gửi thông báo theo người xác nhận
             var business = await _context.Users.FindAsync(project.BusinessID);
             var student = await _context.Users.FindAsync(application.UserID);
 
             if (isBusinessConfirmation)
-            {
-                TempData["SuccessMessage"] = "Bạn đã xác nhận hoàn thành dự án. Đang chờ xác nhận từ sinh viên.";
+                    {
+                        TempData["SuccessMessage"] = "Bạn đã xác nhận hoàn thành dự án. Đang chờ xác nhận từ sinh viên.";
 
                 if (business != null && student != null)
                 {
@@ -855,10 +855,10 @@ public async Task<IActionResult> ConfirmCompletion(int projectId, int applicatio
                         true // gửi email
                     );
                 }
-            }
-            else
-            {
-                TempData["SuccessMessage"] = "Bạn đã xác nhận hoàn thành dự án. Đang chờ xác nhận từ doanh nghiệp.";
+                    }
+                    else
+                    {
+                        TempData["SuccessMessage"] = "Bạn đã xác nhận hoàn thành dự án. Đang chờ xác nhận từ doanh nghiệp.";
 
                 if (business != null && student != null)
                 {
@@ -877,20 +877,20 @@ public async Task<IActionResult> ConfirmCompletion(int projectId, int applicatio
             if (application.BusinessConfirmedCompletion && application.StudentConfirmedCompletion)
             {
                 TempData["SuccessMessage"] = "Dự án đã được xác nhận hoàn thành bởi cả hai bên. Thanh toán đã được chuyển.";
+                    }
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Có lỗi xảy ra khi xác nhận hoàn thành dự án.";
+                }
             }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Lỗi: " + ex.Message;
+            }
+            
+            return RedirectToAction(nameof(Details), new { id = projectId });
         }
-        else
-        {
-            TempData["ErrorMessage"] = "Có lỗi xảy ra khi xác nhận hoàn thành dự án.";
-        }
-    }
-    catch (Exception ex)
-    {
-        TempData["ErrorMessage"] = "Lỗi: " + ex.Message;
-    }
-    
-    return RedirectToAction(nameof(Details), new { id = projectId });
-}
 
 
         // POST: Projects/CancelConfirmation
@@ -1028,7 +1028,7 @@ public async Task<IActionResult> ConfirmCompletion(int projectId, int applicatio
                     // Gửi thông báo cho tất cả sinh viên đã tham gia dự án
                     var completedApplications = await _context.StudentApplications
                         .Where(a => a.ProjectID == id && a.Status == "Completed")
-                        .Include(a => a.User)
+                .Include(a => a.User)
                         .ToListAsync();
                         
                     foreach (var application in completedApplications)
@@ -1065,7 +1065,7 @@ public async Task<IActionResult> ConfirmCompletion(int projectId, int applicatio
         {
             if (id <= 0)
                 return NotFound();
-
+            
             // Get current user ID
             var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             
@@ -1087,7 +1087,7 @@ public async Task<IActionResult> ConfirmCompletion(int projectId, int applicatio
                 var result = await _projectService.CancelProjectByBusinessAsync(id, isAdmin ? project.BusinessID : currentUserId);
                 
                 if (result.Success)
-                {
+            {
                     TempData["SuccessMessage"] = "Dự án đã được hủy thành công.";
                     
                     // Gửi thông báo cho tất cả sinh viên đã ứng tuyển vào dự án
@@ -1519,6 +1519,162 @@ public async Task<IActionResult> ConfirmCompletion(int projectId, int applicatio
             }
 
             await _context.SaveChangesAsync();
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> InviteStudents(int projectId)
+        {
+            try
+            {
+                var project = await _context.Projects
+                    .Include(p => p.ProjectSkillsRequired)
+                    .ThenInclude(ps => ps.Skill)
+                    .Include(p => p.Business)
+                    .FirstOrDefaultAsync(p => p.ProjectID == projectId);
+
+                if (project == null)
+                {
+                    return NotFound();
+                }
+
+                // Kiểm tra quyền - chỉ chủ dự án mới được mời sinh viên
+                var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                if (project.BusinessID != currentUserId && !User.IsInRole("Admin"))
+                {
+                    return Forbid();
+                }
+
+                // Lấy danh sách kỹ năng yêu cầu
+                var requiredSkillIds = project.ProjectSkillsRequired.Select(ps => ps.SkillID).ToList();
+
+                if (!requiredSkillIds.Any())
+                {
+                    // Nếu dự án không có kỹ năng yêu cầu, trả về danh sách rỗng
+                    ViewBag.Project = project;
+                    return View(new List<InviteStudentViewModel>());
+                }
+
+                // Tìm sinh viên có kỹ năng phù hợp - sử dụng cách tiếp cận đơn giản hơn
+                var studentSkills = await _context.StudentSkills
+                    .Include(ss => ss.User)
+                    .Include(ss => ss.Skill)
+                    .Where(ss => requiredSkillIds.Contains(ss.SkillID) && ss.IsActive)
+                    .ToListAsync();
+
+                // Nhóm theo user và xử lý trong memory
+                var studentGroups = studentSkills
+                    .GroupBy(ss => ss.UserID)
+                    .Where(g => g.First().User.IsActive) // Chỉ lấy user đang hoạt động
+                    .Select(g => new
+                    {
+                        User = g.First().User,
+                        MatchedSkills = g.Select(ss => ss.Skill).ToList(),
+                        SkillMatchCount = g.Count(),
+                        IsVip = g.First().User.VipStatus,
+                        VipExpiryDate = g.First().User.VipExpiryDate
+                    })
+                    .OrderByDescending(s => s.SkillMatchCount)
+                    .ThenByDescending(s => s.IsVip)
+                    .ThenBy(s => s.VipExpiryDate)
+                    .ToList();
+
+                var sortedStudents = studentGroups.Select(s => new InviteStudentViewModel
+                {
+                    UserID = s.User.Id,
+                    FullName = s.User.FullName ?? "Không có tên",
+                    Email = s.User.Email ?? "",
+                    Avatar = s.User.Avatar,
+                    University = s.User.University ?? "",
+                    Major = s.User.Major ?? "",
+                    IsVip = s.IsVip,
+                    VipExpiryDate = s.VipExpiryDate,
+                    MatchedSkills = s.MatchedSkills,
+                    SkillMatchCount = s.SkillMatchCount,
+                    TotalRequiredSkills = requiredSkillIds.Count,
+                    MatchPercentage = requiredSkillIds.Count > 0 ? (double)s.SkillMatchCount / requiredSkillIds.Count * 100 : 0
+                }).ToList();
+
+                ViewBag.Project = project;
+                return View(sortedStudents);
+            }
+            catch (Exception ex)
+            {
+                // Log lỗi chi tiết để debug
+                Console.WriteLine($"Error in InviteStudents: {ex.Message}");
+                Console.WriteLine($"StackTrace: {ex.StackTrace}");
+                
+                TempData["ErrorMessage"] = $"Có lỗi xảy ra khi tải danh sách sinh viên: {ex.Message}";
+                return RedirectToAction("Details", new { id = projectId });
+            }
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> SendInvitation(int projectId, int studentId)
+        {
+            try
+            {
+                var project = await _context.Projects
+                    .Include(p => p.Business)
+                    .FirstOrDefaultAsync(p => p.ProjectID == projectId);
+
+                var student = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Id == studentId);
+
+                if (project == null || student == null)
+                {
+                    return NotFound();
+                }
+
+                // Kiểm tra quyền
+                var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                if (project.BusinessID != currentUserId && !User.IsInRole("Admin"))
+                {
+                    return Forbid();
+                }
+
+                // Tạo URL dự án
+                var projectUrl = $"{Request.Scheme}://{Request.Host}/Project/Details/{projectId}";
+                
+                // Gửi thông báo cho sinh viên
+                await _notificationService.SendNotificationToUserAsync(
+                    studentId,
+                    "Thư mời tham gia dự án",
+                    $"Doanh nghiệp {project.Business.FullName} đã gửi thư mời tham gia dự án \"{project.Title}\" cho bạn. <a href='{projectUrl}' style='color: #89AC46; text-decoration: underline; font-weight: bold;'>Xem chi tiết dự án</a>",
+                    2, // NotificationType cho Project
+                    projectId,
+                    currentUserId,
+                    true // Gửi email
+                );
+
+                // Gửi email chi tiết
+                var subject = $"Thư mời tham gia dự án: {project.Title}";
+                var body = $@"
+                    <h3>Xin chào {student.FullName},</h3>
+                    <p>Doanh nghiệp <strong>{project.Business.FullName}</strong> đã gửi thư mời tham gia dự án cho bạn.</p>
+                    <h4>Thông tin dự án:</h4>
+                    <ul>
+                        <li><strong>Tên dự án:</strong> {project.Title}</li>
+                        <li><strong>Mô tả:</strong> {project.Description}</li>
+                        <li><strong>Ngân sách:</strong> {project.Budget:C}</li>
+                        <li><strong>Thời hạn:</strong> {project.Deadline:dd/MM/yyyy}</li>
+                    </ul>
+                    <p>Nếu bạn quan tâm, hãy truy cập link bên dưới để xem chi tiết và ứng tuyển:</p>
+                    <p><a href='{projectUrl}' style='display: inline-block; padding: 10px 20px; background-color: #89AC46; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;'>Xem chi tiết dự án</a></p>
+                    <p>Hoặc copy link này: <a href='{projectUrl}'>{projectUrl}</a></p>
+                    <p>Trân trọng,<br>StudentFreelance Team</p>";
+
+                await _emailSender.SendEmailAsync(student.Email, subject, body);
+
+                TempData["SuccessMessage"] = $"Đã gửi thư mời thành công cho {student.FullName}";
+                return RedirectToAction("InviteStudents", new { projectId });
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Có lỗi xảy ra khi gửi thư mời";
+                return RedirectToAction("InviteStudents", new { projectId });
+            }
         }
     }
 } 

@@ -125,3 +125,48 @@ body {
     margin-bottom: 2rem;
     text-align: center;
 }
+
+.notification-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+    /* Áp dụng chung cho cả nút và thẻ a */
+    .notification-actions form,
+    .notification-actions a {
+        margin: 0;
+    }
+
+/* Đồng bộ 2 nút */
+.btn-send-notification,
+.btn-mark-all {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 42px;
+    background: #fff;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    border-radius: 6px;
+    font-weight: 600;
+    padding: 0.5rem 1.2rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    transition: background 0.2s, color 0.2s;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+    .btn-send-notification:hover,
+    .btn-mark-all:hover {
+        background: var(--accent3);
+        color: #fff;
+        border-color: var(--accent3);
+    }
+
