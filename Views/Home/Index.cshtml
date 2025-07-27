@@ -25,7 +25,7 @@
                 string linkUrl = $"/User/Profile/{ad.BusinessId}";
                 bool isFirst = ad == advertisements.FirstOrDefault();
                 
-                <div class="slide @(isFirst ? "active" : "")" style="background-image: url('@Url.Content(imageUrl)')">
+                <div class="slide @(isFirst ? "active" : "")" style="background-image: url('@Url.Content(imageUrl)')" data-slide-type="advertisement">
                     <a href="@linkUrl" class="ad-link" title="Xem thêm về @ad.Business.CompanyName"></a>
                 </div>
             }
@@ -36,10 +36,37 @@
                 for (int i = 0; i < Math.Min(6 - advertisements.Count, defaultImages.Count); i++)
                 {
                     bool isFirst = advertisements.Count == 0 && i == 0;
-                    <div class="slide @(isFirst ? "active" : "")" style="background-image: url('@Url.Content($"~/image/{defaultImages[i]}")')"></div>
+                    <div class="slide @(isFirst ? "active" : "")" style="background-image: url('@Url.Content($"~/image/{defaultImages[i]}")')" data-slide-type="default"></div>
                 }
             }
         }
+        
+        <!-- Nội dung - will be shown/hidden based on slide type -->
+        <div id="hero-container" class="hero-container" style="display: none;">
+            <div class="hero-content">
+                <h1 class="hero-title">Let top talent bring your ideas to life</h1>
+
+                <div class="popular-searches">
+                    <a asp-controller="Search" asp-action="SearchJob" asp-route-query="website development" class="tag">website development</a>
+                    <a asp-controller="Search" asp-action="SearchJob" asp-route-query="architecture & interior design" class="tag">architecture & interior design</a>
+                    <a asp-controller="Search" asp-action="SearchJob" asp-route-query="UGC videos" class="tag">UGC videos</a>
+                    <a asp-controller="Search" asp-action="SearchJob" asp-route-query="video editing" class="tag">video editing</a>
+                </div>
+
+                <!-- Trusted By -->
+                <div class="trusted-by">
+                    <span class="trusted-text">Trusted by:</span>
+                    <div class="trusted-companies">
+                        <span>Meta</span>
+                        <span>Google</span>
+                        <span>Netflix</span>
+                        <span>P&G</span>
+                        <span>PayPal</span>
+                        <span>Payoneer</span>
+                    </div>
+                </div>
+            </div>
+        </div>
         
         <!-- Navigation arrows -->
         <button class="slideshow-prev" aria-label="Previous slide">
@@ -60,36 +87,10 @@
                 
                 for (int i = 0; i < totalSlides; i++)
                 {
-                    <span class="slideshow-dot @(i == 0 ? "active" : "")" data-slide="@i"></span>
+                    bool isAd = i < advertisements.Count;
+                    <span class="slideshow-dot @(i == 0 ? "active" : "")" data-slide="@i" data-slide-type="@(isAd ? "advertisement" : "default")"></span>
                 }
             }
-        </div>
-    </div>
-
-    <!-- Nội dung -->
-    <div class="hero-container" style="pointer-events: none;">
-        <div class="hero-content" style="pointer-events: auto;">
-            <h1 class="hero-title">Let top talent bring your ideas to life</h1>
-
-            <div class="popular-searches">
-                <a asp-controller="Search" asp-action="SearchJob" asp-route-query="website development" class="tag">website development</a>
-                <a asp-controller="Search" asp-action="SearchJob" asp-route-query="architecture & interior design" class="tag">architecture & interior design</a>
-                <a asp-controller="Search" asp-action="SearchJob" asp-route-query="UGC videos" class="tag">UGC videos</a>
-                <a asp-controller="Search" asp-action="SearchJob" asp-route-query="video editing" class="tag">video editing</a>
-            </div>
-
-            <!-- Trusted By -->
-            <div class="trusted-by">
-                <span class="trusted-text">Trusted by:</span>
-                <div class="trusted-companies">
-                    <span>Meta</span>
-                    <span>Google</span>
-                    <span>Netflix</span>
-                    <span>P&G</span>
-                    <span>PayPal</span>
-                    <span>Payoneer</span>
-                </div>
-            </div>
         </div>
     </div>
 </section>
@@ -182,76 +183,114 @@
 <!-- Categories Section -->
 <section class="categories">
     <div class="container">
+        <div class="section-header">
+            <h2>Categories</h2>
+        </div>
         <div class="categories-grid">
-            <div class="category-item">
-                <div class="category-icon">
-                    <i class="fas fa-code"></i>
-                </div>
-                <div class="category-text">
-                    <span>Programming</span>
-                    <span>& Tech</span>
-                </div>
-            </div>
-            <div class="category-item">
-                <div class="category-icon">
-                    <i class="fas fa-palette"></i>
-                </div>
-                <div class="category-text">
-                    <span>Graphics &</span>
-                    <span>Design</span>
-                </div>
-            </div>
-            <div class="category-item">
-                <div class="category-icon">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <div class="category-text">
-                    <span>Digital</span>
-                    <span>Marketing</span>
-                </div>
-            </div>
-            <div class="category-item">
-                <div class="category-icon">
-                    <i class="fas fa-pen-fancy"></i>
-                </div>
-                <div class="category-text">
-                    <span>Writing &</span>
-                    <span>Translation</span>
-                </div>
-            </div>
-            <div class="category-item">
-                <div class="category-icon">
-                    <i class="fas fa-video"></i>
-                </div>
-                <div class="category-text">
-                    <span>Video &</span>
-                    <span>Animation</span>
-                </div>
-            </div>
-            <div class="category-item">
-                <div class="category-icon">
-                    <i class="fas fa-robot"></i>
-                </div>
-                <div class="category-text">
-                    <span>AI Services</span>
-                </div>
-            </div>
-            <div class="category-item">
-                <div class="category-icon">
-                    <i class="fas fa-music"></i>
-                </div>
-                <div class="category-text">
-                    <span>Music & Audio</span>
-                </div>
-            </div>
-            <div class="category-item">
-                <div class="category-icon">
-                    <i class="fas fa-briefcase"></i>
-                </div>
-                <div class="category-text">
-                    <span>Business</span>
-                </div>
-            </div>
+            @{
+                var parentCategories = ViewBag.ParentCategories as List<StudentFreelance.Models.Category> ?? new List<StudentFreelance.Models.Category>();
+                
+                // Dictionary để ánh xạ tên category với icon phù hợp
+                var categoryIcons = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) {
+                    { "Programming & Tech", "fas fa-code" },
+                    { "Graphics & Design", "fas fa-palette" },
+                    { "Digital Marketing", "fas fa-chart-line" },
+                    { "Writing & Translation", "fas fa-pen-fancy" },
+                    { "Video & Animation", "fas fa-video" },
+                    { "AI Services", "fas fa-robot" },
+                    { "Music & Audio", "fas fa-music" },
+                    { "Business", "fas fa-briefcase" },
+                    // Thêm các ánh xạ mặc định cho các category khác
+                    { "default", "fas fa-folder" }
+                };
+                
+                foreach (var category in parentCategories)
+                {
+                    // Tìm icon phù hợp hoặc sử dụng icon mặc định
+                    string iconClass = categoryIcons.ContainsKey(category.CategoryName) 
+                        ? categoryIcons[category.CategoryName] 
+                        : categoryIcons["default"];
+                    
+                    <a asp-controller="Search" asp-action="SearchJob" asp-route-categoryId="@category.CategoryID" class="category-item">
+                        <div class="category-icon">
+                            @if (!string.IsNullOrEmpty(category.ImagePath))
+                            {
+                                <img src="@category.ImagePath" alt="@category.CategoryName" class="category-image" />
+                            }
+                            else
+                            {
+                                <i class="@iconClass"></i>
+                            }
+                        </div>
+                        <div class="category-text">
+                            @{
+                                // Nếu tên category chứa & hoặc and, chia thành 2 dòng
+                                if (category.CategoryName.Contains("&") || category.CategoryName.Contains(" and "))
+                                {
+                                    var parts = category.CategoryName.Replace(" and ", " & ").Split("&");
+                                    <span>@parts[0].Trim()</span>
+                                    <span>&@parts[1].Trim()</span>
+                                }
+                                else
+                                {
+                                    <span>@category.CategoryName</span>
+                                }
+                            }
+                        </div>
+                    </a>
+                }
+                
+                // Nếu không có đủ 8 category, hiển thị các category mặc định để đủ 8 ô
+                if (parentCategories.Count < 8)
+                {
+                    var defaultCategories = new[] {
+                        new { Name = "Programming & Tech", Icon = "fas fa-code", Image = "/image/Icon/programming.png" },
+                        new { Name = "Graphics & Design", Icon = "fas fa-palette", Image = "/image/Icon/design.png" },
+                        new { Name = "Digital Marketing", Icon = "fas fa-chart-line", Image = "/image/Icon/marketing.png" },
+                        new { Name = "Writing & Translation", Icon = "fas fa-pen-fancy", Image = "/image/Icon/writing.png" },
+                        new { Name = "Video & Animation", Icon = "fas fa-video", Image = "/image/Icon/video.png" },
+                        new { Name = "AI Services", Icon = "fas fa-robot", Image = "/image/Icon/ai.png" },
+                        new { Name = "Music & Audio", Icon = "fas fa-music", Image = "/image/Icon/music.png" },
+                        new { Name = "Business", Icon = "fas fa-briefcase", Image = "/image/Icon/business.png" }
+                    };
+                    
+                    // Lọc ra các category mặc định chưa có trong danh sách từ database
+                    var existingNames = parentCategories.Select(c => c.CategoryName.ToLower()).ToList();
+                    var remainingCategories = defaultCategories
+                        .Where(c => !existingNames.Contains(c.Name.ToLower()))
+                        .Take(8 - parentCategories.Count);
+                    
+                    foreach (var category in remainingCategories)
+                    {
+                        <div class="category-item">
+                            <div class="category-icon">
+                                @if (!string.IsNullOrEmpty(category.Image))
+                                {
+                                    <img src="@category.Image" alt="@category.Name" class="category-image" />
+                                }
+                                else
+                                {
+                                    <i class="@category.Icon"></i>
+                                }
+                            </div>
+                            <div class="category-text">
+                                @{
+                                    if (category.Name.Contains("&"))
+                                    {
+                                        var parts = category.Name.Split("&");
+                                        <span>@parts[0].Trim()</span>
+                                        <span>&@parts[1].Trim()</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@category.Name</span>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+            }
         </div>
     </div>
 </section>
@@ -383,6 +422,7 @@
             const prevButton = document.querySelector('.slideshow-prev');
             const nextButton = document.querySelector('.slideshow-next');
             const slideshowContainer = document.querySelector('.slideshow-container');
+            const heroContainer = document.getElementById('hero-container');
             let current = 0;
             let timer;
             let touchStartX = 0;
@@ -411,6 +451,9 @@
                 
                 // Update current index
                 current = index;
+                
+                // Update hero container visibility based on slide type
+                updateHeroContainerVisibility();
                 
                 console.log('Changed to slide', index);
             }
@@ -510,6 +553,28 @@
                 startTimer();
                 console.log('Slideshow initialized with', slides.length, 'slides');
             }
+
+            // Show/hide hero-container based on slide type
+            function updateHeroContainerVisibility() {
+                const activeSlide = document.querySelector('.slide.active');
+                if (activeSlide && heroContainer) {
+                    const slideType = activeSlide.dataset.slideType;
+                    if (slideType === 'default') {
+                        // Show hero container for default images
+                        heroContainer.style.display = 'flex';
+                        heroContainer.style.opacity = '1';
+                        heroContainer.style.visibility = 'visible';
+                    } else {
+                        // Hide hero container for advertisements
+                        heroContainer.style.display = 'none';
+                        heroContainer.style.opacity = '0';
+                        heroContainer.style.visibility = 'hidden';
+                    }
+                }
+            }
+
+            // Initial call to set visibility
+            updateHeroContainerVisibility();
         });
     </script>
 </script>

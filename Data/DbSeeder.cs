@@ -217,6 +217,41 @@ namespace StudentFreelance.Data
                     context.Addresses.Add(address);
                     context.SaveChanges();
 
+                    string avatarPath = "/image/default-avatar.png";
+                    string profilePicturePath = "/image/default-avatar.png";
+                    
+                    // Assign specific avatar paths for businesses
+                    if (email == "business@example.com")
+                    {
+                        avatarPath = "/uploads/avatars/0d882281-2af4-4dc3-bb7e-a611f24078e3_ABC-Logo-1962-present.png";
+                        profilePicturePath = avatarPath;
+                    }
+                    else if (email == "techsolutions@example.com")
+                    {
+                        avatarPath = "/uploads/avatars/989681f7-2447-4339-8e2e-b45cf8f94ebe_techsolutionsgroupltd_cover.jpeg";
+                        profilePicturePath = avatarPath;
+                    }
+                    else if (email == "marketingpro@example.com")
+                    {
+                        avatarPath = "/uploads/avatars/98adebc1-99d5-46df-a6de-37f2d002465e_marketing-logo.jpg";
+                        profilePicturePath = avatarPath;
+                    }
+                    else if (email == "itconsulting@example.com")
+                    {
+                        avatarPath = "/uploads/avatars/e8990825-3b3e-4dba-955a-4e13cc51ba26_itcompany-logo-by-pixahive.png";
+                        profilePicturePath = avatarPath;
+                    }
+                    else if (email == "designstudio@example.com")
+                    {
+                        avatarPath = "/uploads/avatars/b4192da7-1087-4709-a7c4-0b93d9f2c4d1_abstract-logo-for-studio-design-with-creative-modern-concept-vector.jpg";
+                        profilePicturePath = avatarPath;
+                    }
+                    else if (email == "creativeagency@example.com")
+                    {
+                        avatarPath = "/uploads/avatars/2c8597a4-a89c-4865-8cb9-922166e8a5b9_360_F_1242285305_2aOiHPOURRD4SmXOFU3fV0OoUnNYEaTX.jpg";
+                        profilePicturePath = avatarPath;
+                    }
+
                     var user = new ApplicationUser
                     {
                         UserName = email,
@@ -234,8 +269,8 @@ namespace StudentFreelance.Data
                         AverageRating = (decimal)(new Random().NextDouble() * 2 + 3), // Random rating between 3.0 and 5.0
                         TotalProjects = role == "Student" ? new Random().Next(0, 10) : 0,
                         TotalProjectsPosted = role == "Business" ? new Random().Next(1, 15) : 0,
-                        ProfilePicturePath = "/image/default-avatar.png",
-                        Avatar = "/image/default-avatar.png",
+                        ProfilePicturePath = profilePicturePath,
+                        Avatar = avatarPath,
                         CreatedAt = DateTime.Now.AddDays(-new Random().Next(1, 365)), // Random registration date within last year
                         UpdatedAt = DateTime.Now,
                         IsActive = true,
@@ -291,12 +326,62 @@ namespace StudentFreelance.Data
             {
                 var parentCategories = new[]
                 {
-                    new Category { CategoryName = "Công nghệ thông tin", CategoryType = "Field", Description = "Lĩnh vực CNTT", IsActive = true },
-                    new Category { CategoryName = "Marketing", CategoryType = "Field", Description = "Lĩnh vực marketing", IsActive = true },
-                    new Category { CategoryName = "Thiết kế", CategoryType = "Field", Description = "Lĩnh vực thiết kế và sáng tạo", IsActive = true },
-                    new Category { CategoryName = "Viết lách", CategoryType = "Field", Description = "Lĩnh vực viết và biên tập", IsActive = true },
-                    new Category { CategoryName = "Dịch thuật", CategoryType = "Field", Description = "Lĩnh vực dịch thuật", IsActive = true },
-                    new Category { CategoryName = "Kinh doanh", CategoryType = "Field", Description = "Lĩnh vực kinh doanh và quản lý", IsActive = true }
+                    new Category { 
+                        CategoryName = "Công nghệ thông tin", 
+                        CategoryType = "Field", 
+                        Description = "Lĩnh vực CNTT", 
+                        ImagePath = "/image/Icon/laptop-1.png",
+                        IsActive = true 
+                    },
+                    new Category { 
+                        CategoryName = "Marketing", 
+                        CategoryType = "Field", 
+                        Description = "Lĩnh vực marketing", 
+                        ImagePath = "/image/Icon/get-money.png",
+                        IsActive = true 
+                    },
+                    new Category { 
+                        CategoryName = "Thiết kế", 
+                        CategoryType = "Field", 
+                        Description = "Lĩnh vực thiết kế và sáng tạo", 
+                        ImagePath = "/image/Icon/032-writing.png",
+                        IsActive = true 
+                    },
+                    new Category { 
+                        CategoryName = "Viết lách", 
+                        CategoryType = "Field", 
+                        Description = "Lĩnh vực viết và biên tập", 
+                        ImagePath = "/image/Icon/notebook-1.png",
+                        IsActive = true 
+                    },
+                    new Category { 
+                        CategoryName = "Dịch thuật", 
+                        CategoryType = "Field", 
+                        Description = "Lĩnh vực dịch thuật", 
+                        ImagePath = "/image/Icon/030-reading-1.png",
+                        IsActive = true 
+                    },
+                    new Category { 
+                        CategoryName = "Kinh doanh", 
+                        CategoryType = "Field", 
+                        Description = "Lĩnh vực kinh doanh và quản lý", 
+                        ImagePath = "/image/Icon/coins-1.png",
+                        IsActive = true 
+                    },
+                    new Category {
+                        CategoryName = "Pháp lý",
+                        CategoryType = "Field",
+                        Description = "Lĩnh vực pháp lý",
+                        ImagePath = "/image/Icon/justice.png",
+                        IsActive = true
+                    },
+                    new Category {
+                        CategoryName = "Giáo dục",
+                        CategoryType = "Field",
+                        Description = "Lĩnh vực giáo dục",
+                        ImagePath = "/image/Icon/003-book.png",
+                        IsActive = true
+                    }
                 };
                 context.Categories.AddRange(parentCategories);
                 context.SaveChanges();
