@@ -1,0 +1,40 @@
+[7/23/2025 1:00:25 PM] PayOS Response:
+{
+  "code": "00",
+  "desc": "success",
+  "data": {
+    "bin": "970422",
+    "accountNumber": "VQRQADLGA0304",
+    "accountName": "TRAN THI NGOC VY",
+    "amount": 200000,
+    "description": "ok",
+    "orderCode": 1753250424900,
+    "currency": "VND",
+    "paymentLinkId": "d0d332c76eaa400b9877900f5cb80a36",
+    "status": "PENDING",
+    "checkoutUrl": "https://pay.payos.vn/web/d0d332c76eaa400b9877900f5cb80a36",
+    "qrCode": "00020101021238570010A000000727012700069704220113VQRQADLGA03040208QRIBFTTA530370454062000005802VN62060802ok630478A7"
+  },
+  "signature": "0b177c7ceeeeecb462f24b7b9be03598f642e6e99a36c5f76ea5f5049f8ca25e"
+}
+
+[7/23/2025 1:23:23 PM] PayOS Response:
+{
+  "code": "00",
+  "desc": "success",
+  "data": {
+    "bin": "970422",
+    "accountNumber": "VQRQADLGD0768",
+    "accountName": "TRAN THI NGOC VY",
+    "amount": 200000,
+    "description": "cdsfsadf",
+    "orderCode": 1753251799944,
+    "currency": "VND",
+    "paymentLinkId": "6f68fff796cf4336b787fea168742e3a",
+    "status": "PENDING",
+    "checkoutUrl": "https://pay.payos.vn/web/6f68fff796cf4336b787fea168742e3a",
+    "qrCode": "00020101021238570010A000000727012700069704220113VQRQADLGD07680208QRIBFTTA530370454062000005802VN62120808cdsfsadf6304E766"
+  },
+  "signature": "870b575ea522a4078fe002f2756e25fe1be8f4e863a0d1157d273e3c5ba725fc"
+}
+

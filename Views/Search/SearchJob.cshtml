@@ -1,12 +1,18 @@
+
 @model IEnumerable<StudentFreelance.Models.Project>
 
 @{
     ViewData["Title"] = "Tìm kiếm dự án";
     Layout = "~/Views/Shared/_Layout.cshtml";
     
-    var query = ViewBag.Query as string;
-    var location = ViewBag.Location as string;
-    var categoryId = ViewBag.CategoryId as int?;
+    var topProjects = ViewBag.TopProjects as List<StudentFreelance.Models.Project>;
+    var importanceLevels = ViewBag.ImportanceLevels as List<StudentFreelance.Models.Enums.ImportanceLevel> ?? new List<StudentFreelance.Models.Enums.ImportanceLevel>();
+    var proficiencyLevels = ViewBag.ProficiencyLevels as List<StudentFreelance.Models.Enums.ProficiencyLevel> ?? new List<StudentFreelance.Models.Enums.ProficiencyLevel>();
+    
+    // Lấy các giá trị để hiển thị thông tin tìm kiếm
+    var query = ViewBag.Query as string ?? string.Empty;
+    var location = ViewBag.Location as string ?? string.Empty;
+    var categoryId = ViewBag.CategoryId as int? ?? null;
     var skillIds = ViewBag.SkillIds as List<int> ?? new List<int>();
     var userId = ViewBag.UserId as int?;
     var provinceCode = ViewBag.ProvinceCode as string;
@@ -372,6 +378,40 @@
         </form>
     </div>
 
+    <!-- Top Projects Section -->
+    <section class="top-projects">
+        <div class="container">
+            <div class="section-header">
+                <h2>Recommend Project</h2>
+                <a asp-controller="Search" asp-action="SearchJob" class="view-all-btn">View all</a>
+            </div>
+
+            <div class="projects-grid">
+                @foreach (var project in topProjects)
+                {
+                    <a asp-controller="Project" asp-action="Details" asp-route-id="@project.ProjectID" class="text-decoration-none text-dark">
+                        <div class="project-card">
+                            <div class="project-image">
+                                <img src="~/image/project-default.jpg" alt="@project.Business?.FullName" />
+                            </div>
+                            <div class="project-content">
+                                <h3 class="project-title">@project.Title</h3>
+                                <p class="company-name">@project.Business?.FullName</p>
+                                <div class="project-meta">
+                                    <span class="salary">@($"{project.Budget:N0} đ")</span>
+                                    <span class="location">
+                                        @(project.IsRemoteWork ? "Remote" : project.Address?.ProvinceName ?? "Unidentified location")
+                                    </span>
+                                </div>
+                                <div class="project-status hot">Hot</div>
+                            </div>
+                        </div>
+                    </a>
+                }
+            </div>
+        </div>
+    </section>
+    
     <div class="results-container">
         <h2 class="results-heading">Kết quả tìm kiếm</h2>
         

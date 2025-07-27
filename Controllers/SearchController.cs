@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using StudentFreelance.ViewModels;
 using System;
+using System.Security.Claims;
 
 namespace StudentFreelance.Controllers
 {
@@ -49,6 +50,53 @@ namespace StudentFreelance.Controllers
 
         public async Task<IActionResult> SearchJob(string query, string location, int? categoryId, List<int> skillIds, int? userId, string provinceCode)
         {
+            List<Project> topProjects;
+
+            var baseQuery = _context.Projects
+                .Where(p => p.IsActive && p.StatusID == 1)
+                .Include(p => p.ProjectSkillsRequired)
+                .ThenInclude(ps => ps.Skill)
+                .Include(p => p.Business)
+                .Include(p => p.Address)
+                .Include(p => p.Category)
+                .Include(p => p.Type)
+                .Include(p => p.Status);
+
+            if (User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Student"))
+            {
+                var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (int.TryParse(userIdStr, out int studentUserId))
+                {
+                    // Lấy danh sách skillID mà sinh viên đang có
+                    var studentSkillIds = await _context.StudentSkills
+                        .Where(ss => ss.UserID == studentUserId)
+                        .Select(ss => ss.SkillID)
+                        .ToListAsync();
+
+                    // Ưu tiên dự án có kỹ năng trùng
+                    topProjects = baseQuery
+                        .AsEnumerable()
+                        .OrderByDescending(p => p.ProjectSkillsRequired.Any(ps => studentSkillIds.Contains(ps.SkillID))) // true trước
+                        .ThenByDescending(p => p.CreatedAt)
+                        .Take(6)
+                        .ToList();
+                }
+                else
+                {
+                    topProjects = await baseQuery.OrderByDescending(p => p.CreatedAt).Take(6).ToListAsync();
+                }
+            }
+            else
+            {
+                topProjects = await baseQuery.OrderByDescending(p => p.CreatedAt).Take(6).ToListAsync();
+            }
+
+            ViewBag.TopProjects = topProjects;
+
+
+            ViewBag.TopProjects = topProjects;
+
+
             Console.WriteLine($"[DEBUG] SearchJob called with provinceCode: {provinceCode}");
             
             // Lấy danh sách dự án
@@ -75,21 +123,23 @@ namespace StudentFreelance.Controllers
             // Tìm kiếm theo từ khóa
             if (!string.IsNullOrEmpty(query))
             {
+                string searchQueryLower = query.ToLower();
                 projects = projects.Where(p => 
-                    p.Title.Contains(query) || 
-                    p.Description.Contains(query) || 
-                    p.Business.CompanyName.Contains(query));
+                    (p.Title != null && p.Title.ToLower().Contains(searchQueryLower)) || 
+                    (p.Description != null && p.Description.ToLower().Contains(searchQueryLower)) || 
+                    (p.Business != null && p.Business.CompanyName != null && p.Business.CompanyName.ToLower().Contains(searchQueryLower)));
             }
 
             // Tìm kiếm theo địa điểm
             if (!string.IsNullOrEmpty(location))
             {
+                string locationLower = location.ToLower();
                 projects = projects.Where(p => 
                     (p.Address != null && (
-                        p.Address.ProvinceName.Contains(location) || 
-                        p.Address.DistrictName.Contains(location) || 
-                        p.Address.WardName.Contains(location) || 
-                        p.Address.DetailAddress.Contains(location)
+                        (p.Address.ProvinceName != null && p.Address.ProvinceName.ToLower().Contains(locationLower)) || 
+                        (p.Address.DistrictName != null && p.Address.DistrictName.ToLower().Contains(locationLower)) || 
+                        (p.Address.WardName != null && p.Address.WardName.ToLower().Contains(locationLower)) || 
+                        (p.Address.DetailAddress != null && p.Address.DetailAddress.ToLower().Contains(locationLower))
                     )));
             }
 
@@ -204,12 +254,13 @@ namespace StudentFreelance.Controllers
             // Tìm kiếm theo tên
             if (!string.IsNullOrEmpty(query))
             {
+                string searchQueryLower = query.ToLower();
                 students = students.Where(s => 
-                    s.FullName.Contains(query) || 
-                    s.Email.Contains(query) || 
-                    s.UserName.Contains(query) || 
-                    (s.University != null && s.University.Contains(query)) || 
-                    (s.Major != null && s.Major.Contains(query)));
+                    (s.FullName != null && s.FullName.ToLower().Contains(searchQueryLower)) || 
+                    (s.Email != null && s.Email.ToLower().Contains(searchQueryLower)) || 
+                    (s.UserName != null && s.UserName.ToLower().Contains(searchQueryLower)) || 
+                    (s.University != null && s.University.ToLower().Contains(searchQueryLower)) || 
+                    (s.Major != null && s.Major.ToLower().Contains(searchQueryLower)));
             }
 
             // Lọc theo kỹ năng
@@ -323,9 +374,10 @@ namespace StudentFreelance.Controllers
             // Tìm kiếm theo tên công ty hoặc lĩnh vực
             if (!string.IsNullOrEmpty(query))
             {
+                string searchQueryLower = query.ToLower();
                 businesses = businesses.Where(b => 
-                    (b.CompanyName != null && b.CompanyName.Contains(query)) || 
-                    (b.Industry != null && b.Industry.Contains(query)))
+                    (b.CompanyName != null && b.CompanyName.ToLower().Contains(searchQueryLower)) || 
+                    (b.Industry != null && b.Industry.ToLower().Contains(searchQueryLower)))
                     .AsQueryable();
             }
 

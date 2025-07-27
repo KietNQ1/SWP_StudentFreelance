@@ -1,0 +1,132 @@
+﻿/* Main colors */
+:root {
+    --primary-color: #89AC46;
+    --secondary-color: #D3E671;
+    --accent-color1: #F8ED8C;
+    --accent-color2: #FF8989;
+}
+
+.page-title {
+    color: var(--primary-color);
+    font-weight: 700;
+    margin-bottom: 25px;
+    font-size: 1.8rem;
+}
+
+/* Alert for validation errors */
+.alert-danger {
+    background-color: var(--accent-color2);
+    color: #6b0000;
+    border: 1px solid #a80000;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+/* Form styling */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--primary-color);
+}
+
+/* Input and dropdown */
+.form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid var(--primary-color);
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--secondary-color);
+        box-shadow: 0 0 5px var(--secondary-color);
+    }
+
+/* Validation message for inputs */
+.text-danger {
+    color: var(--accent-color2);
+    font-weight: 600;
+    margin-top: 5px;
+}
+
+/* Checkbox styles */
+.form-check-input {
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
+.form-check-label {
+    font-weight: 600;
+    color: var(--primary-color);
+    cursor: pointer;
+}
+
+/* Button group */
+.form-btn-group {
+    margin-top: 30px;
+}
+
+/* Save button */
+.btn-save {
+    background-color: var(--primary-color);
+    border: none;
+    color: white;
+    padding: 12px 25px;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-right: 15px;
+    box-shadow: 0 3px 10px rgba(137,172,70,0.5);
+}
+
+    .btn-save:hover,
+    .btn-save:focus {
+        background-color: var(--secondary-color);
+        color: #333;
+        box-shadow: 0 3px 15px var(--secondary-color);
+    }
+
+/* Cancel button */
+.btn-cancel {
+    background-color: var(--accent-color1);
+    color: #333;
+    padding: 12px 25px;
+    font-weight: 700;
+    border-radius: 6px;
+    border: 2px solid var(--primary-color);
+    text-decoration: none;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    box-shadow: 0 3px 10px rgba(248,237,140,0.5);
+}
+
+    .btn-cancel:hover,
+    .btn-cancel:focus {
+        background-color: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+        box-shadow: 0 3px 15px var(--primary-color);
+    }
+
+/* Responsive */
+@media (max-width: 576px) {
+    .btn-save, .btn-cancel {
+        display: block;
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+}

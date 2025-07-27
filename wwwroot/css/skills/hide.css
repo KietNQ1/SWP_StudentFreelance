@@ -1,0 +1,228 @@
+﻿/* skill-disable.css */
+:root {
+    --primary-green: #89AC46;
+    --light-green: #D3E671;
+    --cream: #F8ED8C;
+    --coral: #FF8989;
+    --white: #ffffff;
+    --text-dark: #2c3e50;
+    --text-light: #6c757d;
+    --shadow: rgba(0, 0, 0, 0.1);
+    --shadow-hover: rgba(0, 0, 0, 0.15);
+}
+
+/* Container Styles */
+.disable-skill-container {
+    max-width: 700px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: linear-gradient(135deg, var(--cream) 0%, var(--light-green) 100%);
+    border-radius: 12px;
+    box-shadow: 0 6px 24px var(--shadow);
+}
+
+/* Header Section */
+.header-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--primary-green);
+}
+
+    .header-section h2 {
+        color: var(--primary-green);
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+.warning-icon {
+    font-size: 1.5rem;
+    animation: pulse 2s infinite;
+}
+
+/* Confirmation Card */
+.confirmation-card {
+    background: var(--white);
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 4px 16px var(--shadow);
+    border-left: 4px solid var(--primary-green);
+}
+
+    .confirmation-card h4 {
+        color: var(--text-dark);
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+
+.info-text {
+    background: linear-gradient(135deg, #f8f9fa, var(--cream));
+    padding: 1rem;
+    border-radius: 6px;
+    border-left: 3px solid var(--light-green);
+    color: var(--text-dark);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+}
+
+/* Skill Details - Bootstrap Style */
+.skill-details {
+    margin-bottom: 2rem;
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 6px;
+    border: 1px solid rgba(137, 172, 70, 0.2);
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: -0.5rem;
+}
+
+.col-sm-3 {
+    flex: 0 0 25%;
+    max-width: 25%;
+    padding: 0.5rem;
+}
+
+.col-sm-9 {
+    flex: 0 0 75%;
+    max-width: 75%;
+    padding: 0.5rem;
+}
+
+dl {
+    margin: 0;
+}
+
+dt {
+    font-weight: 600;
+    color: var(--primary-green);
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+dd {
+    color: var(--text-dark);
+    font-weight: 500;
+    margin: 0;
+    margin-bottom: 0.75rem;
+    padding: 0.5rem;
+    background: var(--white);
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #dee2e6;
+}
+
+.btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px var(--shadow);
+    min-width: 120px;
+}
+
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px var(--shadow-hover);
+    }
+
+.btn-danger {
+    background: var(--coral);
+    color: var(--white);
+    border: 2px solid var(--coral);
+}
+
+    .btn-danger:hover {
+        background: #ff7070;
+        border-color: #ff7070;
+    }
+
+.btn-secondary {
+    background: var(--primary-green);
+    color: var(--white);
+    border: 2px solid var(--primary-green);
+}
+
+    .btn-secondary:hover {
+        background: #7a9a3a;
+        border-color: #7a9a3a;
+        text-decoration: none;
+        color: var(--white);
+    }
+
+/* Animation */
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .disable-skill-container {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+
+    .header-section {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.5rem;
+    }
+
+        .header-section h2 {
+            font-size: 1.5rem;
+        }
+
+    .confirmation-card {
+        padding: 1.5rem;
+    }
+
+    .col-sm-3, .col-sm-9 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .btn {
+        width: 100%;
+        max-width: 200px;
+    }
+}
+
+/* Focus states for accessibility */
+.btn:focus {
+    outline: 2px solid rgba(137, 172, 70, 0.5);
+    outline-offset: 2px;
+}
