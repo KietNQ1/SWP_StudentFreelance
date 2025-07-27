@@ -32,7 +32,7 @@ namespace StudentFreelance.Controllers
         }
         
         [HttpGet]
-        public async Task<IActionResult> Index(string searchTerm, string selectedRole, string status)
+        public async Task<IActionResult> Index(string searchTerm, string selectedRole, string status, int pageNumber = 1, int pageSize = 10)
         {
             var users = _userManager.Users.AsQueryable();
 
@@ -54,10 +54,25 @@ namespace StudentFreelance.Controllers
                 users = users.Where(u => userIds.Contains(u.Id));
             }
 
+            var totalUsers = await users.CountAsync(); 
+
+            var pagedUsers = await users
+                .OrderBy(u => u.FullName) 
+                .Skip((pageNumber - 1) * pageSize) 
+                .Take(pageSize)
+                .ToListAsync();
+
+           
             var allRoles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
             ViewBag.AllRoles = allRoles;
+            ViewBag.CurrentPage = pageNumber;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalPages = (int)Math.Ceiling((double)totalUsers / pageSize);
 
-            return View(await users.ToListAsync()); 
+            return View(pagedUsers);
+
+
+          
         }
 
         // Sửa người dùng

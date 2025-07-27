@@ -276,3 +276,44 @@
     color: #718096;
     font-style: italic;
 }
+.pagination-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+    .pagination-list li {
+        display: inline-block;
+    }
+
+    .pagination-list .btn {
+        padding: 8px 14px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        background-color: #ffffff;
+        color: #333;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+        .pagination-list .btn:hover {
+            background-color: #f0f0f0;
+            border-color: #999;
+            color: #000;
+        }
+
+    .pagination-list .btn-primary {
+        background-color: #2563eb; /* Blue-600 */
+        color: white;
+        border-color: #2563eb;
+        font-weight: 600;
+    }
+
+        .pagination-list .btn-primary:hover {
+            background-color: #1e40af; /* Darker blue */
+            border-color: #1e40af;
+        }
