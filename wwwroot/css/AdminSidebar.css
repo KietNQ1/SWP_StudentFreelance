@@ -8,23 +8,13 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #D3E671 0%, #D3E671 100%);
+    background: #89AC46;
     min-height: 100vh;
     position: relative;
     overflow-x: hidden;
 }
 
-    body::before {
-        content: '';
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-image: radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
-        animation: float 15s ease-in-out infinite;
-        z-index: -1;
-    }
+    
 
 @keyframes float {
     0%, 100% {
@@ -60,16 +50,7 @@ body {
     overflow: hidden;
 }
 
-    .sidebar::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(45deg, transparent, rgba(102, 126, 234, 0.05), transparent);
-        animation: shimmer 4s infinite;
-    }
+  
 
 @keyframes slideInLeft {
     to {

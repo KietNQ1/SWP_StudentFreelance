@@ -1,0 +1,29 @@
+﻿@{
+    ViewData["Title"] = "Chọn vai trò";
+   
+    var roles = ViewBag.Roles as List<Microsoft.AspNetCore.Identity.IdentityRole<int>>;
+
+
+    var roleDisplayNames = new Dictionary<string, string>
+    {
+        { "Student", "Sinh viên" },
+        { "Business", "Doanh nghiệp" }
+    };
+}
+
+<h2>Chọn vai trò của bạn</h2>
+
+<form asp-action="SelectRole" method="post">
+    <div class="form-group">
+        <label for="role">Vai trò:</label>
+        <select name="role" class="form-control" required>
+            @foreach (var role in roles)
+            {
+                <option value="@role.Name">
+                    @roleDisplayNames.GetValueOrDefault(role.Name, role.Name)
+                </option>
+            }
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary mt-2">Tiếp tục</button>
+</form>

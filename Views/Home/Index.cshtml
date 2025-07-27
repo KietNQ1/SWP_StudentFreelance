@@ -3,6 +3,7 @@
 }
 @{
     var topProjects = ViewBag.TopProjects as List<StudentFreelance.Models.Project>;
+    var popularBusinesses = ViewBag.PopularBusinesses as List<StudentFreelance.Models.ApplicationUser>;
 }
 @section Styles {
     <link rel="stylesheet" href="~/css/home/home.css" asp-append-version="true" />
@@ -107,7 +108,14 @@
                 <a asp-controller="Project" asp-action="Details" asp-route-id="@project.ProjectID" class="text-decoration-none text-dark">
                     <div class="project-card">
                         <div class="project-image">
-                            <img src="~/image/project-default.jpg" alt="@project.Business?.FullName" />
+                            @if (project.Business != null && !string.IsNullOrEmpty(project.Business.Avatar))
+                            {
+                                <img src="@project.Business.Avatar" alt="@project.Business?.FullName" onerror="this.onerror=null; this.src='/image/default-avatar.png';" />
+                            }
+                            else
+                            {
+                                <img src="/image/default-avatar.png" alt="@project.Business?.FullName" />
+                            }
                         </div>
                         <div class="project-content">
                             <h3 class="project-title">@project.Title</h3>
@@ -253,65 +261,41 @@
     <div class="container">
         <div class="section-header">
             <h2>Popular Business</h2>
-            <button class="arrow-btn">
-                <i class="fas fa-chevron-right"></i>
-            </button>
+            <a href="@Url.Action("SearchBusinesses", "Search")" class="view-all-btn">View all</a>
         </div>
         <div class="services-grid">
-            <div class="service-card green">
-                <div class="card-content">
-                    <h3>ABC Comapny</h3>
-                </div>
-                <div class="card-image">
-                    <img src="https://images.unsplash.com/photo-1547658719-da2b51169166?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-                         alt="ABC Comapny" />
-                </div>
-            </div>
-            <div class="service-card pink">
-                <div class="card-content">
-                    <h3>Flower Restaurant</h3>
-                </div>
-                <div class="card-image">
-                    <img src="https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-                         alt="Flower Restaurant" />
-                </div>
-            </div>
-            <div class="service-card orange">
-                <div class="card-content">
-                    <h3>FPT Software</h3>
-                </div>
-                <div class="card-image">
-                    <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-                         alt="FPT Software" />
-                </div>
-            </div>
-            <div class="service-card teal">
-                <div class="card-content">
-                    <h3>Golden Gate</h3>
-                </div>
-                <div class="card-image">
-                    <img src="https://images.unsplash.com/photo-1432888622747-4eb9a8c2b156?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-                         alt="Golden Gate" />
-                </div>
-            </div>
-            <div class="service-card purple">
-                <div class="card-content">
-                    <h3>MTP Entertainment</h3>
-                </div>
-                <div class="card-image">
-                    <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-                         alt="MTP Entertainment" />
-                </div>
-            </div>
-            <div class="service-card yellow">
-                <div class="card-content">
-                    <h3>Malisa Cosmetic</h3>
-                </div>
-                <div class="card-image">
-                    <img src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-                         alt="Malisa Cosmetic" />
-                </div>
-            </div>
+            @if (popularBusinesses != null && popularBusinesses.Any())
+            {
+                string[] cardColors = { "green", "pink", "orange", "teal", "purple", "yellow" };
+                int colorIndex = 0;
+                
+                foreach (var business in popularBusinesses)
+                {
+                    var cardColor = cardColors[colorIndex % cardColors.Length];
+                    colorIndex++;
+                    
+                    <div class="service-card @cardColor">
+                        <div class="card-image">
+                            @if (!string.IsNullOrEmpty(business.Avatar))
+                            {
+                                <img src="@business.Avatar" alt="@business.CompanyName" onerror="this.onerror=null; this.src='/image/default-avatar.png';" />
+                            }
+                            else
+                            {
+                                <img src="/image/default-avatar.png" alt="@business.CompanyName" />
+                            }
+                        </div>
+                        <div class="card-content">
+                            <h3>@business.CompanyName</h3>
+                        </div>
+                        <a href="@Url.Action("Profile", "User", new { id = business.Id })" class="card-link" title="Xem hồ sơ @business.CompanyName"></a>
+                    </div>
+                }
+            }
+            else
+            {
+                <p>No businesses found.</p>
+            }
         </div>
     </div>
 </section>
