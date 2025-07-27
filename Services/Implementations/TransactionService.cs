@@ -247,8 +247,69 @@ namespace StudentFreelance.Services.Implementations
 
             return true;
         }
+        
+        // Advertisement transaction
+        public async Task<bool> CreateAdvertisementTransactionAsync(int userId, int advertisementId, decimal amount)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null || user.WalletBalance < amount)
+                return false;
 
+            // Deduct from user's wallet
+            user.WalletBalance -= amount;
 
+            // Create transaction
+            var transaction = new Transaction
+            {
+                UserID = userId,
+                Amount = amount,
+                TypeID = 6, // Advertisement Payment (updated from 4 to 6)
+                StatusID = 1, // Completed
+                Description = $"Thanh toán quảng cáo ID: {advertisementId}",
+                TransactionDate = DateTime.Now,
+                IsActive = true
+            };
 
+            _context.Transactions.Add(transaction);
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+            
+            return true;
+        }
+
+        public async Task<bool> CreateAdvertisementRenewalTransactionAsync(int userId, int advertisementId, decimal amount)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null || user.WalletBalance < amount)
+                return false;
+
+            // Deduct from user's wallet
+            user.WalletBalance -= amount;
+
+            // Create transaction
+            var transaction = new Transaction
+            {
+                UserID = userId,
+                Amount = amount,
+                TypeID = 6, // Advertisement Payment
+                StatusID = 1, // Completed
+                Description = $"Gia hạn quảng cáo ID: {advertisementId}",
+                TransactionDate = DateTime.Now,
+                IsActive = true
+            };
+
+            _context.Transactions.Add(transaction);
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+            
+            return true;
+        }
+        
+        public async Task<IEnumerable<TransactionStatus>> GetAllTransactionStatusesAsync()
+        {
+            return await _context.TransactionStatuses
+                .Where(s => s.IsActive)
+                .ToListAsync();
+        }
     }
 } 

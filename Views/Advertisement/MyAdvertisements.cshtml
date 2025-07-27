@@ -1,0 +1,185 @@
+@model List<StudentFreelance.ViewModels.AdvertisementViewModel>
+
+@{
+    ViewData["Title"] = "My Advertisements";
+}
+
+<link rel="stylesheet" href="~/css/AdvertisementManage.css" />
+
+<div class="topbar">
+    <h1><i class="fas fa-ad"></i> My Advertisements</h1>
+    <div class="filter-row">
+        <div class="filter-group">
+            <a asp-action="Create" class="btn-primary" style="display: inline-block; text-decoration: none;">
+                <i class="fas fa-plus me-2"></i>Create New Advertisement
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="table-container">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Success"]
+        </div>
+    }
+    
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
+
+    @if (Model.Count == 0)
+    {
+        <div class="no-data">
+            <p>You don't have any advertisements yet. Start creating advertisements to display on our homepage!</p>
+        </div>
+    }
+    else
+    {
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Package Type</th>
+                    <th>Status</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ad in Model)
+                {
+                    <tr>
+                        <td>
+                            <img src="~/uploads/advertisements/@ad.ImagePath" alt="Advertisement" class="ad-image" style="width: 100px; height: 60px;" />
+                        </td>
+                        <td>
+                            @if (ad.PackageTypeID == 2)
+                            {
+                                <span class="package-type package-premium">Premium Package</span>
+                            }
+                            else
+                            {
+                                <span class="package-type package-basic">Basic Package</span>
+                            }
+                        </td>
+                        <td>
+                            @if (ad.StatusID == 2) @* 2 = Approved *@
+                            {
+                                if (ad.EndDate < DateTime.Now)
+                                {
+                                    <span class="status-expired">Expired</span>
+                                }
+                                else if (!ad.IsActive)
+                                {
+                                    <span class="status-rejected">Canceled</span>
+                                }
+                                else
+                                {
+                                    <span class="status-approved">Active</span>
+                                }
+                            }
+                            else if (ad.StatusID == 1) @* 1 = Pending *@
+                            {
+                                <span class="status-pending">Pending</span>
+                            }
+                            else if (ad.StatusID == 3) @* 3 = Rejected *@
+                            {
+                                <span class="status-rejected">Rejected</span>
+                            }
+                            else if (ad.StatusID == 4) @* 4 = Expired *@
+                            {
+                                <span class="status-expired">Expired</span>
+                            }
+                        </td>
+                        <td>
+                            @(ad.StartDate.ToString("dd/MM/yyyy"))
+                        </td>
+                        <td>
+                            @(ad.EndDate.ToString("dd/MM/yyyy"))
+                        </td>
+                        <td>
+                            @if (ad.StatusID == 1) @* Only show edit button for pending advertisements *@
+                            {
+                                <a asp-action="Edit" asp-route-id="@ad.Id" class="action-btn edit">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            }
+                            @if ((ad.EndDate < DateTime.Now || (ad.StatusID == 2 && ad.IsActive)) && ad.StatusID != 1) @* Show renew button for expired or active approved ads, but not for pending ads *@
+                            {
+                                <a href="#" class="action-btn renew" onclick="confirmRenew(@ad.Id); return false;">
+                                    <i class="fas fa-sync"></i> Renew
+                                </a>
+                            }
+                            @if ((ad.IsActive || ad.StatusID != 2) && ad.StatusID != 3) @* Show delete button except for canceled ads and rejected ads *@
+                            {
+                                <a asp-action="Delete" asp-route-id="@ad.Id" class="action-btn delete">
+                                    <i class="fas fa-trash"></i> Delete
+                                </a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-6">
+        <div class="ad-card">
+            <div class="ad-card-header">
+                <h5>Advertisement Package Information</h5>
+            </div>
+            <div class="ad-card-body">
+                <div class="mb-3">
+                    <h6>Basic Package</h6>
+                    <ul>
+                        <li>Display 1 image in slideshow at any position</li>
+                        <li>Display duration: 7 days</li>
+                        <li>Price: 100,000đ</li>
+                    </ul>
+                </div>
+                <div>
+                    <h6>Premium Package</h6>
+                    <ul>
+                        <li>Display image in premium positions (first position is the first image when page loads)</li>
+                        <li>Display duration: 7 days</li>
+                        <li>Price: 200,000đ</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="ad-card">
+            <div class="ad-card-header">
+                <h5>Important Notes</h5>
+            </div>
+            <div class="ad-card-body">
+                <ul>
+                    <li>Advertisements need to be approved before being displayed on the homepage</li>
+                    <li>Each business can only have one advertisement displayed at a time</li>
+                    <li>Advertisements will be automatically hidden after expiration</li>
+                    <li>The most recently updated advertisement will be displayed</li>
+                    <li>You can renew expired advertisements for another 7 days at the same price</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmRenew(id) {
+            if (confirm("Are you sure you want to renew this advertisement?")) {
+                window.location.href = '@Url.Action("Renew")/' + id;
+            }
+        }
+    </script>
+} 

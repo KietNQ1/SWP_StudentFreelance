@@ -1,0 +1,66 @@
+﻿@model StudentFreelance.ViewModels.PaymentResultViewModel
+@{
+    ViewData["Title"] = "Kết quả giao dịch";
+}
+
+@section Styles {
+    <link href="~/css/wallet/paymentresult.css" rel="stylesheet" />
+}
+
+<div class="payment-result-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <div class="payment-result-card">
+                    <div class="@(Model.IsSuccess ? "alert-success-custom" : "alert-danger-custom")" role="alert">
+                        <div class="text-center">
+                            <div class="payment-icon">
+                                @if (Model.IsSuccess)
+                                {
+                                    <i class="fas fa-check-circle success-icon"></i>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-times-circle error-icon"></i>
+                                }
+                            </div>
+                            <h4 class="alert-heading">
+                                @(Model.IsSuccess ? "Thanh toán thành công!" : "Thanh toán thất bại hoặc bị hủy.")
+                            </h4>
+                        </div>
+
+                        <div class="transaction-details">
+                            <div class="transaction-detail">
+                                <span class="transaction-label">Mô tả giao dịch:</span>
+                                <span class="transaction-value">@Model.Description</span>
+                            </div>
+                            <div class="transaction-detail">
+                                <span class="transaction-label">Mã giao dịch:</span>
+                                <span class="transaction-value">@Model.OrderCode</span>
+                            </div>
+                            <div class="transaction-detail">
+                                <span class="transaction-label">Số tiền:</span>
+                                <span class="transaction-value">@Model.Amount.ToString("N0") VND</span>
+                            </div>
+                            <div class="transaction-detail">
+                                <span class="transaction-label">Ngày giao dịch:</span>
+                                <span class="transaction-value">@Model.TransactionDate.ToString("dd/MM/yyyy HH:mm:ss")</span>
+                            </div>
+                        </div>
+
+                        <hr class="custom-divider" />
+
+                        <div class="text-center">
+                            <a href="/Wallet/TransactionHistory" class="btn btn-primary-custom me-2">
+                                <i class="fas fa-history me-2"></i>Xem lịch sử giao dịch
+                            </a>
+                            <a href="/Wallet" class="btn btn-secondary-custom">
+                                <i class="fas fa-wallet me-2"></i>Về trang ví
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

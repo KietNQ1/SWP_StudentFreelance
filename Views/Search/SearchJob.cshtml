@@ -1,7 +1,11 @@
+
 @model IEnumerable<StudentFreelance.Models.Project>
+
 @{
-    ViewData["Title"] = "Kết quả tìm kiếm";
+    ViewData["Title"] = "Tìm kiếm dự án";
+    Layout = "~/Views/Shared/_Layout.cshtml";
     
+    var topProjects = ViewBag.TopProjects as List<StudentFreelance.Models.Project>;
     var importanceLevels = ViewBag.ImportanceLevels as List<StudentFreelance.Models.Enums.ImportanceLevel> ?? new List<StudentFreelance.Models.Enums.ImportanceLevel>();
     var proficiencyLevels = ViewBag.ProficiencyLevels as List<StudentFreelance.Models.Enums.ProficiencyLevel> ?? new List<StudentFreelance.Models.Enums.ProficiencyLevel>();
     
@@ -10,32 +14,27 @@
     var location = ViewBag.Location as string ?? string.Empty;
     var categoryId = ViewBag.CategoryId as int? ?? null;
     var skillIds = ViewBag.SkillIds as List<int> ?? new List<int>();
-    var userId = ViewBag.UserId as int? ?? null;
-    var provinceId = ViewBag.ProvinceId as int? ?? null;
+    var userId = ViewBag.UserId as int?;
+    var provinceCode = ViewBag.ProvinceCode as string;
     
-    var categories = ViewBag.Categories as List<StudentFreelance.Models.Category> ?? new List<StudentFreelance.Models.Category>();
-    var skills = ViewBag.Skills as List<StudentFreelance.Models.Skill> ?? new List<StudentFreelance.Models.Skill>();
-    var businessUsers = ViewBag.BusinessUsers as List<StudentFreelance.Models.ApplicationUser> ?? new List<StudentFreelance.Models.ApplicationUser>();
-    var provinces = ViewBag.Provinces as List<StudentFreelance.Models.Province> ?? new List<StudentFreelance.Models.Province>();
+    var categories = ViewBag.Categories as List<StudentFreelance.Models.Category>;
+    var skills = ViewBag.Skills as List<StudentFreelance.Models.Skill>;
+    var businessUsers = ViewBag.BusinessUsers as List<StudentFreelance.Models.ApplicationUser>;
+    var provinces = ViewBag.Provinces as List<dynamic>;
     
-    var selectedCategory = categoryId.HasValue ? categories.FirstOrDefault(c => c.CategoryID == categoryId) : null;
-    var selectedBusiness = userId.HasValue ? businessUsers.FirstOrDefault(u => u.Id == userId) : null;
-    var selectedProvince = provinceId.HasValue ? provinces.FirstOrDefault(p => p.ProvinceID == provinceId) : null;
+    var selectedCategory = categories?.FirstOrDefault(c => c.CategoryID == categoryId);
+    var selectedSkills = skills?.Where(s => skillIds.Contains(s.SkillID)).ToList() ?? new List<StudentFreelance.Models.Skill>();
+    var selectedBusiness = businessUsers?.FirstOrDefault(b => b.Id == userId);
+    var selectedProvinceName = string.Empty;
     
-    var selectedSkills = skills.Where(s => skillIds.Contains(s.SkillID)).ToList();
-    
-    // Nhóm các danh mục theo loại
-    var fieldCategories = categories.Where(c => c.CategoryType == "Field" && c.ParentCategoryID == null).ToList();
-    var skillCategories = categories.Where(c => c.CategoryType == "Skill").ToList();
-    
-    // Lấy danh sách danh mục chính và danh mục con
-    var mainCategories = categories.Where(c => c.CategoryType == "Field" && c.ParentCategoryID == null).ToList();
-    var subCategories = categories.Where(c => c.ParentCategoryID != null).ToList();
-    
-    // Nhóm kỹ năng theo danh mục
-    var skillsByCategory = skills
-        .GroupBy(s => s.CategoryID)
-        .ToDictionary(g => g.Key, g => g.ToList());
+    if (!string.IsNullOrEmpty(provinceCode) && provinces != null)
+    {
+        var selectedProvince = provinces.FirstOrDefault(p => p.ID.ToString() == provinceCode);
+        if (selectedProvince != null)
+        {
+            selectedProvinceName = selectedProvince.Name;
+        }
+    }
 }
 
 @section Styles {
@@ -52,6 +51,105 @@
         
         .list-group-item.fw-bold.bg-primary {
             background-color: #89AC46 !important;
+        }
+        
+        /* Fix for layout issues */
+        html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            min-height: 100vh !important;
+            height: auto !important;
+            overflow-x: hidden !important;
+        }
+        
+        body {
+            display: flex !important;
+            flex-direction: column !important;
+        }
+        
+        main {
+            flex: 1 !important;
+        }
+        
+        .main-container {
+            margin-bottom: 0 !important;
+        }
+        
+        .footer {
+            margin-top: auto !important;
+            margin-bottom: 0 !important;
+            background-color: #F8F8F8 !important;
+        }
+        
+        /* Override any container styles that might affect the footer */
+        .footer .container {
+            background-color: transparent !important;
+            box-shadow: none !important;
+            border-top: none !important;
+            padding-top: 3rem !important;
+            padding-bottom: 0 !important;
+        }
+        
+        /* Fix for search form container */
+        .search-form-container {
+            margin-top: 0 !important;
+            transform: none !important;
+            position: relative !important;
+            z-index: 10 !important;
+        }
+        
+        .search-form-container:hover {
+            transform: none !important;
+        }
+        
+        .search-header {
+            padding-bottom: 1.5rem !important;
+        }
+        
+        /* Select2 styling for dropdowns */
+        .select2-container {
+            width: 100% !important;
+            z-index: 9999 !important;
+        }
+        
+        .select2-dropdown {
+            z-index: 9999 !important;
+            border-color: #dbe8c6 !important;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important;
+        }
+        
+        .select2-selection {
+            height: 42px !important;
+            min-height: 42px !important;
+            border-color: #dbe8c6 !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+        
+        .select2-selection__rendered {
+            line-height: 42px !important;
+            padding-left: 12px !important;
+        }
+        
+        .select2-selection__arrow {
+            height: 42px !important;
+        }
+        
+        .select2-search__field {
+            border-color: #dbe8c6 !important;
+        }
+        
+        .select2-results__option--highlighted {
+            background-color: #89AC46 !important;
+        }
+        
+        .select2-container--open {
+            z-index: 9999 !important;
+        }
+        
+        /* Đảm bảo parent elements không che khuất dropdown */
+        .container, .card, .card-body, .row, .col-md-2, .search-card {
+            overflow: visible !important;
         }
     </style>
 }
@@ -117,7 +215,7 @@
                                         <div class="col-md-4 p-0 category-list">
                                             <div class="list-group list-group-flush">
                                                 <div class="list-group-item fw-bold filter-header">NHÓM NGHỀ</div>
-                                                @foreach (var category in mainCategories)
+                                                @foreach (var category in categories.Where(c => c.CategoryType == "Field" && c.ParentCategoryID == null))
                                                 {
                                                     string activeClass = categoryId == category.CategoryID ? "active" : "";
                                                     <a href="#" class="list-group-item list-group-item-action category-item @activeClass" 
@@ -132,11 +230,11 @@
                                         <div class="col-md-4 p-0 subcategory-list">
                                             <div class="list-group list-group-flush">
                                                 <div class="list-group-item fw-bold filter-header">NGHỀ</div>
-                                                @foreach (var mainCategory in mainCategories)
+                                                @foreach (var mainCategory in categories.Where(c => c.CategoryType == "Field" && c.ParentCategoryID == null))
                                                 {
                                                     <div class="subcategory-group" id="subcategory-@mainCategory.CategoryID" style="display: @(categoryId == mainCategory.CategoryID ? "block" : "none");">
                                                         @{
-                                                            var categorySubCategories = subCategories.Where(sc => sc.ParentCategoryID == mainCategory.CategoryID).ToList();
+                                                            var categorySubCategories = categories.Where(sc => sc.ParentCategoryID == mainCategory.CategoryID).ToList();
                                                             if (categorySubCategories.Any())
                                                             {
                                                                 foreach (var subCategory in categorySubCategories)
@@ -184,9 +282,9 @@
                                                 @foreach (var category in categories)
                                                 {
                                                     <div class="skill-group" id="skills-@category.CategoryID" style="display: none;">
-                                                        @if (skillsByCategory.ContainsKey(category.CategoryID))
+                                                        @if (skills.Any(s => s.CategoryID == category.CategoryID))
                                                         {
-                                                            var orderedSkills = skillsByCategory[category.CategoryID].OrderBy(s => s.SkillName).ToList();
+                                                            var orderedSkills = skills.Where(s => s.CategoryID == category.CategoryID).OrderBy(s => s.SkillName).ToList();
                                                             foreach (var skill in orderedSkills)
                                                             {
                                                                 string selectedClass = skillIds.Contains(skill.SkillID) ? "selected" : "";
@@ -232,7 +330,7 @@
             </div>
             
             <div class="col-md-2">
-                <select class="form-select" name="userId">
+                <select class="form-select" name="userId" id="companySelect">
                     <option value="">-- Chọn công ty --</option>
                     @foreach (var business in businessUsers.OrderBy(b => b.CompanyName))
                     {
@@ -247,19 +345,80 @@
                     }
                 </select>
             </div>
+            
             <div class="col-md-2">
-                <button type="submit" class="btn btn-primary w-100" id="searchBtn">Tìm kiếm</button>
+                <select class="form-select" name="provinceCode" id="provinceSelect">
+                    <option value="">-- Chọn tỉnh/thành --</option>
+                    @{
+                        var orderedProvinces = provinces as IEnumerable<dynamic>;
+                        if (orderedProvinces != null)
+                        {
+                            foreach (var province in orderedProvinces)
+                            {
+                                if (provinceCode == province.ID)
+                                {
+                                    <option value="@province.ID" selected>@province.Name</option>
+                                }
+                                else
+                                {
+                                    <option value="@province.ID">@province.Name</option>
+                                }
+                            }
+                        }
+                    }
+                </select>
+            </div>
+            
+            <div class="col-12 mt-3 text-center">
+                <button type="submit" class="btn btn-primary px-4 me-2" id="searchBtn">Tìm kiếm</button>
+                <a href="@Url.Action("SearchJob", "Search")" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-2"></i>Xóa bộ lọc
+                </a>
             </div>
         </form>
     </div>
 
+    <!-- Top Projects Section -->
+    <section class="top-projects">
+        <div class="container">
+            <div class="section-header">
+                <h2>Recommend Project</h2>
+                <a asp-controller="Search" asp-action="SearchJob" class="view-all-btn">View all</a>
+            </div>
+
+            <div class="projects-grid">
+                @foreach (var project in topProjects)
+                {
+                    <a asp-controller="Project" asp-action="Details" asp-route-id="@project.ProjectID" class="text-decoration-none text-dark">
+                        <div class="project-card">
+                            <div class="project-image">
+                                <img src="~/image/project-default.jpg" alt="@project.Business?.FullName" />
+                            </div>
+                            <div class="project-content">
+                                <h3 class="project-title">@project.Title</h3>
+                                <p class="company-name">@project.Business?.FullName</p>
+                                <div class="project-meta">
+                                    <span class="salary">@($"{project.Budget:N0} đ")</span>
+                                    <span class="location">
+                                        @(project.IsRemoteWork ? "Remote" : project.Address?.ProvinceName ?? "Unidentified location")
+                                    </span>
+                                </div>
+                                <div class="project-status hot">Hot</div>
+                            </div>
+                        </div>
+                    </a>
+                }
+            </div>
+        </div>
+    </section>
+    
     <div class="results-container">
         <h2 class="results-heading">Kết quả tìm kiếm</h2>
         
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
                 <p>Tìm thấy @Model.Count() dự án</p>
-                @if (!string.IsNullOrEmpty(query) || !string.IsNullOrEmpty(location) || categoryId.HasValue || skillIds.Any() || userId.HasValue || provinceId.HasValue)
+                @if (!string.IsNullOrEmpty(query) || !string.IsNullOrEmpty(location) || categoryId.HasValue || skillIds.Any() || userId.HasValue || !string.IsNullOrEmpty(provinceCode))
                 {
                     <p class="text-muted small">
                         Tiêu chí tìm kiếm: 
@@ -274,7 +433,7 @@
                             }
                         }
                         @if (selectedBusiness != null) { <span class="badge bg-secondary me-1">Công ty: @selectedBusiness.CompanyName</span> }
-                        @if (selectedProvince != null) { <span class="badge bg-secondary me-1">Địa điểm: @selectedProvince.Name</span> }
+                        @if (!string.IsNullOrEmpty(selectedProvinceName)) { <span class="badge bg-secondary me-1">Địa điểm: @selectedProvinceName</span> }
                     </p>
                 }
             </div>
@@ -332,13 +491,25 @@
                                 
                                 <div class="col-md-3">
                                     <div class="mb-3">
-                                        @if (project.Address?.Province != null)
+                                        @if (project.Address != null && !string.IsNullOrEmpty(project.Address.ProvinceCode))
                                         {
                                             <p class="mb-2">
-                                                <i class="bi bi-geo-alt"></i> @project.Address.Province.Name
+                                                <i class="bi bi-geo-alt"></i>
                                                 @if (!string.IsNullOrEmpty(project.Address.DetailAddress))
                                                 {
-                                                    <span class="text-muted"> - @project.Address.DetailAddress</span>
+                                                    @(project.Address.DetailAddress)<text>, </text>
+                                                }
+                                                @if (!string.IsNullOrEmpty(project.Address.WardName))
+                                                {
+                                                    @(project.Address.WardName)<text>, </text>
+                                                }
+                                                @if (!string.IsNullOrEmpty(project.Address.DistrictName))
+                                                {
+                                                    @(project.Address.DistrictName)<text>, </text>
+                                                }
+                                                @if (!string.IsNullOrEmpty(project.Address.ProvinceName))
+                                                {
+                                                    @(project.Address.ProvinceName)
                                                 }
                                             </p>
                                         }
@@ -427,6 +598,44 @@
             
             projects.forEach(project => container.appendChild(project));
         }
+        
+        $(document).ready(function() {
+            // Select2 initialization for company and province dropdowns
+            $('#companySelect').select2({
+                placeholder: "-- Chọn công ty --",
+                allowClear: true,
+                dropdownCssClass: 'company-dropdown',
+                width: '100%'
+            }).on('select2:open', function() {
+                // Ensure the dropdown shows correctly
+                setTimeout(function() {
+                    $('.company-dropdown').parent().css('z-index', '10000');
+                }, 0);
+            });
+            
+            $('#provinceSelect').select2({
+                placeholder: "-- Chọn tỉnh/thành --",
+                allowClear: true,
+                dropdownCssClass: 'province-dropdown',
+                width: '100%'
+            }).on('select2:open', function() {
+                // Ensure the dropdown shows correctly
+                setTimeout(function() {
+                    $('.province-dropdown').parent().css('z-index', '10000');
+                }, 0);
+            });
+            
+            // Ensure dropdowns are visible when scrolling
+            $(window).on('scroll resize', function() {
+                var openDropdown = $(".select2-container--open");
+                if (openDropdown.length) {
+                    openDropdown.css({
+                        'z-index': '10000',
+                        'position': 'absolute'
+                    });
+                }
+            });
+        });
         
         document.addEventListener('DOMContentLoaded', function() {
             // Các phần tử DOM

@@ -31,6 +31,10 @@ namespace StudentFreelance.Models
         [Column(TypeName = "decimal(15,2)")]
         public decimal Budget { get; set; }
 
+        /// Ví dự án - Số tiền thực tế còn lại của dự án (decimal(15,2))
+        [Column(TypeName = "decimal(15,2)")]
+        public decimal ProjectWallet { get; set; }
+
         /// Hạn nộp (deadline)
         public DateTime Deadline { get; set; }
 
@@ -65,12 +69,23 @@ namespace StudentFreelance.Models
         public DateTime EndDate { get; set; }
 
         public bool IsActive { get; set; } = true;
+        
+        // Flagging properties
+        public bool IsFlagged { get; set; } = false;
+        public string? FlagReason { get; set; }
+        public DateTime? FlaggedAt { get; set; }
+        public int? FlaggedByID { get; set; }
 
         public ApplicationUser Business { get; set; }
         public Category Category { get; set; }
         public Address Address { get; set; }
         public ProjectStatus Status { get; set; }
         public ProjectType Type { get; set; }
+        
+        // Navigation property for who flagged the project
+        [ForeignKey(nameof(FlaggedByID))]
+        public ApplicationUser FlaggedBy { get; set; }
+        
         public ICollection<ProjectSkillRequired> ProjectSkillsRequired { get; set; } = new List<ProjectSkillRequired>();
         public ICollection<ProjectAttachment> ProjectAttachments { get; set; } = new List<ProjectAttachment>();
         public ICollection<StudentApplication> StudentApplications { get; set; } = new List<StudentApplication>();

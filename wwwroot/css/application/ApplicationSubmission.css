@@ -1,0 +1,148 @@
+﻿:root {
+    --primary: #89AC46;
+    --accent-light: #f4fbe8;
+    --gray: #666;
+    --border-radius: 8px;
+    --transition: 0.3s ease;
+}
+
+/* ==== Page Layout ==== */
+body {
+    background-color: #f8f9fa;
+    color: #212529;
+}
+
+.container > .d-flex h2 {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+/* ==== Card Layout ==== */
+.card {
+    border: 1px solid #dee2e6;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.card-header .text-muted {
+    background-color: var(--primary);
+    color: white !important;
+    font-weight: 500;
+    min-height: 40px;
+    padding: 0.5rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-title {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+/* ==== Badge Trạng thái ==== */
+.badge {
+    font-size: 0.75rem;
+    padding: 0.4em 0.6em;
+    border-radius: 999px;
+}
+
+    .badge.bg-success {
+        background-color: #28a745 !important;
+    }
+
+    .badge.bg-warning {
+        background-color: #ffc107 !important;
+        color: #212529;
+    }
+
+    .badge.bg-danger {
+        background-color: #dc3545 !important;
+    }
+
+    .badge.bg-info {
+        background-color: #17a2b8 !important;
+        color: white;
+    }
+
+/* ==== Info text ==== */
+.card-body .text-muted {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.card-body .fw-bold.text-success {
+    font-size: 1rem;
+}
+
+/* ==== Buttons ==== */
+.btn-sm {
+    font-size: 0.875rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+}
+
+/* Nút xem dự án */
+.btn-outline-primary.btn-sm {
+    border: 2px solid var(--primary) !important;
+    border-color: var(--primary);
+    color: var(--primary) !important;
+    background-color: white !important;
+    transition: var(--transition);
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+    .btn-outline-primary.btn-sm:hover {
+        background-color: var(--primary) !important;
+        color: white !important;
+    }
+
+/* Nút xem chi tiết */
+.btn-primary.btn-sm {
+    font-weight: 500;
+    background-color: var(--primary);
+    border-color: var(--primary);
+    transition: var(--transition);
+}
+
+    .btn-primary.btn-sm:hover {
+        background-color: #7c9c3d;
+        border-color: #7c9c3d;
+    }
+
+/* Buttons trong card: full width và cách đều */
+.card-body .d-flex.gap-2 > a {
+    flex: 1 1 auto;
+    text-align: center;
+}
+
+/* ==== Alert ==== */
+.alert-info {
+    background-color: var(--accent-light);
+    border-left: 4px solid var(--primary);
+    color: #495057;
+    font-style: italic;
+}
+
+/* ==== Icon spacing ==== */
+.bi {
+    vertical-align: -0.125em;
+    margin-right: 4px;
+}
+
+/* ==== Breadcrumb Links (nếu có) ==== */
+.breadcrumb a,
+.breadcrumb a:link,
+.breadcrumb a:visited,
+.breadcrumb a:hover,
+.breadcrumb a:active {
+    text-decoration: none !important;
+}
+
+/* ==== Responsive Buttons on Mobile ==== */
+@media (max-width: 576px) {
+    .btn {
+        width: 100% !important;
+    }
+}

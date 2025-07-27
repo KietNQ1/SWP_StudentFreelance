@@ -195,6 +195,8 @@
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                         <input type="hidden" asp-for="BusinessID" />
                         <input type="hidden" id="hiddenCategoryId" name="CategoryID" value="@Model.CategoryID" />
+                        <input type="hidden" id="businessAddressId" name="BusinessAddressId" value="@ViewBag.BusinessAddressId" />
+                        <span asp-validation-for="CategoryID" class="text-danger"></span>
                         <div id="skillIdsContainer">
                             @foreach (var skillId in Model.SelectedSkills)
                             {
@@ -240,7 +242,7 @@
                                                             <span>@selectedSkills.Count vị trí chuyên môn</span>
                                                         }
                                                     }
-                                                    else if (Model.CategoryID != 0)
+                                                    else if (Model.CategoryID > 0)
                                                     {
                                                         var selectedCategory = Model.Categories.FirstOrDefault(c => c.CategoryID == Model.CategoryID);
                                                         if (selectedCategory != null)
@@ -423,14 +425,18 @@
                                 </div>
 
                                 <div class="form-check mb-3">
-                                    <input asp-for="IsRemoteWork" class="form-check-input" />
+                                    <input asp-for="IsRemoteWork" class="form-check-input" id="isRemoteWorkCheckbox" />
                                     <label asp-for="IsRemoteWork" class="form-check-label"></label>
+                                    <small class="form-text text-muted d-block">Nếu không chọn, địa chỉ doanh nghiệp sẽ được sử dụng.</small>
                                 </div>
 
                                 <div class="form-check mb-3">
                                     <input asp-for="IsHighlighted" class="form-check-input" />
                                     <label asp-for="IsHighlighted" class="form-check-label"></label>
                                 </div>
+                                
+                                <!-- Hidden AddressID field that will be updated based on IsRemoteWork checkbox -->
+                                <input type="hidden" asp-for="AddressID" id="addressIdField" />
                             </div>
                         </div>
 
@@ -459,6 +465,28 @@
         */
         
         document.addEventListener('DOMContentLoaded', function() {
+            // Logic for handling remote work checkbox
+            const remoteWorkCheckbox = document.getElementById('isRemoteWorkCheckbox');
+            const addressIdField = document.getElementById('addressIdField');
+            const businessAddressId = document.getElementById('businessAddressId').value;
+            
+            // Function to update address ID based on checkbox state
+            function updateAddressId() {
+                if (remoteWorkCheckbox.checked) {
+                    // If remote work is checked, set address to null
+                    addressIdField.value = '';
+                } else {
+                    // If remote work is unchecked, use business address
+                    addressIdField.value = businessAddressId;
+                }
+            }
+            
+            // Initialize address value
+            updateAddressId();
+            
+            // Add event listener to checkbox
+            remoteWorkCheckbox.addEventListener('change', updateAddressId);
+            
             // Các phần tử DOM
             const dropdownBtn = document.getElementById('dropdownCategorySkillsBtn');
             const container = document.getElementById('categorySkillsContainer');

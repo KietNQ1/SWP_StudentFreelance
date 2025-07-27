@@ -1,47 +1,117 @@
 ﻿@{
-    Layout = null; // hoặc _Layout không có sidebar nếu bạn muốn
+    Layout = null;
 }
-<link href="~/css/AdminSidebar.css" rel="stylesheet" />
-
-<div class="layout">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <nav class="sidebar-menu">
-            <a href="#">Dashboard</a>
-            <a href="#">Calendar</a>
-            <div class="dropdown">
-                <button class="dropdown-toggle" onclick="toggleDropdown(this)">Profile</button>
-                <div class="dropdown-menu">
-                    <a href="#">My Profile</a>
-                    <a href="#">Freelancers</a>
-                    <a href="#">Companies</a>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"]</title>
+    <link href="~/css/AdminSidebar.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    @RenderSection("Styles", required: false)
+    <style>
+        /* Thêm CSS để đảm bảo dropdown hiển thị đúng */
+        .dropdown-menu {
+            display: block;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            padding: 0;
+            margin: 0;
+            border: none;
+            box-shadow: none;
+            background: transparent;
+            position: static;
+            width: 100%;
+            border-radius: 0;
+        }
+        
+        .dropdown.open .dropdown-menu {
+            max-height: 200px;
+        }
+        
+        .dropdown-toggle {
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+        }
+        
+        /* Đảm bảo không có border hoặc background không mong muốn */
+        .sidebar-menu .dropdown-menu a {
+            padding: 12px 50px;
+            background: rgba(102, 126, 234, 0.05);
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <nav class="sidebar-menu">
+                <a asp-controller="Dashboard" asp-action="Index">Dashboard</a>
+                <a href="#">Calendar</a>
+                <div class="dropdown">
+                    <button class="dropdown-toggle" onclick="toggleDropdown(this)">Profile</button>
+                    <div class="dropdown-menu">
+                        <a href="#">My Profile</a>
+                        <a href="#">Freelancers</a>
+                        <a href="#">Companies</a>
+                    </div>
                 </div>
-            </div>
-            <div class="dropdown">
-                <button class="dropdown-toggle" onclick="toggleDropdown(this)">Customer Management</button>
-                <div class="dropdown-menu">
-                    <a href="#">Freelancers</a>
-                    <a href="#">Companies</a>
+                <div class="dropdown">
+                    <button class="dropdown-toggle" onclick="toggleDropdown(this)">Customer Management</button>
+                    <div class="dropdown-menu">
+                        <a href="#">Freelancers</a>
+                        <a href="#">Companies</a>
+                        <a asp-controller="UserVerification" asp-action="Index">User Verification</a>
+                    </div>
                 </div>
-            </div>
-            <a href="#">Project Management</a>
-            <a href="#">Applications</a>
-            <a href="#">Payments</a>
-            <a href="#">Reviews & Reports</a>
-            <a href="#">System Settings</a>
-        </nav>
-    </aside>
+                <a href="#">Project Management</a>
+                <a href="#">Applications</a>
+                <a asp-controller="AdminUser" asp-action="Payments">Payments</a>
+                <a href="#">Reviews & Reports</a>
+                <a asp-controller="Advertisement" asp-action="ManageAdvertisements">Manage Advertisements</a>
+                <a href="#">System Settings</a>
+            </nav>
+        </aside>
 
-    <!-- Main content area -->
-    <main class="main">
-        @RenderBody()
-    </main>
+        <!-- Main content area -->
+        <main class="main container-fluid">
+            @RenderBody()
+        </main>
+    </div>
+
+    <!-- Dropdown script -->
     <script>
+        // Cải thiện hàm toggleDropdown
         function toggleDropdown(button) {
+            // Lấy phần tử dropdown chứa button
             const dropdown = button.closest(".dropdown");
+            
+            // Đóng tất cả các dropdown khác
+            const allDropdowns = document.querySelectorAll('.dropdown');
+            allDropdowns.forEach(item => {
+                if (item !== dropdown && item.classList.contains('open')) {
+                    item.classList.remove('open');
+                }
+            });
+            
+            // Toggle class 'open' cho dropdown hiện tại
             dropdown.classList.toggle("open");
         }
+        
+        // Thêm xử lý đóng dropdown khi click bên ngoài
+        document.addEventListener('click', function(event) {
+            const dropdowns = document.querySelectorAll('.dropdown.open');
+            dropdowns.forEach(dropdown => {
+                if (!dropdown.contains(event.target)) {
+                    dropdown.classList.remove('open');
+                }
+            });
+        }, true);
     </script>
-</div>
 
-
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

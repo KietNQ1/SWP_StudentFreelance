@@ -1,137 +1,257 @@
 ﻿@{
     ViewData["Title"] = "Trang chủ";
 }
-
+@{
+    var topProjects = ViewBag.TopProjects as List<StudentFreelance.Models.Project>;
+    var popularBusinesses = ViewBag.PopularBusinesses as List<StudentFreelance.Models.ApplicationUser>;
+}
 @section Styles {
-    <link rel="stylesheet" href="~/css/home.css" />
+    <link rel="stylesheet" href="~/css/home/home.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 }
 
 <!-- Hero Section -->
-<section class="hero">
-    <div class="hero-container">
-        <div class="hero-content">
-            <h1 class="hero-title">
-                Let top talent bring <br />
-                your ideas to life
-            </h1>
+<section class="hero-slideshow">
+    <!-- Slideshow Background -->
+    <div class="slideshow-container">
+        @{
+            var defaultImages = new List<string> { "bg1.png", "bg2.png", "bg3.png", "bg4.png", "bg5.png", "bg6.png" };
+            var advertisements = ViewBag.Advertisements as List<StudentFreelance.Models.Advertisement> ?? new List<StudentFreelance.Models.Advertisement>();
+            
+            // Display advertisements first
+            foreach (var ad in advertisements)
+            {
+                string imageUrl = $"~/uploads/advertisements/{ad.ImagePath}";
+                string linkUrl = $"/User/Profile/{ad.BusinessId}";
+                bool isFirst = ad == advertisements.FirstOrDefault();
+                
+                <div class="slide @(isFirst ? "active" : "")" style="background-image: url('@Url.Content(imageUrl)')">
+                    <a href="@linkUrl" class="ad-link" title="Xem thêm về @ad.Business.CompanyName"></a>
+                </div>
+            }
+            
+            // If there are fewer than 6 ads, display default images to fill up to 6 slides
+            if (advertisements.Count < 6)
+            {
+                for (int i = 0; i < Math.Min(6 - advertisements.Count, defaultImages.Count); i++)
+                {
+                    bool isFirst = advertisements.Count == 0 && i == 0;
+                    <div class="slide @(isFirst ? "active" : "")" style="background-image: url('@Url.Content($"~/image/{defaultImages[i]}")')"></div>
+                }
+            }
+        }
+        
+        <!-- Navigation arrows -->
+        <button class="slideshow-prev" aria-label="Previous slide">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="slideshow-next" aria-label="Next slide">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        
+        <!-- Slide indicators -->
+        <div class="slideshow-dots">
+            @{
+                int totalSlides = advertisements.Count;
+                if (totalSlides < 6)
+                {
+                    totalSlides += Math.Min(6 - advertisements.Count, defaultImages.Count);
+                }
+                
+                for (int i = 0; i < totalSlides; i++)
+                {
+                    <span class="slideshow-dot @(i == 0 ? "active" : "")" data-slide="@i"></span>
+                }
+            }
+        </div>
+    </div>
 
-            <!-- Search Bar -->
-            <div class="search-container">
-                <form asp-controller="Search" asp-action="SearchJob" method="get">
-                    <div class="search-bar">
-                        <input
-                            type="text"
-                            placeholder="Search for any service..."
-                            class="search-input"
-                            name="query"
-                        />
-                        <button type="submit" class="search-btn">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </div>
-                </form>
-            </div>
+    <!-- Nội dung -->
+    <div class="hero-container" style="pointer-events: none;">
+        <div class="hero-content" style="pointer-events: auto;">
+            <h1 class="hero-title">Let top talent bring your ideas to life</h1>
 
-            <!-- Popular Searches -->
             <div class="popular-searches">
                 <a asp-controller="Search" asp-action="SearchJob" asp-route-query="website development" class="tag">website development</a>
                 <a asp-controller="Search" asp-action="SearchJob" asp-route-query="architecture & interior design" class="tag">architecture & interior design</a>
                 <a asp-controller="Search" asp-action="SearchJob" asp-route-query="UGC videos" class="tag">UGC videos</a>
                 <a asp-controller="Search" asp-action="SearchJob" asp-route-query="video editing" class="tag">video editing</a>
             </div>
+
+            <!-- Trusted By -->
+            <div class="trusted-by">
+                <span class="trusted-text">Trusted by:</span>
+                <div class="trusted-companies">
+                    <span>Meta</span>
+                    <span>Google</span>
+                    <span>Netflix</span>
+                    <span>P&G</span>
+                    <span>PayPal</span>
+                    <span>Payoneer</span>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
+
+<!-- Top Projects Section -->
+<section class="top-projects">
+    <div class="container">
+        <div class="section-header">
+            <h2>Top Projects</h2>
+            <a asp-controller ="Search" asp-action="SearchJob" class="view-all-btn">View all</a>
+        </div>
+
+        <div class="projects-grid">
+            @foreach (var project in topProjects)
+            {
+                <a asp-controller="Project" asp-action="Details" asp-route-id="@project.ProjectID" class="text-decoration-none text-dark">
+                    <div class="project-card">
+                        <div class="project-image">
+                            @if (project.Business != null && !string.IsNullOrEmpty(project.Business.Avatar))
+                            {
+                                <img src="@project.Business.Avatar" alt="@project.Business?.FullName" onerror="this.onerror=null; this.src='/image/default-avatar.png';" />
+                            }
+                            else
+                            {
+                                <img src="/image/default-avatar.png" alt="@project.Business?.FullName" />
+                            }
+                        </div>
+                        <div class="project-content">
+                            <h3 class="project-title">@project.Title</h3>
+                            <p class="company-name">@project.Business?.FullName</p>
+                            <div class="project-meta">
+                                <span class="salary">@($"{project.Budget:N0} đ")</span>
+                                <span class="location">
+                                    @(project.IsRemoteWork ? "Remote" : project.Address?.ProvinceName ?? "Unidentified location")
+                                </span>
+                            </div>
+                            <div class="project-status hot">Hot</div>
+                        </div>
+                    </div>
+                </a>
+            }
+        </div>
+    </div>
+</section>
+
+<script>
+    // Pagination functionality
+    const prevBtn = document.querySelector('.pagination-btn.prev');
+    const nextBtn = document.querySelector('.pagination-btn.next');
+    const dots = document.querySelectorAll('.dot');
+    let currentPage = 0;
+    const totalPages = dots.length;
+
+    function updatePagination() {
+        // Update dots
+        dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === currentPage);
+        });
+
+        // Update buttons
+        prevBtn.disabled = currentPage === 0;
+        nextBtn.disabled = currentPage === totalPages - 1;
+    }
+
+    prevBtn.addEventListener('click', () => {
+        if (currentPage > 0) {
+            currentPage--;
+            updatePagination();
+        }
+    });
+
+    nextBtn.addEventListener('click', () => {
+        if (currentPage < totalPages - 1) {
+            currentPage++;
+            updatePagination();
+        }
+    });
+
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+            currentPage = index;
+            updatePagination();
+        });
+    });
+
+    // Initialize pagination
+    updatePagination();
+</script>
 
 <!-- Categories Section -->
 <section class="categories">
     <div class="container">
         <div class="categories-grid">
-            <a asp-controller="Search" asp-action="SearchJob" asp-route-categoryId="1" class="category-link">
-                <div class="category-item">
-                    <div class="category-icon"><i class="fas fa-code"></i></div>
-                    <div class="category-text">
-                        <span>Programming</span>
-                        <span>& Tech</span>
-                    </div>
+            <div class="category-item">
+                <div class="category-icon">
+                    <i class="fas fa-code"></i>
                 </div>
-            </a>
-
-            <a asp-controller="Search" asp-action="SearchJob" asp-route-categoryId="2" class="category-link">
-                <div class="category-item">
-                    <div class="category-icon"><i class="fas fa-palette"></i></div>
-                    <div class="category-text">
-                        <span>Graphics &</span>
-                        <span>Design</span>
-                    </div>
+                <div class="category-text">
+                    <span>Programming</span>
+                    <span>& Tech</span>
                 </div>
-            </a>
-
-            <a asp-controller="Search" asp-action="SearchJob" asp-route-categoryId="3" class="category-link">
-                <div class="category-item">
-                    <div class="category-icon"><i class="fas fa-chart-line"></i></div>
-                    <div class="category-text">
-                        <span>Digital</span>
-                        <span>Marketing</span>
-                    </div>
+            </div>
+            <div class="category-item">
+                <div class="category-icon">
+                    <i class="fas fa-palette"></i>
                 </div>
-            </a>
-
-            <a asp-controller="Search" asp-action="SearchJob" asp-route-categoryId="4" class="category-link">
-                <div class="category-item">
-                    <div class="category-icon"><i class="fas fa-pen-fancy"></i></div>
-                    <div class="category-text">
-                        <span>Writing &</span>
-                        <span>Translation</span>
-                    </div>
+                <div class="category-text">
+                    <span>Graphics &</span>
+                    <span>Design</span>
                 </div>
-            </a>
-
-            <a asp-controller="Search" asp-action="SearchJob" asp-route-categoryId="5" class="category-link">
-                <div class="category-item">
-                    <div class="category-icon"><i class="fas fa-video"></i></div>
-                    <div class="category-text">
-                        <span>Video &</span>
-                        <span>Animation</span>
-                    </div>
+            </div>
+            <div class="category-item">
+                <div class="category-icon">
+                    <i class="fas fa-chart-line"></i>
                 </div>
-            </a>
-
-            <a asp-controller="Search" asp-action="SearchJob" asp-route-categoryId="6" class="category-link">
-                <div class="category-item">
-                    <div class="category-icon"><i class="fas fa-robot"></i></div>
-                    <div class="category-text">
-                        <span>AI Services</span>
-                    </div>
+                <div class="category-text">
+                    <span>Digital</span>
+                    <span>Marketing</span>
                 </div>
-            </a>
-
-            <a asp-controller="Search" asp-action="SearchStudents" class="category-link">
-                <div class="category-item">
-                    <div class="category-icon"><i class="fas fa-music"></i></div>
-                    <div class="category-text">
-                        <span>Music & Audio</span>
-                    </div>
+            </div>
+            <div class="category-item">
+                <div class="category-icon">
+                    <i class="fas fa-pen-fancy"></i>
                 </div>
-            </a>
-
-            <a asp-controller="Search" asp-action="SearchBusinesses" class="category-link">
-                <div class="category-item">
-                    <div class="category-icon"><i class="fas fa-briefcase"></i></div>
-                    <div class="category-text">
-                        <span>Business</span>
-                    </div>
+                <div class="category-text">
+                    <span>Writing &</span>
+                    <span>Translation</span>
                 </div>
-            </a>
-
-            <a asp-controller="Search" asp-action="SearchJob" class="category-link">
-                <div class="category-item">
-                    <div class="category-icon"><i class="fas fa-users"></i></div>
-                    <div class="category-text">
-                        <span>Consulting</span>
-                    </div>
+            </div>
+            <div class="category-item">
+                <div class="category-icon">
+                    <i class="fas fa-video"></i>
                 </div>
-            </a>
+                <div class="category-text">
+                    <span>Video &</span>
+                    <span>Animation</span>
+                </div>
+            </div>
+            <div class="category-item">
+                <div class="category-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="category-text">
+                    <span>AI Services</span>
+                </div>
+            </div>
+            <div class="category-item">
+                <div class="category-icon">
+                    <i class="fas fa-music"></i>
+                </div>
+                <div class="category-text">
+                    <span>Music & Audio</span>
+                </div>
+            </div>
+            <div class="category-item">
+                <div class="category-icon">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <div class="category-text">
+                    <span>Business</span>
+                </div>
+            </div>
         </div>
     </div>
 </section>
@@ -140,78 +260,42 @@
 <section class="popular-services">
     <div class="container">
         <div class="section-header">
-            <h2>Popular services</h2>
-            <button class="arrow-btn">
-                <i class="fas fa-chevron-right"></i>
-            </button>
+            <h2>Popular Business</h2>
+            <a href="@Url.Action("SearchBusinesses", "Search")" class="view-all-btn">View all</a>
         </div>
         <div class="services-grid">
-            <div class="service-card green">
-                <div class="card-content">
-                    <h3>Website Development</h3>
-                </div>
-                <div class="card-image">
-                    <img
-                        src="https://images.unsplash.com/photo-1547658719-da2b51169166?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-                        alt="Website Development"
-                    />
-                </div>
-            </div>
-            <div class="service-card pink">
-                <div class="card-content">
-                    <h3>Logo Design</h3>
-                </div>
-                <div class="card-image">
-                    <img
-                        src="https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-                        alt="Logo Design"
-                    />
-                </div>
-            </div>
-            <div class="service-card orange">
-                <div class="card-content">
-                    <h3>Software Development</h3>
-                </div>
-                <div class="card-image">
-                    <img
-                        src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-                        alt="Software Development"
-                    />
-                </div>
-            </div>
-            <div class="service-card teal">
-                <div class="card-content">
-                    <h3>SEO</h3>
-                </div>
-                <div class="card-image">
-                    <img
-                        src="https://th.bing.com/th/id/OIP.Ui-swQLnQvihRs8U_Kd2pwHaEn?r=0&w=1170&h=730&rs=1&pid=ImgDetMain"
-                        alt="SEO"
-                    />
-                </div>
-            </div>
-            <div class="service-card purple">
-                <div class="card-content">
-                    <h3>Architecture & Interior Design</h3>
-                </div>
-                <div class="card-image">
-                    <img
-                        src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-                        alt="Architecture & Interior Design"
-                    />
-                </div>
-            </div>
-            <div class="service-card yellow">
-                <div class="card-content">
-                    <h3>Book Design</h3>
-                </div>
-                <div class="card-image">
-                    <img
-                        src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-                        alt="Book Design"
-                    />
-                </div>
-            </div>
+            @if (popularBusinesses != null && popularBusinesses.Any())
+            {
+                string[] cardColors = { "green", "pink", "orange", "teal", "purple", "yellow" };
+                int colorIndex = 0;
+                
+                foreach (var business in popularBusinesses)
+                {
+                    var cardColor = cardColors[colorIndex % cardColors.Length];
+                    colorIndex++;
+                    
+                    <div class="service-card @cardColor">
+                        <div class="card-image">
+                            @if (!string.IsNullOrEmpty(business.Avatar))
+                            {
+                                <img src="@business.Avatar" alt="@business.CompanyName" onerror="this.onerror=null; this.src='/image/default-avatar.png';" />
+                            }
+                            else
+                            {
+                                <img src="/image/default-avatar.png" alt="@business.CompanyName" />
+                            }
+                        </div>
+                        <div class="card-content">
+                            <h3>@business.CompanyName</h3>
+                        </div>
+                        <a href="@Url.Action("Profile", "User", new { id = business.Id })" class="card-link" title="Xem hồ sơ @business.CompanyName"></a>
+                    </div>
+                }
+            }
+            else
+            {
+                <p>No businesses found.</p>
+            }
         </div>
     </div>
 </section>
@@ -221,7 +305,8 @@
     <div class="container">
         <div class="enterprise-content">
             <div class="enterprise-text">
-                <div class="enterprise-tag">Enterprise Suite</div>
+                <button class="btn btn-secondary">Enterprise Suite</button>
+                @* <button  class="enterprise-tag"></button> *@
                 <h2 class="enterprise-title">
                     This is how<br />
                     <span class="highlight">good companies</span><br />
@@ -238,7 +323,10 @@
                     </div>
                     <div class="feature">
                         <i class="fas fa-check"></i>
-                        <span>Control your workflow: hire, classify and pay your talent</span>
+                        <span>
+                            Control your workflow: hire, classify and pay your
+                            talent
+                        </span>
                     </div>
                     <div class="feature">
                         <i class="fas fa-check"></i>
@@ -248,10 +336,8 @@
                 <button class="btn btn-secondary">Learn more</button>
             </div>
             <div class="enterprise-image">
-                <img
-                    src="https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                    alt="Professional working"
-                />
+                <img src="https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                     alt="Professional working" />
                 <div class="stat-card stat-card-1">
                     <i class="fas fa-users"></i>
                     <div>
@@ -275,7 +361,7 @@
 <section class="find-talent">
     <div class="container">
         <div class="find-talent-card">
-            <div class="find-talent-tag">For clients</div>
+            <button class="btn btn-secondary">For client</button>
             <div class="find-talent-content">
                 <h2>Find talent<br />your way</h2>
                 <p>
@@ -286,25 +372,164 @@
         </div>
     </div>
 </section>
+    </main>
+<div id="footer"></div>
 
-@section Scripts {
-    <script>
-        // Initialize dropdowns
-        document.addEventListener('DOMContentLoaded', function () {
-            // Dropdown functionality
-            const exploreDropdowns = document.querySelectorAll('.explore-dropdown');
+<script>
+        // Slideshow functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const slides = document.querySelectorAll('.slide');
+            const dots = document.querySelectorAll('.slideshow-dot');
+            const prevButton = document.querySelector('.slideshow-prev');
+            const nextButton = document.querySelector('.slideshow-next');
+            const slideshowContainer = document.querySelector('.slideshow-container');
+            let current = 0;
+            let timer;
+            let touchStartX = 0;
+            let touchEndX = 0;
             
-            exploreDropdowns.forEach(dropdown => {
-                const menu = dropdown.querySelector('.dropdown-menu');
+            // Initialize slideshow
+            function showSlide(index) {
+                if (!slides || slides.length === 0) return;
                 
-                dropdown.addEventListener('mouseenter', () => {
-                    menu.style.display = 'block';
+                // Ensure index is within bounds
+                if (index >= slides.length) index = 0;
+                if (index < 0) index = slides.length - 1;
+                
+                // Remove active class from all slides and dots
+                slides.forEach(slide => {
+                    slide.classList.remove('active');
                 });
                 
-                dropdown.addEventListener('mouseleave', () => {
-                    menu.style.display = 'none';
+                dots.forEach(dot => dot.classList.remove('active'));
+                
+                // Add active class to current slide and dot
+                slides[index].classList.add('active');
+                if (dots[index]) {
+                    dots[index].classList.add('active');
+                }
+                
+                // Update current index
+                current = index;
+                
+                console.log('Changed to slide', index);
+            }
+            
+            // Next slide
+            function nextSlide() {
+                if (!slides || slides.length === 0) return;
+                
+                let next = (current + 1) % slides.length;
+                showSlide(next);
+            }
+            
+            // Previous slide
+            function prevSlide() {
+                if (!slides || slides.length === 0) return;
+                
+                let prev = current - 1;
+                if (prev < 0) prev = slides.length - 1;
+                showSlide(prev);
+            }
+            
+            // Start timer for automatic slideshow
+            function startTimer() {
+                clearInterval(timer);
+                timer = setInterval(nextSlide, 5000);
+            }
+            
+            // Reset timer when user interacts with slideshow
+            function resetTimer() {
+                clearInterval(timer);
+                startTimer();
+            }
+            
+            // Touch support for mobile devices
+            if (slideshowContainer) {
+                slideshowContainer.addEventListener('touchstart', function(e) {
+                    touchStartX = e.changedTouches[0].screenX;
+                }, {passive: true});
+                
+                slideshowContainer.addEventListener('touchend', function(e) {
+                    touchEndX = e.changedTouches[0].screenX;
+                    handleSwipe();
+                }, {passive: true});
+            }
+            
+            function handleSwipe() {
+                let swipeDistance = touchEndX - touchStartX;
+                
+                if (Math.abs(swipeDistance) > 50) {
+                    if (swipeDistance > 0) {
+                        prevSlide();
+                    } else {
+                        nextSlide();
+                    }
+                    resetTimer();
+                }
+            }
+            
+            // Event listeners
+            if (prevButton) {
+                prevButton.addEventListener('click', function() {
+                    prevSlide();
+                    resetTimer();
                 });
-            });
+            }
+            
+            if (nextButton) {
+                nextButton.addEventListener('click', function() {
+                    nextSlide();
+                    resetTimer();
+                });
+            }
+            
+            if (dots && dots.length > 0) {
+                dots.forEach(function(dot, index) {
+                    dot.addEventListener('click', function() {
+                        showSlide(index);
+                        resetTimer();
+                    });
+                });
+            }
+            
+            // Pause slideshow on hover
+            if (slideshowContainer) {
+                slideshowContainer.addEventListener('mouseenter', function() {
+                    clearInterval(timer);
+                });
+                
+                slideshowContainer.addEventListener('mouseleave', function() {
+                    startTimer();
+                });
+            }
+            
+            // Initialize slideshow
+            if (slides && slides.length > 0) {
+                showSlide(0);
+                startTimer();
+                console.log('Slideshow initialized with', slides.length, 'slides');
+            }
         });
     </script>
-}
+</script>
+
+<script>
+    // Load header and footer if needed
+    const headerEl = document.getElementById('header');
+    const footerEl = document.getElementById('footer');
+    
+    if (headerEl) {
+      fetch('header.html')
+        .then(res => res.text())
+        .then(data => headerEl.innerHTML = data)
+        .catch(err => console.log('Error loading header:', err));
+    }
+    
+    if (footerEl) {
+      fetch('footer.html')
+        .then(res => res.text())
+        .then(data => footerEl.innerHTML = data)
+        .catch(err => console.log('Error loading footer:', err));
+    }
+</script>

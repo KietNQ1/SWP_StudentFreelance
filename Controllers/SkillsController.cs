@@ -79,7 +79,7 @@ public class SkillsController : Controller
     // GET: Skills/Edit/5
     public async Task<IActionResult> Edit(int? id)
     {
-       
+
         if (id == null) return NotFound();
 
         var skill = await _context.Skills.FindAsync(id);
@@ -99,15 +99,15 @@ public class SkillsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, Skill skill)
     {
-       
+
         if (id != skill.SkillID)
         {
             // Nếu id không khớp ⇒ chắc chắn sẽ bị return
             return NotFound();
         }
 
-        
-        
+
+
 
         var existing = await _context.Skills.FindAsync(id);
         if (existing == null)

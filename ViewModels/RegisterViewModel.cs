@@ -26,15 +26,8 @@ namespace StudentFreelance.ViewModels
         [Display(Name = "Vai trò")]
         public required string Role { get; set; }
 
-        // Optional fields
-        [Display(Name = "Company/School Name")]
-        public string? CompanyOrSchoolName { get; set; }
+       
 
-        [Display(Name = "Bio")]
-        public string? Bio { get; set; }
-
-        [Display(Name = "Phone Number")]
-        [Phone]
-        public string? PhoneNumber { get; set; }
+      
     }
 }

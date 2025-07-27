@@ -1,0 +1,54 @@
+@model StudentFreelance.ViewModels.AdvertisementViewModel
+
+@{
+    ViewData["Title"] = "Create New Advertisement";
+}
+
+<link rel="stylesheet" href="~/css/AdvertisementManage.css" />
+
+<div class="topbar">
+    <h1><i class="fas fa-ad"></i> Create New Advertisement</h1>
+</div>
+
+<div class="table-container">
+    <form asp-action="Create" method="post" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="form-group">
+            <label asp-for="PackageTypeID" class="form-label">Advertisement Package Type</label>
+            <div class="form-check" style="margin-bottom: 15px;">
+                <input class="form-check-input" type="radio" name="PackageTypeID" id="basic" value="1" 
+                       @(Model.PackageTypeID == 1 ? "checked" : "")>
+                <label class="form-check-label" for="basic">
+                    Basic Package - 100,000đ
+                    <span class="form-text">Display 1 image in slideshow at any position</span>
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="PackageTypeID" id="featured" value="2" 
+                       @(Model.PackageTypeID == 2 ? "checked" : "")>
+                <label class="form-check-label" for="featured">
+                    Premium Package - 200,000đ
+                    <span class="form-text">Display image in premium positions in slideshow</span>
+                </label>
+            </div>
+            <span asp-validation-for="PackageTypeID" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="ImageFile" class="form-label">Upload Advertisement Image</label>
+            <input asp-for="ImageFile" class="form-control" type="file" accept="image/*" />
+            <span asp-validation-for="ImageFile" class="text-danger"></span>
+            <span class="form-text">Recommended size: 1920x1080 pixels. Maximum 2MB.</span>
+        </div>
+
+        <div style="display: flex; gap: 15px; margin-top: 30px;">
+            <button type="submit" class="btn-primary">Create Advertisement</button>
+            <a asp-action="MyAdvertisements" class="btn-secondary" style="text-decoration: none;">Back to List</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 

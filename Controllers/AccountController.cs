@@ -7,6 +7,7 @@ using StudentFreelance.ViewModels;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
 using StudentFreelance.DbContext;
+using StudentFreelance.Services.Interfaces;
 
 namespace StudentFreelance.Controllers
 {
@@ -16,13 +17,22 @@ namespace StudentFreelance.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly StudentFreelance.Services.Interfaces.IEmailSender _emailSender;
         private readonly ApplicationDbContext _context;
+        private readonly INotificationService _notificationService;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, StudentFreelance.Services.Interfaces.IEmailSender emailSender, ApplicationDbContext context)
+
+        public AccountController(
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
+            StudentFreelance.Services.Interfaces.IEmailSender emailSender,
+            ApplicationDbContext context,
+            INotificationService notificationService
+        )
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
             _context = context;
+            _notificationService = notificationService;
         }
 
         // GET: /Account/Register
@@ -32,27 +42,12 @@ namespace StudentFreelance.Controllers
             return View();
         }
 
-       
         // POST: /Account/Register
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
             if (!ModelState.IsValid)
                 return View(model);
-
-            // Create address for user with default values
-            var address = new Address
-            {
-                ProvinceID = 1,
-                DistrictID = 1,
-                WardID = 1,
-                DetailAddress = "Số nhà mặc định",
-                FullAddress = "Số nhà mặc định, Phường/Xã mặc định, Quận/Huyện mặc định, Tỉnh/Thành phố mặc định",
-                IsActive = true
-            };
-            
-            _context.Addresses.Add(address);
-            await _context.SaveChangesAsync();
 
             var user = new ApplicationUser
             {
@@ -62,18 +57,34 @@ namespace StudentFreelance.Controllers
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,
                 IsActive = true,
-                StatusID = 1, // Mặc định trạng thái "Hoạt động"
-                AddressID = address.AddressID
+                StatusID = 1,
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
             {
-                // Gán role mặc định (ví dụ: "Student")
                 await _userManager.AddToRoleAsync(user, model.Role);
+
+                var subject = "Chào mừng bạn đến với StudentFreelance!";
+                var body = $@"
+            <p>Xin chào <strong>{user.FullName}</strong>,</p>
+            <p>Cảm ơn bạn đã đăng ký tài khoản tại <strong>StudentFreelance</strong>.</p>
+            <p>Bạn có thể đăng nhập ngay tại đây: 
+                <a href='{Url.Action("Login", "Account", null, Request.Scheme)}'>Đăng nhập</a>.
+            </p>
+            <p>Chúc bạn một ngày tốt lành!</p>
+        ";
+
+                await _emailSender.SendEmailAsync(user.Email, subject, body);
+
+                await _notificationService.SendNotificationToUserAsync(
+                    user.Id,
+                    "Chào mừng bạn đến với StudentFreelance!",
+                    "Cảm ơn bạn đã đăng ký tài khoản. Hãy cập nhật hồ sơ để bắt đầu nhận dự án.",
+                    1
+                );
+
                 TempData["SuccessMessage"] = "Đăng ký thành công. Vui lòng đăng nhập.";
-                // ❌ Không đăng nhập ngay
-                // ✅ Chuyển sang trang đăng nhập
                 return RedirectToAction("Login");
             }
 
@@ -89,20 +100,40 @@ namespace StudentFreelance.Controllers
         {
             return View();
         }
+
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
         {
             if (!ModelState.IsValid)
                 return View(model);
 
-            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
+            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: true);
 
             if (result.Succeeded)
             {
+                var user = await _userManager.FindByEmailAsync(model.Email);
+
+                // Chỉ gửi email thông báo đăng nhập thành công
+                var subject = "Đăng nhập thành công";
+                var body = $@"
+                    <p>Xin chào <strong>{user.FullName}</strong>,</p>
+                    <p>Bạn vừa đăng nhập thành công vào hệ thống StudentFreelance lúc {DateTime.Now:HH:mm:ss dd/MM/yyyy}.</p>
+                    <p>Nếu không phải bạn, vui lòng đổi mật khẩu ngay lập tức.</p>";
+                //await _emailSender.SendEmailAsync(user.Email, subject, body);
+
+                // KHÔNG gọi notificationService ở đây nữa!
+
                 return RedirectToLocal(returnUrl);
             }
+            else if (result.IsLockedOut)
+            {
+                ModelState.AddModelError("", "Tài khoản đã bị khóa tạm thời. Vui lòng thử lại sau.");
+            }
+            else
+            {
+                ModelState.AddModelError("", "Đăng nhập không hợp lệ.");
+            }
 
-            ModelState.AddModelError(string.Empty, "Đăng nhập không hợp lệ.");
             return View(model);
         }
 
@@ -113,6 +144,7 @@ namespace StudentFreelance.Controllers
 
             return RedirectToAction("Index", "Home");
         }
+
         //Logout
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -121,15 +153,14 @@ namespace StudentFreelance.Controllers
             await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
         }
+
         //Forgot pass
-        // GET: /Account/ForgotPassword
         [HttpGet]
         public IActionResult ForgotPassword()
         {
             return View();
         }
 
-        // POST: /Account/ForgotPassword
         [HttpPost]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {
@@ -137,16 +168,14 @@ namespace StudentFreelance.Controllers
                 return View(model);
 
             var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user == null )
+            if (user == null)
             {
-                // Không tiết lộ thông tin tồn tại vì lý do bảo mật
                 return RedirectToAction("ForgotPasswordConfirmation");
             }
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             var resetLink = Url.Action("ResetPassword", "Account", new { token, email = model.Email }, Request.Scheme);
 
-            // Gửi email
             var subject = "Reset your password";
             var body = $"Vui lòng bấm vào link sau để đặt lại mật khẩu của bạn:<br/><a href='{resetLink}'>{resetLink}</a>";
             await _emailSender.SendEmailAsync(model.Email, subject, body);
@@ -154,13 +183,11 @@ namespace StudentFreelance.Controllers
             return RedirectToAction("ForgotPasswordConfirmation");
         }
 
-
-        // GET: /Account/ForgotPasswordConfirmation
         public IActionResult ForgotPasswordConfirmation()
         {
             return View();
         }
-        // GET: /Account/ResetPassword
+
         [HttpGet]
         public IActionResult ResetPassword(string token, string email)
         {
@@ -171,7 +198,6 @@ namespace StudentFreelance.Controllers
             return View(model);
         }
 
-        // POST: /Account/ResetPassword
         [HttpPost]
         public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
         {
@@ -188,6 +214,21 @@ namespace StudentFreelance.Controllers
             var result = await _userManager.ResetPasswordAsync(user, model.Token, model.Password);
             if (result.Succeeded)
             {
+                // 🔔 Notification: gửi khi đổi mật khẩu thành công
+                var subject = "Mật khẩu đã được cập nhật";
+                var body = $@"
+                    <p>Xin chào <strong>{user.FullName}</strong>,</p>
+                    <p>Mật khẩu tài khoản StudentFreelance của bạn đã được cập nhật thành công lúc {DateTime.Now:HH:mm:ss dd/MM/yyyy}.</p>
+                    <p>Nếu không phải bạn thực hiện thao tác này, hãy liên hệ hỗ trợ ngay.</p>";
+                await _emailSender.SendEmailAsync(user.Email, subject, body);
+
+                await _notificationService.SendNotificationToUserAsync(
+                    user.Id,
+                    "Mật khẩu đã thay đổi",
+                    "Mật khẩu của bạn đã được cập nhật thành công. Nếu không phải bạn thay đổi, hãy liên hệ quản trị viên.",
+                    1
+                );
+
                 TempData["SuccessMessage"] = "Mật khẩu đã được cập nhật thành công.";
                 return RedirectToAction("Login");
             }
@@ -206,7 +247,6 @@ namespace StudentFreelance.Controllers
             return Challenge(properties, provider);
         }
 
-        // Xử lý callback từ Google
         [HttpGet]
         public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null, string? remoteError = null)
         {
@@ -224,7 +264,6 @@ namespace StudentFreelance.Controllers
                 return RedirectToAction("Login");
             }
 
-            // Đăng nhập nếu đã có tài khoản
             var signInResult = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
 
             if (signInResult.Succeeded)
@@ -233,12 +272,10 @@ namespace StudentFreelance.Controllers
             }
             else
             {
-                // Nếu chưa có, tạo mới user
                 var email = info.Principal.FindFirstValue(ClaimTypes.Email);
                 var user = await _userManager.FindByEmailAsync(email);
                 if (user == null)
                 {
-                    // Lấy tên nếu có
                     var name = info.Principal.FindFirstValue(ClaimTypes.Name);
 
                     user = new ApplicationUser
@@ -255,8 +292,7 @@ namespace StudentFreelance.Controllers
                     var result = await _userManager.CreateAsync(user);
                     if (result.Succeeded)
                     {
-                        // Gán role mặc định
-                        await _userManager.AddToRoleAsync(user, "Student"); // hoặc "Business" tùy logic của bạn
+                        await _userManager.AddToRoleAsync(user, "Student");
                         await _userManager.AddLoginAsync(user, info);
                     }
                     else
@@ -270,33 +306,31 @@ namespace StudentFreelance.Controllers
                     await _userManager.AddLoginAsync(user, info);
                 }
 
-                // Kiểm tra và tạo địa chỉ nếu chưa có
                 if (user.AddressID == null)
                 {
                     var address = new Address
                     {
-                        ProvinceID = 1,
-                        DistrictID = 1,
-                        WardID = 1,
+                        ProvinceCode = "01",
+                        ProvinceName = "Hà Nội",
+                        DistrictCode = "001",
+                        DistrictName = "Quận Ba Đình",
+                        WardCode = "00001",
+                        WardName = "Phường Phúc Xá",
                         DetailAddress = "Số nhà mặc định",
-                        FullAddress = "Số nhà mặc định, Phường/Xã mặc định, Quận/Huyện mặc định, Tỉnh/Thành phố mặc định",
+                        FullAddress = "Số nhà mặc định, Phường Phúc Xá, Quận Ba Đình, Hà Nội",
                         IsActive = true
                     };
-                    
+
                     _context.Addresses.Add(address);
                     await _context.SaveChangesAsync();
-                    
+
                     user.AddressID = address.AddressID;
                     await _userManager.UpdateAsync(user);
                 }
 
-                // Đăng nhập
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 return Redirect(returnUrl);
             }
         }
-
     }
 }
-
-

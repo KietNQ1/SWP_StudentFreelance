@@ -4,217 +4,162 @@
     ViewData["Title"] = "Thông tin cá nhân";
 }
 
-<style>
-    :root {
-        --primary: #89AC46;
-        --accent1: #D3E671;
-        --accent2: #F8ED8C;
-        --accent3: #FF8989;
-    }
+<link rel="stylesheet" href="~/css/user/profile.css" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
 
-    body {
-        background-color: #F8F8F8;
-        color: #222;
-        font-family: 'Segoe UI', sans-serif;
-    }
+<div class="container airbnb-profile py-4">
+    <!-- Wrapper chia 2 bên -->
+    <div class="d-flex flex-wrap profile-wrapper">
+        <!-- Bên trái: Avatar + Nút -->
+        <div class="avatar-section">
+            <div>
+                <img src="@(!string.IsNullOrEmpty(Model.AvatarPath) ? Url.Content(Model.AvatarPath) : Url.Content("~/image/default-avatar.png"))"
+                     class="avatar-img" alt="Avatar" />
 
-    .card {
-        border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-        border-left: 5px solid var(--primary);
-        background-color: #fff;
-    }
-
-    .card-header.bg-primary {
-        background-color: var(--accent1) !important;
-        color: #222;
-        font-weight: 600;
-        font-size: 1.1rem;
-    }
-
-    .card-header.bg-light {
-        background-color: var(--accent2) !important;
-        color: #222;
-        font-weight: 600;
-    }
-
-    .badge.bg-primary {
-        background-color: var(--accent2);
-        color: #222;
-        font-size: 0.875rem;
-        padding: 6px 10px;
-        border-radius: 20px;
-    }
-
-    .badge.bg-secondary {
-        background-color: var(--accent1);
-        color: #222;
-        font-size: 0.875rem;
-        padding: 6px 10px;
-        border-radius: 20px;
-    }
-
-    .btn-primary {
-        background-color: var(--accent3);
-        border-color: var(--accent3);
-        font-weight: 600;
-        color: white;
-    }
-
-        .btn-primary:hover {
-            background-color: #e35a5a;
-            border-color: #e35a5a;
-            color: white;
-        }
-
-    .alert-success {
-        background-color: var(--accent1);
-        color: #222;
-        border: 1px solid var(--primary);
-    }
-
-    .profile-avatar img {
-        width: 180px;
-        height: 180px;
-        object-fit: cover;
-        border-radius: 50%;
-        border: 4px solid var(--accent1);
-    }
-
-    .profile-label {
-        font-weight: 600;
-        color: #000;
-    }
-
-    .text-muted i {
-        color: var(--primary);
-        margin-right: 5px;
-    }
-
-    .edit-btn {
-        background-color: var(--accent3);
-        color: white;
-        font-weight: 600;
-        padding: 10px 20px;
-        border-radius: 6px;
-        text-decoration: none;
-    }
-
-        .edit-btn:hover {
-            background-color: #e55c5c;
-            color: white;
-        }
-</style>
-
-<div class="container py-5">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-primary d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">@ViewData["Title"]</h4>
-                    <a asp-action="Edit" class="edit-btn btn-sm">
-                        <i class="bi bi-pencil-square"></i> Chỉnh sửa
-                    </a>
-                </div>
-
-                <div class="card-body">
-                    @if (TempData["Success"] != null)
+                <!-- Các nút chuyển xuống dưới avatar -->
+                <div class="d-flex flex-column mt-3 gap-2">
+                    @if (Model.IsCurrentUser)
                     {
-                        <div class="alert alert-success">@TempData["Success"]</div>
+                        <a href="/User/Edit" class="btn btn-outline-primary btn-sm">✏️ Chỉnh sửa hồ sơ</a>
                     }
+                    <a href="/User/AllProjectHistory?userId=@Model.UserID" class="btn btn-outline-secondary btn-sm">📜 Lịch sử dự án</a>
+                    @if (Model.IsCurrentUser)
+                    {
+                        <a href="/User/VipSubscription" class="btn btn-warning btn-sm">🚀 Nâng cấp VIP</a>
+                    }
+                </div>
+            </div>
+        </div>
 
-                    <div class="row">
-                        <div class="col-md-4 text-center">
-                            <div class="profile-avatar mb-3">
-                                @if (!string.IsNullOrEmpty(Model.AvatarPath))
+        <!-- Bên phải: Nội dung -->
+        <div class="content-section">
+            <!-- Header -->
+            <div class="profile-header">
+                <h2 class="fw-bold mb-1">@Model.FullName</h2>
+            </div>
+
+            <!-- Thông tin cá nhân -->
+            <div class="profile-info-box mt-4">
+                <div class="section-title">🧾 Thông tin cá nhân</div>
+
+                <div class="info-row"><div class="info-label">Số điện thoại:</div><div class="info-value">@Model.PhoneNumber</div></div>
+
+                @if (Model.RoleId == 4)
+                {
+                    <div class="info-row"><div class="info-label">Trường đại học:</div><div class="info-value">@Model.University</div></div>
+                    <div class="info-row"><div class="info-label">Chuyên ngành:</div><div class="info-value">@Model.Major</div></div>
+                }
+                else if (Model.RoleId == 3)
+                {
+                    <div class="info-row"><div class="info-label">Công ty:</div><div class="info-value">@Model.CompanyName</div></div>
+                    <div class="info-row"><div class="info-label">Ngành nghề:</div><div class="info-value">@Model.Industry</div></div>
+                }
+
+                <div class="info-row">
+                    <div class="info-label">Địa chỉ:</div>
+                    @{
+                        var addressParts = new[] { Model.DetailAddress, Model.WardName, Model.DistrictName, Model.ProvinceName };
+                        var fullAddress = string.Join(", ", addressParts.Where(p => !string.IsNullOrWhiteSpace(p)));
+                    }
+                    <div class="info-value">@fullAddress</div>
+
+                </div>
+            </div>
+
+            <!-- Đánh giá trung bình -->
+            <div class="profile-info-box">
+                <div class="section-title">Đánh giá</div>
+                @if (Model.AverageRating.HasValue)
+                {
+                    var rating = Model.AverageRating.Value;
+                    <div class="average-rating mb-2">
+                        <div class="star-rating">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                if (i <= Math.Floor(rating))
                                 {
-                                    <img src="@Model.AvatarPath" alt="Avatar" />
+                                    <i class="fas fa-star filled"></i>
+                                }
+                                else if (i - rating < 1)
+                                {
+                                    <i class="fas fa-star-half-alt filled"></i>
                                 }
                                 else
                                 {
-                                    <img src="/image/default-avatar.png" alt="Avatar" />
+                                    <i class="far fa-star"></i>
                                 }
-                            </div>
-                            <h4 class="fw-bold">@Model.FullName</h4>
-                            <p class="text-muted"><i class="bi bi-envelope"></i>@Model.Email</p>
-                            <p><i class="bi bi-calendar"></i> Thành viên từ: @Model.CreatedAt.ToString("dd/MM/yyyy")</p>
-                            <p><i class="bi bi-clock-history"></i> Cập nhật: @Model.UpdatedAt.ToString("dd/MM/yyyy")</p>
+                            }
                         </div>
-
-                        <div class="col-md-8">
-                            <!-- Basic Info -->
-                            <div class="card mb-4">
-                                <div class="card-header bg-light">Thông tin cơ bản</div>
-                                <div class="card-body">
-                                    <div class="row mb-2">
-                                        <div class="col-md-4 profile-label">Số điện thoại:</div>
-                                        <div class="col-md-8">@(!string.IsNullOrEmpty(Model.PhoneNumber) ? Model.PhoneNumber : "Chưa cập nhật")</div>
-                                    </div>
-                                    <div class="row mb-2">
-                                        <div class="col-md-4 profile-label">Trường đại học:</div>
-                                        <div class="col-md-8">@(!string.IsNullOrEmpty(Model.University) ? Model.University : "Chưa cập nhật")</div>
-                                    </div>
-                                    <div class="row mb-2">
-                                        <div class="col-md-4 profile-label">Ngành học:</div>
-                                        <div class="col-md-8">@(!string.IsNullOrEmpty(Model.Major) ? Model.Major : "Chưa cập nhật")</div>
-                                    </div>
-                                    <div class="row mb-2">
-                                        <div class="col-md-4 profile-label">Công ty:</div>
-                                        <div class="col-md-8">@(!string.IsNullOrEmpty(Model.CompanyName) ? Model.CompanyName : "Chưa cập nhật")</div>
-                                    </div>
-                                    <div class="row mb-2">
-                                        <div class="col-md-4 profile-label">Lĩnh vực:</div>
-                                        <div class="col-md-8">@(!string.IsNullOrEmpty(Model.Industry) ? Model.Industry : "Chưa cập nhật")</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Address -->
-                            <div class="card mb-4">
-                                <div class="card-header bg-light">Địa chỉ</div>
-                                <div class="card-body">
-                                    @if (string.IsNullOrEmpty(Model.FullAddress) && Model.ProvinceID == null)
-                                    {
-                                        <p class="text-muted">Chưa cập nhật địa chỉ</p>
-                                    }
-                                    else
-                                    {
-                                        <p>
-                                            @(Model.DetailAddress)
-                                            @(string.IsNullOrEmpty(Model.WardName) ? "" : ", " + Model.WardName)
-                                            @(string.IsNullOrEmpty(Model.DistrictName) ? "" : ", " + Model.DistrictName)
-                                            @(string.IsNullOrEmpty(Model.ProvinceName) ? "" : ", " + Model.ProvinceName)
-                                        </p>
-                                    }
-                                </div>
-                            </div>
-
-                            <!-- Skills -->
-                            <div class="card">
-                                <div class="card-header bg-light">Kỹ năng</div>
-                                <div class="card-body">
-                                    @if (Model.Skills == null || !Model.Skills.Any())
-                                    {
-                                        <p class="text-muted">Chưa cập nhật kỹ năng</p>
-                                    }
-                                    else
-                                    {
-                                        <div class="row">
-                                            @foreach (var skill in Model.Skills)
-                                            {
-                                                <div class="col-md-6 mb-2">
-                                                    <span class="badge bg-primary me-1">@skill.SkillName</span>
-                                                    <span class="badge bg-secondary">@skill.ProficiencyLevelName</span>
-                                                </div>
-                                            }
-                                        </div>
-                                    }
-                                </div>
-                            </div>
-                        </div>
+                        <span class="rating-number">(@rating.ToString("0.0"))</span>
                     </div>
-                </div>
+                }
+                else
+                {
+                    <div class="text-muted mb-2">Chưa có đánh giá</div>
+                }
             </div>
+
+            <!-- Đánh giá gần đây -->
+            @if (Model.ReceivedRatings?.Any() == true)
+            {
+                <div class="profile-info-box">
+                    <div class="section-title">⭐ Đánh giá gần đây</div>
+
+                    @foreach (var rating in Model.ReceivedRatings.Take(3))
+                    {
+                        <div class="rating-card d-flex">
+                            <img src="@Url.Content(!string.IsNullOrEmpty(rating.ReviewerAvatarPath) ? rating.ReviewerAvatarPath : "~/image/default-avatar.png")"
+                                 class="rating-avatar-img me-3"
+                                 style="width:48px; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 50%;"
+                                 alt="Reviewer Avatar"
+                                 onerror="this.onerror=null;this.src='@Url.Content("~/image/default-avatar.png")';" />
+
+                            <div>
+                                <div class="rating-header fw-bold">@rating.ReviewerName</div>
+                                <div class="star-rating mb-1">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        if (i <= rating.Score)
+                                        {
+                                            <i class="fas fa-star filled"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="far fa-star"></i>
+                                        }
+                                    }
+                                </div>
+                                <div>@rating.Comment</div>
+                                <div class="text-muted small">@rating.DateRated.ToString("dd/MM/yyyy")</div>
+                            </div>
+                        </div>
+                    }
+
+                    <a href="/User/AllReviews?userId=@Model.UserID" class="btn btn-sm btn-outline-info">🔍 Xem tất cả đánh giá</a>
+                </div>
+            }
+
+            <!-- Kỹ năng -->
+            @if (Model.RoleId != 3)
+            {
+                <div class="profile-info-box">
+                    <div class="section-title">Kỹ năng</div>
+
+                    @if (Model.Skills.Any())
+                    {
+                        <div class="skill-list">
+                            @foreach (var skill in Model.Skills)
+                            {
+                                <span class="skill-tag">@skill.SkillName (@skill.ProficiencyLevelName)</span>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Chưa cập nhật kỹ năng.</p>
+                    }
+                </div>
+            }
         </div>
     </div>
 </div>

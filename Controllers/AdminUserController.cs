@@ -3,6 +3,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StudentFreelance.Models;
+using StudentFreelance.Services.Interfaces;
+using StudentFreelance.Models.Enums;
+using System.Threading.Tasks;
+using System.Linq;
+using StudentFreelance.DbContext;
 
 namespace StudentFreelance.Controllers
 {
@@ -11,14 +16,21 @@ namespace StudentFreelance.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole<int>> _roleManager;
+        private readonly ITransactionService _transactionService;
+        private readonly ApplicationDbContext _context;
 
-        public AdminUserController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole<int>> roleManager)
+        public AdminUserController(
+            UserManager<ApplicationUser> userManager, 
+            RoleManager<IdentityRole<int>> roleManager,
+            ITransactionService transactionService,
+            ApplicationDbContext context)
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            _transactionService = transactionService;
+            _context = context;
         }
-
-        // ✅ Gộp hiển thị và lọc người dùng
+        
         [HttpGet]
         public async Task<IActionResult> Index(string searchTerm, string selectedRole, string status)
         {
@@ -27,8 +39,8 @@ namespace StudentFreelance.Controllers
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 users = users.Where(u =>
-                    u.UserName.Contains(searchTerm) ||
-                    u.Email.Contains(searchTerm));
+                    u.FullName.Contains(searchTerm) ||
+                    u.Email.Contains(searchTerm) || u.PhoneNumber.Contains(searchTerm));
             }
 
             if (status == "Active")
@@ -45,10 +57,11 @@ namespace StudentFreelance.Controllers
             var allRoles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
             ViewBag.AllRoles = allRoles;
 
-            return View(await users.ToListAsync()); // View: Index.cshtml
+            return View(await users.ToListAsync()); 
         }
 
-        // ✅ Sửa người dùng
+        // Sửa người dùng
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> Edit(string id)
         {
@@ -66,7 +79,6 @@ namespace StudentFreelance.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(string id, ApplicationUser updatedUser, string selectedRole)
         {
             if (id != updatedUser.Id.ToString()) return BadRequest();
@@ -77,6 +89,7 @@ namespace StudentFreelance.Controllers
             user.FullName = updatedUser.FullName;
             user.Email = updatedUser.Email;
             user.PhoneNumber = updatedUser.PhoneNumber;
+            user.IsActive = updatedUser.IsActive;
 
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded)
@@ -92,8 +105,8 @@ namespace StudentFreelance.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-
-        // ✅ Ẩn (xóa mềm)
+    
+       
         [HttpPost]
         public async Task<IActionResult> Deactivate(string id)
         {
@@ -117,6 +130,99 @@ namespace StudentFreelance.Controllers
             await _userManager.UpdateAsync(user);
 
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Payments(string searchUser, int? statusId)
+        {
+            var transactions = await _transactionService.GetAllTransactionsAsync();
+            
+            // Filter by status if provided
+            if (statusId.HasValue)
+            {
+                transactions = transactions.Where(t => t.StatusID == statusId.Value);
+            }
+            
+            // Filter by user if provided
+            if (!string.IsNullOrEmpty(searchUser))
+            {
+                transactions = transactions.Where(t => 
+                    t.User.FullName.Contains(searchUser) || 
+                    t.User.Email.Contains(searchUser));
+            }
+            
+            // Get all transaction statuses for dropdown
+            var statuses = await _transactionService.GetAllTransactionStatusesAsync();
+            ViewBag.Statuses = statuses;
+            
+            return View(transactions.OrderByDescending(t => t.TransactionDate).ToList());
+        }
+        
+        [HttpPost]
+        public async Task<IActionResult> CancelTransaction(int transactionId)
+        {
+            var transaction = await _transactionService.GetTransactionByIdAsync(transactionId);
+            
+            if (transaction == null)
+                return NotFound();
+                
+            if (transaction.StatusID != 1) // Only pending transactions can be canceled
+                return BadRequest("Only pending transactions can be canceled");
+                
+            // Update status to Cancelled (assuming StatusID 3 is for Cancelled)
+            await _transactionService.UpdateTransactionStatusAsync(transactionId, 3);
+            
+            return RedirectToAction(nameof(Payments));
+        }
+        
+        [HttpPost]
+        public async Task<IActionResult> ProcessTransaction(int transactionId)
+        {
+            var transaction = await _transactionService.GetTransactionByIdAsync(transactionId);
+            
+            if (transaction == null)
+                return NotFound();
+                
+            if (transaction.StatusID != 1) // Only pending transactions can be processed
+                return BadRequest("Only pending transactions can be processed");
+            
+            // For deposit transactions, we need to update the user's wallet balance
+            if (transaction.TypeID == 1) // Deposit
+            {
+                await _transactionService.ConfirmDepositFromPayOS(long.Parse(transaction.OrderCode));
+            }
+            else
+            {
+                // For other transaction types, just update the status to Completed (StatusID 2)
+                await _transactionService.UpdateTransactionStatusAsync(transactionId, 2);
+            }
+            
+            return RedirectToAction(nameof(Payments));
+        }
+
+        // GET: /AdminUser/TransactionDetail/5
+        [HttpGet]
+        public async Task<IActionResult> TransactionDetail(int id)
+        {
+            var transaction = await _transactionService.GetTransactionByIdAsync(id);
+            
+            if (transaction == null)
+            {
+                return NotFound();
+            }
+            
+            // Get associated transaction history record if available
+            var transactionHistory = await _context.UserAccountHistories
+                .FirstOrDefaultAsync(h => h.ActionType == "TRANSACTION" && 
+                                         h.Description.Contains(id.ToString()) && 
+                                         h.UserID == transaction.UserID);
+            
+            if (transactionHistory != null)
+            {
+                ViewBag.TransactionHistory = transactionHistory;
+            }
+            
+            return View(transaction);
         }
     }
 }

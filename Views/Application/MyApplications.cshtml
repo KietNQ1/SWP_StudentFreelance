@@ -2,11 +2,13 @@
 @{
     ViewData["Title"] = "Đơn ứng tuyển của tôi";
 }
+<link href="~/css/application/ApplicationSubmission.css" rel="stylesheet" />
+
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Đơn ứng tuyển của tôi</h2>
-        <a asp-controller="Project" asp-action="Index" class="btn btn-outline-primary">
+        <a asp-controller="Project" asp-action="Index" class="btn btn-outline-primary btn-sm">
             <i class="bi bi-search"></i> Tìm kiếm dự án mới
         </a>
     </div>
@@ -60,10 +62,16 @@
                                 </div>
                             </div>
                             
+                            <div class="d-flex gap-2">
                             <a asp-controller="Project" asp-action="Details" asp-route-id="@application.ProjectID" 
                                class="btn btn-outline-primary btn-sm">
                                 <i class="bi bi-eye"></i> Xem dự án
                             </a>
+                                <a asp-controller="Application" asp-action="ViewApplication" asp-route-id="@application.ApplicationID" 
+                                   class="btn btn-primary btn-sm">
+                                    <i class="bi bi-file-earmark-text"></i> Xem chi tiết
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>

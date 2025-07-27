@@ -1,14 +1,16 @@
 ﻿@model List<StudentFreelance.Models.Skill>
+﻿
+<link rel="stylesheet" href="~/css/skills/index.css" asp-append-version="true" />
 
 <table class="table table-bordered text-center">
     <thead>
         <tr>
-            <th>Tên kỹ năng</th>
-            <th>Thể loại</th>
+            <th>Skill Name</th>
+            <th>Type</th>
             @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
             {
-                <th>Trạng thái</th>
-                <th>Hành động</th>
+                <th>Status</th>
+                <th>Action</th>
             }
         </tr>
     </thead>
@@ -22,17 +24,17 @@
 
                 @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
                 {
-                    <td>@(skill.IsActive ? "Hoạt động" : "Không hoạt động")</td>
+                    <td>@(skill.IsActive ? "Active" : "Inactive")</td>
                     <td>
-                        <a asp-action="Edit" asp-route-id="@skill.SkillID">Sửa</a> |
-                        <a asp-action="Details" asp-route-id="@skill.SkillID">Chi tiết</a> |
+                        <a asp-action="Edit" asp-route-id="@skill.SkillID">Edit</a> |
+                        <a asp-action="Details" asp-route-id="@skill.SkillID">Details</a> |
                         @if (skill.IsActive)
                         {
-                            <a asp-action="Delete" asp-route-id="@skill.SkillID">Ẩn</a>
+                            <a asp-action="Delete" asp-route-id="@skill.SkillID">Hide</a>
                         }
                         else
                         {
-                            <a asp-action="Unhide" asp-route-id="@skill.SkillID">Hiện</a>
+                            <a asp-action="Unhide" asp-route-id="@skill.SkillID">Unhide</a>
                         }
                     </td>
                 }

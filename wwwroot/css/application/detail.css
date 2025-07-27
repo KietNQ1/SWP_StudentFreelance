@@ -1,0 +1,157 @@
+﻿:root {
+    --primary: #89AC46;
+    --accent-light: #f4fbe8;
+    --gray: #666;
+    --border-radius: 8px;
+    --transition: 0.3s ease;
+}
+
+body {
+    background-color: #f8f9fa;
+    color: #212529;
+}
+
+/* Breadcrumb */
+.breadcrumb-item a {
+    color: var(--primary);
+    transition: var(--transition);
+    text-decoration: none; /* ← Ẩn gạch chân mặc định */
+}
+
+    .breadcrumb-item a:hover {
+        text-decoration: underline;
+    }
+
+/* Card Header */
+.card-header {
+    background-color: var(--primary) !important;
+    color: white;
+    font-weight: 600;
+    padding: 0.5rem 1rem; /* ↓ nhỏ lại để gọn nếu không có chữ */
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+}
+
+/* Cards */
+.card {
+    border: 1px solid #dee2e6;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1.5rem;
+}
+
+.card-body {
+    padding: 1.25rem;
+}
+
+h2, h5 {
+    color: var(--primary);
+}
+
+/* Avatar */
+.rounded-circle {
+    border: 2px solid var(--primary);
+    object-fit: cover;
+}
+
+/* Cover letter */
+.cover-letter {
+    background-color: var(--accent-light);
+    border-left: 4px solid var(--primary);
+    font-style: italic;
+}
+
+.skills .badge {
+    background-color: var(--primary);       /* Nền xanh lá */
+    color: #fff;                             /* Chữ trắng */
+    border: 1px solid var(--primary);        /* Viền cùng màu */
+    font-weight: 500;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 0.875rem;
+}
+
+
+
+/* Rating */
+.rating i {
+    color: #f1c40f;
+}
+
+/* Trạng thái */
+.badge.bg-success {
+    background-color: #28a745 !important;
+}
+
+.badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #212529;
+}
+
+.badge.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+/* Action buttons */
+.action-buttons .btn-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+    .action-buttons .btn-primary:hover {
+        background-color: #7c9c3d;
+        border-color: #7c9c3d;
+    }
+
+/* Nhắn tin - rõ viền */
+.action-buttons .btn-outline-primary {
+    color: var(--primary);
+    border: 2px solid var(--primary); /* dày hơn cho dễ thấy */
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+    .action-buttons .btn-outline-primary:hover {
+        background-color: var(--accent-light);
+        color: var(--primary);
+    }
+
+/* Notes box */
+.bg-light.rounded {
+    background-color: var(--accent-light) !important;
+    border-left: 3px solid var(--primary);
+    padding: 12px;
+    font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+    .btn {
+        width: 100% !important;
+    }
+}
+
+.card-header h2,
+.card-header h5 {
+    color: white !important;
+}
+
+/* Tăng độ rõ ràng cho nút quay lại */
+.btn-outline-secondary {
+    color: var(--primary) !important;
+    border: 2px solid var(--primary) !important;
+    font-weight: 500;
+    background-color: transparent;
+    padding: 6px 16px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+    .btn-outline-secondary:hover {
+        background-color: var(--accent1); /* hoặc accent-light nếu bạn có */
+        color: var(--primary);
+    }
+

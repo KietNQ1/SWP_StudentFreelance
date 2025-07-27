@@ -1,48 +1,80 @@
 ﻿@model IEnumerable<StudentFreelance.Models.Notification>
 
+<link rel="stylesheet" href="~/css/notification/index.css" asp-append-version="true" />
+
 @{
     ViewData["Title"] = "Thông báo của tôi";
 }
 
-<h2 class="mb-3">🔔 Thông báo của bạn</h2>
+<div class="notification-container">
+    <h2 class="notification-title">🔔 Thông báo của bạn</h2>
 
-@if (!Model.Any())
-{
-    <div class="alert alert-info">Bạn chưa có thông báo nào.</div>
-}
-else
-{
-    <form asp-action="MarkAllAsRead" method="post">
-        <button class="btn btn-sm btn-outline-primary mb-3" type="submit">✔ Đánh dấu tất cả là đã đọc</button>
-    </form>
+    @if (!Model.Any())
+    {
+        <div class="alert-info">Bạn chưa có thông báo nào.</div>
+    }
+    else
+    {
+        <div class="notification-actions">
+            <a href="#" class="btn-mark-all" onclick="markAllAsRead(); return false;">✔ Đánh dấu tất cả là đã đọc</a>
 
-    <ul class="list-group">
-        @foreach (var item in Model)
-        {
-            var userNotification = item.UserNotifications.FirstOrDefault();
-            var isRead = userNotification?.IsRead ?? false;
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-action="Send" class="btn-send-notification">+ Gửi thông báo</a>
+            }
+        </div>
 
-            <li class="list-group-item d-flex justify-content-between align-items-start @(isRead ? "" : "list-group-item-warning")">
-                <div class="ms-2 me-auto">
-                    <div class="fw-bold">
-                        <a asp-action="Details" asp-route-id="@item.NotificationID">
-                            @item.Title
-                        </a>
+
+        <ul class="notification-list">
+            @foreach (var item in Model)
+            {
+                var userNotification = item.UserNotifications.FirstOrDefault();
+                var isRead = userNotification?.IsRead ?? false;
+
+                <li class="notification-item @(isRead ? "" : "unread")">
+                    <div>
+                        <div class="fw-bold">
+                            <a asp-action="Details" asp-route-id="@item.NotificationID">
+                                @item.Title
+                            </a>
+                        </div>
+                        <div class="notification-meta">
+                            📅 @item.NotificationDate.ToString("dd/MM/yyyy HH:mm")
+                            | 👤 @(item.Sender?.FullName ?? "Hệ thống")
+                            | 🏷️ @item.Type?.TypeName
+                        </div>
                     </div>
-                    <div class="text-muted small">
-                        📅 @item.NotificationDate.ToString("dd/MM/yyyy HH:mm")
-                        | 👤 @item.Sender?.FullName ?? "Hệ thống"
-                        | 🏷️ @item.Type?.TypeName
-                    </div>
-                </div>
 
-                @if (!isRead)
-                {
-                    <form asp-action="MarkAsRead" method="post" asp-route-id="@item.NotificationID" class="ms-2">
-                        <button class="btn btn-sm btn-outline-secondary">✔ Đã đọc</button>
-                    </form>
-                }
-            </li>
-        }
-    </ul>
+                    @if (!isRead)
+                    {
+                        <form asp-action="MarkAsRead" method="post" asp-route-id="@item.NotificationID">
+                            <button class="btn-mark-read">✔ Đã đọc</button>
+                        </form>
+                    }
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+<script>
+function markAllAsRead() {
+    if (confirm('Bạn có chắc muốn đánh dấu tất cả thông báo là đã đọc?')) {
+        fetch('@Url.Action("MarkAllAsRead", "Notification")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
 }
+</script>

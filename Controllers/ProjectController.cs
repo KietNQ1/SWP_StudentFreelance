@@ -23,15 +23,22 @@ namespace StudentFreelance.Controllers
         private readonly IProjectService _projectService;
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly INotificationService _notificationService;
+        private readonly IEmailSender _emailSender;
 
         public ProjectController(
             IProjectService projectService, 
             ApplicationDbContext context,
-            IWebHostEnvironment webHostEnvironment)
+            IWebHostEnvironment webHostEnvironment,
+            INotificationService notificationService,
+            IEmailSender emailSender
+        )
         {
             _projectService = projectService;
             _context = context;
             _webHostEnvironment = webHostEnvironment;
+            _notificationService = notificationService;
+            _emailSender = emailSender;
         }
 
         // GET: Projects
@@ -118,17 +125,48 @@ namespace StudentFreelance.Controllers
         [Authorize]
         public async Task<IActionResult> Create()
         {
+            // Lấy danh sách dữ liệu từ cơ sở dữ liệu
+            var categories = await _context.Categories.Where(c => c.IsActive).ToListAsync();
+            var projectStatuses = await _context.ProjectStatuses.Where(s => s.IsActive).ToListAsync();
+            var projectTypes = await _context.ProjectTypes.Where(t => t.IsActive).ToListAsync();
+            
+            // Kiểm tra xem có dữ liệu không
+            if (!categories.Any() || !projectStatuses.Any() || !projectTypes.Any())
+            {
+                TempData["ErrorMessage"] = "Không thể tạo dự án do thiếu dữ liệu cơ bản. Vui lòng liên hệ quản trị viên.";
+                return RedirectToAction("Index");
+            }
+            
+            // Lấy giá trị mặc định từ cơ sở dữ liệu
+            var defaultCategoryId = categories.FirstOrDefault()?.CategoryID ?? 0;
+            var defaultStatusId = projectStatuses.FirstOrDefault(s => s.StatusName == "Đang tuyển")?.StatusID ?? 
+                                 projectStatuses.FirstOrDefault()?.StatusID ?? 0;
+            var defaultTypeId = projectTypes.FirstOrDefault()?.TypeID ?? 0;
+            
+            // Lấy thông tin người dùng hiện tại (doanh nghiệp)
+            var businessId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var business = await _context.Users.FirstOrDefaultAsync(u => u.Id == businessId);
+            
+            // Lấy địa chỉ của doanh nghiệp
+            int? businessAddressId = business?.AddressID;
+            ViewBag.BusinessAddressId = businessAddressId;
+            
+            // Tạo viewModel với giá trị mặc định
             var viewModel = new ProjectViewModel
             {
-                Categories = await _context.Categories.Where(c => c.IsActive).ToListAsync(),
-                ProjectStatuses = await _context.ProjectStatuses.Where(s => s.IsActive).ToListAsync(),
-                ProjectTypes = await _context.ProjectTypes.Where(t => t.IsActive).ToListAsync(),
+                Categories = categories,
+                ProjectStatuses = projectStatuses,
+                ProjectTypes = projectTypes,
                 Skills = await _context.Skills.Where(s => s.IsActive).ToListAsync(),
                 StartDate = DateTime.Today,
                 EndDate = DateTime.Today.AddMonths(1),
                 Deadline = DateTime.Today.AddDays(14),
-                BusinessID = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)),
-                StatusID = 1 // Mặc định là "Đang tuyển"
+                BusinessID = businessId,
+                CategoryID = defaultCategoryId, // Đặt giá trị mặc định
+                StatusID = defaultStatusId, // Đặt giá trị mặc định
+                TypeID = defaultTypeId, // Đặt giá trị mặc định
+                // Mặc định không sử dụng địa chỉ doanh nghiệp
+                AddressID = null
             };
 
             // Lấy danh sách ImportanceLevel để hiển thị trong dropdown
@@ -143,10 +181,64 @@ namespace StudentFreelance.Controllers
         [Authorize]
         public async Task<IActionResult> Create(ProjectViewModel viewModel)
         {
+            // Kiểm tra giá trị CategoryID
+            if (viewModel.CategoryID <= 0)
+            {
+                ModelState.AddModelError("CategoryID", "Vui lòng chọn danh mục cho dự án.");
+                await PopulateFormDataAsync(viewModel);
+                return View(viewModel);
+            }
+            
+            // Xử lý địa chỉ dựa trên checkbox IsRemoteWork
+            if (!viewModel.IsRemoteWork)
+            {
+                // Nếu không phải làm việc từ xa, sử dụng địa chỉ của doanh nghiệp
+                var business = await _context.Users.FirstOrDefaultAsync(u => u.Id == viewModel.BusinessID);
+                viewModel.AddressID = business?.AddressID;
+            }
+            else
+            {
+                // Nếu là làm việc từ xa, địa chỉ sẽ là null
+                viewModel.AddressID = null;
+            }
+            
             if (ModelState.IsValid)
             {
                 try
                 {
+                    // Validate that the selected CategoryID exists in the database
+                    var categoryExists = await _context.Categories.AnyAsync(c => c.CategoryID == viewModel.CategoryID && c.IsActive);
+                    if (!categoryExists)
+                    {
+                        ModelState.AddModelError("CategoryID", "Danh mục đã chọn không tồn tại hoặc không hoạt động.");
+                        
+                        // Re-populate form data and return to view
+                        await PopulateFormDataAsync(viewModel);
+                        return View(viewModel);
+                    }
+                    
+                    // Validate that the selected StatusID exists in the database
+                    var statusExists = await _context.ProjectStatuses.AnyAsync(s => s.StatusID == viewModel.StatusID && s.IsActive);
+                    if (!statusExists)
+                    {
+                        ModelState.AddModelError("StatusID", "Trạng thái đã chọn không tồn tại hoặc không hoạt động.");
+                        
+                        // Re-populate form data and return to view
+                        await PopulateFormDataAsync(viewModel);
+                        return View(viewModel);
+                    }
+                    
+                    // Validate that the selected TypeID exists in the database
+                    var typeExists = await _context.ProjectTypes.AnyAsync(t => t.TypeID == viewModel.TypeID && t.IsActive);
+                    if (!typeExists)
+                    {
+                        ModelState.AddModelError("TypeID", "Loại dự án đã chọn không tồn tại hoặc không hoạt động.");
+                        
+                        // Re-populate form data and return to view
+                        await PopulateFormDataAsync(viewModel);
+                        return View(viewModel);
+                    }
+
                     // Create the project
                     var project = new Project
                     {
@@ -165,7 +257,19 @@ namespace StudentFreelance.Controllers
                         EndDate = viewModel.EndDate
                     };
 
-                    var createdProject = await _projectService.CreateProjectAsync(project);
+                    Project createdProject;
+                    
+                    // Check if user has enough money and create project with transaction
+                    var result = await _projectService.CreateProjectWithTransactionAsync(project);
+                    
+                    if (!result.Success)
+                            {
+                        ModelState.AddModelError("", result.ErrorMessage);
+                        await PopulateFormDataAsync(viewModel);
+                        return View(viewModel);
+                    }
+                    
+                    createdProject = result.Project;
 
                     // Add skills
                     if (viewModel.SelectedSkills != null && viewModel.SelectedSkills.Any())
@@ -199,7 +303,6 @@ namespace StudentFreelance.Controllers
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine($"Error uploading attachments: {ex}");
                             TempData["AttachmentError"] = "Project đã tạo thành công, nhưng có lỗi khi upload file đính kèm.";
                         }
                     }
@@ -208,19 +311,38 @@ namespace StudentFreelance.Controllers
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error creating project: {ex}");
                     ModelState.AddModelError("", "Đã có lỗi khi tạo dự án. Vui lòng thử lại.");
+                }
+            }
+            else
+            {
+                // Log model validation errors
+                foreach (var modelState in ModelState.Values)
+                {
+                    foreach (var error in modelState.Errors)
+                    {
+                        // Không cần log ra lỗi validation
+                    }
                 }
             }
 
             // If we got this far, something failed; redisplay form
+            await PopulateFormDataAsync(viewModel);
+            return View(viewModel);
+        }
+        
+        // Helper method to populate form data
+        private async Task PopulateFormDataAsync(ProjectViewModel viewModel)
+        {
             viewModel.Categories = await _context.Categories.Where(c => c.IsActive).ToListAsync();
             viewModel.ProjectStatuses = await _context.ProjectStatuses.Where(s => s.IsActive).ToListAsync();
             viewModel.ProjectTypes = await _context.ProjectTypes.Where(t => t.IsActive).ToListAsync();
             viewModel.Skills = await _context.Skills.Where(s => s.IsActive).ToListAsync();
             ViewBag.ImportanceLevels = await _context.ImportanceLevels.Where(il => il.IsActive).ToListAsync();
             
-            return View(viewModel);
+            // Get business address ID
+            var business = await _context.Users.FirstOrDefaultAsync(u => u.Id == viewModel.BusinessID);
+            ViewBag.BusinessAddressId = business?.AddressID;
         }
 
         // GET: Projects/Edit/5
@@ -251,7 +373,6 @@ namespace StudentFreelance.Controllers
             if (project == null)
             {
                 // Log cho việc debugging
-                Console.WriteLine($"Không tìm thấy dự án với ID {id} cho người dùng {currentUserId}, isAdmin: {isAdmin}");
                 return NotFound();
             }
 
@@ -259,7 +380,6 @@ namespace StudentFreelance.Controllers
             if (project.BusinessID != currentUserId && !isAdmin)
             {
                 // Log cho việc debugging
-                Console.WriteLine($"Không có quyền chỉnh sửa. BusinessID: {project.BusinessID}, CurrentUserId: {currentUserId}, isAdmin: {isAdmin}");
                 return Forbid();
             }
 
@@ -320,7 +440,6 @@ namespace StudentFreelance.Controllers
             if (project == null)
             {
                 // Log cho việc debugging
-                Console.WriteLine($"Không tìm thấy dự án với ID {id} cho người dùng {currentUserId}, isAdmin: {isAdmin}");
                 return NotFound();
             }
 
@@ -328,7 +447,6 @@ namespace StudentFreelance.Controllers
             if (project.BusinessID != currentUserId && !isAdmin)
             {
                 // Log cho việc debugging
-                Console.WriteLine($"Không có quyền kích hoạt. BusinessID: {project.BusinessID}, CurrentUserId: {currentUserId}, isAdmin: {isAdmin}");
                 return Forbid();
             }
 
@@ -351,7 +469,6 @@ namespace StudentFreelance.Controllers
             if (project == null)
             {
                 // Log cho việc debugging
-                Console.WriteLine($"Không tìm thấy dự án với ID {id}");
                 return NotFound();
             }
 
@@ -359,7 +476,6 @@ namespace StudentFreelance.Controllers
             if (project.BusinessID != currentUserId && !isAdmin)
             {
                 // Log cho việc debugging
-                Console.WriteLine($"Không có quyền kích hoạt. BusinessID: {project.BusinessID}, CurrentUserId: {currentUserId}, isAdmin: {isAdmin}");
                 return Forbid();
             }
 
@@ -389,32 +505,65 @@ namespace StudentFreelance.Controllers
                     
                     if (project == null)
                     {
-                        Console.WriteLine($"Không tìm thấy dự án với ID {id}");
                         return NotFound();
                     }
 
                     // Check if current user is the owner of the project
                     if (project.BusinessID != currentUserId && !isAdmin)
                     {
-                        Console.WriteLine($"Không có quyền chỉnh sửa. BusinessID: {project.BusinessID}, CurrentUserId: {currentUserId}, isAdmin: {isAdmin}");
                         return Forbid();
                     }
 
-                    // Update project properties
-                    project.CategoryID = viewModel.CategoryID;
-                    project.Title = viewModel.Title;
-                    project.Description = viewModel.Description;
-                    project.Budget = viewModel.Budget;
-                    project.Deadline = viewModel.Deadline;
-                    project.StatusID = viewModel.StatusID;
-                    project.IsHighlighted = viewModel.IsHighlighted;
-                    project.TypeID = viewModel.TypeID;
-                    project.AddressID = viewModel.AddressID;
-                    project.IsRemoteWork = viewModel.IsRemoteWork;
-                    project.StartDate = viewModel.StartDate;
-                    project.EndDate = viewModel.EndDate;
-
-                    await _projectService.UpdateProjectAsync(project);
+                    // Store the original budget to compare
+                    decimal originalBudget = project.Budget;
+                    
+                    // Create new project object with updated values
+                    var updatedProject = new Project
+                    {
+                        ProjectID = id,
+                        BusinessID = project.BusinessID,
+                        CategoryID = viewModel.CategoryID,
+                        Title = viewModel.Title,
+                        Description = viewModel.Description,
+                        Budget = viewModel.Budget,
+                        Deadline = viewModel.Deadline,
+                        StatusID = viewModel.StatusID,
+                        IsHighlighted = viewModel.IsHighlighted,
+                        TypeID = viewModel.TypeID,
+                        AddressID = viewModel.AddressID,
+                        IsRemoteWork = viewModel.IsRemoteWork,
+                        StartDate = viewModel.StartDate,
+                        EndDate = viewModel.EndDate,
+                        CreatedAt = project.CreatedAt,
+                        IsActive = project.IsActive
+                    };
+                    
+                    // Update project with transaction if budget changed
+                    var result = await _projectService.UpdateProjectWithTransactionAsync(updatedProject, originalBudget);
+                    
+                    if (!result.Success)
+                    {
+                        ModelState.AddModelError("", result.ErrorMessage);
+                        
+                        // Re-populate form data
+                        viewModel.Categories = await _context.Categories.Where(c => c.IsActive).ToListAsync();
+                        viewModel.ProjectStatuses = await _context.ProjectStatuses.Where(s => s.IsActive).ToListAsync();
+                        viewModel.ProjectTypes = await _context.ProjectTypes.Where(t => t.IsActive).ToListAsync();
+                        viewModel.Skills = await _context.Skills.Where(s => s.IsActive).ToListAsync();
+                        ViewBag.ImportanceLevels = await _context.ImportanceLevels.Where(il => il.IsActive).ToListAsync();
+                        viewModel.ExistingAttachments = await _context.ProjectAttachments
+                            .Where(pa => pa.ProjectID == id)
+                            .ToListAsync();
+                        viewModel.ExistingSkills = await _context.ProjectSkillsRequired
+                            .Include(ps => ps.Skill)
+                            .Where(ps => ps.ProjectID == id)
+                            .ToListAsync();
+                        
+                        return View(viewModel);
+                    }
+                    
+                    // Get the updated project
+                    project = result.Project;
 
                     // Update skills
                     var existingSkills = await _context.ProjectSkillsRequired
@@ -477,7 +626,6 @@ namespace StudentFreelance.Controllers
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine($"Error uploading attachments: {ex}");
                             TempData["AttachmentError"] = "Project đã cập nhật thành công, nhưng có lỗi khi upload file đính kèm.";
                         }
                     }
@@ -497,7 +645,6 @@ namespace StudentFreelance.Controllers
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error updating project: {ex}");
                     ModelState.AddModelError("", "Đã có lỗi khi cập nhật dự án. Vui lòng thử lại.");
                 }
             }
@@ -688,17 +835,48 @@ namespace StudentFreelance.Controllers
                 
                 if (result)
                 {
-                    if (application.BusinessConfirmedCompletion && application.StudentConfirmedCompletion)
-                    {
-                        TempData["SuccessMessage"] = "Dự án đã được xác nhận hoàn thành bởi cả hai bên. Thanh toán đã được chuyển.";
-                    }
-                    else if (isBusinessConfirmation)
+            // Gửi thông báo theo người xác nhận
+            var business = await _context.Users.FindAsync(project.BusinessID);
+            var student = await _context.Users.FindAsync(application.UserID);
+
+            if (isBusinessConfirmation)
                     {
                         TempData["SuccessMessage"] = "Bạn đã xác nhận hoàn thành dự án. Đang chờ xác nhận từ sinh viên.";
+
+                if (business != null && student != null)
+                {
+                    await _notificationService.SendNotificationToUserAsync(
+                        student.Id,
+                        "Doanh nghiệp xác nhận hoàn thành dự án",
+                        $"Doanh nghiệp đã xác nhận hoàn thành dự án '{project.Title}'.",
+                        1,
+                        project.ProjectID,
+                        business.Id,
+                        true // gửi email
+                    );
+                }
                     }
                     else
                     {
                         TempData["SuccessMessage"] = "Bạn đã xác nhận hoàn thành dự án. Đang chờ xác nhận từ doanh nghiệp.";
+
+                if (business != null && student != null)
+                {
+                    await _notificationService.SendNotificationToUserAsync(
+                        business.Id,
+                        "Sinh viên xác nhận hoàn thành dự án",
+                        $"Sinh viên {student.FullName} đã xác nhận hoàn thành dự án '{project.Title}'.",
+                        1,
+                        project.ProjectID,
+                        student.Id,
+                        true // gửi email
+                    );
+                }
+            }
+
+            if (application.BusinessConfirmedCompletion && application.StudentConfirmedCompletion)
+            {
+                TempData["SuccessMessage"] = "Dự án đã được xác nhận hoàn thành bởi cả hai bên. Thanh toán đã được chuyển.";
                     }
                 }
                 else
@@ -713,6 +891,7 @@ namespace StudentFreelance.Controllers
             
             return RedirectToAction(nameof(Details), new { id = projectId });
         }
+
 
         // POST: Projects/CancelConfirmation
         [HttpPost]
@@ -808,49 +987,66 @@ namespace StudentFreelance.Controllers
         [Authorize(Roles = "Business,Admin")]
         public async Task<IActionResult> TransferPayment(int projectId, int applicationId)
         {
-            if (projectId <= 0 || applicationId <= 0)
+            // Chuyển hướng người dùng đến trang ProjectSubmission/ProjectSubmissions để thanh toán
+            TempData["InfoMessage"] = "Vui lòng sử dụng trang kết quả dự án để thanh toán cho sinh viên.";
+            return RedirectToAction("ProjectSubmissions", "ProjectSubmission", new { applicationId });
+        }
+        
+        // POST: Projects/CompleteProject
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Business,Admin")]
+        public async Task<IActionResult> CompleteProject(int id)
+        {
+            if (id <= 0)
                 return NotFound();
 
             // Get current user ID
             var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             
-            // Get project and application
-            var project = await _context.Projects.FindAsync(projectId);
-            var application = await _context.StudentApplications
-                .Include(a => a.User)
-                .FirstOrDefaultAsync(a => a.ApplicationID == applicationId);
-            
-            if (project == null || application == null)
-                return NotFound();
-            
-            if (application.ProjectID != projectId)
+            // Get project
+            var project = await _context.Projects.FindAsync(id);
+            if (project == null)
                 return NotFound();
             
             // Check if user is authorized (business owner or admin)
-            if (project.BusinessID != currentUserId && !User.IsInRole("Admin"))
+            bool isAdmin = User.IsInRole("Admin");
+            if (project.BusinessID != currentUserId && !isAdmin)
             {
                 return Forbid();
             }
             
-            // Check if both parties have confirmed completion
-            if (!application.BusinessConfirmedCompletion || !application.StudentConfirmedCompletion)
-            {
-                TempData["ErrorMessage"] = "Cả hai bên phải xác nhận hoàn thành dự án trước khi thanh toán.";
-                return RedirectToAction(nameof(Details), new { id = projectId });
-            }
-            
             try
             {
-                // Complete the project and transfer funds
-                var result = await _projectService.CompleteProjectAndTransferFundsAsync(projectId, applicationId);
+                // Complete the project
+                var result = await _projectService.CompleteProjectByBusinessAsync(id, isAdmin ? project.BusinessID : currentUserId);
                 
-                if (result)
+                if (result.Success)
                 {
-                    TempData["SuccessMessage"] = "Thanh toán đã được chuyển thành công cho sinh viên.";
+                    TempData["SuccessMessage"] = "Dự án đã được đánh dấu là hoàn thành thành công.";
+                    
+                    // Gửi thông báo cho tất cả sinh viên đã tham gia dự án
+                    var completedApplications = await _context.StudentApplications
+                        .Where(a => a.ProjectID == id && a.Status == "Completed")
+                .Include(a => a.User)
+                        .ToListAsync();
+                        
+                    foreach (var application in completedApplications)
+                    {
+                        await _notificationService.SendNotificationToUserAsync(
+                            application.UserID,
+                            "Dự án đã hoàn thành",
+                            $"Dự án '{project.Title}' đã được đánh dấu là hoàn thành bởi doanh nghiệp.",
+                            1, // Loại thông báo: Dự án
+                            project.ProjectID,
+                            project.BusinessID,
+                            true // Gửi email
+                        );
+                    }
                 }
                 else
                 {
-                    TempData["ErrorMessage"] = "Có lỗi xảy ra khi chuyển thanh toán.";
+                    TempData["ErrorMessage"] = result.ErrorMessage;
                 }
             }
             catch (Exception ex)
@@ -858,7 +1054,421 @@ namespace StudentFreelance.Controllers
                 TempData["ErrorMessage"] = "Lỗi: " + ex.Message;
             }
             
-            return RedirectToAction(nameof(Details), new { id = projectId });
+            return RedirectToAction(nameof(Details), new { id });
+        }
+        
+        // POST: Projects/CancelProject
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Business,Admin")]
+        public async Task<IActionResult> CancelProject(int id)
+        {
+            if (id <= 0)
+                return NotFound();
+            
+            // Get current user ID
+            var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            
+            // Get project
+            var project = await _context.Projects.FindAsync(id);
+            if (project == null)
+                return NotFound();
+            
+            // Check if user is authorized (business owner or admin)
+            bool isAdmin = User.IsInRole("Admin");
+            if (project.BusinessID != currentUserId && !isAdmin)
+            {
+                return Forbid();
+            }
+            
+            try
+            {
+                // Cancel the project
+                var result = await _projectService.CancelProjectByBusinessAsync(id, isAdmin ? project.BusinessID : currentUserId);
+                
+                if (result.Success)
+            {
+                    TempData["SuccessMessage"] = "Dự án đã được hủy thành công.";
+                    
+                    // Gửi thông báo cho tất cả sinh viên đã ứng tuyển vào dự án
+                    var applications = await _context.StudentApplications
+                        .Where(a => a.ProjectID == id)
+                        .Include(a => a.User)
+                        .ToListAsync();
+                        
+                    foreach (var application in applications)
+                    {
+                        await _notificationService.SendNotificationToUserAsync(
+                            application.UserID,
+                            "Dự án đã bị hủy",
+                            $"Dự án '{project.Title}' đã bị hủy bởi doanh nghiệp.",
+                            1, // Loại thông báo: Dự án
+                            project.ProjectID,
+                            project.BusinessID,
+                            true // Gửi email
+                        );
+                    }
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = result.ErrorMessage;
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Lỗi: " + ex.Message;
+            }
+            
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        // GET: Projects/Debug
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Debug()
+        {
+            // Check if the required tables and values exist
+            var result = new Dictionary<string, object>();
+            
+            // Check Categories
+            result["Categories"] = await _context.Categories.Where(c => c.IsActive).Select(c => new { c.CategoryID, c.CategoryName }).ToListAsync();
+            
+            // Check ProjectStatuses
+            result["ProjectStatuses"] = await _context.ProjectStatuses.Where(s => s.IsActive).Select(s => new { s.StatusID, s.StatusName }).ToListAsync();
+            
+            // Check ProjectTypes
+            result["ProjectTypes"] = await _context.ProjectTypes.Where(t => t.IsActive).Select(t => new { t.TypeID, t.TypeName }).ToListAsync();
+            
+            // Check ImportanceLevels
+            result["ImportanceLevels"] = await _context.ImportanceLevels.Where(i => i.IsActive).Select(i => new { i.LevelID, i.LevelName }).ToListAsync();
+            
+            // Check Skills
+            result["Skills"] = await _context.Skills.Where(s => s.IsActive).Select(s => new { s.SkillID, s.SkillName }).ToListAsync();
+            
+            // Check database connection
+            result["DbConnectionStatus"] = "Connected";
+            
+            // Check if a test project can be created
+            try
+            {
+                var testProject = new Project
+                {
+                    BusinessID = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)),
+                    CategoryID = await _context.Categories.Where(c => c.IsActive).Select(c => c.CategoryID).FirstOrDefaultAsync(),
+                    Title = "Test Project - " + Guid.NewGuid().ToString(),
+                    Description = "This is a test project",
+                    Budget = 1000,
+                    Deadline = DateTime.Today.AddDays(30),
+                    StatusID = await _context.ProjectStatuses.Where(s => s.IsActive).Select(s => s.StatusID).FirstOrDefaultAsync(),
+                    IsHighlighted = false,
+                    TypeID = await _context.ProjectTypes.Where(t => t.IsActive).Select(t => t.TypeID).FirstOrDefaultAsync(),
+                    IsRemoteWork = true,
+                    StartDate = DateTime.Today,
+                    EndDate = DateTime.Today.AddDays(30),
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    IsActive = true
+                };
+                
+                // Don't actually save, just validate
+                _context.Projects.Add(testProject);
+                // Can't reload an entity that hasn't been saved yet
+                // await _context.Entry(testProject).ReloadAsync();
+                _context.Projects.Remove(testProject);
+                
+                result["TestProjectValidation"] = "Success";
+            }
+            catch (Exception ex)
+            {
+                result["TestProjectValidation"] = "Failed";
+                result["TestProjectError"] = ex.Message;
+                if (ex.InnerException != null)
+                {
+                    result["TestProjectInnerError"] = ex.InnerException.Message;
+                }
+            }
+            
+            return Json(result);
+        }
+
+        // GET: Projects/ListCategories
+        [Authorize]
+        public async Task<IActionResult> ListCategories()
+        {
+            var allCategories = await _context.Categories.ToListAsync();
+            var activeCategories = await _context.Categories.Where(c => c.IsActive).ToListAsync();
+            
+            return Json(new {
+                AllCategories = allCategories.Select(c => new { c.CategoryID, c.CategoryName, c.IsActive }),
+                ActiveCategories = activeCategories.Select(c => new { c.CategoryID, c.CategoryName })
+            });
+        }
+
+        // GET: Projects/CheckCategory/{id}
+        [Authorize]
+        public async Task<IActionResult> CheckCategory(int id)
+        {
+            var category = await _context.Categories.FindAsync(id);
+            
+            if (category == null)
+            {
+                return Json(new { exists = false, isActive = false, message = "Danh mục không tồn tại." });
+            }
+            
+            return Json(new { 
+                exists = true, 
+                isActive = category.IsActive, 
+                message = category.IsActive ? "Danh mục hợp lệ." : "Danh mục không hoạt động." 
+            });
+        }
+
+        // GET: Projects/SeedCategories
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> SeedCategories()
+        {
+            // Check if categories already exist
+            if (await _context.Categories.AnyAsync())
+            {
+                return Json(new { success = false, message = "Categories already exist." });
+            }
+            
+            // Add default categories
+            var categories = new List<Category>
+            {
+                new Category { CategoryName = "Web Development", CategoryType = "Project", IsActive = true },
+                new Category { CategoryName = "Mobile Development", CategoryType = "Project", IsActive = true },
+                new Category { CategoryName = "Design", CategoryType = "Project", IsActive = true },
+                new Category { CategoryName = "Writing", CategoryType = "Project", IsActive = true },
+                new Category { CategoryName = "Marketing", CategoryType = "Project", IsActive = true },
+                new Category { CategoryName = "Data Analysis", CategoryType = "Project", IsActive = true }
+            };
+            
+            await _context.Categories.AddRangeAsync(categories);
+            await _context.SaveChangesAsync();
+            
+            return Json(new { success = true, message = "Categories seeded successfully." });
+        }
+        
+        // GET: Projects/SeedProjectStatuses
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> SeedProjectStatuses()
+        {
+            // Check if project statuses already exist
+            if (await _context.ProjectStatuses.AnyAsync())
+            {
+                return Json(new { success = false, message = "Project statuses already exist." });
+            }
+            
+            // Add default project statuses
+            var statuses = new List<ProjectStatus>
+            {
+                new ProjectStatus { StatusID = 1, StatusName = "Đang tuyển", IsActive = true },
+                new ProjectStatus { StatusID = 2, StatusName = "Đang thực hiện", IsActive = true },
+                new ProjectStatus { StatusID = 3, StatusName = "Hoàn thành", IsActive = true },
+                new ProjectStatus { StatusID = 4, StatusName = "Đã hủy", IsActive = true }
+            };
+            
+            await _context.ProjectStatuses.AddRangeAsync(statuses);
+            await _context.SaveChangesAsync();
+            
+            return Json(new { success = true, message = "Project statuses seeded successfully." });
+        }
+        
+        // GET: Projects/SeedProjectTypes
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> SeedProjectTypes()
+        {
+            // Check if project types already exist
+            if (await _context.ProjectTypes.AnyAsync())
+            {
+                return Json(new { success = false, message = "Project types already exist." });
+            }
+            
+            // Add default project types
+            var types = new List<ProjectType>
+            {
+                new ProjectType { TypeID = 1, TypeName = "Toàn thời gian", IsActive = true },
+                new ProjectType { TypeID = 2, TypeName = "Bán thời gian", IsActive = true },
+                new ProjectType { TypeID = 3, TypeName = "Theo dự án", IsActive = true }
+            };
+            
+            await _context.ProjectTypes.AddRangeAsync(types);
+            await _context.SaveChangesAsync();
+            
+            return Json(new { success = true, message = "Project types seeded successfully." });
+        }
+        
+        // GET: Projects/SeedImportanceLevels
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> SeedImportanceLevels()
+        {
+            // Check if importance levels already exist
+            if (await _context.ImportanceLevels.AnyAsync())
+            {
+                return Json(new { success = false, message = "Importance levels already exist." });
+            }
+            
+            // Add default importance levels
+            var levels = new List<ImportanceLevel>
+            {
+                new ImportanceLevel { LevelID = 1, LevelName = "Thấp", IsActive = true },
+                new ImportanceLevel { LevelID = 2, LevelName = "Trung bình", IsActive = true },
+                new ImportanceLevel { LevelID = 3, LevelName = "Cao", IsActive = true },
+                new ImportanceLevel { LevelID = 4, LevelName = "Rất cao", IsActive = true }
+            };
+            
+            await _context.ImportanceLevels.AddRangeAsync(levels);
+            await _context.SaveChangesAsync();
+            
+            return Json(new { success = true, message = "Importance levels seeded successfully." });
+        }
+
+        // GET: Projects/FlagProject/5
+        [Authorize(Roles = "Admin,Moderator")]
+        public async Task<IActionResult> FlagProject(int id)
+        {
+            var project = await _projectService.GetProjectByIdAsync(id, true);
+            if (project == null)
+            {
+                return NotFound();
+            }
+            
+            return View(project);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,Moderator")]
+        public async Task<IActionResult> FlagProject(int id, string reason)
+        {
+            var project = await _context.Projects.FindAsync(id);
+            if (project == null)
+            {
+                return NotFound();
+            }
+            
+            // Check if already flagged
+            if (project.IsFlagged)
+            {
+                TempData["ErrorMessage"] = "Project is already flagged.";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            
+            // Update project flag status
+            project.IsFlagged = true;
+            project.FlagReason = reason;
+            project.FlaggedAt = DateTime.UtcNow;
+            project.FlaggedByID = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            
+            // Log the action
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+            var userAgent = HttpContext.Request.Headers["User-Agent"].ToString();
+            
+            var action = new ProjectFlagAction
+            {
+                ProjectID = project.ProjectID,
+                ActionByID = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)),
+                ActionType = "Flag",
+                Reason = reason,
+                ActionDate = DateTime.UtcNow,
+                IPAddress = ipAddress,
+                UserAgent = userAgent
+            };
+            
+            _context.ProjectFlagActions.Add(action);
+            await _context.SaveChangesAsync();
+            
+            // Notify the project owner
+            var notification = new Notification
+            {
+                Title = "Project Flagged",
+                Content = $"Your project '{project.Title}' has been flagged for review due to: {reason}",
+                TypeID = _context.NotificationTypes.First(t => t.TypeName == "Hệ thống").TypeID,
+                NotificationDate = DateTime.UtcNow,
+                IsActive = true
+            };
+            
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+            
+            _context.UserNotifications.Add(new UserNotification
+            {
+                UserID = project.BusinessID,
+                NotificationID = notification.NotificationID,
+                IsRead = false
+            });
+            
+            await _context.SaveChangesAsync();
+            
+            TempData["SuccessMessage"] = "Project successfully flagged.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,Moderator")]
+        public async Task<IActionResult> UnflagProject(int id)
+        {
+            var project = await _context.Projects.FindAsync(id);
+            if (project == null)
+            {
+                return NotFound();
+            }
+            
+            // Check if not flagged
+            if (!project.IsFlagged)
+            {
+                TempData["ErrorMessage"] = "Project is not flagged.";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            
+            // Update project flag status
+            project.IsFlagged = false;
+            project.FlagReason = null;
+            project.FlaggedAt = null;
+            project.FlaggedByID = null;
+            
+            // Log the action
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+            var userAgent = HttpContext.Request.Headers["User-Agent"].ToString();
+            
+            var action = new ProjectFlagAction
+            {
+                ProjectID = project.ProjectID,
+                ActionByID = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)),
+                ActionType = "Unflag",
+                Reason = "Flag removed",
+                ActionDate = DateTime.UtcNow,
+                IPAddress = ipAddress,
+                UserAgent = userAgent
+            };
+            
+            _context.ProjectFlagActions.Add(action);
+            await _context.SaveChangesAsync();
+            
+            // Notify the project owner
+            var notification = new Notification
+            {
+                Title = "Project Flag Removed",
+                Content = $"The flag on your project '{project.Title}' has been removed.",
+                TypeID = _context.NotificationTypes.First(t => t.TypeName == "Hệ thống").TypeID,
+                NotificationDate = DateTime.UtcNow,
+                IsActive = true
+            };
+            
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+            
+            _context.UserNotifications.Add(new UserNotification
+            {
+                UserID = project.BusinessID,
+                NotificationID = notification.NotificationID,
+                IsRead = false
+            });
+            
+            await _context.SaveChangesAsync();
+            
+            TempData["SuccessMessage"] = "Project flag successfully removed.";
+            return RedirectToAction(nameof(Details), new { id });
         }
 
         // Helper methods
@@ -909,6 +1519,162 @@ namespace StudentFreelance.Controllers
             }
 
             await _context.SaveChangesAsync();
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> InviteStudents(int projectId)
+        {
+            try
+            {
+                var project = await _context.Projects
+                    .Include(p => p.ProjectSkillsRequired)
+                    .ThenInclude(ps => ps.Skill)
+                    .Include(p => p.Business)
+                    .FirstOrDefaultAsync(p => p.ProjectID == projectId);
+
+                if (project == null)
+                {
+                    return NotFound();
+                }
+
+                // Kiểm tra quyền - chỉ chủ dự án mới được mời sinh viên
+                var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                if (project.BusinessID != currentUserId && !User.IsInRole("Admin"))
+                {
+                    return Forbid();
+                }
+
+                // Lấy danh sách kỹ năng yêu cầu
+                var requiredSkillIds = project.ProjectSkillsRequired.Select(ps => ps.SkillID).ToList();
+
+                if (!requiredSkillIds.Any())
+                {
+                    // Nếu dự án không có kỹ năng yêu cầu, trả về danh sách rỗng
+                    ViewBag.Project = project;
+                    return View(new List<InviteStudentViewModel>());
+                }
+
+                // Tìm sinh viên có kỹ năng phù hợp - sử dụng cách tiếp cận đơn giản hơn
+                var studentSkills = await _context.StudentSkills
+                    .Include(ss => ss.User)
+                    .Include(ss => ss.Skill)
+                    .Where(ss => requiredSkillIds.Contains(ss.SkillID) && ss.IsActive)
+                    .ToListAsync();
+
+                // Nhóm theo user và xử lý trong memory
+                var studentGroups = studentSkills
+                    .GroupBy(ss => ss.UserID)
+                    .Where(g => g.First().User.IsActive) // Chỉ lấy user đang hoạt động
+                    .Select(g => new
+                    {
+                        User = g.First().User,
+                        MatchedSkills = g.Select(ss => ss.Skill).ToList(),
+                        SkillMatchCount = g.Count(),
+                        IsVip = g.First().User.VipStatus,
+                        VipExpiryDate = g.First().User.VipExpiryDate
+                    })
+                    .OrderByDescending(s => s.SkillMatchCount)
+                    .ThenByDescending(s => s.IsVip)
+                    .ThenBy(s => s.VipExpiryDate)
+                    .ToList();
+
+                var sortedStudents = studentGroups.Select(s => new InviteStudentViewModel
+                {
+                    UserID = s.User.Id,
+                    FullName = s.User.FullName ?? "Không có tên",
+                    Email = s.User.Email ?? "",
+                    Avatar = s.User.Avatar,
+                    University = s.User.University ?? "",
+                    Major = s.User.Major ?? "",
+                    IsVip = s.IsVip,
+                    VipExpiryDate = s.VipExpiryDate,
+                    MatchedSkills = s.MatchedSkills,
+                    SkillMatchCount = s.SkillMatchCount,
+                    TotalRequiredSkills = requiredSkillIds.Count,
+                    MatchPercentage = requiredSkillIds.Count > 0 ? (double)s.SkillMatchCount / requiredSkillIds.Count * 100 : 0
+                }).ToList();
+
+                ViewBag.Project = project;
+                return View(sortedStudents);
+            }
+            catch (Exception ex)
+            {
+                // Log lỗi chi tiết để debug
+                Console.WriteLine($"Error in InviteStudents: {ex.Message}");
+                Console.WriteLine($"StackTrace: {ex.StackTrace}");
+                
+                TempData["ErrorMessage"] = $"Có lỗi xảy ra khi tải danh sách sinh viên: {ex.Message}";
+                return RedirectToAction("Details", new { id = projectId });
+            }
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> SendInvitation(int projectId, int studentId)
+        {
+            try
+            {
+                var project = await _context.Projects
+                    .Include(p => p.Business)
+                    .FirstOrDefaultAsync(p => p.ProjectID == projectId);
+
+                var student = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Id == studentId);
+
+                if (project == null || student == null)
+                {
+                    return NotFound();
+                }
+
+                // Kiểm tra quyền
+                var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                if (project.BusinessID != currentUserId && !User.IsInRole("Admin"))
+                {
+                    return Forbid();
+                }
+
+                // Tạo URL dự án
+                var projectUrl = $"{Request.Scheme}://{Request.Host}/Project/Details/{projectId}";
+                
+                // Gửi thông báo cho sinh viên
+                await _notificationService.SendNotificationToUserAsync(
+                    studentId,
+                    "Thư mời tham gia dự án",
+                    $"Doanh nghiệp {project.Business.FullName} đã gửi thư mời tham gia dự án \"{project.Title}\" cho bạn. <a href='{projectUrl}' style='color: #89AC46; text-decoration: underline; font-weight: bold;'>Xem chi tiết dự án</a>",
+                    2, // NotificationType cho Project
+                    projectId,
+                    currentUserId,
+                    true // Gửi email
+                );
+
+                // Gửi email chi tiết
+                var subject = $"Thư mời tham gia dự án: {project.Title}";
+                var body = $@"
+                    <h3>Xin chào {student.FullName},</h3>
+                    <p>Doanh nghiệp <strong>{project.Business.FullName}</strong> đã gửi thư mời tham gia dự án cho bạn.</p>
+                    <h4>Thông tin dự án:</h4>
+                    <ul>
+                        <li><strong>Tên dự án:</strong> {project.Title}</li>
+                        <li><strong>Mô tả:</strong> {project.Description}</li>
+                        <li><strong>Ngân sách:</strong> {project.Budget:C}</li>
+                        <li><strong>Thời hạn:</strong> {project.Deadline:dd/MM/yyyy}</li>
+                    </ul>
+                    <p>Nếu bạn quan tâm, hãy truy cập link bên dưới để xem chi tiết và ứng tuyển:</p>
+                    <p><a href='{projectUrl}' style='display: inline-block; padding: 10px 20px; background-color: #89AC46; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;'>Xem chi tiết dự án</a></p>
+                    <p>Hoặc copy link này: <a href='{projectUrl}'>{projectUrl}</a></p>
+                    <p>Trân trọng,<br>StudentFreelance Team</p>";
+
+                await _emailSender.SendEmailAsync(student.Email, subject, body);
+
+                TempData["SuccessMessage"] = $"Đã gửi thư mời thành công cho {student.FullName}";
+                return RedirectToAction("InviteStudents", new { projectId });
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Có lỗi xảy ra khi gửi thư mời";
+                return RedirectToAction("InviteStudents", new { projectId });
+            }
         }
     }
 } 

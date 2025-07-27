@@ -1,0 +1,83 @@
+﻿:root {
+    --primary: #89AC46; /* 🔁 Đã đổi từ #007bff (xanh dương) */
+    --accent1: #f0f9ff;
+    --accent2: #eaf4fc;
+    --accent3: #28a745;
+}
+
+/* Reset & Font */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #F8F8F8;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
+
+/* Card container */
+.card {
+    max-width: 800px;
+    margin: 40px auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    background-color: #fff;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Card header */
+.card-header {
+    background-color: var(--primary); /* ← #89AC46 */
+    color: #fff;
+    padding: 1rem 1.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+/* Card body */
+.card-body {
+    padding: 1.5rem;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+    /* Metadata (ngày, người gửi...) */
+    .card-body .text-muted {
+        font-size: 0.95rem;
+        color: #666 !important;
+        margin-bottom: 1rem;
+    }
+
+    /* Nội dung chi tiết */
+    .card-body .fs-5 {
+        font-size: 1.1rem;
+        color: #333;
+    }
+
+/* Card footer */
+.card-footer {
+    background-color: #f9f9f9;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #eee;
+    text-align: right;
+}
+
+    /* Nút quay lại */
+    .card-footer .btn-secondary {
+        background: #fff;
+        color: var(--primary); /* ← Xanh lá */
+        border: 1px solid var(--primary);
+        font-weight: 500;
+        padding: 0.45rem 1rem;
+        border-radius: 6px;
+        transition: background 0.2s, color 0.2s;
+        text-decoration: none;
+    }
+
+        .card-footer .btn-secondary:hover {
+            background: var(--accent3);
+            color: #fff;
+            border-color: var(--accent3);
+        }

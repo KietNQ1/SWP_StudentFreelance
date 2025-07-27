@@ -1,0 +1,80 @@
+@model StudentFreelance.Models.Project
+
+@{
+    ViewData["Title"] = "Flag Project";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <h1>Flag Project</h1>
+        </div>
+        <div class="col-md-4 text-right">
+            <a asp-action="Details" asp-route-id="@Model.ProjectID" class="btn btn-secondary">Back to Project</a>
+        </div>
+    </div>
+
+    <div class="alert alert-warning mt-3">
+        <i class="fas fa-exclamation-triangle"></i> 
+        <strong>Warning:</strong> Flagging a project will mark it as potentially suspicious or fraudulent. 
+        This action will be logged and the project owner will be notified.
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Project Information</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Title:</dt>
+                        <dd class="col-sm-8">@Model.Title</dd>
+
+                        <dt class="col-sm-4">Business:</dt>
+                        <dd class="col-sm-8">@Model.Business.FullName</dd>
+
+                        <dt class="col-sm-4">Category:</dt>
+                        <dd class="col-sm-8">@Model.Category.CategoryName</dd>
+
+                        <dt class="col-sm-4">Budget:</dt>
+                        <dd class="col-sm-8">@Model.Budget.ToString("N0") VND</dd>
+
+                        <dt class="col-sm-4">Created:</dt>
+                        <dd class="col-sm-8">@Model.CreatedAt.ToString("yyyy-MM-dd")</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Flag Project</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="FlagProject" method="post">
+                        <input type="hidden" name="id" value="@Model.ProjectID" />
+
+                        <div class="form-group">
+                            <label for="reason">Reason for flagging:</label>
+                            <textarea name="reason" id="reason" class="form-control" rows="5" required></textarea>
+                            <small class="form-text text-muted">
+                                Please provide a detailed explanation of why this project is being flagged.
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-flag"></i> Flag Project
+                            </button>
+                            <a asp-action="Details" asp-route-id="@Model.ProjectID" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

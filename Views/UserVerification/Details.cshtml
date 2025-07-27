@@ -1,0 +1,677 @@
+@model StudentFreelance.ViewModels.UserVerificationDetailsViewModel
+
+@{
+    Layout = "~/Views/Shared/_Dashboard.cshtml";
+    ViewData["Title"] = "User Details";
+}
+
+<div class="payment-result-container">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+    
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+    
+    <div class="user-details-header">
+        <h1>
+            User Details 
+            @if (Model.User.IsVerified)
+            {
+                <span class="verified-badge">
+                    <i class="fas fa-check-circle"></i> Verified
+                </span>
+            }
+            @if (Model.User.IsFlagged)
+            {
+                <span class="flagged-badge">
+                    <i class="fas fa-flag"></i> Flagged
+                </span>
+            }
+        </h1>
+        <a asp-action="Index" class="btn-secondary-custom">Back to List</a>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="transaction-card">
+                <div class="card-header">
+                    <h5>User Information</h5>
+                </div>
+                <div class="transaction-details">
+                    <div class="transaction-detail">
+                        <div class="transaction-label">Username:</div>
+                        <div class="transaction-value">@Model.User.UserName</div>
+                    </div>
+                    
+                    <div class="transaction-detail">
+                        <div class="transaction-label">Full Name:</div>
+                        <div class="transaction-value">@Model.User.FullName</div>
+                    </div>
+                    
+                    <div class="transaction-detail">
+                        <div class="transaction-label">Email:</div>
+                        <div class="transaction-value">@Model.User.Email</div>
+                    </div>
+                    
+                    <div class="transaction-detail">
+                        <div class="transaction-label">Status:</div>
+                        <div class="transaction-value">
+                            @if (Model.User.IsActive)
+                            {
+                                <span class="status-active">Active</span>
+                            }
+                            else
+                            {
+                                <span class="status-inactive">Inactive</span>
+                            }
+                        </div>
+                    </div>
+                    
+                    <div class="transaction-detail">
+                        <div class="transaction-label">Created:</div>
+                        <div class="transaction-value">@Model.User.CreatedAt.ToString("yyyy-MM-dd HH:mm")</div>
+                    </div>
+                    
+                    <div class="transaction-detail">
+                        <div class="transaction-label">Role:</div>
+                        <div class="transaction-value">
+                            @if (Model.User.University != null)
+                            {
+                                <span>Student</span>
+                            }
+                            else if (Model.User.CompanyName != null)
+                            {
+                                <span>Business</span>
+                            }
+                        </div>
+                    </div>
+                    
+                    @if (Model.User.IsVerified)
+                    {
+                        <div class="transaction-detail">
+                            <div class="transaction-label">Verified At:</div>
+                            <div class="transaction-value">@Model.User.VerifiedAt?.ToString("yyyy-MM-dd HH:mm")</div>
+                        </div>
+                    }
+                    
+                    @if (Model.User.IsFlagged)
+                    {
+                        <div class="transaction-detail">
+                            <div class="transaction-label">Flagged At:</div>
+                            <div class="transaction-value">@Model.User.FlaggedAt?.ToString("yyyy-MM-dd HH:mm")</div>
+                        </div>
+                        
+                        <div class="transaction-detail">
+                            <div class="transaction-label">Flag Reason:</div>
+                            <div class="transaction-value">@Model.User.FlagReason</div>
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <div class="transaction-card mt-4">
+                <div class="card-header">
+                    <h5>Actions</h5>
+                </div>
+                <div class="card-body actions-container">
+                    @if (!Model.User.IsVerified)
+                    {
+                        <form asp-action="Verify" method="post" class="action-form">
+                            <input type="hidden" name="id" value="@Model.User.Id" />
+                            <button type="submit" class="btn-success-custom">
+                                <i class="fas fa-check-circle"></i> Verify User
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <form asp-action="Unverify" method="post" class="action-form">
+                            <input type="hidden" name="id" value="@Model.User.Id" />
+                            <button type="submit" class="btn-secondary-custom">
+                                <i class="fas fa-times-circle"></i> Unverify User
+                            </button>
+                        </form>
+                    }
+                    
+                    @if (!Model.User.IsFlagged)
+                    {
+                        <a href="javascript:void(0)" class="btn-danger-custom" onclick="showFlagModal()">
+                            <i class="fas fa-flag"></i> Flag User
+                        </a>
+                    }
+                    else
+                    {
+                        <form asp-action="Unflag" method="post" class="action-form">
+                            <input type="hidden" name="id" value="@Model.User.Id" />
+                            <button type="submit" class="btn-warning-custom">
+                                <i class="fas fa-flag-checkered"></i> Remove Flag
+                            </button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="transaction-card">
+                <div class="card-header">
+                    <h5>Account History</h5>
+                </div>
+                <div class="transaction-details">
+                    @if (Model.History.Any())
+                    {
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                    <th>By</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var action in Model.History)
+                                {
+                                    <tr>
+                                        <td>@action.ActionDate.ToString("yyyy-MM-dd HH:mm")</td>
+                                        <td>
+                                            @if (action.ActionType == "Verify")
+                                            {
+                                                <span class="verify-badge">Verify</span>
+                                            }
+                                            else if (action.ActionType == "Unverify")
+                                            {
+                                                <span class="unverify-badge">Unverify</span>
+                                            }
+                                            else if (action.ActionType == "Flag")
+                                            {
+                                                <span class="flag-badge">Flag</span>
+                                            }
+                                            else if (action.ActionType == "Unflag")
+                                            {
+                                                <span class="unflag-badge">Unflag</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="other-badge">@action.ActionType</span>
+                                            }
+                                        </td>
+                                        <td>@action.ActionBy.FullName</td>
+                                        <td>@action.Description</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No account history available.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Flag Modal -->
+<div id="flagModal" class="custom-modal">
+    <div class="custom-modal-content">
+        <div class="custom-modal-header">
+            <h5>Flag User</h5>
+            <span class="custom-modal-close" onclick="hideFlagModal()">&times;</span>
+        </div>
+        <form asp-action="Flag" method="post">
+            <div class="custom-modal-body">
+                <input type="hidden" name="id" value="@Model.User.Id" />
+                <div class="form-group">
+                    <label for="reason">Reason for flagging:</label>
+                    <textarea name="reason" id="reason" class="form-control" rows="3" required></textarea>
+                </div>
+            </div>
+            <div class="custom-modal-footer">
+                <button type="button" class="btn-cancel" onclick="hideFlagModal()">Cancel</button>
+                <button type="submit" class="btn-flag">Flag User</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    /* Main Container Styles */
+    .payment-result-container {
+        padding: 2rem;
+        position: relative;
+        min-height: 100vh;
+    }
+
+    /* Override Main Background */
+    .main {
+        background: linear-gradient(135deg, #89AC46 0%, #D3E671 100%);
+        padding: 0;
+    }
+
+    /* Header Styles */
+    .user-details-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .user-details-header h1 {
+        color: white;
+        font-size: 2rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    /* Card Styles */
+    .transaction-card {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        overflow: hidden;
+        position: relative;
+        transition: all 0.4s ease;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .transaction-card .card-header {
+        background-color: rgba(211, 230, 113, 0.4);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 1rem 1.5rem;
+    }
+
+    .transaction-card .card-header h5 {
+        color: white;
+        font-weight: 500;
+        margin: 0;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    /* Transaction Details Styles */
+    .transaction-details {
+        position: relative;
+        z-index: 2;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 0;
+        padding: 0.5rem 1.5rem;
+        backdrop-filter: blur(5px);
+    }
+
+    .transaction-detail {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        transition: all 0.3s ease;
+    }
+
+    .transaction-detail:last-child {
+        border-bottom: none;
+    }
+
+    .transaction-label {
+        font-weight: 500;
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .transaction-value {
+        font-weight: 500;
+        font-size: 1rem;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        color: white;
+    }
+
+    /* Badge Styles */
+    .verified-badge {
+        background-color: rgba(118, 171, 184, 0.7);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-weight: normal;
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .flagged-badge {
+        background-color: rgba(255, 137, 137, 0.7);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-weight: normal;
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-left: 0.5rem;
+    }
+
+    .verify-badge {
+        background-color: rgba(118, 171, 184, 0.7);
+        color: white;
+        padding: 0.3rem 0.7rem;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        backdrop-filter: blur(5px);
+    }
+    
+    .unverify-badge {
+        background-color: rgba(170, 170, 170, 0.7);
+        color: white;
+        padding: 0.3rem 0.7rem;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        backdrop-filter: blur(5px);
+    }
+
+    .flag-badge {
+        background-color: rgba(255, 137, 137, 0.7);
+        color: white;
+        padding: 0.3rem 0.7rem;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        backdrop-filter: blur(5px);
+    }
+
+    .unflag-badge {
+        background-color: rgba(248, 237, 140, 0.7);
+        color: #333;
+        padding: 0.3rem 0.7rem;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        backdrop-filter: blur(5px);
+    }
+
+    .other-badge {
+        background-color: rgba(170, 170, 170, 0.7);
+        color: white;
+        padding: 0.3rem 0.7rem;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        backdrop-filter: blur(5px);
+    }
+    
+    .status-active {
+        color: #89AC46;
+        font-weight: bold;
+    }
+    
+    .status-inactive {
+        color: #ff8989;
+        font-weight: bold;
+    }
+
+    /* Button Styles */
+    .btn-secondary-custom {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: #ffffff;
+        font-weight: 500;
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        backdrop-filter: blur(5px);
+    }
+
+    .btn-secondary-custom:hover {
+        background: rgba(255, 255, 255, 0.3);
+        color: #ffffff;
+        text-decoration: none;
+    }
+    
+    .btn-success-custom {
+        background: rgba(118, 171, 184, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+        font-weight: 500;
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        backdrop-filter: blur(5px);
+    }
+    
+    .btn-success-custom:hover {
+        background: rgba(118, 171, 184, 0.9);
+    }
+
+    .btn-danger-custom {
+        background: rgba(255, 137, 137, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+        font-weight: 500;
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        backdrop-filter: blur(5px);
+        display: inline-block;
+        text-decoration: none;
+    }
+
+    .btn-danger-custom:hover {
+        background: rgba(255, 107, 107, 0.8);
+        color: #ffffff;
+        text-decoration: none;
+    }
+
+    .btn-warning-custom {
+        background: rgba(248, 237, 140, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #333;
+        font-weight: 500;
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        backdrop-filter: blur(5px);
+    }
+
+    .btn-warning-custom:hover {
+        background: rgba(245, 233, 106, 0.8);
+    }
+
+    /* Actions Container */
+    .actions-container {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        padding: 1.5rem;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(5px);
+    }
+    
+    .action-form {
+        display: inline-block;
+    }
+
+    /* History Table Styles */
+    .history-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .history-table th {
+        text-align: left;
+        padding: 0.75rem;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.9);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .history-table td {
+        padding: 0.75rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+
+    .history-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    
+    /* Custom Modal Styles */
+    .custom-modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        overflow: auto;
+    }
+    
+    .custom-modal-content {
+        background-color: #fff;
+        margin: 10% auto;
+        width: 500px;
+        max-width: 90%;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        position: relative;
+    }
+    
+    .custom-modal-header {
+        padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .custom-modal-header h5 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .custom-modal-close {
+        font-size: 28px;
+        font-weight: bold;
+        color: #aaa;
+        cursor: pointer;
+    }
+    
+    .custom-modal-close:hover {
+        color: #333;
+    }
+    
+    .custom-modal-body {
+        padding: 20px;
+    }
+    
+    .custom-modal-footer {
+        padding: 15px 20px;
+        border-top: 1px solid #eee;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+    
+    .btn-cancel {
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    
+    .btn-cancel:hover {
+        background-color: #5a6268;
+    }
+    
+    .btn-flag {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    
+    .btn-flag:hover {
+        background-color: #c82333;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        font-size: 1rem;
+    }
+    
+    .form-control:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+</style>
+
+<!-- Thêm Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<script>
+    // Hiển thị modal
+    function showFlagModal() {
+        document.getElementById('flagModal').style.display = 'block';
+    }
+    
+    // Ẩn modal
+    function hideFlagModal() {
+        document.getElementById('flagModal').style.display = 'none';
+    }
+    
+    // Đóng modal khi click bên ngoài
+    window.onclick = function(event) {
+        var modal = document.getElementById('flagModal');
+        if (event.target == modal) {
+            hideFlagModal();
+        }
+    }
+</script> 

@@ -211,53 +211,85 @@ namespace StudentFreelance.Services.Implementations
 
         public async Task<bool> FinalizeProjectAsync(int applicationId)
         {
-            var application = await _context.StudentApplications
-                .Include(a => a.Project)
-                .Include(a => a.User)
-                .FirstOrDefaultAsync(a => a.ApplicationID == applicationId);
-
-            if (application == null || application.Status != "Completed")
-                return false;
-
-            // Đánh dấu đã thanh toán
-            application.IsPaid = true;
-            _context.StudentApplications.Update(application);
-
-            // Tạo giao dịch thanh toán cho sinh viên
-            var transaction = new Transaction
+            using var dbTransaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                UserID = application.UserID,
-                ProjectID = application.ProjectID,
-                Amount = application.Salary,
-                TypeID = 1, // Payment
-                TransactionDate = DateTime.Now,
-                Description = $"Thanh toán cho dự án '{application.Project.Title}'",
-                StatusID = 1, // Completed
-                IsActive = true
-            };
-            _context.Transactions.Add(transaction);
+                var application = await _context.StudentApplications
+                    .Include(a => a.Project)
+                    .Include(a => a.User)
+                    .FirstOrDefaultAsync(a => a.ApplicationID == applicationId);
 
-            await _context.SaveChangesAsync();
+                if (application == null || application.Status != "Completed")
+                    return false;
 
-            // Gửi thông báo cho sinh viên
-            await _notificationService.SendNotificationToUserAsync(
-                application.UserID,
-                "Thanh toán dự án",
-                $"Bạn đã nhận được thanh toán cho dự án '{application.Project.Title}'.",
-                2, // Notification type (transaction)
-                application.ProjectID
-            );
+                // Kiểm tra xem đã thanh toán chưa
+                if (application.IsPaid)
+                    return false;
 
-            // Gửi thông báo cho doanh nghiệp
-            await _notificationService.SendNotificationToUserAsync(
-                application.Project.BusinessID,
-                "Thanh toán dự án",
-                $"Đã thanh toán cho sinh viên {application.User.FullName} cho dự án '{application.Project.Title}'.",
-                2, // Notification type (transaction)
-                application.ProjectID
-            );
+                // Kiểm tra xem ví dự án có đủ tiền không
+                if (application.Project.ProjectWallet < application.Salary)
+                    return false;
 
-            return true;
+                // Trừ tiền từ ví dự án
+                application.Project.ProjectWallet -= application.Salary;
+                _context.Projects.Update(application.Project);
+
+                // Đánh dấu đã thanh toán
+                application.IsPaid = true;
+                _context.StudentApplications.Update(application);
+
+                // Cập nhật số dư ví của sinh viên
+                if (application.User != null)
+                {
+                    application.User.WalletBalance += application.Salary;
+                    _context.Users.Update(application.User);
+                }
+
+                // Tạo giao dịch thanh toán cho sinh viên
+                // Lấy loại giao dịch "Thanh toán cho sinh viên"
+                var paymentTypeId = _context.TransactionTypes.FirstOrDefault(t => t.TypeName == "Thanh toán cho sinh viên")?.TypeID ?? 7;
+                
+                var transaction = new Transaction
+                {
+                    UserID = application.UserID,
+                    ProjectID = application.ProjectID,
+                    Amount = application.Salary,
+                    TypeID = paymentTypeId, // Thanh toán cho sinh viên
+                    TransactionDate = DateTime.Now,
+                    Description = $"Thanh toán cho dự án '{application.Project.Title}'",
+                    StatusID = 1, // Completed
+                    IsActive = true
+                };
+                _context.Transactions.Add(transaction);
+
+                await _context.SaveChangesAsync();
+
+                // Gửi thông báo cho sinh viên
+                await _notificationService.SendNotificationToUserAsync(
+                    application.UserID,
+                    "Thanh toán dự án",
+                    $"Bạn đã nhận được thanh toán cho dự án '{application.Project.Title}'.",
+                    2, // Notification type (transaction)
+                    application.ProjectID
+                );
+
+                // Gửi thông báo cho doanh nghiệp
+                await _notificationService.SendNotificationToUserAsync(
+                    application.Project.BusinessID,
+                    "Thanh toán dự án",
+                    $"Đã thanh toán cho sinh viên {application.User.FullName} cho dự án '{application.Project.Title}'.",
+                    2, // Notification type (transaction)
+                    application.ProjectID
+                );
+
+                await dbTransaction.CommitAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                await dbTransaction.RollbackAsync();
+                return false;
+            }
         }
     }
 } 

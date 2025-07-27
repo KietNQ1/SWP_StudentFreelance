@@ -1,3 +1,4 @@
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using StudentFreelance.DbContext;
 using StudentFreelance.Models;
@@ -7,15 +8,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+
 namespace StudentFreelance.Services.Implementations
 {
     public class NotificationService : INotificationService
     {
-        private readonly ApplicationDbContext _context;
 
-        public NotificationService(ApplicationDbContext context)
+        private readonly ApplicationDbContext _context;
+        private readonly IEmailSender _emailSender;
+
+        public NotificationService(ApplicationDbContext context, IEmailSender emailSender)
         {
             _context = context;
+            _emailSender = emailSender;
         }
 
         // CRUD operations
@@ -30,7 +35,7 @@ namespace StudentFreelance.Services.Implementations
         }
 
         public async Task<Notification> GetNotificationByIdAsync(int id)
-            {
+        {
             return await _context.Notifications
                 .Include(n => n.Type)
                 .Include(n => n.Sender)
@@ -53,9 +58,7 @@ namespace StudentFreelance.Services.Implementations
         {
             var notification = await _context.Notifications.FindAsync(id);
             if (notification == null)
-            {
                 return false;
-            }
 
             notification.IsActive = false;
             await _context.SaveChangesAsync();
@@ -65,7 +68,6 @@ namespace StudentFreelance.Services.Implementations
         // User-specific notifications
         public async Task<IEnumerable<Notification>> GetNotificationsByUserIdAsync(int userId)
         {
-            // Get both direct notifications and broadcast notifications
             return await _context.Notifications
                 .Include(n => n.Type)
                 .Include(n => n.Sender)
@@ -77,17 +79,13 @@ namespace StudentFreelance.Services.Implementations
 
         public async Task<IEnumerable<Notification>> GetUnreadNotificationsByUserIdAsync(int userId)
         {
-            // Combine unread user-specific notifications with unread broadcast notifications
-            // For broadcasts, check if there's no UserNotification entry or if it exists but IsRead is false
             return await _context.Notifications
                 .Include(n => n.Type)
                 .Include(n => n.Sender)
                 .Include(n => n.UserNotifications.Where(un => un.UserID == userId))
-                .Where(n => n.IsActive && 
+                .Where(n => n.IsActive &&
                     (
-                        // User-specific unread notifications
                         (n.UserNotifications.Any(un => un.UserID == userId && !un.IsRead)) ||
-                        // Broadcast notifications that user hasn't marked as read
                         (n.IsBroadcast && !n.UserNotifications.Any(un => un.UserID == userId))
                     ))
                 .OrderByDescending(n => n.NotificationDate)
@@ -103,12 +101,10 @@ namespace StudentFreelance.Services.Implementations
             if (notification == null)
                 return false;
 
-            // Check if this is a broadcast notification without a UserNotification entry yet
             var userNotification = notification.UserNotifications.FirstOrDefault(un => un.UserID == userId);
-            
+
             if (userNotification == null)
             {
-                // Create a new UserNotification entry for this broadcast notification
                 userNotification = new UserNotification
                 {
                     UserID = userId,
@@ -116,17 +112,15 @@ namespace StudentFreelance.Services.Implementations
                     IsRead = true,
                     ReadDate = DateTime.Now
                 };
-                
                 _context.UserNotifications.Add(userNotification);
             }
             else
             {
-                // Update existing UserNotification
                 userNotification.IsRead = true;
                 userNotification.ReadDate = DateTime.Now;
                 _context.UserNotifications.Update(userNotification);
             }
-            
+
             await _context.SaveChangesAsync();
             return true;
         }
@@ -135,25 +129,21 @@ namespace StudentFreelance.Services.Implementations
         {
             try
             {
-                // Get all user's unread notifications (including broadcasts)
                 var userNotifications = await _context.UserNotifications
                     .Where(un => un.UserID == userId && !un.IsRead)
                     .ToListAsync();
-                
-                // Mark existing UserNotifications as read
+
                 foreach (var un in userNotifications)
                 {
                     un.IsRead = true;
                     un.ReadDate = DateTime.Now;
                 }
-                
-                // Get broadcast notifications that user hasn't interacted with yet
+
                 var unreadBroadcasts = await _context.Notifications
                     .Where(n => n.IsBroadcast && n.IsActive)
                     .Where(n => !n.UserNotifications.Any(un => un.UserID == userId))
                     .ToListAsync();
-                
-                // Create new UserNotification entries for broadcasts
+
                 foreach (var broadcast in unreadBroadcasts)
                 {
                     _context.UserNotifications.Add(new UserNotification
@@ -164,22 +154,21 @@ namespace StudentFreelance.Services.Implementations
                         ReadDate = DateTime.Now
                     });
                 }
-                
+
                 await _context.SaveChangesAsync();
                 return true;
             }
-            catch (Exception)
+            catch
             {
                 return false;
             }
         }
 
-        // Send notifications methods
-        public async Task<bool> SendNotificationToUserAsync(int userId, string title, string content, int typeId, int? relatedId = null, int? senderId = null)
+        // Send notifications
+        public async Task<bool> SendNotificationToUserAsync(int userId, string title, string content, int typeId, int? relatedId = null, int? senderId = null, bool sendEmail = false)
         {
             try
             {
-                // Create notification
                 var notification = new Notification
                 {
                     Title = title,
@@ -191,34 +180,41 @@ namespace StudentFreelance.Services.Implementations
                     IsBroadcast = false,
                     IsActive = true
                 };
-                
+
                 _context.Notifications.Add(notification);
                 await _context.SaveChangesAsync();
-                
-                // Create UserNotification link
+
                 var userNotification = new UserNotification
                 {
                     UserID = userId,
                     NotificationID = notification.NotificationID,
                     IsRead = false
                 };
-                
+
                 _context.UserNotifications.Add(userNotification);
+
+                if (sendEmail)
+                {
+                    var user = await _context.Users.FindAsync(userId);
+                    if (user?.EmailConfirmed == true && !string.IsNullOrEmpty(user.Email))
+                    {
+                        await _emailSender.SendEmailAsync(user.Email, title, content);
+                    }
+                }
+
                 await _context.SaveChangesAsync();
-                
                 return true;
             }
-            catch (Exception)
+            catch
             {
                 return false;
             }
         }
 
-        public async Task<bool> SendNotificationToMultipleUsersAsync(List<int> userIds, string title, string content, int typeId, int? relatedId = null, int? senderId = null)
+        public async Task<bool> SendNotificationToMultipleUsersAsync(List<int> userIds, string title, string content, int typeId, int? relatedId = null, int? senderId = null, bool sendEmail = false)
         {
             try
             {
-                // Create notification
                 var notification = new Notification
                 {
                     Title = title,
@@ -230,34 +226,44 @@ namespace StudentFreelance.Services.Implementations
                     IsBroadcast = false,
                     IsActive = true
                 };
-                
+
                 _context.Notifications.Add(notification);
                 await _context.SaveChangesAsync();
-                
-                // Create UserNotification links for each user
+
                 var userNotifications = userIds.Select(userId => new UserNotification
                 {
                     UserID = userId,
                     NotificationID = notification.NotificationID,
                     IsRead = false
                 }).ToList();
-                
+
                 _context.UserNotifications.AddRange(userNotifications);
+
+                if (sendEmail)
+                {
+                    var users = await _context.Users
+                        .Where(u => userIds.Contains(u.Id) && u.EmailConfirmed && !string.IsNullOrEmpty(u.Email))
+                        .ToListAsync();
+
+                    foreach (var user in users)
+                    {
+                        await _emailSender.SendEmailAsync(user.Email, title, content);
+                    }
+                }
+
                 await _context.SaveChangesAsync();
-                
                 return true;
             }
-            catch (Exception)
+            catch
             {
                 return false;
             }
         }
 
-        public async Task<bool> SendBroadcastNotificationAsync(string title, string content, int typeId, int? relatedId = null, int? senderId = null)
+        public async Task<bool> SendBroadcastNotificationAsync(string title, string content, int typeId, int? relatedId = null, int? senderId = null, bool sendEmail = false)
         {
             try
             {
-                // Create broadcast notification
                 var notification = new Notification
                 {
                     Title = title,
@@ -269,16 +275,74 @@ namespace StudentFreelance.Services.Implementations
                     IsBroadcast = true,
                     IsActive = true
                 };
-                
+
                 _context.Notifications.Add(notification);
+
+                if (sendEmail)
+                {
+                    var users = await _context.Users
+                        .Where(u => u.EmailConfirmed && !string.IsNullOrEmpty(u.Email))
+                        .ToListAsync();
+
+                    foreach (var user in users)
+                    {
+                        await _emailSender.SendEmailAsync(user.Email, title, content);
+                    }
+                }
+
                 await _context.SaveChangesAsync();
-                
                 return true;
             }
-            catch (Exception)
+            catch
             {
                 return false;
             }
         }
+        public async Task SendNotificationToAdminAsync(string title, string content)
+        {
+            var adminUsers = await _context.Users
+                .Where(u => u.EmailConfirmed && !string.IsNullOrEmpty(u.Email))
+                .Join(
+                    _context.UserRoles,
+                    u => u.Id,
+                    ur => ur.UserId,
+                    (u, ur) => new { u, ur }
+                )
+                .Join(
+                    _context.Roles.Where(r => r.Name == "Admin"),
+                    joinResult => joinResult.ur.RoleId,
+                    r => r.Id,
+                    (joinResult, r) => joinResult.u
+                )
+                .ToListAsync();
+
+            var notification = new Notification
+            {
+                Title = title,
+                Content = content,
+                TypeID = 1,
+                NotificationDate = DateTime.Now,
+                IsBroadcast = false,
+                IsActive = true
+            };
+
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+
+            foreach (var admin in adminUsers)
+            {
+                var userNotification = new UserNotification
+                {
+                    UserID = admin.Id,
+                    NotificationID = notification.NotificationID,
+                    IsRead = false
+                };
+
+                _context.UserNotifications.Add(userNotification);
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
     }
-} 
+}

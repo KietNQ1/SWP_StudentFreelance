@@ -1,0 +1,193 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@inject StudentFreelance.Services.Interfaces.INotificationService NotificationService
+
+@using Microsoft.EntityFrameworkCore
+@using StudentFreelance.DbContext
+@using StudentFreelance.Models
+
+@{
+    ApplicationUser currentUser = null;
+    string fullName = "Người dùng";
+    string avatarPath = "/image/default-avatar.png";
+    var notifications = new List<StudentFreelance.Models.Notification>();
+    int unreadCount = 0;
+    if (SignInManager.IsSignedIn(User))
+    {
+        currentUser = await UserManager.GetUserAsync(User);
+        fullName = currentUser?.FullName ?? "Người dùng";
+        avatarPath = !string.IsNullOrEmpty(currentUser?.Avatar)
+            ? currentUser.Avatar
+            : (!string.IsNullOrEmpty(currentUser?.ProfilePicturePath)
+                ? currentUser.ProfilePicturePath
+                : "/image/default-avatar.png");
+        notifications = (await NotificationService.GetNotificationsByUserIdAsync(currentUser.Id))
+            .OrderByDescending(n => n.NotificationDate).Take(2).ToList();
+        unreadCount = (await NotificationService.GetUnreadNotificationsByUserIdAsync(currentUser.Id)).Count();
+    }
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>STJobs - Nơi kết nối sinh viên và doanh nghiệp</title>
+    <link rel="stylesheet" href="~/css/home/header.css" asp-append-version="true" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-container">
+                <!-- Logo -->
+                <div class="logo">
+                    <a asp-area="" asp-controller="Home" asp-action="Index" class="logo-link">
+                        STJobs<span class="logo-dot">.</span>
+                    </a>
+                </div>
+
+                <!-- Search -->
+                <div class="search-container">
+                    <div class="search-bar">
+                        <div class="search-type-dropdown">
+                            <select id="searchType" class="search-type-select">
+                                <option value="project">Projects</option>
+                                <option value="student">Students</option>
+                                <option value="business">Businesses</option>
+                            </select>
+                        </div>
+                        <input type="text" id="searchInput" class="search-input" placeholder="Search...">
+                        <button id="searchButton" class="search-btn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Add reference to search.js -->
+                <script src="~/js/search.js" asp-append-version="true"></script>
+
+                <!-- Navigation menu -->
+                <div class="nav-menu">
+                    <div class="nav-item dropdown explore-dropdown">
+                        <span>Find students</span>
+                        <div class="dropdown-menu">
+                            <a asp-controller="Project" asp-action="Index" class="dropdown-item">Projects <span class="new-label">Hot</span></a>
+                            <a href="#">Development & IT</a>
+                            <a href="#">Design & Creative</a>
+                            <a href="#">Sales & Marketing</a>
+                            <a href="#">Writing & Translation</a>
+                            <a href="#">Engineering & Architecture</a>
+                        </div>
+                    </div>
+                    <div class="nav-item dropdown">
+                        <a asp-controller="Business" asp-action="Index" class="nav-link">Business</a>
+                        <div class="dropdown-menub">
+                            <a href="#">Công nghệ thông tin</a>
+                            <a href="#">Marketing</a>
+                            <a href="#">Thiết kế</a>
+                            <a href="#">Viết lách</a>
+                            <a href="#">Dịch thuật</a>
+                            <a href="#">Kinh doanh</a>
+                        </div>
+                    </div>
+                    <div class="nav-item dropdown explore-dropdown" id="exploreDropdownBtn">
+                        <span>Explore</span>
+                        <div class="dropdown-menu" id="exploreDropdownMenu">
+                            <a href="#">STJobs VIP <span class="new-label">New</span></a>
+                            <a href="#">Q&A</a>
+                            <a href="#">Guides</a>
+                            <a asp-controller="Report" asp-action="ListReport">Report</a>
+                            <a asp-controller="Report" asp-action="Create">Create Report</a>
+                        </div>
+                    </div>
+                    <div class="nav-item dropdown explore-dropdown">
+                        <span>Search</span>
+                        <div class="dropdown-menu">
+                            <a asp-controller="Search" asp-action="SearchJob">Find Project</a>
+                            <a asp-controller="Search" asp-action="SearchStudents">Search Student</a>
+                            <a asp-controller="Search" asp-action="SearchBusinesses">Search Business</a>
+                        </div>
+                    </div>
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        <div class="nav-user-actions">
+                            <div class="notification-wrapper">
+                                <a href="@Url.Action("Index", "Notification")" class="notification-icon" id="notificationBell">
+                                    <i class="fas fa-bell"></i>
+                                    @if (unreadCount > 0)
+                                    {
+                                        <span class="notification-dot" id="notificationDot"></span>
+                                    }
+                                </a>
+                                <div class="notification-dropdown" id="notificationDropdown">
+                                    <div class="notification-header"><strong>Thông báo</strong></div>
+                                    <div class="notification-list">
+                                        @if (notifications.Any())
+                                        {
+                                            foreach (var n in notifications)
+                                            {
+                                                <div class="notification-item">
+                                                    <img src="@(n.Sender?.Avatar ?? "/image/default-avatar.png")" style="width:32px;height:32px;border-radius:50%;" />
+                                                    <div class="notification-text">
+                                                        <p>
+                                                            <strong>@(n.Sender?.FullName ?? "Hệ thống")</strong>: @n.Title
+                                                        </p>
+                                                        <span class="time">@n.NotificationDate.ToString("dd/MM/yyyy HH:mm")</span>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <div class="notification-item">
+                                                <div class="notification-text">
+                                                    <p>Không có thông báo mới.</p>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="notification-footer">
+                                        <a href="@Url.Action("Index", "Notification")" class="btn btn-link w-100">Xem tất cả thông báo</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="avatar-wrapper">
+                                <img src="@avatarPath" alt="Avatar" class="avatar-img" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" onerror="this.onerror=null;this.src='/image/default-avatar.png';" />
+                                <span class="user-name">@fullName</span>
+                                <div class="dropdown-menu">
+                                    <a href="/User/Profile"><i class="fas fa-user"></i>My Profile</a>
+                                    @if (User.IsInRole("Student"))
+                                    {
+                                        <a asp-controller="Application" asp-action="MyApplications"><i class="fas fa-briefcase"></i>My Application</a>
+                                    }
+                                    <a asp-controller="Wallet" asp-action="Index"><i class="fas fa-wallet"></i>My Wallet</a>
+                                    <a asp-controller="Chat" asp-action="Chat"><i class="fas fa-comments"></i>Chatting</a>
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <a asp-controller="AdminUser" asp-action="Index"><i class="fas fa-chart-line"></i>Dashboard</a>
+                                    }
+                                </div>
+                            </div>
+                            <form asp-controller="Account" asp-action="Logout" method="post" class="form-inline d-inline">
+                                <button type="submit" class="nav-link btn btn-link text-dark" style="border: none;">Logout</button>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="nav-user-actions">
+                            <a asp-controller="Account" asp-action="Login" class="nav-link">Sign in</a>
+                            <a asp-controller="Account" asp-action="Register" class="btn btn-primary">Join</a>
+                        </div>
+                    }
+                </div> <!-- end nav-menu -->
+            </div> <!-- end nav-container -->
+        </nav>
+    </header>
+</body>
+</html>

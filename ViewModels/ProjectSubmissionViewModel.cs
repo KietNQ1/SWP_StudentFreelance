@@ -56,8 +56,15 @@ namespace StudentFreelance.ViewModels
         public string StudentName { get; set; } = "Không xác định";
         public string ApplicationStatus { get; set; } = "Không xác định";
         public List<ProjectSubmissionViewModel> Submissions { get; set; } = new List<ProjectSubmissionViewModel>();
+
+        public bool HasRatedBusiness { get; set; } = false;
+        public int ProjectID { get; set; }
+        public int BusinessID { get; set; }
+        public int StudentID { get; set; }        // ID sinh viên để đánh giá
+        public bool IsPaid { get; set; } = false; // Đánh dấu đã thanh toán chưa
+        public bool HasBothConfirmed { get; set; } = false; // Đánh dấu cả hai bên đã xác nhận hoàn thành chưa
     }
-    
+
     public class ProjectSubmissionFeedbackViewModel
     {
         public int SubmissionID { get; set; }

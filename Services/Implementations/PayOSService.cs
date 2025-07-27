@@ -27,126 +27,6 @@ public class PayOSService : IPayOSService
         _client.DefaultRequestHeaders.Add("x-api-key", _config.ApiKey);
     }
 
-    //public async Task<string> CreatePaymentLink(decimal amount, string description, string orderCode)
-    //{
-    //    var body = new
-    //    {
-    //        amount = (int)amount,
-    //        description,
-    //        orderCode,
-    //        returnUrl = _config.ReturnUrl,
-    //        cancelUrl = _config.CancelUrl
-    //    };
-
-    //    var content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
-    //    var response = await _client.PostAsync("https://api-merchant.payos.vn/v2/payment-requests", content);
-    //    var json = await response.Content.ReadAsStringAsync();
-
-    //    // 🌐 Format log đẹp
-    //    var formattedJson = JsonSerializer.Serialize(
-    //        JsonSerializer.Deserialize<object>(json),
-    //        new JsonSerializerOptions { WriteIndented = true }
-    //    );
-
-    //    // 📝 Ghi log ra console và Output
-    //    _logger.LogInformation("💡 PayOS formatted response:\n{Json}", formattedJson);
-
-    //    // (Tuỳ chọn) Ghi log ra file
-    //    var logPath = Path.Combine(Directory.GetCurrentDirectory(), "Logs", "payos_response_log.txt");
-
-    //    Directory.CreateDirectory(Path.GetDirectoryName(logPath)!);
-    //    await File.AppendAllTextAsync(logPath, $"[{DateTime.Now}] PayOS Response:\n{formattedJson}\n\n");
-
-    //    // 📦 Phân tích JSON
-    //    using var doc = JsonDocument.Parse(json);
-    //    var root = doc.RootElement;
-
-    //    string code = root.GetProperty("code").GetString() ?? "";
-    //    if (code != "00")
-    //    {
-    //        string error = root.GetProperty("desc").GetString() ?? "Không rõ lỗi";
-    //        _logger.LogError("❌ PayOS trả lỗi: {Error}", error);
-    //        throw new Exception($"PayOS trả lỗi: {error}");
-    //    }
-
-    //    // ✅ Lấy checkoutUrl
-    //    if (root.TryGetProperty("data", out JsonElement dataElement) &&
-    //        dataElement.TryGetProperty("checkoutUrl", out JsonElement checkoutUrlElement))
-    //    {
-    //        string checkoutUrl = checkoutUrlElement.GetString() ?? "";
-    //        _logger.LogInformation("✅ PayOS checkout URL: {Url}", checkoutUrl);
-    //        return checkoutUrl;
-    //    }
-
-    //    throw new Exception("❌ 'data.checkoutUrl' không có trong phản hồi PayOS.");
-    //}
-
-    //public async Task<string> CreatePaymentLink(decimal amount, string description, long orderCode)
-    //{
-    //    var intAmount = (int)amount;
-    //    var rawData = $"{orderCode}|{intAmount}|{description}|{_config.ReturnUrl}";
-    //    string signature;
-    //    using (var hmac = new System.Security.Cryptography.HMACSHA256(System.Text.Encoding.UTF8.GetBytes(_config.ChecksumKey)))
-    //    {
-    //        var hash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(rawData));
-    //        signature = BitConverter.ToString(hash).Replace("-", "").ToLower();
-    //    }
-
-    //    var body = new
-    //    {
-    //        orderCode,
-    //        amount = intAmount,
-    //        description,
-    //        returnUrl = _config.ReturnUrl,
-    //        //cancelUrl = _config.CancelUrl,
-    //        signature
-    //    };
-
-    //    var content = new StringContent(System.Text.Json.JsonSerializer.Serialize(body), System.Text.Encoding.UTF8, "application/json");
-
-    //    _client.DefaultRequestHeaders.Clear();
-    //    _client.DefaultRequestHeaders.Add("x-client-id", _config.ClientId);
-    //    _client.DefaultRequestHeaders.Add("x-api-key", _config.ApiKey);
-
-    //    var response = await _client.PostAsync("https://api-merchant.payos.vn/v2/payment-requests", content);
-    //    var json = await response.Content.ReadAsStringAsync();
-
-    //    // 📝 Ghi log ra console đẹp hơn
-    //    var formattedJson = JsonSerializer.Serialize(
-    //        JsonSerializer.Deserialize<object>(json),
-    //        new JsonSerializerOptions { WriteIndented = true }
-    //    );
-    //    _logger.LogInformation("📥 PayOS response:\n{Json}", formattedJson);
-
-    //    // 💾 Ghi log ra file
-    //    var logPath = Path.Combine(Directory.GetCurrentDirectory(), "Logs", "payos_response_log.txt");
-    //    Directory.CreateDirectory(Path.GetDirectoryName(logPath)!);
-    //    await File.AppendAllTextAsync(logPath, $"[{DateTime.Now}] PayOS Response:\n{formattedJson}\n\n");
-
-    //    // ✅ Bước 4: Đọc kết quả trả về
-    //    using var doc = JsonDocument.Parse(json);
-    //    var root = doc.RootElement;
-
-    //    string code = root.GetProperty("code").GetString() ?? "";
-    //    if (code != "00")
-    //    {
-    //        string error = root.GetProperty("desc").GetString() ?? "Không rõ lỗi";
-    //        _logger.LogError("❌ PayOS trả lỗi: {Error}", error);
-    //        throw new Exception($"PayOS trả lỗi: {error}");
-    //    }
-
-    //    // 🔗 Trích xuất checkoutUrl
-    //    if (root.TryGetProperty("data", out JsonElement dataElement) &&
-    //        dataElement.TryGetProperty("checkoutUrl", out JsonElement checkoutUrlElement))
-    //    {
-    //        string checkoutUrl = checkoutUrlElement.GetString() ?? "";
-    //        _logger.LogInformation("✅ PayOS checkout URL: {Url}", checkoutUrl);
-    //        return checkoutUrl;
-    //    }
-
-    //    throw new Exception("❌ 'data.checkoutUrl' không có trong phản hồi PayOS.");
-    //}
-
     public async Task<string> CreatePaymentLink(decimal amount, long orderCode, string description, string returnUrl, string cancelUrl)
     {
         var intAmount = (int)amount;
@@ -190,7 +70,7 @@ public class PayOSService : IPayOSService
             orderCode,
             amount = intAmount,
             description,
-            returnUrl = returnUrl,    
+            returnUrl = returnUrl,
             cancelUrl = cancelUrl,
             signature
         };
@@ -237,12 +117,6 @@ public class PayOSService : IPayOSService
 
         throw new Exception("❌ 'data.checkoutUrl' không có trong phản hồi PayOS.");
     }
-
-
-
-
-
-
 
 
     public async Task<bool> TransferToBankAsync(string bankCode, string accountNumber, decimal amount, string description)

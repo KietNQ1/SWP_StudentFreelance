@@ -1,0 +1,197 @@
+﻿/* CSS cho bảng Skills */
+.table {
+    border-collapse: collapse;
+    width: 100%;
+    background-color: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.table-bordered {
+    border: 2px solid #89AC46;
+}
+
+.table thead {
+    background: linear-gradient(135deg, #89AC46 0%, #D3E671 100%);
+}
+
+    .table thead th {
+        background-color: #89AC46;
+        color: white;
+        font-weight: 600;
+        text-align: center;
+        padding: 15px 12px;
+        border: 1px solid #7A9C3E;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+.table tbody tr {
+    transition: all 0.3s ease;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+    .table tbody tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+
+    .table tbody tr:hover {
+        background-color: #F8ED8C;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(137, 172, 70, 0.2);
+    }
+
+.table tbody td {
+    padding: 12px 15px;
+    border: 1px solid #dee2e6;
+    vertical-align: middle;
+    font-size: 14px;
+}
+
+/* Styling cho trạng thái hoạt động */
+.table tbody tr:not(.text-muted) td:nth-child(3) {
+    color: #89AC46;
+    font-weight: 600;
+}
+
+/* Styling cho trạng thái không hoạt động */
+.table tbody tr.text-muted {
+    opacity: 0.6;
+    background-color: #f5f5f5;
+}
+
+    .table tbody tr.text-muted td:nth-child(3) {
+        color: #FF8989;
+        font-weight: 600;
+    }
+
+/* Styling cho các action links */
+.table tbody td a {
+    color: #89AC46;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    display: inline-block;
+    margin: 0 2px;
+}
+
+    .table tbody td a:hover {
+        background-color: #89AC46;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+
+    /* Styling riêng cho link "Sửa" */
+    .table tbody td a[asp-action="Edit"] {
+        background-color: #D3E671;
+        color: #5a6c2a;
+    }
+
+        .table tbody td a[asp-action="Edit"]:hover {
+            background-color: #89AC46;
+            color: white;
+        }
+
+    /* Styling riêng cho link "Chi tiết" */
+    .table tbody td a[asp-action="Details"] {
+        background-color: #F8ED8C;
+        color: #6b5d0a;
+    }
+
+        .table tbody td a[asp-action="Details"]:hover {
+            background-color: #89AC46;
+            color: white;
+        }
+
+    /* Styling riêng cho link "Ẩn" */
+    .table tbody td a[asp-action="Delete"] {
+        background-color: #FF8989;
+        color: #8b0000;
+    }
+
+        .table tbody td a[asp-action="Delete"]:hover {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+    /* Styling riêng cho link "Hiện" */
+    .table tbody td a[asp-action="Unhide"] {
+        background-color: #D3E671;
+        color: #5a6c2a;
+    }
+
+        .table tbody td a[asp-action="Unhide"]:hover {
+            background-color: #89AC46;
+            color: white;
+        }
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .table {
+        font-size: 12px;
+    }
+
+        .table thead th,
+        .table tbody td {
+            padding: 8px 6px;
+        }
+
+            .table tbody td a {
+                padding: 4px 8px;
+                font-size: 12px;
+                margin: 1px;
+            }
+}
+
+/* Animation khi load trang */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.table {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Styling cho text-center */
+.text-center {
+    text-align: center;
+}
+
+/* Hiệu ứng loading cho bảng */
+.table-loading {
+    position: relative;
+}
+
+    .table-loading::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(137, 172, 70, 0.2), transparent);
+        animation: loading 1.5s infinite;
+    }
+
+@keyframes loading {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}

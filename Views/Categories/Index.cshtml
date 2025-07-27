@@ -1,10 +1,10 @@
 @model IEnumerable<StudentFreelance.Models.Category>
 @using Microsoft.AspNetCore.Mvc.Rendering
+<link rel="stylesheet" href="~/css/category/index.css" asp-append-version="true" />
 @{
     ViewData["Title"] = "Category List";
 }
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
-<link rel="stylesheet" href="~/css/Categoryindex.css" />
+
 <h2>@ViewData["Title"]</h2>
 
 @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
@@ -39,14 +39,10 @@
                     {
                         <a asp-action="Edit" asp-route-id="@item.CategoryID" class="btn btn-sm btn-warning">Edit</a>
 
-                        @if (item.IsActive)
-                        {
-                            <a asp-action="Hide" asp-route-id="@item.CategoryID" class="btn btn-sm btn-danger">Hide</a>
-                        }
-                        else
-                        {
-                            <a asp-action="Unhide" asp-route-id="@item.CategoryID" class="btn btn-sm btn-success">Unhide</a>
-                        }
+                        <a asp-action="Hide" asp-route-id="@item.CategoryID" class="btn btn-sm btn-danger">Hide</a>
+                        
+                        <a asp-action="Unhide" asp-route-id="@item.CategoryID" class="btn btn-sm btn-success">Unhide</a>
+                        
                     }
                 </td>
             </tr>

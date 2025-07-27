@@ -35,7 +35,10 @@ namespace StudentFreelance.Data
                     new TransactionType { TypeName = "Nạp tiền", IsActive = true },
                     new TransactionType { TypeName = "Rút tiền", IsActive = true },
                     new TransactionType { TypeName = "Thanh toán", IsActive = true },
-                    new TransactionType { TypeName = "Hoàn tiền", IsActive = true }
+                    new TransactionType { TypeName = "Hoàn tiền", IsActive = true },
+                    new TransactionType { TypeName = "Nâng cấp VIP", IsActive = true },
+                    new TransactionType { TypeName = "Thanh toán quảng cáo", IsActive = true },
+                    new TransactionType { TypeName = "Thanh toán cho sinh viên", IsActive = true }
                 );
             }
 
@@ -106,6 +109,34 @@ namespace StudentFreelance.Data
                 );
             }
 
+            if (!context.AdvertisementStatuses.Any())
+            {
+                context.AdvertisementStatuses.AddRange(
+                    new AdvertisementStatus { StatusName = "Chờ duyệt", IsActive = true },
+                    new AdvertisementStatus { StatusName = "Đã duyệt", IsActive = true },
+                    new AdvertisementStatus { StatusName = "Từ chối", IsActive = true },
+                    new AdvertisementStatus { StatusName = "Hết hạn", IsActive = true }
+                );
+            }
+
+            if (!context.AdvertisementPackageTypes.Any())
+            {
+                context.AdvertisementPackageTypes.AddRange(
+                    new AdvertisementPackageType { 
+                        PackageTypeName = "Basic", 
+                        Price = 100000, 
+                        DurationDays = 7, 
+                        IsActive = true 
+                    },
+                    new AdvertisementPackageType { 
+                        PackageTypeName = "Featured", 
+                        Price = 200000, 
+                        DurationDays = 7, 
+                        IsActive = true 
+                    }
+                );
+            }
+
             context.SaveChanges();
         }
 
@@ -114,6 +145,13 @@ namespace StudentFreelance.Data
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole<int>> roleManager)
         {
+            // Ensure all existing projects have valid flag values
+            foreach (var project in context.Projects.Where(p => p.IsFlagged && p.FlagReason == null))
+            {
+                project.FlagReason = "Default flag reason";
+            }
+            await context.SaveChangesAsync();
+            
             // 1. Roles
             string[] roleNames = { "Admin", "Moderator", "Business", "Student" };
             foreach (var role in roleNames)
@@ -165,11 +203,14 @@ namespace StudentFreelance.Data
                     // Create address for user with default values
                     var address = new Address
                     {
-                        ProvinceID = 1,
-                        DistrictID = 1,
-                        WardID = 1,
+                        ProvinceCode = "1",
+                        ProvinceName = "Hà Nội",
+                        DistrictCode = "001",
+                        DistrictName = "Quận Ba Đình",
+                        WardCode = "00001",
+                        WardName = "Phường Phúc Xá",
                         DetailAddress = "Số nhà mặc định",
-                        FullAddress = "Địa chỉ mặc định",
+                        FullAddress = "Số nhà mặc định, Phường Phúc Xá, Quận Ba Đình, Hà Nội",
                         IsActive = true
                     };
 
@@ -193,8 +234,8 @@ namespace StudentFreelance.Data
                         AverageRating = (decimal)(new Random().NextDouble() * 2 + 3), // Random rating between 3.0 and 5.0
                         TotalProjects = role == "Student" ? new Random().Next(0, 10) : 0,
                         TotalProjectsPosted = role == "Business" ? new Random().Next(1, 15) : 0,
-                        ProfilePicturePath = "default-avatar.png",
-                        Avatar = "default-avatar.png",
+                        ProfilePicturePath = "/image/default-avatar.png",
+                        Avatar = "/image/default-avatar.png",
                         CreatedAt = DateTime.Now.AddDays(-new Random().Next(1, 365)), // Random registration date within last year
                         UpdatedAt = DateTime.Now,
                         IsActive = true,
@@ -427,7 +468,88 @@ namespace StudentFreelance.Data
                 var fullTimeType = context.ProjectTypes.First(t => t.TypeName == "Toàn thời gian");
                 var partTimeType = context.ProjectTypes.First(t => t.TypeName == "Bán thời gian");
                 var projectBasedType = context.ProjectTypes.First(t => t.TypeName == "Theo dự án");
-
+                
+                // Create a few addresses for projects
+                var projectAddresses = new List<Address>();
+                
+                // Sample location data for projects
+                var sampleLocations = new[]
+                {
+                    (Code: "1", Name: "Hà Nội", Districts: new[]
+                    {
+                        (Code: "001", Name: "Quận Ba Đình", Wards: new[] 
+                        {
+                            (Code: "00001", Name: "Phường Phúc Xá"),
+                            (Code: "00004", Name: "Phường Trúc Bạch")
+                        }),
+                        (Code: "002", Name: "Quận Hoàn Kiếm", Wards: new[] 
+                        {
+                            (Code: "00037", Name: "Phường Hàng Bạc"),
+                            (Code: "00040", Name: "Phường Hàng Bồ")
+                        })
+                    }),
+                    (Code: "79", Name: "TP Hồ Chí Minh", Districts: new[]
+                    {
+                        (Code: "760", Name: "Quận 1", Wards: new[] 
+                        {
+                            (Code: "26734", Name: "Phường Bến Nghé"),
+                            (Code: "26737", Name: "Phường Bến Thành")
+                        }),
+                        (Code: "761", Name: "Quận 3", Wards: new[] 
+                        {
+                            (Code: "26767", Name: "Phường 1"),
+                            (Code: "26770", Name: "Phường 2")
+                        })
+                    }),
+                    (Code: "48", Name: "Đà Nẵng", Districts: new[]
+                    {
+                        (Code: "490", Name: "Quận Hải Châu", Wards: new[] 
+                        {
+                            (Code: "20194", Name: "Phường Hải Châu 1"),
+                            (Code: "20195", Name: "Phường Hải Châu 2")
+                        }),
+                        (Code: "491", Name: "Quận Thanh Khê", Wards: new[] 
+                        {
+                            (Code: "20227", Name: "Phường Tam Thuận"),
+                            (Code: "20230", Name: "Phường Thanh Khê Tây")
+                        })
+                    })
+                };
+                
+                for (int i = 0; i < 10; i++)
+                {
+                    var random = new Random();
+                    
+                    // Select random province
+                    var provinceIndex = random.Next(sampleLocations.Length);
+                    var province = sampleLocations[provinceIndex];
+                    
+                    // Select random district
+                    var districtIndex = random.Next(province.Districts.Length);
+                    var district = province.Districts[districtIndex];
+                    
+                    // Select random ward
+                    var wardIndex = random.Next(district.Wards.Length);
+                    var ward = district.Wards[wardIndex];
+                    
+                    var address = new Address
+                    {
+                        ProvinceCode = province.Code,
+                        ProvinceName = province.Name,
+                        DistrictCode = district.Code,
+                        DistrictName = district.Name,
+                        WardCode = ward.Code,
+                        WardName = ward.Name,
+                        DetailAddress = $"Địa chỉ dự án {i+1}",
+                        FullAddress = $"Địa chỉ dự án {i+1}, {ward.Name}, {district.Name}, {province.Name}",
+                        IsActive = true
+                    };
+                    
+                    context.Addresses.Add(address);
+                    context.SaveChanges();
+                    projectAddresses.Add(address);
+                }
+                
                 var projects = new List<Project>
                 {
                     // Web Development Projects
@@ -436,12 +558,14 @@ namespace StudentFreelance.Data
                         Title = "Phát triển website bán hàng",
                         Description = "Cần lập trình viên có kinh nghiệm về .NET và React để phát triển website thương mại điện tử với đầy đủ tính năng như giỏ hàng, thanh toán online, quản lý đơn hàng.",
                         Budget = 50000000,
+                        ProjectWallet = 50000000,
                         StartDate = new DateTime(2025, 6, 22),
                         EndDate = new DateTime(2025, 9, 13),
                         BusinessID = businesses[0].Id,
                         CategoryID = webCategory.CategoryID,
                         StatusID = recruitingStatus.StatusID,
                         TypeID = fullTimeType.TypeID,
+                        AddressID = projectAddresses[0].AddressID,
                         IsActive = true
                     },
                     new Project
@@ -449,12 +573,14 @@ namespace StudentFreelance.Data
                         Title = "Xây dựng blog cá nhân",
                         Description = "Cần freelancer thiết kế và phát triển blog cá nhân sử dụng WordPress hoặc các nền tảng tương tự. Blog cần có giao diện đẹp, tối ưu SEO.",
                         Budget = 5000000,
+                        ProjectWallet = 5000000,
                         StartDate = new DateTime(2025, 7, 1),
                         EndDate = new DateTime(2025, 7, 30),
                         BusinessID = businesses[1].Id,
                         CategoryID = webCategory.CategoryID,
                         StatusID = inProgressStatus.StatusID,
                         TypeID = projectBasedType.TypeID,
+                        AddressID = projectAddresses[1].AddressID,
                         IsActive = true
                     },
                     new Project
@@ -462,12 +588,14 @@ namespace StudentFreelance.Data
                         Title = "Nâng cấp hệ thống quản lý nội bộ",
                         Description = "Dự án nâng cấp hệ thống quản lý nội bộ hiện tại, bổ sung các tính năng báo cáo và thống kê. Sử dụng Laravel và VueJS.",
                         Budget = 35000000,
+                        ProjectWallet = 35000000,
                         StartDate = new DateTime(2025, 5, 15),
                         EndDate = new DateTime(2025, 8, 15),
                         BusinessID = businesses[2].Id,
                         CategoryID = webCategory.CategoryID,
                         StatusID = completedStatus.StatusID,
                         TypeID = fullTimeType.TypeID,
+                        AddressID = projectAddresses[2].AddressID,
                         IsActive = true
                     },
                     
@@ -477,12 +605,14 @@ namespace StudentFreelance.Data
                         Title = "Phát triển ứng dụng di động đặt đồ ăn",
                         Description = "Cần phát triển ứng dụng đặt đồ ăn trên iOS và Android với tính năng tìm kiếm nhà hàng, đánh giá, thanh toán online.",
                         Budget = 70000000,
+                        ProjectWallet = 70000000,
                         StartDate = new DateTime(2025, 7, 10),
                         EndDate = new DateTime(2025, 10, 30),
                         BusinessID = businesses[3].Id,
                         CategoryID = mobileCategory.CategoryID,
                         StatusID = recruitingStatus.StatusID,
                         TypeID = fullTimeType.TypeID,
+                        AddressID = projectAddresses[3].AddressID,
                         IsActive = true
                     },
                     new Project
@@ -490,12 +620,14 @@ namespace StudentFreelance.Data
                         Title = "Ứng dụng theo dõi sức khỏe",
                         Description = "Phát triển ứng dụng theo dõi sức khỏe cá nhân với các tính năng theo dõi bước chân, nhịp tim, chế độ ăn uống, v.v.",
                         Budget = 45000000,
+                        ProjectWallet = 45000000,
                         StartDate = new DateTime(2025, 6, 15),
                         EndDate = new DateTime(2025, 9, 15),
                         BusinessID = businesses[4].Id,
                         CategoryID = mobileCategory.CategoryID,
                         StatusID = recruitingStatus.StatusID,
                         TypeID = partTimeType.TypeID,
+                        AddressID = projectAddresses[4].AddressID,
                         IsActive = true
                     },
                     
@@ -505,12 +637,14 @@ namespace StudentFreelance.Data
                         Title = "Phân tích dữ liệu khách hàng",
                         Description = "Cần chuyên gia phân tích dữ liệu để xử lý và phân tích dữ liệu khách hàng, xây dựng mô hình dự đoán hành vi mua hàng.",
                         Budget = 40000000,
+                        ProjectWallet = 40000000,
                         StartDate = new DateTime(2025, 7, 5),
                         EndDate = new DateTime(2025, 8, 30),
                         BusinessID = businesses[0].Id,
                         CategoryID = dataCategory.CategoryID,
                         StatusID = recruitingStatus.StatusID,
                         TypeID = projectBasedType.TypeID,
+                        AddressID = projectAddresses[5].AddressID,
                         IsActive = true
                     },
                     
@@ -520,12 +654,14 @@ namespace StudentFreelance.Data
                         Title = "Thiết kế lại giao diện website công ty",
                         Description = "Cần designer thiết kế lại giao diện website công ty theo phong cách hiện đại, tối giản, thân thiện với người dùng.",
                         Budget = 25000000,
+                        ProjectWallet = 25000000,
                         StartDate = new DateTime(2025, 6, 10),
                         EndDate = new DateTime(2025, 7, 25),
                         BusinessID = businesses[1].Id,
                         CategoryID = uiuxCategory.CategoryID,
                         StatusID = inProgressStatus.StatusID,
                         TypeID = partTimeType.TypeID,
+                        AddressID = projectAddresses[6].AddressID,
                         IsActive = true
                     },
                     
@@ -535,12 +671,14 @@ namespace StudentFreelance.Data
                         Title = "Quản lý fanpage và chạy quảng cáo",
                         Description = "Cần người có kinh nghiệm quản lý fanpage Facebook, lên kế hoạch nội dung, chạy quảng cáo Facebook Ads.",
                         Budget = 10000000,
+                        ProjectWallet = 10000000,
                         StartDate = new DateTime(2025, 7, 1),
                         EndDate = new DateTime(2025, 12, 31),
                         BusinessID = businesses[2].Id,
                         CategoryID = socialMediaCategory.CategoryID,
                         StatusID = recruitingStatus.StatusID,
                         TypeID = partTimeType.TypeID,
+                        AddressID = projectAddresses[7].AddressID,
                         IsActive = true
                     },
                     
@@ -550,12 +688,14 @@ namespace StudentFreelance.Data
                         Title = "Viết nội dung blog về công nghệ",
                         Description = "Cần freelancer viết 20 bài blog về các chủ đề công nghệ như AI, blockchain, 5G, v.v. Mỗi bài từ 1000-1500 từ.",
                         Budget = 15000000,
+                        ProjectWallet = 15000000,
                         StartDate = new DateTime(2025, 7, 15),
                         EndDate = new DateTime(2025, 9, 15),
                         BusinessID = businesses[3].Id,
                         CategoryID = contentWritingCategory.CategoryID,
                         StatusID = recruitingStatus.StatusID,
                         TypeID = projectBasedType.TypeID,
+                        AddressID = projectAddresses[8].AddressID,
                         IsActive = true
                     },
                     
@@ -565,12 +705,14 @@ namespace StudentFreelance.Data
                         Title = "Dịch tài liệu kỹ thuật",
                         Description = "Cần dịch tài liệu kỹ thuật về phần mềm từ tiếng Anh sang tiếng Việt, khoảng 50 trang.",
                         Budget = 8000000,
+                        ProjectWallet = 8000000,
                         StartDate = new DateTime(2025, 8, 1),
                         EndDate = new DateTime(2025, 8, 31),
                         BusinessID = businesses[4].Id,
                         CategoryID = translationCategory.CategoryID,
                         StatusID = recruitingStatus.StatusID,
                         TypeID = projectBasedType.TypeID,
+                        AddressID = projectAddresses[9].AddressID,
                         IsActive = true
                     }
                 };
@@ -1380,6 +1522,174 @@ namespace StudentFreelance.Data
                 context.SaveChanges();
             }
 
+            // Add email verification deadline for new users (BR-34)
+            foreach (var user in context.Users.ToList())
+            {
+                if (user.EmailVerificationDeadline == null)
+                {
+                    user.EmailVerificationDeadline = user.CreatedAt.AddDays(1);
+                    await userManager.UpdateAsync(user);
+                }
+            }
+
+            // Seed some verified users
+            var adminUser = await userManager.FindByEmailAsync("admin@example.com");
+            var moderatorUser = await userManager.FindByEmailAsync("moderator@example.com");
+            var businessUser = await userManager.FindByEmailAsync("business@example.com");
+
+            if (adminUser != null && !adminUser.IsVerified)
+            {
+                adminUser.IsVerified = true;
+                adminUser.VerifiedAt = DateTime.Now.AddDays(-30);
+                adminUser.VerifiedByID = adminUser.Id; // Self-verified
+                await userManager.UpdateAsync(adminUser);
+                
+                // Add account action history
+                context.UserAccountActions.Add(new UserAccountAction
+                {
+                    UserID = adminUser.Id,
+                    ActionByID = adminUser.Id,
+                    ActionType = "Verify",
+                    Description = "Self-verification (admin)",
+                    ActionDate = DateTime.Now.AddDays(-30),
+                    IPAddress = "127.0.0.1",
+                    UserAgent = "DbSeeder"
+                });
+            }
+
+            if (moderatorUser != null && !moderatorUser.IsVerified)
+            {
+                moderatorUser.IsVerified = true;
+                moderatorUser.VerifiedAt = DateTime.Now.AddDays(-25);
+                moderatorUser.VerifiedByID = adminUser.Id;
+                await userManager.UpdateAsync(moderatorUser);
+                
+                // Add account action history
+                context.UserAccountActions.Add(new UserAccountAction
+                {
+                    UserID = moderatorUser.Id,
+                    ActionByID = adminUser.Id,
+                    ActionType = "Verify",
+                    Description = "Verified by admin",
+                    ActionDate = DateTime.Now.AddDays(-25),
+                    IPAddress = "127.0.0.1",
+                    UserAgent = "DbSeeder"
+                });
+            }
+
+            if (businessUser != null && !businessUser.IsVerified)
+            {
+                businessUser.IsVerified = true;
+                businessUser.VerifiedAt = DateTime.Now.AddDays(-20);
+                businessUser.VerifiedByID = moderatorUser.Id;
+                await userManager.UpdateAsync(businessUser);
+                
+                // Add account action history
+                context.UserAccountActions.Add(new UserAccountAction
+                {
+                    UserID = businessUser.Id,
+                    ActionByID = moderatorUser.Id,
+                    ActionType = "Verify",
+                    Description = "Verified by moderator",
+                    ActionDate = DateTime.Now.AddDays(-20),
+                    IPAddress = "127.0.0.1",
+                    UserAgent = "DbSeeder"
+                });
+            }
+
+            // Flag a sample user
+            var suspiciousUser = await userManager.FindByEmailAsync("student5@example.com");
+            if (suspiciousUser != null && !suspiciousUser.IsFlagged)
+            {
+                suspiciousUser.IsFlagged = true;
+                suspiciousUser.FlagReason = "Suspicious activity detected";
+                suspiciousUser.FlaggedAt = DateTime.Now.AddDays(-5);
+                suspiciousUser.FlaggedByID = moderatorUser.Id;
+                await userManager.UpdateAsync(suspiciousUser);
+                
+                // Add account action history
+                context.UserAccountActions.Add(new UserAccountAction
+                {
+                    UserID = suspiciousUser.Id,
+                    ActionByID = moderatorUser.Id,
+                    ActionType = "Flag",
+                    Description = "Suspicious activity detected",
+                    ActionDate = DateTime.Now.AddDays(-5),
+                    IPAddress = "127.0.0.1",
+                    UserAgent = "DbSeeder"
+                });
+            }
+
+            // Flag a sample project
+            var projectToFlag = context.Projects.FirstOrDefault(p => p.Title.Contains("Viết nội dung blog"));
+            if (projectToFlag != null)
+            {
+                projectToFlag.IsFlagged = true;
+                projectToFlag.FlagReason = "Potential scam - unrealistic payment terms";
+                projectToFlag.FlaggedAt = DateTime.Now.AddDays(-3);
+                projectToFlag.FlaggedByID = moderatorUser.Id;
+                
+                // Add project flag history
+                context.ProjectFlagActions.Add(new ProjectFlagAction
+                {
+                    ProjectID = projectToFlag.ProjectID,
+                    ActionByID = moderatorUser.Id,
+                    ActionType = "Flag",
+                    Reason = "Potential scam - unrealistic payment terms",
+                    ActionDate = DateTime.Now.AddDays(-3),
+                    IPAddress = "127.0.0.1",
+                    UserAgent = "DbSeeder",
+                    IsActive = true
+                });
+                
+                await context.SaveChangesAsync();
+            }
+            else
+            {
+                // If the specific project doesn't exist, try to flag any project
+                var anyProject = context.Projects.FirstOrDefault();
+                if (anyProject != null)
+                {
+                    anyProject.IsFlagged = true;
+                    anyProject.FlagReason = "Sample flag for testing";
+                    anyProject.FlaggedAt = DateTime.Now.AddDays(-3);
+                    anyProject.FlaggedByID = moderatorUser.Id;
+                    
+                    // Add project flag history
+                    context.ProjectFlagActions.Add(new ProjectFlagAction
+                    {
+                        ProjectID = anyProject.ProjectID,
+                        ActionByID = moderatorUser.Id,
+                        ActionType = "Flag",
+                        Reason = "Sample flag for testing",
+                        ActionDate = DateTime.Now.AddDays(-3),
+                        IPAddress = "127.0.0.1",
+                        UserAgent = "DbSeeder",
+                        IsActive = true
+                    });
+                    
+                    await context.SaveChangesAsync();
+                }
+            }
+            
+            // Fix any projects that might have IsFlagged=true but null FlagReason
+            var flaggedProjectsWithNullReason = context.Projects.Where(p => p.IsFlagged && p.FlagReason == null).ToList();
+            if (flaggedProjectsWithNullReason.Any())
+            {
+                foreach (var project in flaggedProjectsWithNullReason)
+                {
+                    project.FlagReason = "Default flag reason added by DbSeeder";
+                    if (project.FlaggedAt == null)
+                    {
+                        project.FlaggedAt = DateTime.Now;
+                    }
+                    if (project.FlaggedByID == null && moderatorUser != null)
+                    {
+                        project.FlaggedByID = moderatorUser.Id;
+                    }
+                }
+                await context.SaveChangesAsync();
+            }
         }
     }
 }
