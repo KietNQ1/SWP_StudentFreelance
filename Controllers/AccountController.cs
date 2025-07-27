@@ -119,7 +119,7 @@ namespace StudentFreelance.Controllers
                     <p>Xin chào <strong>{user.FullName}</strong>,</p>
                     <p>Bạn vừa đăng nhập thành công vào hệ thống StudentFreelance lúc {DateTime.Now:HH:mm:ss dd/MM/yyyy}.</p>
                     <p>Nếu không phải bạn, vui lòng đổi mật khẩu ngay lập tức.</p>";
-                await _emailSender.SendEmailAsync(user.Email, subject, body);
+                //await _emailSender.SendEmailAsync(user.Email, subject, body);
 
                 // KHÔNG gọi notificationService ở đây nữa!
 

@@ -1,0 +1,228 @@
+﻿/* Category Index/List Page Styles */
+body {
+    background-color: #ffffff;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+h2 {
+    color: #89ac46;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+    h2::after {
+        content: "";
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        width: 80px;
+        height: 3px;
+        background: linear-gradient(90deg, #89ac46, #d3e671);
+        border-radius: 2px;
+    }
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #89ac46, #d3e671);
+    color: white;
+    box-shadow: 0 4px 15px rgba(137, 172, 70, 0.3);
+}
+
+    .btn-success:hover {
+        background: linear-gradient(135deg, #7a9a3e, #c5d965);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(137, 172, 70, 0.4);
+        text-decoration: none;
+        color: white;
+    }
+
+.table-container {
+    background: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(137, 172, 70, 0.1);
+    border: 1px solid rgba(137, 172, 70, 0.1);
+    overflow: hidden;
+}
+
+.table {
+    margin-bottom: 0;
+    background-color: transparent;
+}
+
+    .table thead th {
+        background: linear-gradient(135deg, #89ac46, #d3e671);
+        color: white;
+        font-weight: 600;
+        padding: 1rem;
+        border: none;
+        text-align: center;
+        font-size: 0.95rem;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        border-bottom: 1px solid rgba(137, 172, 70, 0.1);
+        vertical-align: middle;
+        text-align: center;
+    }
+
+    .table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .table tbody tr:hover {
+        background-color: rgba(248, 237, 140, 0.1);
+        transform: scale(1.01);
+        transition: all 0.3s ease;
+    }
+
+    .table tbody tr.text-muted {
+        opacity: 0.6;
+        background-color: rgba(108, 117, 125, 0.05);
+    }
+
+.btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    margin: 0 0.2rem;
+    border-radius: 6px;
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #89ac46, #d3e671);
+    color: white;
+    border: none;
+}
+
+    .btn-info:hover {
+        background: linear-gradient(135deg, #7a9a3e, #c5d965);
+        transform: translateY(-1px);
+        text-decoration: none;
+        color: white;
+    }
+
+.btn-warning {
+    background: linear-gradient(135deg, #f8ed8c, #fff3a0);
+    color: #333;
+    border: none;
+}
+
+    .btn-warning:hover {
+        background: linear-gradient(135deg, #f5e676, #fff199);
+        transform: translateY(-1px);
+        text-decoration: none;
+        color: #333;
+    }
+
+.btn-danger {
+    background: linear-gradient(135deg, #ff8989, #ffb3b3);
+    color: white;
+    border: none;
+}
+
+    .btn-danger:hover {
+        background: linear-gradient(135deg, #ff7575, #ff9999);
+        transform: translateY(-1px);
+        text-decoration: none;
+        color: white;
+    }
+
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+/* Status indicators */
+.status-active {
+    color: #89ac46;
+    font-weight: 600;
+}
+
+.status-inactive {
+    color: #6c757d;
+    font-weight: 600;
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #6c757d;
+}
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #d3e671;
+    }
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .table {
+        font-size: 0.9rem;
+    }
+
+    .btn-sm {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .table {
+        min-width: 800px;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .btn-sm {
+        width: 100%;
+        margin: 0.1rem 0;
+    }
+}
+
+@media (max-width: 576px) {
+    .table thead th,
+    .table tbody td {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+}

@@ -248,8 +248,8 @@ namespace StudentFreelance.Data
                         AverageRating = (decimal)(new Random().NextDouble() * 2 + 3), // Random rating between 3.0 and 5.0
                         TotalProjects = role == "Student" ? new Random().Next(0, 10) : 0,
                         TotalProjectsPosted = role == "Business" ? new Random().Next(1, 15) : 0,
-                        ProfilePicturePath = "default-avatar.png",
-                        Avatar = "default-avatar.png",
+                        ProfilePicturePath = "/image/default-avatar.png",
+                        Avatar = "/image/default-avatar.png",
                         CreatedAt = DateTime.Now.AddDays(-new Random().Next(1, 365)), // Random registration date within last year
                         UpdatedAt = DateTime.Now,
                         IsActive = true,

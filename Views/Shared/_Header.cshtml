@@ -107,13 +107,13 @@
                     {
                         <div class="nav-user-actions">
                             <div class="notification-wrapper">
-                                <div class="notification-icon" id="notificationBell">
+                                <a href="@Url.Action("Index", "Notification")" class="notification-icon" id="notificationBell">
                                     <i class="fas fa-bell"></i>
                                     @if (unreadCount > 0)
                                     {
                                         <span class="notification-dot" id="notificationDot"></span>
                                     }
-                                </div>
+                                </a>
                                 <div class="notification-dropdown" id="notificationDropdown">
                                     <div class="notification-header"><strong>Thông báo</strong></div>
                                     <div class="notification-list">
@@ -147,10 +147,10 @@
                                 </div>
                             </div>
                             <div class="avatar-wrapper">
-                                <img src="@avatarPath" alt="Avatar" class="avatar-img" onerror="this.onerror=null;this.src='/image/default-avatar.png';" />
+                                <img src="@avatarPath" alt="Avatar" class="avatar-img" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" onerror="this.onerror=null;this.src='/image/default-avatar.png';" />
                                 <span class="user-name">@fullName</span>
                                 <div class="dropdown-menu">
-                                    <a asp-controller="User" asp-action="Profile"><i class="fas fa-user"></i>My Profile</a>
+                                    <a href="/User/Profile"><i class="fas fa-user"></i>My Profile</a>
                                     @if (User.IsInRole("Student"))
                                     {
                                         <a asp-controller="Application" asp-action="MyApplications"><i class="fas fa-briefcase"></i>My Application</a>

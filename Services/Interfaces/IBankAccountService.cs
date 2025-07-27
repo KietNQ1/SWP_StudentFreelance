@@ -8,4 +8,6 @@ public interface IBankAccountService
 {
     Task<BankAccount> GetBankAccountByUserIdAsync(int userId);
     Task SaveOrUpdateBankAccountAsync(int userId, BankAccount account);
+    Task<bool> VerifyBankAccountAsync(string accountNumber, string bankName, string accountHolderName);
+
 }
