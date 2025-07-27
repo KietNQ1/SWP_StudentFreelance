@@ -292,8 +292,9 @@ namespace StudentFreelance.Controllers
                     var result = await _userManager.CreateAsync(user);
                     if (result.Succeeded)
                     {
-                        await _userManager.AddToRoleAsync(user, "Student");
                         await _userManager.AddLoginAsync(user, info);
+                        return View("ChooseRole", new ChooseRoleViewModel { UserId = user.Id.ToString() });
+
                     }
                     else
                     {
@@ -332,5 +333,35 @@ namespace StudentFreelance.Controllers
                 return Redirect(returnUrl);
             }
         }
+        [HttpPost]
+        public async Task<IActionResult> ChooseRole(ChooseRoleViewModel model)
+        {
+            var allowedRoles = new[] { "Student", "Business" };
+
+            if (!allowedRoles.Contains(model.Role))
+            {
+                ModelState.AddModelError("Role", "Vai trò không hợp lệ.");
+                return View(model);
+            }
+
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            await _userManager.AddToRoleAsync(user, model.Role);
+            await _signInManager.SignInAsync(user, isPersistent: false);
+
+            // 🔁 Đây là nơi chuyển đi sau khi chọn role
+            return RedirectToAction("Index", "Home");
+        }
+        
+        [HttpGet]
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
+
     }
 }

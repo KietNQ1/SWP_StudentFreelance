@@ -72,6 +72,9 @@ namespace StudentFreelance.ViewModels
 
         // 👤 Xác định người dùng hiện tại
         public bool IsCurrentUser { get; set; }
+        
+        // Verification status
+        public bool IsVerified { get; set; }
     }
 
     public class SkillItem

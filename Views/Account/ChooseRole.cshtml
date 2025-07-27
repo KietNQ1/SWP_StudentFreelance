@@ -1,0 +1,119 @@
+﻿@model StudentFreelance.ViewModels.ChooseRoleViewModel
+@{
+    ViewData["Title"] = "Chọn vai trò";
+    Layout = null;
+}
+<style>
+    body {
+        background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
+        font-family: 'Segoe UI', sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+
+    .card {
+        background: white;
+        padding: 40px 30px;
+        border-radius: 16px;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 480px;
+        animation: fadeIn 0.6s ease;
+    }
+
+    @@keyframes fadeIn {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    h2 {
+        text-align: center;
+        color: #2d3748;
+        margin-bottom: 30px;
+        font-size: 1.8rem;
+        font-weight: 600;
+    }
+
+    label {
+        font-weight: 500;
+        color: #4a5568;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    select.form-control {
+        width: 100%;
+        padding: 14px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        background: #f7fafc;
+        font-size: 1rem;
+        transition: border-color 0.3s;
+    }
+
+        select.form-control:focus {
+            border-color: #667eea;
+            background: white;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+        }
+
+    .btn {
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #48bb78, #38a169);
+        color: white;
+        font-size: 1rem;
+        font-weight: 600;
+        border: none;
+        transition: background 0.3s, transform 0.2s;
+    }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #38a169, #2f855a);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(56, 161, 105, 0.3);
+        }
+
+    .form-group.stacked {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+
+</style>
+<div class="card">
+    <h2>Chọn vai trò của bạn</h2>
+
+    <form asp-action="ChooseRole" method="post">
+        <input type="hidden" name="UserId" value="@Model.UserId" />
+
+        <div class="form-group stacked">
+            <label for="Role">Vai trò:</label>
+            <select asp-for="Role" class="form-control" required>
+                <option value="">-- Chọn vai trò --</option>
+                <option value="Student">Sinh viên</option>
+                <option value="Business">Doanh nghiệp</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn mt-4">Xác nhận</button>
+    </form>
+</div>
+
+

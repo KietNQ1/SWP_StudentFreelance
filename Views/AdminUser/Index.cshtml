@@ -2,6 +2,12 @@
 @{
     ViewData["Title"] = "User Management";
     Layout = "~/Views/Shared/_Dashboard.cshtml";
+
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int pageSize = ViewBag.PageSize ?? 5;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    var query = Context.Request.Query;
+    int index = (currentPage - 1) * pageSize + 1;
 }
 <link rel="stylesheet" href="~/css/UserManagest.css" />
 
@@ -10,7 +16,7 @@
 
     <div class="filter-row">
         <div class="filter-group">
-            <input type="text" name="searchTerm" placeholder="🔍 Search freelancer..." value="@Context.Request.Query["searchTerm"]" />
+            <input type="text" name="searchTerm" placeholder="🔍 Search freelancer..." value="@query["searchTerm"]" />
         </div>
 
         <div class="filter-group">
@@ -18,7 +24,7 @@
                 <option value="">👥 All Roles</option>
                 @foreach (var role in (ViewBag.AllRoles as List<string> ?? new List<string>()))
                 {
-                    <option value="@role" @@(role == Context.Request.Query["selectedRole"] ? "selected" : "")>@role</option>
+                    <option value="@role" @@(role == query["selectedRole"] ? "selected" : "")>@role</option>
                 }
             </select>
         </div>
@@ -26,15 +32,14 @@
         <div class="filter-group">
             <select name="status">
                 <option value="">📊 All Status</option>
-                <option value="Active" @@(Context.Request.Query["status"] == "Active" ? "selected" : "")>Active</option>
-                <option value="Inactive" @@(Context.Request.Query["status"] == "Inactive" ? "selected" : "")>Inactive</option>
+                <option value="Active" @@(query["status"] == "Active" ? "selected" : "")>Active</option>
+                <option value="Inactive"@@(query["status"] == "Inactive" ? "selected" : "")>Inactive</option>
             </select>
         </div>
 
         <button type="submit" class="filter-btn">
             <i class="fas fa-filter"></i> Filter
         </button>
-        
     </div>
 </form>
 
@@ -53,7 +58,6 @@
         <tbody>
             @if (Model.Any())
             {
-                int index = 1;
                 foreach (var user in Model)
                 {
                     var statusClass = user.IsActive ? "status-active" : "status-inactive";
@@ -90,3 +94,26 @@
         </tbody>
     </table>
 </div>
+
+@if (totalPages > 1)
+{
+    <div class="pagination mt-4 d-flex justify-content-center">
+        <ul class="pagination-list d-flex list-unstyled gap-2">
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <li class="@(i == currentPage ? "fw-bold" : "")">
+                    <a class="btn btn-sm @(i == currentPage ? "btn-primary" : "btn-outline-secondary")"
+                       href="@Url.Action("Index", new {
+                           searchTerm = query["searchTerm"],
+                           selectedRole = query["selectedRole"],
+                           status = query["status"],
+                           pageNumber = i,
+                           pageSize = pageSize
+                       })">
+                        @i
+                    </a>
+                </li>
+            }
+        </ul>
+    </div>
+}
