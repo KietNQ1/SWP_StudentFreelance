@@ -31,4 +31,8 @@
     <PackageReference Include="PayOS" Version="1.0.7" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\uploads\submissions\" />
+  </ItemGroup>
+
 </Project>

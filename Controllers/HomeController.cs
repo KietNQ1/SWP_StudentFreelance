@@ -5,6 +5,8 @@
     using StudentFreelance.DbContext;
     using StudentFreelance.Models;
     using StudentFreelance.Services.Interfaces;
+    using Microsoft.AspNetCore.Identity;
+    using Microsoft.Extensions.Logging;
 
 namespace StudentFreelance.Controllers
 {
@@ -14,17 +16,23 @@ namespace StudentFreelance.Controllers
         private readonly ApplicationDbContext _context;
         private readonly ILocationApiService _locationApiService;
         private readonly IAdvertisementService _advertisementService;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole<int>> _roleManager;
 
         public HomeController(
             ILogger<HomeController> logger, 
             ApplicationDbContext context,
             ILocationApiService locationApiService,
-            IAdvertisementService advertisementService)
+            IAdvertisementService advertisementService,
+            UserManager<ApplicationUser> userManager,
+            RoleManager<IdentityRole<int>> roleManager)
         {
             _logger = logger;
             _context = context;
             _locationApiService = locationApiService;
             _advertisementService = advertisementService;
+            _userManager = userManager;
+            _roleManager = roleManager;
         }
 
         public async Task<IActionResult> Index()
@@ -35,11 +43,11 @@ namespace StudentFreelance.Controllers
                 await _advertisementService.CleanupExpiredAdvertisementsAsync();
 
                 // Get active advertisements for the slideshow
-                var activeAds = await _advertisementService.GetActiveAdvertisementsAsync();
-
-                // Sort advertisements by package type (Featured first) and then by start date
-                var sortedAds = activeAds
-                    .OrderBy(a => a.PackageTypeID == 2 ? 0 : 1)  // Featured ads first (PackageTypeID 2 is Featured)
+                var sortedAds = await _advertisementService.GetActiveAdvertisementsAsync();
+                
+                // Sắp xếp quảng cáo theo loại gói và ngày bắt đầu
+                sortedAds = sortedAds
+                    .OrderByDescending(a => a.PackageType.PackageTypeName == "Featured") // Featured ads first
                     .ThenByDescending(a => a.StartDate)  // Newer ads first within each type
                     .ToList();
 
@@ -56,7 +64,7 @@ namespace StudentFreelance.Controllers
 
                 // Lấy danh sách tất cả tỉnh/thành phố từ API cho dropdown
                 var apiProvinces = await _locationApiService.GetProvincesAsync();
-                ViewBag.AllProvinces = apiProvinces.Select(p => new Province
+                ViewBag.AllProvinces = apiProvinces.Select(p => new
                 {
                     ProvinceID = int.Parse(p.Id),
                     Name = p.Name,
@@ -106,8 +114,33 @@ namespace StudentFreelance.Controllers
 
                 ViewBag.TopProjects = topProjects;
 
+                // Get popular businesses, prioritizing VIP businesses
+                var businessRoleId = _roleManager.Roles.FirstOrDefault(r => r.Name == "Business")?.Id;
+                if (businessRoleId.HasValue)
+                {
+                    // Get all business users
+                    var businessUsers = await _context.UserRoles
+                        .Where(ur => ur.RoleId == businessRoleId.Value)
+                        .Join(_context.Users,
+                            ur => ur.UserId,
+                            u => u.Id,
+                            (ur, u) => u)
+                        .Where(u => u.IsActive)
+                        .ToListAsync();
 
-                ViewBag.TopProjects = topProjects;
+                    // Sort businesses: VIP first, then by VIP subscription date (earliest first)
+                    var popularBusinesses = businessUsers
+                        .OrderByDescending(b => b.VipStatus) // VIP users first
+                        .ThenBy(b => b.VipStatus ? b.VipExpiryDate : null) // Earlier subscription first (will expire sooner)
+                        .Take(6)
+                        .ToList();
+
+                    ViewBag.PopularBusinesses = popularBusinesses;
+                }
+                else
+                {
+                    ViewBag.PopularBusinesses = new List<ApplicationUser>();
+                }
 
                 return View();
             }
@@ -117,6 +150,7 @@ namespace StudentFreelance.Controllers
 
                 // Fallback to no advertisements in case of error
                 ViewBag.Advertisements = new List<StudentFreelance.Models.Advertisement>();
+                ViewBag.PopularBusinesses = new List<ApplicationUser>();
 
                 // Still load other data
                 ViewBag.AllSkills = await _context.Skills
@@ -125,7 +159,7 @@ namespace StudentFreelance.Controllers
                     .ToListAsync();
 
                 var apiProvinces = await _locationApiService.GetProvincesAsync();
-                ViewBag.AllProvinces = apiProvinces.Select(p => new Province
+                ViewBag.AllProvinces = apiProvinces.Select(p => new
                 {
                     ProvinceID = int.Parse(p.Id),
                     Name = p.Name,

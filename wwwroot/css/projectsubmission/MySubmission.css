@@ -1,0 +1,131 @@
+﻿:root {
+    --primary: #89AC46;
+    --accent-light: #f4fbe8;
+    --border-radius: 8px;
+    --transition: 0.3s ease;
+}
+
+body {
+    background-color: #f8f9fa;
+    color: #212529;
+}
+
+/* Tiêu đề */
+h2, h5 {
+    color: var(--primary);
+}
+
+/* Card */
+.card {
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.card-header {
+    background-color: var(--primary) !important;
+    color: white !important;
+    font-weight: 600;
+    padding: 0.75rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Badge trạng thái */
+.badge.bg-success {
+    background-color: #28a745 !important;
+    color: #fff;
+}
+
+.badge.bg-danger {
+    background-color: #dc3545 !important;
+    color: #fff;
+}
+
+.badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #212529;
+}
+
+.badge.bg-primary {
+    background-color: var(--primary) !important;
+    color: #fff;
+}
+
+/* Table */
+.table th {
+    background-color: #f1f1f1;
+    font-weight: 600;
+}
+
+.table td,
+.table th {
+    vertical-align: middle;
+}
+
+/* Nút thao tác nhỏ */
+.btn-sm {
+    font-weight: 500;
+    border-radius: 6px;
+    padding: 0.35rem 0.6rem;
+    font-size: 0.875rem;
+}
+
+/* Nút màu vàng: Nộp lại, Đánh giá */
+.btn-warning {
+    background-color: #ffc107;
+    border: 2px solid #ffc107;
+    color: #212529;
+    transition: var(--transition);
+}
+
+    .btn-warning:hover {
+        background-color: #e0a800;
+        border-color: #e0a800;
+    }
+
+/* Nút info: Chi tiết */
+.btn-info {
+    background-color: #17a2b8;
+    border: 2px solid #17a2b8;
+    color: white;
+    transition: var(--transition);
+}
+
+    .btn-info:hover {
+        background-color: #138496;
+        border-color: #138496;
+    }
+
+/* Nút quay lại */
+.btn-secondary {
+    background-color: #6c757d;
+    border: 2px solid #6c757d;
+    color: white;
+    transition: var(--transition);
+}
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
+        border-color: #5a6268;
+    }
+
+/* Nút trắng viền (dành cho “Nộp kết quả mới”) */
+.btn-light {
+    border: 2px solid var(--primary);
+    color: var(--primary);
+    background-color: white;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+    .btn-light:hover {
+        background-color: var(--accent-light);
+    }
+
+/* Responsive table */
+.table-responsive {
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}

@@ -4,6 +4,11 @@
     ViewData["Title"] = "Chi tiết đơn ứng tuyển";
 }
 
+@section Styles {
+    <link href="~/css/application/detail.css" rel="stylesheet" />
+}
+
+
 <div class="container mt-4">
     <div class="row mb-4">
         <div class="col">
@@ -44,7 +49,7 @@
     <div class="row">
         <div class="col-md-8">
             <div class="card shadow-sm mb-4">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary" style="color: #fff;">
                     <h5 class="mb-0">Thông tin ứng viên</h5>
                 </div>
                 <div class="card-body">
@@ -84,7 +89,7 @@
             </div>
 
             <div class="card shadow-sm mb-4">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary" style="color: #fff;">
                     <h5 class="mb-0">Thư ứng tuyển</h5>
                 </div>
                 <div class="card-body">
@@ -97,7 +102,7 @@
             @if (Model.StudentSkills != null && Model.StudentSkills.Any())
             {
                 <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-primary text-white">
+                    <div class="card-header bg-primary" style="color: #fff;">
                         <h5 class="mb-0">Kỹ năng</h5>
                     </div>
                     <div class="card-body">
@@ -116,7 +121,7 @@
             @if (!string.IsNullOrEmpty(Model.PortfolioLink) || !string.IsNullOrEmpty(Model.ResumeAttachment))
             {
                 <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-primary text-white">
+                    <div class="card-header bg-primary" style="color: #fff;">
                         <h5 class="mb-0">Tài liệu đính kèm</h5>
                     </div>
                     <div class="card-body">
@@ -146,7 +151,7 @@
 
         <div class="col-md-4">
             <div class="card shadow-sm mb-4">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary" style="color: #fff;">
                     <h5 class="mb-0">Thông tin đơn ứng tuyển</h5>
                 </div>
                 <div class="card-body">

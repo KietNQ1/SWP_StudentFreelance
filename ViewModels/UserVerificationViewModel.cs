@@ -14,5 +14,6 @@ namespace StudentFreelance.ViewModels
         public DateTime CreatedAt { get; set; }
         public bool IsActive { get; set; }
         public int StatusID { get; set; }
+        public string Phone { get; set; }
     }
 } 
