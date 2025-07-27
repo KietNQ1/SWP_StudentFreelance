@@ -30,16 +30,62 @@ namespace StudentFreelance.Controllers
         }
 
         // GET: UserVerification
-        public async Task<IActionResult> Index(string searchString, int? page)
+        public async Task<IActionResult> Index(string searchString, string roleFilter, string statusFilter)
         {
+            ViewData["CurrentFilter"] = searchString;
+            ViewData["RoleFilter"] = roleFilter;
+            ViewData["StatusFilter"] = statusFilter;
+
             var query = _context.Users.AsQueryable();
 
+            // Tìm kiếm theo tên, email, username
             if (!string.IsNullOrEmpty(searchString))
             {
                 query = query.Where(u => 
                     u.UserName.Contains(searchString) || 
                     u.Email.Contains(searchString) || 
                     u.FullName.Contains(searchString));
+            }
+
+            // Lọc theo vai trò
+            if (!string.IsNullOrEmpty(roleFilter))
+            {
+                switch (roleFilter.ToLower())
+                {
+                    case "student":
+                        query = query.Where(u => u.University != null);
+                        break;
+                    case "business":
+                        query = query.Where(u => u.CompanyName != null);
+                        break;
+                    case "admin":
+                    case "moderator":
+                        // Cần lấy danh sách người dùng theo vai trò từ UserManager
+                        var usersInRole = await _userManager.GetUsersInRoleAsync(roleFilter);
+                        var userIds = usersInRole.Select(u => u.Id).ToList();
+                        query = query.Where(u => userIds.Contains(u.Id));
+                        break;
+                }
+            }
+
+            // Lọc theo trạng thái
+            if (!string.IsNullOrEmpty(statusFilter))
+            {
+                switch (statusFilter.ToLower())
+                {
+                    case "active":
+                        query = query.Where(u => u.IsActive);
+                        break;
+                    case "inactive":
+                        query = query.Where(u => !u.IsActive);
+                        break;
+                    case "verified":
+                        query = query.Where(u => u.IsVerified);
+                        break;
+                    case "flagged":
+                        query = query.Where(u => u.IsFlagged);
+                        break;
+                }
             }
 
             var users = await query
@@ -55,7 +101,8 @@ namespace StudentFreelance.Controllers
                     FlagReason = u.FlagReason,
                     CreatedAt = u.CreatedAt,
                     IsActive = u.IsActive,
-                    StatusID = u.StatusID
+                    StatusID = u.StatusID,
+                    Phone = u.PhoneNumber
                 })
                 .ToListAsync();
 
@@ -141,6 +188,51 @@ namespace StudentFreelance.Controllers
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "User successfully verified.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+        
+        // POST: UserVerification/Unverify/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Unverify(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            // Check if not verified
+            if (!user.IsVerified)
+            {
+                TempData["ErrorMessage"] = "User is not verified.";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            // Update user verification status
+            user.IsVerified = false;
+            user.VerifiedAt = null;
+            user.VerifiedByID = null;
+
+            // Log the action
+            var ipAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+            var userAgent = _httpContextAccessor.HttpContext.Request.Headers["User-Agent"].ToString();
+
+            var action = new UserAccountAction
+            {
+                UserID = user.Id,
+                ActionByID = int.Parse(_userManager.GetUserId(User)),
+                ActionType = "Unverify",
+                Description = "User verification removed",
+                ActionDate = DateTime.UtcNow,
+                IPAddress = ipAddress,
+                UserAgent = userAgent
+            };
+
+            _context.UserAccountActions.Add(action);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "User verification successfully removed.";
             return RedirectToAction(nameof(Details), new { id });
         }
 
@@ -242,6 +334,40 @@ namespace StudentFreelance.Controllers
 
             TempData["SuccessMessage"] = "User flag successfully removed.";
             return RedirectToAction(nameof(Details), new { id });
+        }
+        
+        // GET: UserVerification/Delete/5
+        public async Task<IActionResult> Delete(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            
+            // Soft delete - mark as inactive
+            user.IsActive = false;
+            
+            // Log the action
+            var ipAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+            var userAgent = _httpContextAccessor.HttpContext.Request.Headers["User-Agent"].ToString();
+            
+            var action = new UserAccountAction
+            {
+                UserID = user.Id,
+                ActionByID = int.Parse(_userManager.GetUserId(User)),
+                ActionType = "Delete",
+                Description = "User marked as inactive",
+                ActionDate = DateTime.UtcNow,
+                IPAddress = ipAddress,
+                UserAgent = userAgent
+            };
+            
+            _context.UserAccountActions.Add(action);
+            await _context.SaveChangesAsync();
+            
+            TempData["SuccessMessage"] = "User successfully deleted (marked as inactive).";
+            return RedirectToAction(nameof(Index));
         }
     }
 } 
