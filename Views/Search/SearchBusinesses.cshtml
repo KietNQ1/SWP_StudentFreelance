@@ -10,6 +10,22 @@
             background-color: #89AC46 !important;
             color: white;
         }
+        
+        .business-verified-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            background-color: #4299e1;
+            color: white;
+            margin-top: 5px;
+        }
+        
+        .business-verified-badge i,
+        .business-verified-badge span {
+            color: white !important;
+        }
     </style>
 }
 
@@ -77,7 +93,9 @@
                                 }
                             </div>
                             <div class="col-md-4">
-                                <h5 class="mb-0 business-name">@business.CompanyName</h5>
+                                <h5 class="mb-0 business-name">
+                                    @business.CompanyName
+                                </h5>
                                 <p class="text-muted mb-2">@business.Industry</p>
                                 <p class="mb-0">
                                     <i class="bi bi-person"></i> @business.FullName
@@ -133,6 +151,13 @@
                                         ? ViewBag.ProjectCounts[business.Id] 
                                         : 0) dự án</span>
                                 </div>
+                                @if (business.IsVerified)
+                                {
+                                    <div class="business-verified-badge">
+                                        <i class="fas fa-check-circle me-1" style="color: white !important;"></i>
+                                        <span style="color: white !important;">Verified</span>
+                                    </div>
+                                }
                             </div>
                             <div class="col-md-2 text-center profile-button-container">
                                 <a href="@Url.Action("Profile", "User", new { id = business.Id })" class="btn btn-view-profile">Xem hồ sơ</a>
