@@ -54,12 +54,22 @@
                 <!-- Search -->
                 <div class="search-container">
                     <div class="search-bar">
-                        <input type="text" class="search-input" placeholder="Search for any">
-                        <button class="search-btn">
+                        <div class="search-type-dropdown">
+                            <select id="searchType" class="search-type-select">
+                                <option value="project">Projects</option>
+                                <option value="student">Students</option>
+                                <option value="business">Businesses</option>
+                            </select>
+                        </div>
+                        <input type="text" id="searchInput" class="search-input" placeholder="Search...">
+                        <button id="searchButton" class="search-btn">
                             <i class="fas fa-search"></i>
                         </button>
                     </div>
                 </div>
+
+                <!-- Add reference to search.js -->
+                <script src="~/js/search.js" asp-append-version="true"></script>
 
                 <!-- Navigation menu -->
                 <div class="nav-menu">
