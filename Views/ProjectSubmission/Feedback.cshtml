@@ -4,8 +4,10 @@
     ViewData["Title"] = "Phản hồi kết quả dự án";
 }
 
-<div class="container mt-4">
-    <h2>Phản hồi kết quả dự án</h2>
+<link rel="stylesheet" href="~/css/project/feedback.css" />
+
+<div class="feedback-container">
+    <h2 class="feedback-title">Phản hồi kết quả dự án</h2>
     <hr />
 
     <div class="card">
@@ -14,16 +16,16 @@
         </div>
         <div class="card-body">
             <form asp-action="Feedback" method="post">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
                 <input type="hidden" asp-for="SubmissionID" />
 
-                <div class="form-group mb-3">
+                <div class="form-group mb-4">
                     <label asp-for="Feedback" class="control-label"></label>
                     <textarea asp-for="Feedback" class="form-control" rows="6" placeholder="Nhập phản hồi của bạn về kết quả dự án này..."></textarea>
                     <span asp-validation-for="Feedback" class="text-danger"></span>
                 </div>
 
-                <div class="form-group mb-3">
+                <div class="form-group mb-4">
                     <div class="form-check">
                         <input asp-for="IsApproved" class="form-check-input" />
                         <label asp-for="IsApproved" class="form-check-label"></label>
