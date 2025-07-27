@@ -231,6 +231,30 @@
     color: white !important;
 }
 
+/* New class for Details page verified badge */
+.details-verified-badge {
+    background: #4299e1;
+    color: white !important;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-left: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+}
+
+.details-verified-badge i {
+    color: white !important;
+}
+
+.details-verified-badge span {
+    color: white !important;
+    font-weight: bold;
+}
+
 .flagged-badge {
     background-color: rgba(255, 137, 137, 0.7);
     color: white;
