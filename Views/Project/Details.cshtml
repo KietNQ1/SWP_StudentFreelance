@@ -96,8 +96,12 @@
                         <i class="bi bi-trash"></i> Xoá
                     </a>
                     <a asp-controller="Application" asp-action="ProjectApplications" asp-route-projectId="@Model.ProjectID"
-                       class="btn btn-outline-theme">
+                       class="btn btn-outline-theme me-2">
                         <i class="bi bi-people"></i> Xem ứng viên (@Model.StudentApplications.Count)
+                    </a>
+                    <a asp-controller="Project" asp-action="InviteStudents" asp-route-projectId="@Model.ProjectID"
+                       class="btn btn-outline-theme">
+                        <i class="bi bi-person-plus"></i> Mời sinh viên
                     </a>
                 </div>
 

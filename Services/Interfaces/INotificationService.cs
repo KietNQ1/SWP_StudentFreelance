@@ -22,5 +22,6 @@ namespace StudentFreelance.Services.Interfaces
         Task<bool> SendNotificationToUserAsync(int userId, string title, string content, int typeId, int? relatedId = null, int? senderId = null, bool sendEmail = false);
         Task<bool> SendNotificationToMultipleUsersAsync(List<int> userIds, string title, string content, int typeId, int? relatedId = null, int? senderId = null, bool sendEmail = false);
         Task<bool> SendBroadcastNotificationAsync(string title, string content, int typeId, int? relatedId = null, int? senderId = null, bool sendEmail = false);
+        Task SendNotificationToAdminAsync(string title, string content);
     }
 }

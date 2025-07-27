@@ -1,0 +1,163 @@
+@model IEnumerable<StudentFreelance.ViewModels.InviteStudentViewModel>
+
+@{
+    ViewData["Title"] = "Mời sinh viên tham gia dự án";
+    var project = ViewBag.Project as StudentFreelance.Models.Project;
+}
+
+<link rel="stylesheet" href="~/css/project/invite-students.css" />
+<style>
+    /* Loại bỏ gạch chân cho tất cả text */
+    .student-card *,
+    .project-info *,
+    .card * {
+        text-decoration: none !important;
+    }
+    
+    /* Đảm bảo links không có gạch chân */
+    a, a:hover, a:focus, a:visited {
+        text-decoration: none !important;
+    }
+    
+    /* Loại bỏ gạch chân cho buttons */
+    button, .btn {
+        text-decoration: none !important;
+    }
+</style>
+
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Index">Projects</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Details" asp-route-id="@project.ProjectID">@project.Title</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Mời sinh viên</li>
+        </ol>
+    </nav>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>Thành công!</strong> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Lỗi!</strong> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="bi bi-person-plus"></i> Mời sinh viên tham gia dự án
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (project != null)
+                    {
+                        <div class="project-info mb-4">
+                            <h5>@(project.Title ?? "Không có tiêu đề")</h5>
+                            <p class="text-muted mb-2">@(project.Description ?? "Không có mô tả")</p>
+                            <div class="d-flex gap-3 text-muted">
+                                <span><i class="bi bi-currency-dollar"></i> @project.Budget.ToString("C")</span>
+                                <span><i class="bi bi-calendar"></i> Deadline: @project.Deadline.ToString("dd/MM/yyyy")</span>
+                                <span><i class="bi bi-tag"></i> @(project.Category?.CategoryName ?? "Không có danh mục")</span>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i> Không thể tải thông tin dự án.
+                        </div>
+                    }
+
+                    @if (!Model.Any())
+                    {
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Không tìm thấy sinh viên nào có kỹ năng phù hợp với dự án này.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="students-list">
+                            @foreach (var student in Model)
+                            {
+                                <div class="student-card">
+                                    <div class="student-info">
+                                        <div class="student-avatar">
+                                            <img src="@(!string.IsNullOrEmpty(student.Avatar) ? Url.Content($"~/uploads/avatars/{student.Avatar}") : Url.Content("~/image/default-avatar.png"))" 
+                                                 alt="Avatar" class="rounded-circle" />
+                                        </div>
+                                        <div class="student-details">
+                                            <h6 class="student-name">
+                                                @student.FullName
+                                                @if (student.IsVip)
+                                                {
+                                                    <span class="badge bg-warning ms-2">
+                                                        <i class="bi bi-star-fill"></i> VIP
+                                                    </span>
+                                                }
+                                            </h6>
+                                            <p class="student-email">@student.Email</p>
+                                            <p class="student-education">
+                                                @student.University - @student.Major
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="skills-info">
+                                        <div class="skills-match">
+                                            <div class="match-percentage">
+                                                <div class="progress">
+                                                    <div class="progress-bar @(student.MatchPercentage >= 80 ? "bg-success" : student.MatchPercentage >= 60 ? "bg-warning" : "bg-danger")" 
+                                                         style="width: @student.MatchPercentage%"></div>
+                                                </div>
+                                                <span class="match-text">
+                                                    @student.SkillMatchCount/@student.TotalRequiredSkills kỹ năng phù hợp (@student.MatchPercentage.ToString("F0")%)
+                                                </span>
+                                            </div>
+                                            <div class="matched-skills">
+                                                @foreach (var skill in student.MatchedSkills)
+                                                {
+                                                    <span class="badge bg-primary me-1">@skill.SkillName</span>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="student-actions">
+                                        @if (project != null)
+                                        {
+                                            <form asp-action="SendInvitation" method="post" class="d-inline">
+                                                <input type="hidden" name="projectId" value="@project.ProjectID" />
+                                                <input type="hidden" name="studentId" value="@student.UserID" />
+                                                <button type="submit" class="btn btn-primary btn-sm" 
+                                                        onclick="return confirm('Bạn có chắc muốn gửi thư mời cho @student.FullName?')">
+                                                    <i class="bi bi-send"></i> Mời tham gia
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-secondary btn-sm" disabled>
+                                                <i class="bi bi-send"></i> Mời tham gia
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 
