@@ -15,9 +15,15 @@
     }
     else
     {
-        <form asp-action="MarkAllAsRead" method="post">
-            <button class="btn-mark-all" type="submit">✔ Đánh dấu tất cả là đã đọc</button>
-        </form>
+        <div class="notification-actions">
+            <a href="#" class="btn-mark-all" onclick="markAllAsRead(); return false;">✔ Đánh dấu tất cả là đã đọc</a>
+
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-action="Send" class="btn-send-notification">+ Gửi thông báo</a>
+            }
+        </div>
+
 
         <ul class="notification-list">
             @foreach (var item in Model)
@@ -50,3 +56,25 @@
         </ul>
     }
 </div>
+
+<script>
+function markAllAsRead() {
+    if (confirm('Bạn có chắc muốn đánh dấu tất cả thông báo là đã đọc?')) {
+        fetch('@Url.Action("MarkAllAsRead", "Notification")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+}
+</script>
