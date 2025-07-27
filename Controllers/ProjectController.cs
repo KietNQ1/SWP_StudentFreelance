@@ -1676,5 +1676,19 @@ namespace StudentFreelance.Controllers
                 return RedirectToAction("InviteStudents", new { projectId });
             }
         }
+
+        [Authorize(Roles = "Business")]
+        public async Task<IActionResult> MyProjects()
+        {
+            var currentUserId = int.Parse(User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier));
+            var projects = await _context.Projects
+                .Include(p => p.Category)
+                .Include(p => p.Status)
+                .Include(p => p.Type)
+                .Where(p => p.BusinessID == currentUserId)
+                .OrderByDescending(p => p.ProjectID)
+                .ToListAsync();
+            return View("MyProjects", projects);
+        }
     }
 } 
