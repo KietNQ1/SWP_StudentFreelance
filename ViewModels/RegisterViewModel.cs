@@ -4,8 +4,8 @@ namespace StudentFreelance.ViewModels
 {
     public class RegisterViewModel
     {
-        [Required]
-        [EmailAddress]
+        [Required(ErrorMessage = "Vui lòng nhập email")]
+        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
         public required string Email { get; set; }
 
         [Required]

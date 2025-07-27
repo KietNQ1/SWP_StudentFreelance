@@ -15,6 +15,7 @@ using StudentFreelance.Services.Interfaces;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
 // Load native library libwkhtmltox.dll
 var context = new CustomAssemblyLoadContext();
 context.LoadUnmanagedLibrary(Path.Combine(Directory.GetCurrentDirectory(), "DinkToPdfLib", "libwkhtmltox.dll"));
@@ -35,7 +36,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequiredLength = 6;
 })
-
+  
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
