@@ -1,0 +1,99 @@
+﻿@model StudentFreelance.ViewModels.WithdrawRequestViewModel
+
+@{
+    ViewData["Title"] = "Yêu cầu rút tiền";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4>Gửi yêu cầu rút tiền</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Withdraw" method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Amount" class="form-label">Số tiền cần rút</label>
+                            <input asp-for="Amount" class="form-control" placeholder="Nhập số tiền" min="10000" step="1000" />
+                            <span asp-validation-for="Amount" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Mô tả (tuỳ chọn)</label>
+                            <textarea asp-for="Description" class="form-control" rows="2"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Phương thức rút tiền</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" asp-for="UseBankAccount" value="true" checked id="useBank">
+                                <label class="form-check-label" for="useBank">Tài khoản ngân hàng</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" asp-for="UseBankAccount" value="false" id="useQR">
+                                <label class="form-check-label" for="useQR">Mã QR</label>
+                            </div>
+                        </div>
+
+                        <div id="bankInfo" class="border rounded p-3 mb-3 bg-light">
+                            <h5>Thông tin ngân hàng</h5>
+                            <div class="mb-2">
+                                <label asp-for="AccountHolderName" class="form-label">Chủ tài khoản</label>
+                                <input asp-for="AccountHolderName" class="form-control" />
+                                <span asp-validation-for="AccountHolderName" class="text-danger"></span>
+                            </div>
+                            <div class="mb-2">
+                                <label asp-for="AccountNumber" class="form-label">Số tài khoản</label>
+                                <input asp-for="AccountNumber" class="form-control" />
+                                <span asp-validation-for="AccountNumber" class="text-danger"></span>
+                            </div>
+                            <div class="mb-2">
+                                <label asp-for="BankName" class="form-label">Ngân hàng</label>
+                                <input asp-for="BankName" class="form-control" />
+                                <span asp-validation-for="BankName" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div id="qrUpload" class="border rounded p-3 mb-3 bg-light" style="display:none;">
+                            <h5>Tải mã QR để admin quét</h5>
+                            <input type="file" name="QRCodeImage" class="form-control" accept="image/*" />
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-outline-secondary">Quay lại</a>
+                            <button type="submit" class="btn btn-primary">Gửi yêu cầu</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const useBankRadio = document.getElementById("useBank");
+        const useQRRadio = document.getElementById("useQR");
+        const bankInfo = document.getElementById("bankInfo");
+        const qrUpload = document.getElementById("qrUpload");
+
+        function toggleWithdrawMethod() {
+            if (useBankRadio.checked) {
+                bankInfo.style.display = "block";
+                qrUpload.style.display = "none";
+            } else {
+                bankInfo.style.display = "none";
+                qrUpload.style.display = "block";
+            }
+        }
+
+        useBankRadio.addEventListener("change", toggleWithdrawMethod);
+        useQRRadio.addEventListener("change", toggleWithdrawMethod);
+        window.addEventListener("load", toggleWithdrawMethod);
+    </script>
+}

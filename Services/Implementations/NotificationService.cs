@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using StudentFreelance.DbContext;
 using StudentFreelance.Models;
 using StudentFreelance.Services.Interfaces;
@@ -7,10 +8,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+
 namespace StudentFreelance.Services.Implementations
 {
     public class NotificationService : INotificationService
     {
+
         private readonly ApplicationDbContext _context;
         private readonly IEmailSender _emailSender;
 
@@ -295,5 +298,51 @@ namespace StudentFreelance.Services.Implementations
                 return false;
             }
         }
+        public async Task SendNotificationToAdminAsync(string title, string content)
+        {
+            var adminUsers = await _context.Users
+                .Where(u => u.EmailConfirmed && !string.IsNullOrEmpty(u.Email))
+                .Join(
+                    _context.UserRoles,
+                    u => u.Id,
+                    ur => ur.UserId,
+                    (u, ur) => new { u, ur }
+                )
+                .Join(
+                    _context.Roles.Where(r => r.Name == "Admin"),
+                    joinResult => joinResult.ur.RoleId,
+                    r => r.Id,
+                    (joinResult, r) => joinResult.u
+                )
+                .ToListAsync();
+
+            var notification = new Notification
+            {
+                Title = title,
+                Content = content,
+                TypeID = 1,
+                NotificationDate = DateTime.Now,
+                IsBroadcast = false,
+                IsActive = true
+            };
+
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+
+            foreach (var admin in adminUsers)
+            {
+                var userNotification = new UserNotification
+                {
+                    UserID = admin.Id,
+                    NotificationID = notification.NotificationID,
+                    IsRead = false
+                };
+
+                _context.UserNotifications.Add(userNotification);
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
     }
 }

@@ -1,0 +1,96 @@
+﻿/* ===== DEPOSIT SUCCESS PAGE CSS ===== */
+:root {
+    --primary-green: #89AC46;
+    --light-green: #D3E671;
+    --light-yellow: #F8ED8C;
+    --success-dark: #6B8535;
+    --success-gradient: linear-gradient(135deg, var(--primary-green) 0%, var(--light-green) 100%);
+}
+
+body {
+    background: linear-gradient(135deg, rgba(211, 230, 113, 0.1) 0%, rgba(137, 172, 70, 0.05) 25%, rgba(248, 237, 140, 0.1) 50%, #f8f9fa 100%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><radialGradient id="success"><stop offset="0" stop-color="%2389AC46" stop-opacity="0.1"/><stop offset="1" stop-color="%2389AC46" stop-opacity="0"/></radialGradient></defs><circle fill="url(%23success)" cx="100" cy="100" r="150"/><circle fill="url(%23success)" cx="900" cy="200" r="120"/><circle fill="url(%23success)" cx="200" cy="900" r="100"/><circle fill="url(%23success)" cx="800" cy="700" r="130"/></svg>') no-repeat;
+        background-size: cover;
+        opacity: 0.6;
+        z-index: -1;
+        animation: backgroundFloat 20s ease-in-out infinite;
+    }
+
+.container {
+    max-width: 800px;
+    animation: celebrationEntrance 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    position: relative;
+}
+
+/* ===== SUCCESS ALERT STYLES ===== */
+.alert-success {
+    background: var(--success-gradient);
+    border: none;
+    border-radius: 30px;
+    border-left: 8px solid var(--success-dark);
+    padding: 4rem 3rem;
+    box-shadow: 0 25px 80px rgba(137, 172, 70, 0.4);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(20px);
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+    .alert-success::before {
+        content: '✨';
+        position: absolute;
+        top: -30px;
+        right: -30px;
+        font-size: 10rem;
+        opacity: 0.2;
+        transform: rotate(-15deg);
+        z-index: 0;
+        animation: sparkle 3s ease-in-out infinite;
+    }
+
+    .alert-success::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.2) 50%, transparent 70%);
+        animation: shimmerSuccess 3s infinite;
+        pointer-events: none;
+    }
+
+    .alert-success * {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* ===== SUCCESS CONFETTI ANIMATION ===== */
+    .alert-success::before {
+        animation: sparkle 3s ease-in-out infinite, confetti 1s ease-out;
+    }
+
+@keyframes confetti {
+    0% {
+        transform: translateY(-100px) rotate(-15deg) scale(0);
+        opacity: 0;
+    }
+
+    50% {
+        transform: translateY(-20px) rotate(-10deg) scale(1.2);
+        opacity: 1;
+    }

@@ -39,6 +39,7 @@ namespace StudentFreelance.DbContext
         public DbSet<Advertisement> Advertisements { get; set; }
         public DbSet<AdvertisementPackageType> AdvertisementPackageTypes { get; set; }
         public DbSet<AdvertisementStatus> AdvertisementStatuses { get; set; }
+        public DbSet<WithdrawalRequest> WithdrawalRequests { get; set; } //rút tiền
 
 
         // Enum DbSets

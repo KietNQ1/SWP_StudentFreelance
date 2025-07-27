@@ -376,63 +376,216 @@ public class WalletController : Controller
         return View("PaymentResult", viewModel);
     }
 
-    
-
-
-    // GET: /Wallet/Withdraw
-    public IActionResult Withdraw()
+    [HttpGet]
+    public async Task<IActionResult> Withdraw()
     {
-        return View();
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return NotFound();
+
+        var bankAccount = await _bankAccountService.GetBankAccountByUserIdAsync(user.Id);
+
+        var model = new WithdrawRequestViewModel
+        {
+            UseBankAccount = true,
+            BankName = bankAccount?.BankName,
+            AccountNumber = bankAccount?.AccountNumber,
+            AccountHolderName = bankAccount?.AccountHolderName
+        };
+
+        return View("WithdrawRequest", model); // hoặc "Withdraw" nếu view bạn đặt tên khác
     }
 
-    // POST: /Wallet/Withdraw
+
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Withdraw(WithdrawViewModel model)
+    public async Task<IActionResult> Withdraw(WithdrawRequestViewModel model)
     {
         if (!ModelState.IsValid)
-        {
-            return View(model);
-        }
+            return View("WithdrawRequest", model);
 
         var user = await _userManager.GetUserAsync(User);
         if (user == null)
-        {
             return NotFound();
-        }
 
+        // Kiểm tra số dư ví
         if (user.WalletBalance < model.Amount)
         {
-            ModelState.AddModelError("", "Insufficient funds in your wallet.");
-            return View(model);
+            ModelState.AddModelError("", "Số dư trong ví không đủ.");
+            return View("WithdrawRequest", model);
         }
 
-        var success = await _transactionService.ProcessWithdrawalAsync(
-            user.Id, 
-            model.Amount, 
-            model.Description ?? $"Withdrawal of {model.Amount:C}"
-        );
-
-        if (success)
+        // Kiểm tra số tiền tối thiểu
+        if (model.Amount < 10000)
         {
-            await _notificationService.SendNotificationToUserAsync(
-                user.Id,
-                "Rút tiền thành công",
-                $"Bạn đã rút thành công {model.Amount:N0} từ ví.",
-                1, // TypeID hệ thống
-                null,
-                null,
-                true // chỉ notification, không gửi email
-            );
-            TempData["SuccessMessage"] = $"Successfully withdrew {model.Amount:C} from your wallet.";
-            return RedirectToAction(nameof(Index));
+            ModelState.AddModelError("Amount", "Số tiền rút phải lớn hơn hoặc bằng 10.000 VNĐ.");
+            return View("WithdrawRequest", model);
+        }
+
+        // Kiểm tra thông tin tài khoản nếu dùng ngân hàng
+        if (model.UseBankAccount)
+        {
+            bool isValidBank = await _bankAccountService.VerifyBankAccountAsync(
+                model.AccountNumber ?? "",
+                model.BankName ?? "",
+                model.AccountHolderName ?? "");
+
+            if (!isValidBank)
+            {
+                ModelState.AddModelError("", "Thông tin tài khoản ngân hàng không hợp lệ.");
+                return View("WithdrawRequest", model);
+            }
         }
         else
         {
-            ModelState.AddModelError("", "Failed to process withdrawal. Please try again.");
-            return View(model);
+            // Nếu chọn rút qua QR nhưng không upload hình
+            if (model.QRCodeImage == null)
+            {
+                ModelState.AddModelError("QRCodeImage", "Vui lòng tải lên hình ảnh mã QR.");
+                return View("WithdrawRequest", model);
+            }
         }
+
+        // ✅ Lưu QR code nếu có
+        string? qrPath = null;
+        if (!model.UseBankAccount && model.QRCodeImage != null)
+        {
+            var folderPath = Path.Combine("wwwroot", "uploads", "qrcodes");
+            if (!Directory.Exists(folderPath))
+                Directory.CreateDirectory(folderPath);
+
+            var fileName = $"{Guid.NewGuid()}_{model.QRCodeImage.FileName}";
+            var filePath = Path.Combine(folderPath, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await model.QRCodeImage.CopyToAsync(stream);
+            }
+
+            qrPath = "/uploads/qrcodes/" + fileName;
+        }
+
+        // ✅ Gửi yêu cầu rút tiền
+        var request = new WithdrawalRequest
+        {
+            UserID = user.Id,
+            Amount = model.Amount,
+            Description = model.Description,
+            BankName = model.BankName,
+            AccountNumber = model.AccountNumber,
+            AccountHolderName = model.AccountHolderName,
+            QRCodeUrl = qrPath,
+            Status = "Pending",
+            RequestedAt = DateTime.Now
+        };
+
+        _context.WithdrawalRequests.Add(request);
+
+        // ✅ Trừ tiền tạm thời khỏi ví
+        //user.WalletBalance -= model.Amount;
+
+        // ✅ Ghi lịch sử giao dịch vào bảng Transactions
+        var withdrawType = await _context.TransactionTypes.FirstOrDefaultAsync(t => t.TypeName == "Rút tiền");
+        var pendingStatus = await _context.TransactionStatuses.FirstOrDefaultAsync(s => s.StatusName == "Đang xử lý");
+
+        if (withdrawType != null && pendingStatus != null)
+        {
+            var transaction = new Transaction
+            {
+                UserID = user.Id,
+                Amount = model.Amount,
+                Description = model.Description ?? "Yêu cầu rút tiền",
+                TypeID = withdrawType.TypeID,
+                StatusID = pendingStatus.StatusID,
+                TransactionDate = DateTime.Now,
+                IsActive = true
+            };
+
+            _context.Transactions.Add(transaction);
+        }
+
+        await _context.SaveChangesAsync();
+
+        // ✅ Gửi thông báo đến admin
+        await _notificationService.SendNotificationToAdminAsync(
+            $"Người dùng {user.FullName} yêu cầu rút {model.Amount:N0} VNĐ",
+            "Yêu cầu rút tiền đang chờ duyệt."
+        );
+
+        TempData["SuccessMessage"] = "Yêu cầu rút tiền đã được gửi và đang chờ duyệt.";
+        return RedirectToAction(nameof(Index));
     }
+
+
+
+
+    //// GET: /Wallet/Withdraw
+    //public async Task<IActionResult> Withdraw()
+    //{
+    //    var user = await _userManager.GetUserAsync(User);
+    //    if (user == null) return NotFound();
+
+    //    // Gợi ý: auto-fill BankAccount nếu có
+    //    var bankAccount = await _bankAccountService.GetBankAccountByUserIdAsync(user.Id);
+
+    //    var model = new WithdrawRequestViewModel
+    //    {
+    //        UseBankAccount = true,
+    //        BankName = bankAccount?.BankName,
+    //        AccountNumber = bankAccount?.AccountNumber,
+    //        AccountHolderName = bankAccount?.AccountHolderName
+    //    };
+
+    //    return View("WithdrawRequest", model);
+    //}
+
+    //// POST: /Wallet/Withdraw
+    //[HttpPost]
+    //[ValidateAntiForgeryToken]
+    //public async Task<IActionResult> Withdraw(WithdrawViewModel model)
+    //{
+    //    if (!ModelState.IsValid)
+    //    {
+    //        return View(model);
+    //    }
+
+    //    var user = await _userManager.GetUserAsync(User);
+    //    if (user == null)
+    //    {
+    //        return NotFound();
+    //    }
+
+    //    if (user.WalletBalance < model.Amount)
+    //    {
+    //        ModelState.AddModelError("", "Insufficient funds in your wallet.");
+    //        return View(model);
+    //    }
+
+    //    var success = await _transactionService.ProcessWithdrawalAsync(
+    //        user.Id, 
+    //        model.Amount, 
+    //        model.Description ?? $"Withdrawal of {model.Amount:C}"
+    //    );
+
+    //    if (success)
+    //    {
+    //        await _notificationService.SendNotificationToUserAsync(
+    //            user.Id,
+    //            "Rút tiền thành công",
+    //            $"Bạn đã rút thành công {model.Amount:N0} từ ví.",
+    //            1, // TypeID hệ thống
+    //            null,
+    //            null,
+    //            true // chỉ notification, không gửi email
+    //        );
+    //        TempData["SuccessMessage"] = $"Successfully withdrew {model.Amount:C} from your wallet.";
+    //        return RedirectToAction(nameof(Index));
+    //    }
+    //    else
+    //    {
+    //        ModelState.AddModelError("", "Failed to process withdrawal. Please try again.");
+    //        return View(model);
+    //    }
+    //}
 
     // GET: /Wallet/TransactionHistory
     public async Task<IActionResult> TransactionHistory()

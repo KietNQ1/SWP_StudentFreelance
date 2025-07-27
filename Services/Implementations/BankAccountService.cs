@@ -39,4 +39,23 @@ public class BankAccountService : IBankAccountService
 
         await _context.SaveChangesAsync();
     }
+    public Task<bool> VerifyBankAccountAsync(string accountNumber, string bankName, string accountHolderName)
+    {
+        // Kiểm tra tên không chứa số hoặc ký tự đặc biệt
+        bool isValidName = !string.IsNullOrWhiteSpace(accountHolderName) &&
+                           accountHolderName.All(c => char.IsLetter(c) || char.IsWhiteSpace(c));
+
+        // Kiểm tra số tài khoản là chuỗi số có độ dài hợp lệ (ví dụ 8–16 ký tự)
+        bool isValidAccountNumber = !string.IsNullOrWhiteSpace(accountNumber) &&
+                                    accountNumber.All(char.IsDigit) &&
+                                    accountNumber.Length >= 8 && accountNumber.Length <= 16;
+
+        // Kiểm tra tên ngân hàng không rỗng và không chứa ký tự lạ
+        bool isValidBankName = !string.IsNullOrWhiteSpace(bankName) &&
+                               bankName.All(c => char.IsLetter(c) || char.IsWhiteSpace(c));
+
+        return Task.FromResult(isValidName && isValidAccountNumber && isValidBankName);
+    }
+
+
 }
