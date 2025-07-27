@@ -56,6 +56,14 @@ namespace StudentFreelance.Controllers
                 // Pass advertisements to the view
                 ViewBag.Advertisements = sortedAds;
 
+                // Lấy danh sách các category cha (ParentCategoryID = null) và có CategoryType = "PROJECT"
+                var parentCategories = await _context.Categories
+                    .Where(c => c.ParentCategoryID == null && c.CategoryType == "Field" && c.IsActive)
+                    .OrderBy(c => c.CategoryName)
+                    .ToListAsync();
+                
+                ViewBag.ParentCategories = parentCategories;
+
                 // Lấy danh sách tất cả kỹ năng cho dropdown
                 ViewBag.AllSkills = await _context.Skills
                     .Where(s => s.IsActive)
