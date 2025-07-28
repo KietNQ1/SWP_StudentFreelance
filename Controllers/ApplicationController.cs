@@ -53,14 +53,14 @@ namespace StudentFreelance.Controllers
                 TempData["ErrorMessage"] = "Dự án không tồn tại.";
                 return RedirectToAction("Index", "Project");
             }
-            
+                
             // Kiểm tra xem dự án có đang mở không
             if (project.StatusID != 1) // Assuming 1 is the ID for "Open" status
             {
                 TempData["ErrorMessage"] = "Dự án này không còn nhận đơn ứng tuyển.";
                 return RedirectToAction("Details", "Project", new { id = project.ProjectID });
             }
-            
+
             // Lấy thông tin người dùng hiện tại
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             
@@ -71,7 +71,7 @@ namespace StudentFreelance.Controllers
                 TempData["ErrorMessage"] = "Bạn đã ứng tuyển vào dự án này rồi.";
                 return RedirectToAction("Details", "Project", new { id = project.ProjectID });
             }
-            
+
             // Tạo model cho view
             var model = new CreateApplicationViewModel
             {
@@ -80,7 +80,7 @@ namespace StudentFreelance.Controllers
                 BusinessName = project.Business?.FullName ?? project.Business?.CompanyName ?? "Không xác định",
                 ProjectBudget = project.Budget
             };
-            
+
             return View(model);
         }
 
@@ -766,34 +766,34 @@ namespace StudentFreelance.Controllers
         }
 
         // POST: /Application/UpdateStudentApplication
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Student")]
+[HttpPost]
+[ValidateAntiForgeryToken]
+[Authorize(Roles = "Student")]
         public async Task<IActionResult> UpdateStudentApplication(UpdateStudentApplicationViewModel model)
-        {
-            // Lấy thông tin người dùng hiện tại
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            
-            // Lấy thông tin đơn ứng tuyển
-            var application = await _applicationService.GetApplicationByIdAsync(model.ApplicationID);
-            if (application == null)
-                return NotFound();
-            
-            // Kiểm tra xem đơn ứng tuyển có thuộc về sinh viên này không
-            if (application.UserID != userId)
-                return Forbid();
-            
-            // Kiểm tra trạng thái đơn ứng tuyển, chỉ cho phép cập nhật nếu đang ở trạng thái Pending
-            if (application.Status != "Pending")
-            {
-                TempData["ErrorMessage"] = "Bạn chỉ có thể cập nhật đơn ứng tuyển khi đơn đang ở trạng thái chờ xử lý.";
-                return RedirectToAction("ViewApplication", new { id = model.ApplicationID });
-            }
-            
-            // Xóa các lỗi không liên quan đến việc cập nhật đơn ứng tuyển
-            ModelState.Remove("ProjectTitle");
-            ModelState.Remove("BusinessName");
-            ModelState.Remove("ProjectBudget");
+{
+    // Lấy thông tin người dùng hiện tại
+    var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+    
+    // Lấy thông tin đơn ứng tuyển
+    var application = await _applicationService.GetApplicationByIdAsync(model.ApplicationID);
+    if (application == null)
+        return NotFound();
+    
+    // Kiểm tra xem đơn ứng tuyển có thuộc về sinh viên này không
+    if (application.UserID != userId)
+        return Forbid();
+    
+    // Kiểm tra trạng thái đơn ứng tuyển, chỉ cho phép cập nhật nếu đang ở trạng thái Pending
+    if (application.Status != "Pending")
+    {
+        TempData["ErrorMessage"] = "Bạn chỉ có thể cập nhật đơn ứng tuyển khi đơn đang ở trạng thái chờ xử lý.";
+        return RedirectToAction("ViewApplication", new { id = model.ApplicationID });
+    }
+    
+    // Xóa các lỗi không liên quan đến việc cập nhật đơn ứng tuyển
+    ModelState.Remove("ProjectTitle");
+    ModelState.Remove("BusinessName");
+    ModelState.Remove("ProjectBudget");
             ModelState.Remove("ResumeAttachment"); // Xóa lỗi liên quan đến ResumeAttachment
             ModelState.Remove("CurrentResumeAttachment"); // Xóa lỗi liên quan đến CurrentResumeAttachment
             
@@ -808,120 +808,120 @@ namespace StudentFreelance.Controllers
             
             // Debug: Kiểm tra ResumeAttachment
             TempData["DebugResumeAttachment"] = model.ResumeAttachment == null ? "ResumeAttachment is null" : $"ResumeAttachment: {model.ResumeAttachment.FileName}, Length: {model.ResumeAttachment.Length}";
+    
+    if (!ModelState.IsValid)
+    {
+        // Lấy thông tin dự án
+        var project = await _context.Projects
+            .Include(p => p.Business)
+            .FirstOrDefaultAsync(p => p.ProjectID == application.ProjectID);
+        
+        if (project != null)
+        {
+            model.ProjectTitle = project.Title;
+            model.BusinessName = project.Business?.FullName ?? project.Business?.CompanyName ?? "Không xác định";
+            model.ProjectBudget = project.Budget;
+        }
+        
+        return View(model);
+    }
+    
+    try
+    {
+        // Xử lý tải lên CV mới nếu có
+                string newResumeAttachmentPath = null;
+                if (model.ResumeAttachment != null && model.ResumeAttachment.Length > 0)
+        {
+            // Kiểm tra định dạng file
+            var allowedExtensions = new[] { ".pdf", ".doc", ".docx" };
+                    var fileExtension = Path.GetExtension(model.ResumeAttachment.FileName).ToLowerInvariant();
             
-            if (!ModelState.IsValid)
+            if (!allowedExtensions.Contains(fileExtension))
             {
-                // Lấy thông tin dự án
-                var project = await _context.Projects
-                    .Include(p => p.Business)
-                    .FirstOrDefaultAsync(p => p.ProjectID == application.ProjectID);
-                
-                if (project != null)
-                {
-                    model.ProjectTitle = project.Title;
-                    model.BusinessName = project.Business?.FullName ?? project.Business?.CompanyName ?? "Không xác định";
-                    model.ProjectBudget = project.Budget;
-                }
+                        ModelState.AddModelError("ResumeAttachment", "Chỉ chấp nhận file PDF, DOC hoặc DOCX.");
+                 
+                 // Lấy lại thông tin dự án
+                 var projectDetails = await _context.Projects
+                     .Include(p => p.Business)
+                     .FirstOrDefaultAsync(p => p.ProjectID == application.ProjectID);
+                 
+                 if (projectDetails != null)
+                 {
+                     model.ProjectTitle = projectDetails.Title;
+                     model.BusinessName = projectDetails.Business?.FullName ?? projectDetails.Business?.CompanyName ?? "Không xác định";
+                     model.ProjectBudget = projectDetails.Budget;
+                 }
                 
                 return View(model);
             }
             
-            try
-            {
-                // Xử lý tải lên CV mới nếu có
-                string newResumeAttachmentPath = null;
-                if (model.ResumeAttachment != null && model.ResumeAttachment.Length > 0)
-                {
-                    // Kiểm tra định dạng file
-                    var allowedExtensions = new[] { ".pdf", ".doc", ".docx" };
-                    var fileExtension = Path.GetExtension(model.ResumeAttachment.FileName).ToLowerInvariant();
-                    
-                    if (!allowedExtensions.Contains(fileExtension))
-                    {
-                        ModelState.AddModelError("ResumeAttachment", "Chỉ chấp nhận file PDF, DOC hoặc DOCX.");
-                         
-                        // Lấy lại thông tin dự án
-                        var projectDetails = await _context.Projects
-                            .Include(p => p.Business)
-                            .FirstOrDefaultAsync(p => p.ProjectID == application.ProjectID);
-                         
-                        if (projectDetails != null)
-                        {
-                            model.ProjectTitle = projectDetails.Title;
-                            model.BusinessName = projectDetails.Business?.FullName ?? projectDetails.Business?.CompanyName ?? "Không xác định";
-                            model.ProjectBudget = projectDetails.Budget;
-                        }
-                        
-                        return View(model);
-                    }
-                    
-                    // Tạo tên file duy nhất
+            // Tạo tên file duy nhất
                     var fileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(model.ResumeAttachment.FileName);
-                    var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "submissions");
-                    
-                    // Đảm bảo thư mục tồn tại
-                    if (!Directory.Exists(uploadPath))
-                    {
-                        Directory.CreateDirectory(uploadPath);
-                    }
-                    
-                    var filePath = Path.Combine(uploadPath, fileName);
-                    
-                    // Lưu file
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
+            var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "submissions");
+            
+            // Đảm bảo thư mục tồn tại
+            if (!Directory.Exists(uploadPath))
+            {
+                Directory.CreateDirectory(uploadPath);
+            }
+            
+            var filePath = Path.Combine(uploadPath, fileName);
+            
+            // Lưu file
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
                         await model.ResumeAttachment.CopyToAsync(stream);
-                    }
-                    
+            }
+            
                     // Cập nhật đường dẫn CV mới
                     newResumeAttachmentPath = "/uploads/submissions/" + fileName;
-                }
-                
-                // Cập nhật thông tin đơn ứng tuyển
-                application.CoverLetter = model.CoverLetter;
-                application.Salary = model.Salary;
-                application.PortfolioLink = model.PortfolioLink;
-                
-                // Chỉ cập nhật ResumeAttachment nếu có file mới được tải lên
+        }
+        
+        // Cập nhật thông tin đơn ứng tuyển
+        application.CoverLetter = model.CoverLetter;
+        application.Salary = model.Salary;
+        application.PortfolioLink = model.PortfolioLink;
+        
+        // Chỉ cập nhật ResumeAttachment nếu có file mới được tải lên
                 if (newResumeAttachmentPath != null)
-                {
+        {
                     application.ResumeAttachment = newResumeAttachmentPath;
-                }
+        }
                 
                 // Debug: Kiểm tra thông tin đơn ứng tuyển trước khi cập nhật
                 TempData["DebugUpdateApplication"] = $"ApplicationID: {application.ApplicationID}, ResumeAttachment: {application.ResumeAttachment ?? "null"}";
-                
-                // Lưu thay đổi vào database
-                _context.StudentApplications.Update(application);
-                await _context.SaveChangesAsync();
-                
-                TempData["SuccessMessage"] = "Đơn ứng tuyển của bạn đã được cập nhật thành công!";
-                
-                // Gửi thông báo cho doanh nghiệp
-                var project = await _context.Projects
-                    .Include(p => p.Business)
-                    .FirstOrDefaultAsync(p => p.ProjectID == application.ProjectID);
-                    
-                if (project?.Business != null)
-                {
-                    await _notificationService.SendNotificationToUserAsync(
-                        project.Business.Id,
-                        "Đơn ứng tuyển đã được cập nhật",
-                        $"Sinh viên {User.Identity.Name} vừa cập nhật đơn ứng tuyển vào dự án '{project.Title}'.",
-                        1, // TypeID hệ thống
-                        project.ProjectID,
-                        userId,
-                        true // chỉ notification, không gửi email
-                    );
-                }
-                
-                return RedirectToAction("ViewApplication", new { id = model.ApplicationID });
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = $"Đã xảy ra lỗi khi cập nhật đơn ứng tuyển: {ex.Message}";
-                return View(model);
-            }
+        
+        // Lưu thay đổi vào database
+        _context.StudentApplications.Update(application);
+        await _context.SaveChangesAsync();
+        
+        TempData["SuccessMessage"] = "Đơn ứng tuyển của bạn đã được cập nhật thành công!";
+        
+        // Gửi thông báo cho doanh nghiệp
+        var project = await _context.Projects
+            .Include(p => p.Business)
+            .FirstOrDefaultAsync(p => p.ProjectID == application.ProjectID);
+            
+        if (project?.Business != null)
+        {
+            await _notificationService.SendNotificationToUserAsync(
+                project.Business.Id,
+                "Đơn ứng tuyển đã được cập nhật",
+                $"Sinh viên {User.Identity.Name} vừa cập nhật đơn ứng tuyển vào dự án '{project.Title}'.",
+                1, // TypeID hệ thống
+                project.ProjectID,
+                userId,
+                true // chỉ notification, không gửi email
+            );
+        }
+        
+        return RedirectToAction("ViewApplication", new { id = model.ApplicationID });
+    }
+    catch (Exception ex)
+    {
+        TempData["ErrorMessage"] = $"Đã xảy ra lỗi khi cập nhật đơn ứng tuyển: {ex.Message}";
+        return View(model);
+    }
         }
         
         // Helper method to format time ago

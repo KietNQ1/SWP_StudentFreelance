@@ -1,0 +1,92 @@
+@model IEnumerable<StudentFreelance.Models.Project>
+@{
+    ViewData["Title"] = "Dự án của tôi";
+}
+
+<link rel="stylesheet" href="~/css/project/my-projects.css" />
+
+<div class="project-header">
+    <div class="container header-container">
+        <h1>Dự án của tôi</h1>
+        <p>Quản lý các dự án bạn đã tạo</p>
+    </div>
+</div>
+
+<div class="container main-container">
+    <div class="content-container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-heading">Danh sách dự án</h2>
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i> Tạo dự án mới
+            </a>
+        </div>
+        <div class="card project-card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Tiêu đề</th>
+                                <th>Danh mục</th>
+                                <th>Ngân sách</th>
+                                <th>Hạn nộp</th>
+                                <th>Trạng thái</th>
+                                <th>Loại</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        @if (item.IsHighlighted)
+                                        {
+                                            <span class="badge featured-badge me-1">Nổi bật</span>
+                                        }
+                                        @if (!item.IsActive)
+                                        {
+                                            <span class="badge hidden-badge me-1">Đã ẩn</span>
+                                        }
+                                        @Html.DisplayFor(modelItem => item.Title)
+                                    </td>
+                                    <td>@Html.DisplayFor(modelItem => item.Category.CategoryName)</td>
+                                    <td>@Html.DisplayFor(modelItem => item.Budget) VNĐ</td>
+                                    <td>@item.Deadline.ToString("dd/MM/yyyy")</td>
+                                    <td>
+                                        <span class="badge status-badge status-@(item.StatusID)">
+                                            @Html.DisplayFor(modelItem => item.Status.StatusName)
+                                        </span>
+                                    </td>
+                                    <td>@Html.DisplayFor(modelItem => item.Type.TypeName)</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a asp-action="Details" asp-route-id="@item.ProjectID" class="btn btn-sm btn-view">
+                                                <i class="bi bi-eye"></i> Xem
+                                            </a>
+                                            <a asp-action="Edit" asp-route-id="@item.ProjectID" class="btn btn-sm btn-edit">
+                                                <i class="bi bi-pencil"></i> Sửa
+                                            </a>
+                                            @if (item.IsActive)
+                                            {
+                                                <a asp-action="Delete" asp-route-id="@item.ProjectID" class="btn btn-sm btn-delete">
+                                                    <i class="bi bi-trash"></i> Xóa
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a asp-action="Activate" asp-route-id="@item.ProjectID" class="btn btn-sm btn-activate">
+                                                    <i class="bi bi-check-circle"></i> Kích hoạt
+                                                </a>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

@@ -350,12 +350,12 @@
                 <select class="form-select" name="provinceCode" id="provinceSelect">
                     <option value="">-- Chọn tỉnh/thành --</option>
                     @{
-                        var orderedProvinces = provinces as IEnumerable<dynamic>;
+                        var orderedProvinces = ViewBag.Provinces as IEnumerable<dynamic>;
                         if (orderedProvinces != null)
                         {
                             foreach (var province in orderedProvinces)
                             {
-                                if (provinceCode == province.ID)
+                                if (ViewBag.ProvinceCode != null && ViewBag.ProvinceCode == province.ID)
                                 {
                                     <option value="@province.ID" selected>@province.Name</option>
                                 }
@@ -600,6 +600,10 @@
         }
         
         $(document).ready(function() {
+            // Hủy bỏ tất cả các event handlers đã gắn vào trước đó
+            $('#companySelect').off();
+            $('#provinceSelect').off();
+            
             // Select2 initialization for company and province dropdowns
             $('#companySelect').select2({
                 placeholder: "-- Chọn công ty --",
@@ -617,7 +621,12 @@
                 placeholder: "-- Chọn tỉnh/thành --",
                 allowClear: true,
                 dropdownCssClass: 'province-dropdown',
-                width: '100%'
+                width: '100%',
+                language: {
+                    noResults: function() {
+                        return "Không tìm thấy tỉnh/thành phố";
+                    }
+                }
             }).on('select2:open', function() {
                 // Ensure the dropdown shows correctly
                 setTimeout(function() {
@@ -635,6 +644,18 @@
                     });
                 }
             });
+            
+            // Sửa lỗi click bị double
+            $('span.select2').on('click', function(e) {
+                // Ngăn sự kiện click lan truyền đến các phần tử cha
+                e.stopPropagation();
+            });
+            
+            // Đảm bảo các dropdowns khởi tạo đúng
+            setTimeout(function() {
+                $('#companySelect').trigger('select2:close');
+                $('#provinceSelect').trigger('select2:close');
+            }, 100);
         });
         
         document.addEventListener('DOMContentLoaded', function() {

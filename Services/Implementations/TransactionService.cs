@@ -258,13 +258,50 @@ namespace StudentFreelance.Services.Implementations
             // Deduct from user's wallet
             user.WalletBalance -= amount;
 
+            // Find admin user to add funds
+            var admin = await _context.Users
+                .FirstOrDefaultAsync(u => u.NormalizedUserName == "ADMIN");
+            
+            if (admin != null)
+            {
+                // Add funds to admin wallet
+                admin.WalletBalance += amount;
+                _context.Users.Update(admin);
+                
+                Console.WriteLine($"Advertisement Payment: Added {amount:N0} VND to admin wallet. User: {userId}, AdvertisementId: {advertisementId}");
+            }
+            else
+            {
+                Console.WriteLine($"Advertisement Payment: Admin user not found. Cannot add funds. User: {userId}, AdvertisementId: {advertisementId}");
+                
+                // Try to find any admin by role
+                var adminRoleId = await _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefaultAsync();
+                var adminUserId = await _context.UserRoles
+                    .Where(ur => ur.RoleId == adminRoleId)
+                    .Select(ur => ur.UserId)
+                    .FirstOrDefaultAsync();
+                
+                if (adminUserId > 0)
+                {
+                    var adminByRole = await _context.Users.FindAsync(adminUserId);
+                    if (adminByRole != null)
+                    {
+                        // Add funds to admin wallet
+                        adminByRole.WalletBalance += amount;
+                        _context.Users.Update(adminByRole);
+                        
+                        Console.WriteLine($"Advertisement Payment: Added {amount:N0} VND to admin (by role) wallet. User: {userId}, AdvertisementId: {advertisementId}");
+                    }
+                }
+            }
+
             // Create transaction
             var transaction = new Transaction
             {
                 UserID = userId,
                 Amount = amount,
                 TypeID = 6, // Advertisement Payment (updated from 4 to 6)
-                StatusID = 1, // Completed
+                StatusID = 2, // Thành công (StatusID = 2)
                 Description = $"Thanh toán quảng cáo ID: {advertisementId}",
                 TransactionDate = DateTime.Now,
                 IsActive = true
@@ -286,13 +323,50 @@ namespace StudentFreelance.Services.Implementations
             // Deduct from user's wallet
             user.WalletBalance -= amount;
 
+            // Find admin user to add funds
+            var admin = await _context.Users
+                .FirstOrDefaultAsync(u => u.NormalizedUserName == "ADMIN");
+            
+            if (admin != null)
+            {
+                // Add funds to admin wallet
+                admin.WalletBalance += amount;
+                _context.Users.Update(admin);
+                
+                Console.WriteLine($"Advertisement Renewal: Added {amount:N0} VND to admin wallet. User: {userId}, AdvertisementId: {advertisementId}");
+            }
+            else
+            {
+                Console.WriteLine($"Advertisement Renewal: Admin user not found. Cannot add funds. User: {userId}, AdvertisementId: {advertisementId}");
+                
+                // Try to find any admin by role
+                var adminRoleId = await _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefaultAsync();
+                var adminUserId = await _context.UserRoles
+                    .Where(ur => ur.RoleId == adminRoleId)
+                    .Select(ur => ur.UserId)
+                    .FirstOrDefaultAsync();
+                
+                if (adminUserId > 0)
+                {
+                    var adminByRole = await _context.Users.FindAsync(adminUserId);
+                    if (adminByRole != null)
+                    {
+                        // Add funds to admin wallet
+                        adminByRole.WalletBalance += amount;
+                        _context.Users.Update(adminByRole);
+                        
+                        Console.WriteLine($"Advertisement Renewal: Added {amount:N0} VND to admin (by role) wallet. User: {userId}, AdvertisementId: {advertisementId}");
+                    }
+                }
+            }
+
             // Create transaction
             var transaction = new Transaction
             {
                 UserID = userId,
                 Amount = amount,
                 TypeID = 6, // Advertisement Payment
-                StatusID = 1, // Completed
+                StatusID = 2, // Thành công (StatusID = 2)
                 Description = $"Gia hạn quảng cáo ID: {advertisementId}",
                 TransactionDate = DateTime.Now,
                 IsActive = true
