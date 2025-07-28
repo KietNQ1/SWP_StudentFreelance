@@ -1,9 +1,13 @@
 ﻿:root {
     --primary: #89AC46;
+    --primary-gradient: linear-gradient(135deg, #D3E671 0%, #89AC46 100%);
     --accent-light: #f4fbe8;
     --gray: #666;
-    --border-radius: 8px;
-    --transition: 0.3s ease;
+    --border-radius: 12px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --card-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    --card-border: 1px solid rgba(255, 255, 255, 0.2);
+    --blur-bg: rgba(255, 255, 255, 0.95);
 }
 
 /* Reset một số padding/margin cho thống nhất */
@@ -12,48 +16,111 @@ body {
     color: #212529;
 }
 
+/* Animation */
+.container {
+    animation: slideUp 0.8s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Remove underline from all links globally */
 a {
     text-decoration: none;
     color: inherit;
 }
 
-/* Project Detail Card */
-.project-detail-card {
-    background-color: #fff;
-    border: 1px solid #ddd;
+/* Cards */
+.card {
+    background: var(--blur-bg);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
     border-radius: var(--border-radius);
-    padding: 24px;
-    margin-bottom: 24px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    margin-bottom: 30px;
+    box-shadow: var(--card-shadow);
+    border: var(--card-border);
+    overflow: hidden;
+    transition: var(--transition);
 }
 
+.card:hover {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    transform: translateY(-5px);
+}
+
+.card-header {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 18px 25px;
+    border-bottom: none;
+    font-weight: 600;
+}
+
+.card-header h5 {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+}
+
+.card-header h5 i {
+    margin-right: 10px;
+}
+
+.card-body {
+    padding: 25px;
+}
+
+/* Project Detail Card */
 .project-title {
     font-size: 1.75rem;
-    font-weight: 600;
-    margin-bottom: 10px;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: #2d3748;
 }
 
 .project-meta {
     color: var(--gray);
     font-size: 0.95rem;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.project-meta div {
+    display: flex;
+    align-items: center;
+}
+
+.project-meta div i {
+    margin-right: 8px;
+    color: var(--primary);
 }
 
 .project-description {
     font-size: 1.1rem;
-    line-height: 1.6;
+    line-height: 1.7;
     margin-top: 1.5rem;
     white-space: pre-line;
 }
 
-/* Section headers */
-.section-title {
-    font-size: 1.2rem;
+/* Badge styling */
+.badge {
+    padding: 8px 12px;
+    border-radius: 8px;
     font-weight: 600;
-    margin-top: 2rem;
-    margin-bottom: 0.75rem;
-    color: var(--primary);
+    font-size: 0.85rem;
+    transition: var(--transition);
 }
 
 /* Skill badge */
@@ -63,73 +130,376 @@ a {
     color: var(--primary);
     border: 1px solid var(--primary);
     border-radius: 999px;
-    padding: 6px 12px;
+    padding: 8px 15px;
     margin: 4px 6px 4px 0;
     font-size: 0.9rem;
+    font-weight: 500;
+    transition: var(--transition);
 }
 
-/* Custom Buttons Group */
-.custom-button-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    margin-top: 24px;
+.skill-badge:hover {
+    background-color: var(--primary);
+    color: white;
+    transform: translateY(-3px);
 }
 
-/* View Profile Button */
+/* Buttons */
+.btn {
+    padding: 12px 20px;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn:hover::before {
+    left: 100%;
+}
+
 .btn-view-profile {
-    display: inline-block;
     color: var(--primary);
     background-color: white;
     border: 2px solid var(--primary);
-    padding: 10px 20px;
-    font-weight: 500;
+    padding: 12px 20px;
+    font-weight: 600;
     border-radius: var(--border-radius);
     transition: var(--transition);
-    width: 250px;
-    max-width: 100%;
-    min-width: 220px;
+    width: 100%;
     text-align: center;
-    text-decoration: none;
 }
 
-    .btn-view-profile:hover {
-        background-color: var(--accent-light);
-        color: var(--primary);
-    }
-
-/* Apply / Message Button */
-.btn-apply {
-    display: inline-block;
-    color: white;
+.btn-view-profile:hover {
     background-color: var(--primary);
+    color: white;
+    transform: translateY(-3px);
+}
+
+.btn-apply {
+    color: white;
+    background: var(--primary-gradient);
     border: none;
-    padding: 10px 20px;
-    font-weight: 500;
+    padding: 12px 20px;
+    font-weight: 600;
     border-radius: var(--border-radius);
     transition: var(--transition);
-    width: 250px;
-    max-width: 100%;
-    min-width: 220px;
+    width: 100%;
     text-align: center;
-    text-decoration: none;
+    box-shadow: 0 6px 20px rgba(137, 172, 70, 0.3);
 }
 
-    .btn-apply:hover {
-        background-color: #7c9c3d;
-        color: white;
-    }
-
-/* Rating Section */
-.rating-stars {
-    color: #f1c40f;
-    font-size: 1.1rem;
+.btn-apply:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(137, 172, 70, 0.4);
 }
 
-.rating-comment {
-    font-style: italic;
-    margin-top: 4px;
+/* Success and danger buttons */
+.btn-success {
+    background: linear-gradient(135deg, #84fab0 0%, #4dc290 100%);
+    border: none;
+    color: white;
+    box-shadow: 0 6px 20px rgba(77, 194, 144, 0.3);
+}
+
+.btn-success:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(77, 194, 144, 0.4);
+    background: linear-gradient(135deg, #84fab0 0%, #4dc290 100%);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ffa8a8 0%, #e53e3e 100%);
+    border: none;
+    color: white;
+    box-shadow: 0 6px 20px rgba(229, 62, 62, 0.3);
+}
+
+.btn-danger:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(229, 62, 62, 0.4);
+    background: linear-gradient(135deg, #ffa8a8 0%, #e53e3e 100%);
+}
+
+/* Secondary and outline buttons */
+.btn-secondary {
+    background: linear-gradient(135deg, #cbd5e0 0%, #a0aec0 100%);
+    border: none;
+    color: #2d3748;
+    box-shadow: 0 6px 20px rgba(160, 174, 192, 0.3);
+}
+
+.btn-secondary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(160, 174, 192, 0.4);
+}
+
+/* Outline button styles */
+.btn-outline-theme {
+    border: 2px solid var(--primary);
+    color: var(--primary);
+    background-color: white;
+    transition: var(--transition);
+    font-weight: 600;
+    padding: 8px 16px;
+    margin-right: 5px;
+}
+
+.btn-outline-theme:hover {
+    background-color: var(--primary);
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(137, 172, 70, 0.2);
+}
+
+.btn-outline-danger {
+    border: 2px solid #e53e3e;
+    color: #e53e3e;
+    background-color: white;
+    transition: var(--transition);
+    font-weight: 600;
+    padding: 8px 16px;
+    margin-right: 5px;
+}
+
+.btn-outline-danger:hover {
+    background-color: #e53e3e;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(229, 62, 62, 0.2);
+}
+
+.btn-outline-primary {
+    border: 2px solid #4a6bdc;
+    color: #4a6bdc;
+    background-color: white;
+    transition: var(--transition);
+    font-weight: 600;
+    padding: 8px 16px;
+    margin-right: 5px;
+}
+
+.btn-outline-primary:hover {
+    background-color: #4a6bdc;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(74, 107, 220, 0.2);
+}
+
+.btn-outline-info {
+    border: 2px solid #38b2ac;
+    color: #38b2ac;
+    background-color: white;
+    transition: var(--transition);
+    font-weight: 600;
+    padding: 8px 16px;
+}
+
+.btn-outline-info:hover {
+    background-color: #38b2ac;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(56, 178, 172, 0.2);
+}
+
+.btn-outline-warning {
+    border: 2px solid #ed8936;
+    color: #ed8936;
+    background-color: white;
+    transition: var(--transition);
+    font-weight: 600;
+    padding: 8px 16px;
+}
+
+.btn-outline-warning:hover {
+    background-color: #ed8936;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(237, 137, 54, 0.2);
+}
+
+/* Buttons with icons only */
+.btn-icon {
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border-radius: 50%;
+    background-color: white;
+    border: 2px solid var(--primary);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.btn-icon i {
+    font-size: 1.2rem;
+}
+
+.btn-icon:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.12);
+    background-color: var(--primary);
+    color: white;
+}
+
+/* Variant colors for icon buttons */
+.btn-icon-primary {
+    border-color: #4a6bdc;
+    color: #4a6bdc;
+}
+
+.btn-icon-primary:hover {
+    background-color: #4a6bdc;
+    color: white;
+}
+
+.btn-icon-danger {
+    border-color: #e53e3e;
+    color: #e53e3e;
+}
+
+.btn-icon-danger:hover {
+    background-color: #e53e3e;
+    color: white;
+}
+
+.btn-icon-info {
+    border-color: #38b2ac;
+    color: #38b2ac;
+}
+
+.btn-icon-info:hover {
+    background-color: #38b2ac;
+    color: white;
+}
+
+.btn-icon-warning {
+    border-color: #ed8936;
+    color: #ed8936;
+}
+
+.btn-icon-warning:hover {
+    background-color: #ed8936;
+    color: white;
+}
+
+.btn-icon-success {
+    border-color: #4dc290;
+    color: #4dc290;
+}
+
+.btn-icon-success:hover {
+    background-color: #4dc290;
+    color: white;
+}
+
+/* Avatar and user info */
+.avatar {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+}
+
+.avatar img {
+    object-fit: cover;
+    border-radius: 50%;
+    width: 100%;
+    height: 100%;
+    border: 3px solid white;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: var(--transition);
+}
+
+.avatar img:hover {
+    transform: scale(1.1);
+}
+
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: var(--primary-gradient);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.5rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border: 3px solid white;
+}
+
+/* Project Header */
+.project-header {
+    background: var(--primary-gradient);
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+/* List group styling */
+.list-group-item {
+    border-left: none;
+    border-right: none;
+    padding: 16px;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+}
+
+.list-group-item:hover {
+    background-color: var(--accent-light);
+}
+
+/* Alert styling */
+.alert {
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    border: none;
+    padding: 16px 20px;
+}
+
+.alert i {
+    margin-right: 8px;
+}
+
+/* Modal styling */
+.modal-content {
+    border-radius: var(--border-radius);
+    border: none;
+    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+    padding: 20px 25px;
+    border-bottom: none;
+}
+
+.modal-footer {
+    padding: 20px 25px;
+    border-top: none;
+}
+
+.modal-body {
+    padding: 25px;
 }
 
 /* Responsive */
@@ -138,101 +508,343 @@ a {
     .btn-apply {
         width: 100%;
     }
-
-    .project-detail-card {
-        padding: 16px;
+    
+    .card {
+        margin-bottom: 20px;
+    }
+    
+    .card-body {
+        padding: 20px;
+    }
+    
+    .btn {
+        padding: 10px 16px;
     }
 }
 
-.avatar img {
-    object-fit: cover;
-    border-radius: 50%;
-    width: 48px;
-    height: 48px;
+/* Layout - For the modified layout structure */
+.btn-group.d-flex {
+    margin-bottom: 20px;
 }
 
-.avatar-placeholder {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background-color: #89AC46;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 1.2rem;
+.btn-group.d-flex .btn {
+    margin-bottom: 10px;
 }
 
-.project-detail-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
+/* Fix for row spacing */
+.row + .row {
     margin-top: 20px;
 }
 
-    .project-detail-actions a {
-        padding: 8px 16px;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.95rem;
-        text-decoration: none;
-        border: 2px solid;
-        transition: all 0.3s ease;
-    }
+/* For text color consistency */
+.text-primary {
+    color: var(--primary) !important;
+}
 
-        /* Nút Chỉnh sửa */
-        .project-detail-actions a.edit {
-            color: var(--primary);
-            border-color: var(--primary);
-        }
+/* Fix for icon colors */
+i.fas.fa-map-marker-alt, 
+i.fas.fa-calendar-alt,
+i.fas.fa-calendar-day,
+i.fas.fa-calendar-check,
+i.fas.fa-hourglass-half,
+i.fas.fa-users,
+i.text-primary {
+    color: var(--primary) !important;
+}
 
-            .project-detail-actions a.edit:hover {
-                background-color: var(--primary);
-                color: white;
-            }
+/* Fix for badge colors */
+.badge.bg-primary {
+    background-color: var(--primary) !important;
+}
 
-        /* Nút Xoá */
-        .project-detail-actions a.delete {
-            color: var(--accent3);
-            border-color: var(--accent3);
-        }
-
-            .project-detail-actions a.delete:hover {
-                background-color: var(--accent3);
-                color: white;
-            }
-
-        /* Nút Ẩn/Hiện */
-        .project-detail-actions a.toggle {
-            color: #6c757d;
-            border-color: #6c757d;
-        }
-
-            .project-detail-actions a.toggle:hover {
-                background-color: #6c757d;
-                color: white;
-            }
-
-
-.project-header {
-    background-color: var(--primary, #89AC46); /* dùng màu xanh của dự án */
-    color: white;
-    font-weight: 600;
+/* Additional styling for formatted content */
+.formatted-content {
     font-size: 1rem;
-    border-top-left-radius: 0.5rem;
-    border-top-right-radius: 0.5rem;
+    line-height: 1.6;
 }
 
-.btn-outline-theme {
-    border: 1.5px solid #89AC46;
-    color: #89AC46;
-    background-color: white;
-    transition: 0.2s ease-in-out;
+.formatted-content p {
+    margin-bottom: 1rem;
 }
 
-    .btn-outline-theme:hover {
-        background-color: #89AC46;
-        color: white;
+.formatted-content ul, .formatted-content ol {
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+}
+
+.formatted-content h1, 
+.formatted-content h2, 
+.formatted-content h3, 
+.formatted-content h4, 
+.formatted-content h5, 
+.formatted-content h6 {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+/* Fix for Bootstrap 5 integration */
+.flex-fill {
+    flex: 1;
+}
+
+/* Quản lý dự án section */
+.project-management-section {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.card.mb-3 .d-flex.gap-2 {
+    flex-wrap: wrap;
+}
+
+.card.mb-3 .d-flex.gap-2 form {
+    margin: 0;
+    padding: 0;
+    display: inline-block;
+}
+
+.d-flex.flex-wrap.gap-2 form {
+    margin: 0;
+    padding: 0;
+    display: inline-block;
+}
+
+button.btn {
+    white-space: nowrap;
+}
+
+/* Đảm bảo chi tiết dự án hiển thị đúng */
+.card-body {
+    padding: 25px;
+    width: 100%;
+}
+
+.card-header {
+    width: 100%;
+}
+
+/* Fix list-group styling */
+.list-group {
+    width: 100%;
+}
+
+.list-group-flush {
+    width: 100%;
+}
+
+.list-group-item {
+    border-left: none;
+    border-right: none;
+    padding: 16px;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+/* Fix project management section */
+.card.mb-3 {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Additional wrapper container */
+@media (min-width: 992px) {
+    .project-management-container {
+        max-width: 75%;
+        margin: 0 auto;
     }
+}
+
+/* Rectangular icon buttons */
+.btn-rect {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid #ddd;
+    background-color: white;
+    color: #333;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    border-radius: 0;
+    margin: 0;
+    flex: 1;
+}
+
+.btn-rect:hover {
+    transform: none;
+    box-shadow: inset 0 0 0 100px rgba(0, 0, 0, 0.1);
+}
+
+.btn-group {
+    display: flex;
+    width: 100%;
+}
+
+.btn-group > a.btn-rect,
+.btn-group > .btn-form {
+    flex: 1;
+    display: flex;
+}
+
+.btn-form {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    line-height: 0;
+    vertical-align: top;
+    flex: 1;
+}
+
+.btn-form .btn-rect {
+    width: 100%;
+    flex: 1;
+}
+
+.btn-group .btn-rect {
+    margin-right: -1px;
+}
+
+.btn-group .btn-form .btn-rect {
+    margin-right: -1px;
+}
+
+.btn-group .btn-rect:first-child {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
+.btn-group .btn-rect:last-child,
+.btn-group .btn-form:last-child .btn-rect,
+.btn-group a.btn-rect-danger[asp-action="Delete"] {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+    margin-right: 0;
+}
+
+/* Variant colors for rectangular buttons */
+.btn-rect-primary {
+    border-color: #4a6bdc;
+    color: #4a6bdc;
+}
+
+.btn-rect-primary:hover {
+    background-color: #4a6bdc;
+    color: white;
+}
+
+.btn-rect-danger {
+    border-color: #e53e3e;
+    color: #e53e3e;
+}
+
+.btn-rect-danger:hover {
+    background-color: #e53e3e;
+    color: white;
+}
+
+.btn-rect-info {
+    border-color: #38b2ac;
+    color: #38b2ac;
+}
+
+.btn-rect-info:hover {
+    background-color: #38b2ac;
+    color: white;
+}
+
+.btn-rect-warning {
+    border-color: #ed8936;
+    color: #ed8936;
+}
+
+.btn-rect-warning:hover {
+    background-color: #ed8936;
+    color: white;
+}
+
+.btn-rect-success {
+    border-color: #4dc290;
+    color: #4dc290;
+}
+
+.btn-rect-success:hover {
+    background-color: #4dc290;
+    color: white;
+}
+
+.project-management-container {
+    width: 100%;
+    margin-top: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.project-management-container .card {
+    box-shadow: var(--card-shadow);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    width: 100%;
+}
+
+.project-management-container .card-body {
+    padding: 1.5rem;
+}
+
+.project-management-container .list-group-item {
+    padding: 1rem;
+    border-left: none;
+    border-right: none;
+    background-color: #fafafa;
+}
+
+.project-management-container .list-group-item:first-child {
+    border-top: none;
+}
+
+.project-management-container .list-group-item:last-child {
+    border-bottom: none;
+}
+
+.project-management-container .list-group-item:hover {
+    background-color: #f5f5f5;
+}
+
+.container-fluid.px-0 {
+    padding-left: 0;
+    padding-right: 0;
+    max-width: 100%;
+}
+
+.list-group-item .d-flex.gap-2 {
+    gap: 0.5rem !important;
+}
+
+.badge {
+    padding: 0.5em 0.8em;
+    font-weight: 500;
+    font-size: 0.75rem;
+}
+
+.badge i {
+    margin-right: 0.25rem;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.d-flex.align-items-center.gap-2 {
+    flex-wrap: wrap;
+}
+
+.d-flex.align-items-center.gap-2 .badge {
+    margin-right: 0.25rem;
+}
 
