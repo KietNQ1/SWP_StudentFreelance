@@ -1,0 +1,374 @@
+﻿/* Withdraw Request Page CSS */
+/* Primary Colors: #89AC46, #D3E671, #F8ED8C, #FF8989 */
+
+.withdraw-container {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    min-height: 100vh;
+    padding: 2rem 0;
+}
+
+.withdraw-card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(137, 172, 70, 0.15);
+    overflow: hidden;
+    background: #ffffff;
+    transition: all 0.3s ease;
+}
+
+    .withdraw-card:hover {
+        box-shadow: 0 12px 48px rgba(137, 172, 70, 0.2);
+        transform: translateY(-2px);
+    }
+
+.withdraw-card-header {
+    background: linear-gradient(135deg, #89AC46 0%, #A8C55A 100%);
+    border: none;
+    padding: 1.5rem 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+    .withdraw-card-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%);
+        transform: rotate(45deg);
+        animation: shimmer 3s infinite;
+    }
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%) rotate(45deg);
+    }
+
+    100% {
+        transform: translateX(200%) rotate(45deg);
+    }
+}
+
+.withdraw-card-header h4 {
+    color: #ffffff;
+    margin: 0;
+    font-weight: 600;
+    font-size: 1.4rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.withdraw-card-body {
+    padding: 2rem;
+    background: #ffffff;
+}
+
+/* Form Elements */
+.withdraw-form-label {
+    color: #2d3748;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.withdraw-form-control {
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #ffffff;
+}
+
+    .withdraw-form-control:focus {
+        border-color: #89AC46;
+        box-shadow: 0 0 0 3px rgba(137, 172, 70, 0.15);
+        outline: none;
+        background: #f8fff3;
+    }
+
+    .withdraw-form-control::placeholder {
+        color: #a0aec0;
+        font-style: italic;
+    }
+
+/* Amount Input Special Styling */
+.amount-input-group {
+    position: relative;
+}
+
+    .amount-input-group::before {
+        content: 'VNĐ';
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #89AC46;
+        font-weight: 600;
+        font-size: 0.9rem;
+        z-index: 5;
+        pointer-events: none;
+    }
+
+.amount-input {
+    padding-right: 50px !important;
+}
+
+/* Radio Buttons */
+.withdraw-method-group {
+    background: linear-gradient(135deg, #F8ED8C 0%, #fff 100%);
+    border: 2px solid #D3E671;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.withdraw-form-check {
+    margin-bottom: 0.75rem;
+}
+
+.withdraw-form-check-input {
+    width: 1.2rem;
+    height: 1.2rem;
+    margin-right: 0.75rem;
+    border: 2px solid #89AC46;
+    background: #ffffff;
+}
+
+    .withdraw-form-check-input:checked {
+        background-color: #89AC46;
+        border-color: #89AC46;
+    }
+
+    .withdraw-form-check-input:focus {
+        box-shadow: 0 0 0 3px rgba(137, 172, 70, 0.25);
+    }
+
+.withdraw-form-check-label {
+    color: #2d3748;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+    .withdraw-form-check-label:hover {
+        color: #89AC46;
+    }
+
+/* Bank Info Section */
+.bank-info-section {
+    background: linear-gradient(135deg, rgba(211, 230, 113, 0.1) 0%, rgba(248, 237, 140, 0.1) 100%);
+    border: 2px solid #D3E671;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+    .bank-info-section h5 {
+        color: #89AC46;
+        font-weight: 700;
+        margin-bottom: 1.25rem;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+    }
+
+        .bank-info-section h5::before {
+            content: '🏦';
+            margin-right: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+/* QR Upload Section */
+.qr-upload-section {
+    background: linear-gradient(135deg, rgba(248, 237, 140, 0.1) 0%, rgba(255, 137, 137, 0.1) 100%);
+    border: 2px solid #F8ED8C;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+    .qr-upload-section h5 {
+        color: #89AC46;
+        font-weight: 700;
+        margin-bottom: 1.25rem;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+    }
+
+        .qr-upload-section h5::before {
+            content: '📱';
+            margin-right: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+.file-input {
+    border: 2px dashed #D3E671;
+    border-radius: 10px;
+    padding: 1rem;
+    background: rgba(248, 237, 140, 0.1);
+    transition: all 0.3s ease;
+}
+
+    .file-input:hover {
+        border-color: #89AC46;
+        background: rgba(137, 172, 70, 0.05);
+    }
+
+/* Buttons */
+.btn-withdraw-primary {
+    background: linear-gradient(135deg, #89AC46 0%, #A8C55A 100%);
+    border: none;
+    color: #ffffff;
+    padding: 0.75rem 2rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(137, 172, 70, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+    .btn-withdraw-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(137, 172, 70, 0.4);
+        background: linear-gradient(135deg, #7A9A3F 0%, #89AC46 100%);
+        color: #ffffff;
+    }
+
+    .btn-withdraw-primary:active {
+        transform: translateY(0);
+        box-shadow: 0 3px 10px rgba(137, 172, 70, 0.3);
+    }
+
+.btn-withdraw-secondary {
+    background: linear-gradient(135deg, #e2e8f0 0%, #f7fafc 100%);
+    border: 2px solid #cbd5e0;
+    color: #4a5568;
+    padding: 0.75rem 2rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .btn-withdraw-secondary:hover {
+        background: linear-gradient(135deg, #D3E671 0%, #F8ED8C 100%);
+        border-color: #89AC46;
+        color: #2d3748;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+
+/* Validation Messages */
+.text-danger {
+    color: #FF8989 !important;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+}
+
+.validation-summary-errors {
+    background: linear-gradient(135deg, rgba(255, 137, 137, 0.1) 0%, rgba(255, 137, 137, 0.05) 100%);
+    border: 1px solid #FF8989;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+    .validation-summary-errors ul {
+        margin: 0;
+        padding-left: 1.5rem;
+    }
+
+    .validation-summary-errors li {
+        color: #FF8989;
+        font-weight: 500;
+    }
+
+/* Button Group */
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    gap: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .withdraw-container {
+        padding: 1rem 0;
+    }
+
+    .withdraw-card-body {
+        padding: 1.5rem;
+    }
+
+    .withdraw-card-header {
+        padding: 1.25rem 1.5rem;
+    }
+
+    .button-group {
+        flex-direction: column-reverse;
+        gap: 0.75rem;
+    }
+
+    .btn-withdraw-primary,
+    .btn-withdraw-secondary {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .bank-info-section,
+    .qr-upload-section {
+        padding: 1.25rem;
+    }
+}
+
+/* Loading States */
+.btn-withdraw-primary:disabled {
+    background: #cbd5e0;
+    color: #a0aec0;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+    .btn-withdraw-primary:disabled:hover {
+        background: #cbd5e0;
+        transform: none;
+        box-shadow: none;
+    }
+
+/* Focus Improvements */
+.withdraw-form-control:focus,
+.withdraw-form-check-input:focus,
+.btn-withdraw-primary:focus,
+.btn-withdraw-secondary:focus {
+    outline: 2px solid #89AC46;
+    outline-offset: 2px;
+}
+
+/* Smooth transitions for show/hide */
+.bank-info-section,
+.qr-upload-section {
+    transition: opacity 0.3s ease, max-height 0.3s ease;
+}
+
+/* Success message styling (if needed) */
+.alert-success {
+    background: linear-gradient(135deg, rgba(137, 172, 70, 0.1) 0%, rgba(211, 230, 113, 0.1) 100%);
+    border: 1px solid #D3E671;
+    color: #2d3748;
+    border-radius: 8px;
+}
