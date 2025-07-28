@@ -31,6 +31,15 @@ namespace StudentFreelance.Models
         public bool IsActive { get; set; } = true;
         public int StatusID { get; set; }
         
+        // Buyer Persona fields - New additions
+        public string? AgeRange { get; set; }
+        public string? Gender { get; set; }
+        public string? GoalsAndPainPoints { get; set; }
+        
+        // Business fields - New additions
+        public string? Website { get; set; }
+        public string? BusinessActivities { get; set; }
+        
         // Verification and flagging properties
         public bool IsVerified { get; set; } = false;
         public bool IsFlagged { get; set; } = false;
