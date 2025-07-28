@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace StudentFreelance.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Moderator")]
     public class DashboardController : Controller
     {
         private readonly ApplicationDbContext _context;

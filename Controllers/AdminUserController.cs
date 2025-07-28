@@ -148,6 +148,7 @@ namespace StudentFreelance.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin,Moderator")]
         public async Task<IActionResult> Payments(string searchUser, int? statusId)
         {
             var transactions = await _transactionService.GetAllTransactionsAsync();
@@ -174,6 +175,7 @@ namespace StudentFreelance.Controllers
         }
         
         [HttpPost]
+        [Authorize(Roles = "Admin,Moderator")]
         public async Task<IActionResult> CancelTransaction(int transactionId)
         {
             var transaction = await _transactionService.GetTransactionByIdAsync(transactionId);
@@ -191,6 +193,7 @@ namespace StudentFreelance.Controllers
         }
         
         [HttpPost]
+        [Authorize(Roles = "Admin,Moderator")]
         public async Task<IActionResult> ProcessTransaction(int transactionId)
         {
             var transaction = await _transactionService.GetTransactionByIdAsync(transactionId);
@@ -217,6 +220,7 @@ namespace StudentFreelance.Controllers
 
         // GET: /AdminUser/TransactionDetail/5
         [HttpGet]
+        [Authorize(Roles = "Admin,Moderator")]
         public async Task<IActionResult> TransactionDetail(int id)
         {
             var transaction = await _transactionService.GetTransactionByIdAsync(id);
