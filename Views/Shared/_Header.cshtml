@@ -58,7 +58,7 @@
                             <select id="searchType" class="search-type-select">
                                 <option value="project">Projects</option>
                                 <option value="student">Students</option>
-                                <option value="business">Businesses</option>
+                                <option value="business">Business</option>
                             </select>
                         </div>
                         <input type="text" id="searchInput" class="search-input" placeholder="Search...">
@@ -73,17 +73,10 @@
 
                 <!-- Navigation menu -->
                 <div class="nav-menu">
-                    <div class="nav-item dropdown explore-dropdown">
-                        <span>Find students</span>
-                        <div class="dropdown-menu">
-                            <a asp-controller="Project" asp-action="Index" class="dropdown-item">Projects <span class="new-label">Hot</span></a>
-                            <a href="#">Development & IT</a>
-                            <a href="#">Design & Creative</a>
-                            <a href="#">Sales & Marketing</a>
-                            <a href="#">Writing & Translation</a>
-                            <a href="#">Engineering & Architecture</a>
-                        </div>
+                    <div class="nav-item">
+                        <a asp-controller="Home" asp-action="About" class="nav-link">About Us</a>
                     </div>
+
                     <div class="nav-item dropdown">
                         <a asp-controller="Business" asp-action="Index" class="nav-link">Business</a>
                         <div class="dropdown-menub">

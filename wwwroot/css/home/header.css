@@ -613,7 +613,7 @@ body {
         gap: 0.5rem;
     }
 }
-
+.search-type-select{padding: 0;}
 @media (max-width: 1024px) {
     .nav-container {
         gap: 0.5rem;
