@@ -38,7 +38,8 @@ namespace StudentFreelance.Data
                     new TransactionType { TypeName = "Hoàn tiền", IsActive = true },
                     new TransactionType { TypeName = "Nâng cấp VIP", IsActive = true },
                     new TransactionType { TypeName = "Thanh toán quảng cáo", IsActive = true },
-                    new TransactionType { TypeName = "Thanh toán cho sinh viên", IsActive = true }
+                    new TransactionType { TypeName = "Thanh toán cho sinh viên", IsActive = true },
+                    new TransactionType { TypeName = "Phí dự án", IsActive = true }
                 );
             }
 
@@ -214,7 +215,7 @@ namespace StudentFreelance.Data
                         IsActive = true
                     };
 
-                    context.Addresses.Add(address);
+                    context.Addresses.Add(address); 
                     context.SaveChanges();
 
                     string avatarPath = "/image/default-avatar.png";

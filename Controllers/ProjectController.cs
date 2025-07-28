@@ -876,7 +876,7 @@ namespace StudentFreelance.Controllers
 
             if (application.BusinessConfirmedCompletion && application.StudentConfirmedCompletion)
             {
-                TempData["SuccessMessage"] = "Dự án đã được xác nhận hoàn thành bởi cả hai bên. Thanh toán đã được chuyển.";
+                TempData["SuccessMessage"] = "Dự án đã được xác nhận hoàn thành bởi cả hai bên.";
                     }
                 }
                 else

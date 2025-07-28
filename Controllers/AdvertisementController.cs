@@ -160,8 +160,8 @@ namespace StudentFreelance.Controllers
             // Create advertisement
             int advertisementId = await _advertisementService.CreateAdvertisementAsync(model, user.Id);
 
-            // Create transaction for the advertisement
-            await _transactionService.CreateAdvertisementTransactionAsync(user.Id, advertisementId, packageType.Price);
+            // Không trừ tiền ngay, chỉ tạo quảng cáo
+            TempData["Success"] = "Quảng cáo đã được tạo và đang chờ phê duyệt. Tiền sẽ được trừ sau khi quảng cáo được chấp nhận.";
 
             return RedirectToAction("MyAdvertisements");
         }
@@ -387,8 +387,45 @@ namespace StudentFreelance.Controllers
         public async Task<IActionResult> Approve(int id)
         {
             var user = await _userManager.GetUserAsync(User);
+            
+            // Lấy thông tin quảng cáo
+            var advertisement = await _advertisementService.GetAdvertisementByIdAsync(id);
+            if (advertisement == null)
+            {
+                TempData["Error"] = "Không tìm thấy quảng cáo.";
+                return RedirectToAction("ManageAdvertisements");
+            }
+            
+            // Lấy thông tin business
+            var business = await _context.Users.FindAsync(advertisement.BusinessId);
+            if (business == null)
+            {
+                TempData["Error"] = "Không tìm thấy thông tin doanh nghiệp.";
+                return RedirectToAction("ManageAdvertisements");
+            }
+            
+            // Lấy thông tin gói quảng cáo
+            var packageType = await _context.AdvertisementPackageTypes.FindAsync(advertisement.PackageTypeID);
+            if (packageType == null)
+            {
+                TempData["Error"] = "Không tìm thấy thông tin gói quảng cáo.";
+                return RedirectToAction("ManageAdvertisements");
+            }
+            
+            // Kiểm tra số dư của business
+            if (business.WalletBalance < packageType.Price)
+            {
+                TempData["Error"] = $"Doanh nghiệp không đủ tiền để thanh toán quảng cáo. Cần {packageType.Price:N0} VND.";
+                return RedirectToAction("ManageAdvertisements");
+            }
+            
+            // Phê duyệt quảng cáo
             await _advertisementService.ApproveAdvertisementAsync(id, user.Id);
-
+            
+            // Thực hiện giao dịch thanh toán
+            await _transactionService.CreateAdvertisementTransactionAsync(business.Id, id, packageType.Price);
+            
+            TempData["Success"] = "Quảng cáo đã được phê duyệt và thanh toán thành công.";
             return RedirectToAction("ManageAdvertisements");
         }
 
@@ -437,13 +474,10 @@ namespace StudentFreelance.Controllers
                 return RedirectToAction("MyAdvertisements");
             }
 
-            // Renew advertisement
-            await _advertisementService.RenewAdvertisementAsync(id);
+            // Đánh dấu quảng cáo cần gia hạn và đợi phê duyệt
+            await _advertisementService.RequestRenewalAsync(id);
 
-            // Create transaction for the advertisement renewal
-            await _transactionService.CreateAdvertisementRenewalTransactionAsync(user.Id, id, packageType.Price);
-
-            TempData["Success"] = "Advertisement renewed successfully.";
+            TempData["Success"] = "Advertisement renewal request submitted successfully. It will be processed after admin approval.";
             return RedirectToAction("MyAdvertisements");
         }
     }

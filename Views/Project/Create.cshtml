@@ -441,7 +441,7 @@
                         </div>
 
                         <div class="form-group mt-4">
-                            <button type="submit" class="btn btn-primary">Create Project</button>
+                            <button type="submit" class="btn btn-primary" id="createProjectBtn">Create Project</button>
                             <a asp-action="Index" class="btn btn-outline-secondary ms-2">Cancel</a>
                         </div>
                     </form>
@@ -465,6 +465,65 @@
         */
         
         document.addEventListener('DOMContentLoaded', function() {
+            // Xác nhận trước khi tạo dự án
+            const createForm = document.querySelector('form[action="/Project/Create"]');
+            const createProjectBtn = document.getElementById('createProjectBtn');
+            const budgetInput = document.getElementById('Budget');
+            
+            if (createForm) {
+                createForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Kiểm tra form validation trước
+                    if (!createForm.checkValidity()) {
+                        createForm.reportValidity();
+                        return;
+                    }
+                    
+                    const budget = parseFloat(budgetInput.value.replace(/,/g, ''));
+                    if (isNaN(budget)) {
+                        alert('Vui lòng nhập ngân sách hợp lệ.');
+                        return;
+                    }
+                    
+                    // Tính phí dự án
+                    let fee = 0;
+                    let feeRate = 0;
+                    
+                    if (budget <= 100000) {
+                        feeRate = 5;
+                        fee = budget * 0.05;
+                        if (fee < 5000) fee = 5000;
+                    } else if (budget <= 500000) {
+                        feeRate = 4;
+                        fee = budget * 0.04;
+                    } else if (budget <= 1000000) {
+                        feeRate = 3;
+                        fee = budget * 0.03;
+                    } else if (budget <= 5000000) {
+                        feeRate = 2.5;
+                        fee = budget * 0.025;
+                    } else {
+                        feeRate = 2;
+                        fee = budget * 0.02;
+                        if (fee > 200000) fee = 200000;
+                    }
+                    
+                    // Làm tròn lên đến 1.000 VND
+                    fee = Math.ceil(fee / 1000) * 1000;
+                    
+                    const totalAmount = budget + fee;
+                    
+                    const formattedBudget = new Intl.NumberFormat('vi-VN').format(budget);
+                    const formattedFee = new Intl.NumberFormat('vi-VN').format(fee);
+                    const formattedTotal = new Intl.NumberFormat('vi-VN').format(totalAmount);
+                    
+                    if (confirm(`Xác nhận tạo dự án?\n\nNgân sách: ${formattedBudget} VND\nPhí dự án (${feeRate}%): ${formattedFee} VND\nTổng cộng: ${formattedTotal} VND\n\nKhi thực hiện hành động này, số tiền ${formattedTotal} VND sẽ được trừ từ ví của bạn.\n\nBạn có chắc chắn muốn tiếp tục?`)) {
+                        createForm.submit();
+                    }
+                });
+            }
+            
             // Logic for handling remote work checkbox
             const remoteWorkCheckbox = document.getElementById('isRemoteWorkCheckbox');
             const addressIdField = document.getElementById('addressIdField');

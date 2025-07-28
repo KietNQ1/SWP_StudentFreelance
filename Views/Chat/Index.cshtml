@@ -1,156 +1,140 @@
 ﻿@model StudentFreelance.ViewModels.ConversationListViewModel
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+
 @{
     ViewData["Title"] = "Tin nhắn";
+    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 }
 
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
 <style>
-    body {
-        background-color: #F8F8F8;
-        margin: 0;
-        padding: 0;
+    .chat-container {
+        height: 90vh;
+        display: flex;
+        overflow: hidden;
     }
 
-    .conversation-list {
-        max-width: 800px;
-        margin: auto;
-        font-family: 'Segoe UI', sans-serif;
+    .sidebar {
+        width: 30%;
+        background-color: #F8F8F8;
+        overflow-y: auto;
+        border-right: 1px solid #ddd;
+        padding: 1rem;
+    }
+
+    .chat-area {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        background-color: #fff;
     }
 
     .conversation-card {
         background: #fff;
         border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-        padding: 16px 20px;
-        margin-bottom: 16px;
-        transition: all 0.2s ease-in-out;
+        padding: 12px;
+        margin-bottom: 12px;
         cursor: pointer;
+        border: 1px solid transparent;
+        transition: all 0.2s ease-in-out;
     }
 
         .conversation-card:hover {
-            transform: translateY(-2px);
             background-color: #D3E671;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
-        }
-
-    .conversation-avatar {
-        width: 48px;
-        height: 48px;
-        object-fit: cover;
-        border-radius: 50%;
-        margin-right: 16px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-color: #ccc;
     }
 
     .conversation-title {
         font-weight: 600;
-        font-size: 1rem;
         color: #333;
     }
 
     .conversation-meta {
-        font-size: 0.875rem;
-        color: #888;
-        margin-top: 4px;
-    }
-
-    .conversation-project {
-        font-size: 0.9rem;
-        color: #FF8989;
-        margin-top: 2px;
+        font-size: 0.85rem;
+        color: gray;
     }
 
     .conversation-badge {
-        font-size: 0.75rem;
-        padding: 4px 8px;
-        margin-left: 6px;
-        border-radius: 12px;
         background-color: #dc3545;
         color: white;
-        font-weight: 500;
+        padding: 2px 6px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        margin-left: 8px;
     }
 
-    .action-button {
+    .chat-header {
         background-color: #89AC46;
         color: white;
-        padding: 8px 18px;
+        padding: 1rem;
+        font-weight: bold;
+    }
+
+    .chat-body {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 1rem;
+        background-color: #f3f3f3;
+    }
+
+    .chat-footer {
+        padding: 1rem;
+        border-top: 1px solid #ccc;
+        }
+
+    .message-box {
+        max-width: 70%;
+        padding: 10px 15px;
+        border-radius: 20px;
+        margin-bottom: 10px;
+        word-wrap: break-word; 
+        word-break: break-word; 
+        overflow-wrap: break-word;
+    }
+
+    .message-left {
+        background-color: #FFFBE6;
+        color: #000;
+        align-self: flex-start;
+    }
+
+    .message-right {
+        background-color: #626F47;
+        color: #fff;
+        align-self: flex-end;
+    }
+
+    .send-button {
+        background-color: #89AC46;
         border: none;
+        color: white;
         border-radius: 30px;
-        font-size: 0.9rem;
-        font-weight: 500;
-        text-decoration: none;
-        display: inline-block;
-        transition: background-color 0.3s ease-in-out;
+        padding: 8px 20px;
     }
 
-        .action-button:hover {
-            background-color: #6f963a;
-            color: #fff;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-        }
-
-    .form-select {
-        padding: 12px 16px;
-        padding-right: 40px; /* Tăng padding phải để tránh chữ đè icon */
-        border-radius: 10px;
-        border: 2px solid #000;
-        font-size: 1rem;
-        font-weight: 500;
-        color: #354f6c;
-        background-color: #fff;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-        transition: border-color 0.2s ease-in-out;
-        cursor: pointer;
-        
+    .message-meta {
+        font-size: 0.8rem;
+        color: gray;
+        margin-top: 4px;
     }
 
-
-        .form-select:hover {
-            border-color: #000;
-        }
-
-    .d-flex {
-        display: flex;
-    }
-
-    .justify-content-between {
-        justify-content: space-between;
-    }
-
-    .align-items-center {
-        align-items: center;
-    }
-
-    .me-2 {
-        margin-right: 0.5rem;
-    }
-
-    .mb-4 {
-        margin-bottom: 1.5rem;
-    }
-
-    .mb-3 {
-        margin-bottom: 1rem;
-    }
-
-    .w-auto {
-        width: auto;
-    }
-
-    .d-inline-block {
-        display: inline-block;
-    }
-
-    .mt-4 {
-        margin-top: 1.5rem;
+    .conversation-avatar {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 50%;
+        margin-right: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 </style>
 
-<div class="conversation-list mt-4">
-    <h3 class="mb-4">Tin nhắn</h3>
-
-    <!-- Dropdown chọn dự án -->
-    <form method="get" asp-action="Index" class="mb-3">
-        <select name="projectId" class="form-select w-auto d-inline-block" onchange="this.form.submit()">
+<div class="chat-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <form method="get" asp-action="Index">
+            <select name="projectId" class="form-select mb-3" onchange="this.form.submit()">
             <option value="">Tất cả dự án</option>
             @foreach (var p in Model.Projects)
             {
@@ -161,30 +145,31 @@
         </select>
     </form>
 
-    <!-- Danh sách cuộc trò chuyện -->
     @foreach (var c in Model.Items)
     {
-        <div class="conversation-card d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center">
+            <div class="conversation-card d-flex align-items-center" onclick="location.href='@Url.Action("Room", new { id = c.ConversationID })'">
                 <img src="@(c.OtherUserAvatar ?? "/images/default-avatar.png")" class="conversation-avatar" />
                 <div>
-                    <div class="d-flex align-items-center">
-                        <span class="conversation-title me-2">@c.OtherUserName</span>
+                    <div class="conversation-title">
+                        @c.OtherUserName
                         @if (c.UnreadCount > 0)
                         {
                             <span class="conversation-badge">@c.UnreadCount</span>
                         }
                     </div>
-                    <div class="conversation-project">@c.ProjectTitle</div>
+                    <div class="conversation-meta">Dự Án: @c.ProjectTitle</div>
                     <div class="conversation-meta">
                         @c.LastMessageAt.ToLocalTime().ToString("g") – @c.LastMessage
                     </div>
                 </div>
             </div>
-            <div class="d-flex align-items-center">
-                <a asp-controller="Project" asp-action="Details" asp-route-id="@c.ProjectID" class="action-button me-2">Dự án</a>
-                <a asp-action="Room" asp-route-id="@c.ConversationID" class="action-button">xem</a>
+        }
             </div>
+
+    <!-- Chat Area -->
+    <div class="chat-area">
+        <div class="d-flex justify-content-center align-items-center h-100">
+            <h5>Hãy chọn một cuộc trò chuyện để bắt đầu.</h5>
         </div>
-    }
+    </div>
 </div>
