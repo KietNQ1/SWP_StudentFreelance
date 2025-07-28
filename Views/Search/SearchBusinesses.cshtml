@@ -5,185 +5,179 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/search/searchBusinesses.css" asp-append-version="true" />
-    <style>
-        .filter-header {
-            background-color: #89AC46 !important;
-            color: white;
-        }
-        
-        .business-verified-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            background-color: #4299e1;
-            color: white;
-            margin-top: 5px;
-        }
-        
-        .business-verified-badge i,
-        .business-verified-badge span {
-            color: white !important;
-        }
-    </style>
 }
 
-<div class="container mt-4">
-    <h2 class="mb-4 text-primary">Tìm kiếm doanh nghiệp</h2>
-
-    <div class="card mb-4 search-card">
-        <div class="card-header filter-header">
-            <h5 class="mb-0 text-white">Bộ lọc tìm kiếm</h5>
-        </div>
-        <div class="card-body">
-            <form asp-action="SearchBusinesses" method="get" class="row g-3">
-                <div class="row mb-3">
-                    <div class="col-md-8">
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control" name="query" placeholder="Tìm kiếm doanh nghiệp..." value="@ViewBag.Query">
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <select name="provinceCode" class="form-select">
-                            <option value="">-- Chọn tỉnh/thành phố --</option>
-                            @foreach (var province in ViewBag.Provinces)
-                            {
-                                var selected = ViewBag.ProvinceCode != null && ViewBag.ProvinceCode == province.ID;
-                                <option value="@province.ID" selected="@selected">
-                                    @province.Name
-                                </option>
-                            }
-                        </select>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-12 text-center">
-                        <button type="submit" class="btn btn-primary px-4">
-                            <i class="bi bi-search me-2"></i>Tìm kiếm
-                        </button>
-                        <a href="@Url.Action("SearchBusinesses", "Search")" class="btn btn-outline-secondary ms-2">
-                            <i class="bi bi-x-circle me-2"></i>Xóa bộ lọc
-                        </a>
-                    </div>
-                </div>
-            </form>
-        </div>
+<div class="container my-5 search-businesses-container">
+    <div class="topbar">
+        <h1><i class="bi bi-search"></i> Tìm kiếm doanh nghiệp</h1>
+        
+        <form asp-action="SearchBusinesses" method="get" class="filter-row">
+            <div class="filter-group">
+                <input type="text" name="query" value="@ViewBag.Query" placeholder="🔍 Tìm kiếm doanh nghiệp..." />
+            </div>
+            
+            <div class="filter-group">
+                <select name="provinceCode" class="custom-select">
+                    <option value="">📍 Tất cả tỉnh/thành</option>
+                    @foreach (var province in ViewBag.Provinces)
+                    {
+                        var selected = ViewBag.ProvinceCode != null && ViewBag.ProvinceCode == province.ID;
+                        <option value="@province.ID" selected="@selected">
+                            @province.Name
+                        </option>
+                    }
+                </select>
+            </div>
+            
+            <button type="submit" class="filter-btn">
+                <i class="bi bi-filter"></i> Tìm kiếm
+            </button>
+            
+            <a href="@Url.Action("SearchBusinesses", "Search")" class="reset-btn">
+                <i class="bi bi-x-circle"></i> Xóa bộ lọc
+            </a>
+        </form>
     </div>
 
-    @if (Model.Any())
-    {
-        <div class="business-list">
-            @foreach (var business in Model)
+    <div class="row business-list mt-4">
+        @if (Model.Any())
+        {
+            foreach (var business in Model)
             {
-                <div class="card mb-3 search-card">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col-md-1 text-center">
-                                @if (!string.IsNullOrEmpty(business.ProfilePicturePath))
-                                {
-                                    <img src="@business.ProfilePicturePath" class="rounded-circle profile-avatar" alt="@business.CompanyName" style="width: 60px; height: 60px;">
-                                }
-                                else
-                                {
-                                    <div class="profile-avatar-placeholder" style="width: 60px; height: 60px;">
-                                        <span>@(business.CompanyName?.Substring(0, 1) ?? "C")</span>
-                                    </div>
-                                }
-                            </div>
-                            <div class="col-md-4">
-                                <h5 class="mb-0 business-name">
-                                    @business.CompanyName
-                                </h5>
-                                <p class="text-muted mb-2">@business.Industry</p>
-                                <p class="mb-0">
-                                    <i class="bi bi-person"></i> @business.FullName
-                                </p>
-                            </div>
-                            <div class="col-md-3">
-                                <p class="mb-1">
-                                    @if (business.Address != null && (!string.IsNullOrEmpty(business.Address.ProvinceName) || !string.IsNullOrEmpty(business.Address.DetailAddress)))
+                <div class="col-md-12 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-2 text-center">
+                                    @if (!string.IsNullOrEmpty(business.ProfilePicturePath))
                                     {
-                                        <i class="bi bi-geo-alt"></i>
-                                        <span>
-                                            @if (!string.IsNullOrEmpty(business.Address.DetailAddress))
-                                            {
-                                                @(business.Address.DetailAddress)<text>, </text>
-                                            }
-                                            @if (!string.IsNullOrEmpty(business.Address.WardName))
-                                            {
-                                                @(business.Address.WardName)<text>, </text>
-                                            }
-                                            @if (!string.IsNullOrEmpty(business.Address.DistrictName))
-                                            {
-                                                @(business.Address.DistrictName)<text>, </text>
-                                            }
-                                            @if (!string.IsNullOrEmpty(business.Address.ProvinceName))
-                                            {
-                                                @(business.Address.ProvinceName)
-                                            }
-                                        </span>
+                                        <img src="@business.ProfilePicturePath" class="img-fluid rounded-circle mb-2" style="width: 100px; height: 100px; object-fit: cover;" alt="@business.CompanyName">
                                     }
                                     else
                                     {
-                                        <span class="text-muted"><i class="bi bi-geo-alt"></i> Chưa có thông tin địa chỉ</span>
+                                        <div class="profile-avatar-placeholder mb-2">
+                                            <span>@(business.CompanyName?.Substring(0, 1) ?? "C")</span>
+                                        </div>
                                     }
-                                </p>
-                                @if (!string.IsNullOrEmpty(business.PhoneNumber))
-                                {
-                                    <p class="mb-1">
-                                        <i class="bi bi-telephone"></i> @business.PhoneNumber
-                                    </p>
-                                }
-                                <p class="mb-0">
-                                    <i class="bi bi-envelope"></i> @business.Email
-                                </p>
-                            </div>
-                            <div class="col-md-2">
-                                <div class="info-badge mb-2">
-                                    <i class="bi bi-star-fill rating-stars me-1"></i>
-                                    <span>@business.AverageRating</span>
                                 </div>
-                                <div class="info-badge">
-                                    <i class="bi bi-briefcase-fill me-1"></i>
-                                    <span>@(ViewBag.ProjectCounts != null && ViewBag.ProjectCounts.ContainsKey(business.Id) 
-                                        ? ViewBag.ProjectCounts[business.Id] 
-                                        : 0) dự án</span>
-                                </div>
-                                @if (business.IsVerified)
-                                {
-                                    <div class="business-verified-badge">
-                                        <i class="fas fa-check-circle me-1" style="color: white !important;"></i>
-                                        <span style="color: white !important;">Verified</span>
+                                <div class="col-md-7">
+                                    <h5 class="business-name">
+                                        @business.CompanyName
+                                    </h5>
+                                    <p class="text-muted mb-2">@business.Industry</p>
+                                    
+                                    <div class="mb-2">
+                                        <div><i class="bi bi-person-fill me-2"></i>@business.FullName</div>
+                                        
+                                        @if (business.Address != null && (!string.IsNullOrEmpty(business.Address.ProvinceName) || !string.IsNullOrEmpty(business.Address.DetailAddress)))
+                                        {
+                                            <div>
+                                                <i class="bi bi-geo-alt-fill me-2"></i>
+                                                <span>
+                                                    @if (!string.IsNullOrEmpty(business.Address.DetailAddress))
+                                                    {
+                                                        @(business.Address.DetailAddress)<text>, </text>
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(business.Address.WardName))
+                                                    {
+                                                        @(business.Address.WardName)<text>, </text>
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(business.Address.DistrictName))
+                                                    {
+                                                        @(business.Address.DistrictName)<text>, </text>
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(business.Address.ProvinceName))
+                                                    {
+                                                        @(business.Address.ProvinceName)
+                                                    }
+                                                </span>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div><i class="bi bi-geo-alt-fill me-2"></i>Chưa có thông tin địa chỉ</div>
+                                        }
+                                        
+                                        @if (!string.IsNullOrEmpty(business.PhoneNumber))
+                                        {
+                                            <div><i class="bi bi-telephone-fill me-2"></i>@business.PhoneNumber</div>
+                                        }
+                                        <div><i class="bi bi-envelope-fill me-2"></i>@business.Email</div>
                                     </div>
-                                }
-                            </div>
-                            <div class="col-md-2 text-center profile-button-container">
-                                <a href="@Url.Action("Profile", "User", new { id = business.Id })" class="btn btn-view-profile">Xem hồ sơ</a>
+                                    
+                                    <div class="mb-3">
+                                        <div class="info-badge rating-badge me-2">
+                                            <i class="bi bi-star-fill me-1"></i>
+                                            @business.AverageRating
+                                        </div>
+                                        <div class="info-badge project-badge">
+                                            <i class="bi bi-briefcase-fill me-1"></i>
+                                            @(ViewBag.ProjectCounts != null && ViewBag.ProjectCounts.ContainsKey(business.Id) 
+                                                ? ViewBag.ProjectCounts[business.Id] 
+                                                : 0) dự án
+                                        </div>
+                                        @if (business.IsVerified)
+                                        {
+                                            <div class="verified-badge">
+                                                <i class="fas fa-check-circle me-1"></i>
+                                                <span>Verified</span>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="col-md-3 d-flex align-items-center justify-content-center">
+                                    <a href="@Url.Action("Profile", "User", new { id = business.Id })" class="btn btn-view-profile btn-lg">
+                                        <i class="bi bi-person-badge me-1"></i>Xem hồ sơ
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             }
-        </div>
-    }
-    else
-    {
-        <div class="alert alert-warning">
-            Không tìm thấy doanh nghiệp nào phù hợp với tiêu chí tìm kiếm.
-        </div>
-    }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Không tìm thấy doanh nghiệp nào phù hợp với tiêu chí tìm kiếm.
+                </div>
+            </div>
+        }
+    </div>
 </div>
-
-
 
 @section Scripts {
     <script>
         $(document).ready(function() {
             $('select[name="provinceCode"]').select2({
-                placeholder: "Chọn tỉnh/thành phố...",
-                allowClear: true
+                placeholder: "📍 Tất cả tỉnh/thành",
+                allowClear: true,
+                dropdownCssClass: 'province-dropdown',
+                width: '100%'
+            }).on('select2:open', function() {
+                // Đảm bảo dropdown hiển thị đúng vị trí và z-index
+                setTimeout(function() {
+                    $('.province-dropdown').parent().css('z-index', '10000');
+                }, 0);
+            });
+            
+            // Đảm bảo dropdown luôn hiển thị phía trên khi cuộn trang
+            $(window).on('scroll resize', function() {
+                var openDropdown = $(".select2-container--open");
+                if (openDropdown.length) {
+                    openDropdown.css({
+                        'z-index': '10000',
+                        'position': 'absolute'
+                    });
+                }
+            });
+            
+            // Sửa lỗi click bị double
+            $('span.select2').on('click', function(e) {
+                // Ngăn sự kiện click lan truyền đến các phần tử cha
+                e.stopPropagation();
             });
         });
     </script>
