@@ -284,7 +284,9 @@
                                     }
                                 </div>
                                 <div class="col-md-7">
-                                    <h5 class="student-name">@student.FullName</h5>
+                                    <h5 class="student-name">
+                                        @student.FullName
+                                    </h5>
                                     
                                     <div class="mb-2">
                                         @if (!string.IsNullOrEmpty(student.University))
@@ -306,6 +308,13 @@
                                             <i class="bi bi-briefcase-fill me-1"></i>
                                             @student.TotalProjects hoàn thành
                                         </div>
+                                        @if (student.IsVerified)
+                                        {
+                                            <div class="info-badge verified-badge" style="background-color: #4299e1; margin-left: 5px;">
+                                                <i class="fas fa-check-circle me-1" style="color: white !important;"></i>
+                                                <span style="color: white !important;">Verified</span>
+                                            </div>
+                                        }
                                     </div>
 
                                     <div class="mt-3">

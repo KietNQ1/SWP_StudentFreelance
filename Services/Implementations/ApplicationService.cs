@@ -130,7 +130,7 @@ namespace StudentFreelance.Services.Implementations
                 application.DateApplied = DateTime.Now;
                 application.Status = "Pending";
                 application.LastStatusUpdate = DateTime.Now;
-                
+
                 // ResumeAttachment có thể null, không cần kiểm tra
 
                 // Debug info

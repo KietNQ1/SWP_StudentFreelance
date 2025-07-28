@@ -220,15 +220,24 @@ namespace StudentFreelance.Services.Implementations
                     .FirstOrDefaultAsync(a => a.ApplicationID == applicationId);
 
                 if (application == null || application.Status != "Completed")
+                {
+                    Console.WriteLine($"FinalizeProjectAsync: Không thể thanh toán - application không tồn tại hoặc không ở trạng thái Completed. ApplicationID: {applicationId}");
                     return false;
+                }
 
                 // Kiểm tra xem đã thanh toán chưa
                 if (application.IsPaid)
+                {
+                    Console.WriteLine($"FinalizeProjectAsync: Không thể thanh toán - application đã được thanh toán trước đó. ApplicationID: {applicationId}");
                     return false;
+                }
 
                 // Kiểm tra xem ví dự án có đủ tiền không
                 if (application.Project.ProjectWallet < application.Salary)
+                {
+                    Console.WriteLine($"FinalizeProjectAsync: Không thể thanh toán - ví dự án không đủ tiền. ApplicationID: {applicationId}, ProjectWallet: {application.Project.ProjectWallet}, Salary: {application.Salary}");
                     return false;
+                }
 
                 // Trừ tiền từ ví dự án
                 application.Project.ProjectWallet -= application.Salary;
@@ -257,7 +266,7 @@ namespace StudentFreelance.Services.Implementations
                     TypeID = paymentTypeId, // Thanh toán cho sinh viên
                     TransactionDate = DateTime.Now,
                     Description = $"Thanh toán cho dự án '{application.Project.Title}'",
-                    StatusID = 1, // Completed
+                    StatusID = 2, // Thành công (StatusID = 2)
                     IsActive = true
                 };
                 _context.Transactions.Add(transaction);
@@ -283,11 +292,13 @@ namespace StudentFreelance.Services.Implementations
                 );
 
                 await dbTransaction.CommitAsync();
+                Console.WriteLine($"FinalizeProjectAsync: Thanh toán thành công. ApplicationID: {applicationId}, Amount: {application.Salary}");
                 return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 await dbTransaction.RollbackAsync();
+                Console.WriteLine($"FinalizeProjectAsync: Lỗi khi thanh toán. ApplicationID: {applicationId}, Error: {ex.Message}");
                 return false;
             }
         }

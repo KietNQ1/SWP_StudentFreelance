@@ -2,49 +2,72 @@
 <link rel="stylesheet" href="~/css/category/details.css" asp-append-version="true" />
 @{
     ViewData["Title"] = "Chi tiết danh mục";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["HeaderIcon"] = "info-circle";
+    Layout = "~/Views/Shared/_Dashboard.cshtml";
 }
 
-<h2 class="text-center">@ViewData["Title"]</h2>
-
-<div class="d-flex justify-content-center mt-4">
-    <table class="table table-bordered w-auto">
-        <tr>
-            <th>Tên</th>
-            <td>@Model.CategoryName</td>
-        </tr>
-        <tr>
-            <th>Loại</th>
-            <td>
-                @(Model.CategoryType == "field" ? "Lĩnh vực" :
-                    Model.CategoryType == "skill" ? "Kỹ năng" : "Ngành")
-            </td>
-        </tr>
-        <tr>
-            <th>Mô tả</th>
-            <td>@Model.Description</td>
-        </tr>
-        <tr>
-            <th>Danh mục lớn</th>
-            <td>@Model.ParentCategory?.CategoryName</td>
-        </tr>
-        <tr>
-            <th>Trạng thái</th>
-            <td>
-                @if (Model.IsActive)
-                {
-                    <span class="badge bg-success">Đang hoạt động</span>
-                }
-                else
-                {
-                    <span class="badge bg-secondary">Đã bị ẩn</span>
-                }
-            </td>
-        </tr>
-    </table>
-</div>
-
-<div class="text-center mt-3">
-    <a asp-action="Edit" asp-route-id="@Model.CategoryID" class="btn btn-primary me-2">Chỉnh sửa</a>
-    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Chi tiết danh mục</h5>
+        <div>
+            @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+            {
+                <a asp-action="Edit" asp-route-id="@Model.CategoryID" class="btn btn-warning">
+                    <i class="fas fa-edit"></i> Chỉnh sửa
+                </a>
+            }
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <table class="table table-bordered">
+                    <tr>
+                        <th style="width: 30%">Tên danh mục</th>
+                        <td>@Model.CategoryName</td>
+                    </tr>
+                    <tr>
+                        <th>Loại</th>
+                        <td>
+                            @(Model.CategoryType == "field" ? "Lĩnh vực" :
+                                Model.CategoryType == "skill" ? "Kỹ năng" : "Ngành")
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Mô tả</th>
+                        <td>@Model.Description</td>
+                    </tr>
+                    <tr>
+                        <th>Danh mục lớn</th>
+                        <td>@(Model.ParentCategory?.CategoryName ?? "-")</td>
+                    </tr>
+                    <tr>
+                        <th>Trạng thái</th>
+                        <td>
+                            @if (Model.IsActive)
+                            {
+                                <span class="badge bg-success">Đang hoạt động</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Đã bị ẩn</span>
+                            }
+                        </td>
+                    </tr>
+                    @if (!string.IsNullOrEmpty(Model.ImagePath))
+                    {
+                        <tr>
+                            <th>Ảnh đại diện</th>
+                            <td>
+                                <img src="@Model.ImagePath" alt="Category Icon" style="max-width: 100px; max-height: 100px;" />
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        </div>
+    </div>
 </div>

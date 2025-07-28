@@ -4,6 +4,7 @@
 @{
     ViewData["Title"] = Model.Title;
 }
+
 <link rel="stylesheet" href="~/css/project/detail.css" />
 
 
@@ -295,16 +296,16 @@
                 <div class="d-flex gap-2">
                     @if (Model.StatusID != 3 && Model.StatusID != 4) // Nếu dự án chưa hoàn thành và chưa bị hủy
                     {
-                        <form asp-controller="Project" asp-action="CompleteProject" method="post" class="d-inline">
+                        <form asp-controller="Project" asp-action="CompleteProject" method="post" id="completeProjectForm" class="d-inline">
                             <input type="hidden" name="id" value="@Model.ProjectID" />
-                            <button type="submit" class="btn btn-success">
+                            <button type="button" id="completeProjectBtn" class="btn btn-success">
                                 <i class="bi bi-check-circle"></i> Đánh dấu dự án đã hoàn thành
                             </button>
                         </form>
                         
-                        <form asp-controller="Project" asp-action="CancelProject" method="post" class="d-inline">
+                        <form asp-controller="Project" asp-action="CancelProject" method="post" id="cancelProjectForm" class="d-inline">
                             <input type="hidden" name="id" value="@Model.ProjectID" />
-                            <button type="submit" class="btn btn-danger" onclick="return confirm('Bạn có chắc chắn muốn hủy dự án này? Hành động này không thể hoàn tác.');">
+                            <button type="button" id="cancelProjectBtn" class="btn btn-danger">
                                 <i class="bi bi-x-circle"></i> Hủy dự án
                             </button>
                         </form>
@@ -385,6 +386,21 @@
                                                 <div class="alert alert-success py-1 mt-2 mb-0">
                                                     <small><i class="bi bi-check-circle"></i> Đã hoàn thành. Cả hai bên đã xác nhận.</small>
                                                 </div>
+                                                
+                                                @if (!app.IsPaid)
+                                                {
+                                                    <div class="mt-2">
+                                                        <a asp-controller="ProjectSubmission" asp-action="Finalize" asp-route-applicationId="@app.ApplicationID" class="btn btn-primary btn-sm">
+                                                            <i class="bi bi-cash-coin"></i> Thanh toán cho sinh viên
+                                                        </a>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <div class="alert alert-success py-1 mt-2 mb-0">
+                                                        <small><i class="bi bi-check-circle"></i> Đã thanh toán cho sinh viên.</small>
+                                                    </div>
+                                                }
                                             }
                                         }
                                     </div>
@@ -472,6 +488,109 @@ else
         <a asp-controller="Account" asp-action="Login" class="alert-link">đăng nhập</a> để ứng tuyển vào dự án này.
     </div>
 }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Điều chỉnh vị trí modal để không bị che bởi thanh header
+            $('.modal').on('show.bs.modal', function () {
+                setTimeout(function() {
+                    $('.modal-dialog').css({
+                        'margin-top': '80px'
+                    });
+                }, 100);
+            });
+            
+            // Xử lý nút hoàn thành dự án
+            $("#completeProjectBtn").click(function() {
+                // Hiển thị modal xác nhận hoàn thành dự án
+                $("#completeProjectModal").modal("show");
+            });
+            
+            // Xử lý nút xác nhận trong modal hoàn thành
+            $("#confirmCompleteBtn").click(function() {
+                // Gửi form hoàn thành dự án
+                $("#completeProjectForm").submit();
+            });
+            
+            // Xử lý nút hủy dự án
+            $("#cancelProjectBtn").click(function() {
+                // Hiển thị modal xác nhận hủy dự án
+                $("#cancelProjectModal").modal("show");
+            });
+            
+            // Xử lý nút xác nhận trong modal hủy
+            $("#confirmCancelBtn").click(function() {
+                // Gửi form hủy dự án
+                $("#cancelProjectForm").submit();
+            });
+        });
+    </script>
+}
+
+<!-- Modal xác nhận hoàn thành dự án -->
+<div class="modal fade" id="completeProjectModal" tabindex="-1" aria-labelledby="completeProjectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="completeProjectModalLabel"><i class="bi bi-check-circle me-2"></i> Xác nhận hoàn thành dự án</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn đánh dấu dự án <strong>@Model.Title</strong> là đã hoàn thành?</p>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i> Khi xác nhận hoàn thành:
+                    <ul class="mb-0 mt-2">
+                        <li>Phí dự án sẽ được chuyển cho quản trị viên</li>
+                        <li>Số tiền còn lại trong ví dự án sẽ được hoàn trả về ví của bạn</li>
+                        <li>Dự án sẽ không thể chỉnh sửa hoặc hủy sau khi hoàn thành</li>
+                    </ul>
+                </div>
+                <p class="text-danger"><strong>Lưu ý:</strong> Hành động này không thể hoàn tác sau khi xác nhận!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-2"></i> Hủy
+                </button>
+                <button type="button" id="confirmCompleteBtn" class="btn btn-success">
+                    <i class="bi bi-check-circle me-2"></i> Xác nhận hoàn thành
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal xác nhận hủy dự án -->
+<div class="modal fade" id="cancelProjectModal" tabindex="-1" aria-labelledby="cancelProjectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="cancelProjectModalLabel"><i class="bi bi-x-circle me-2"></i> Xác nhận hủy dự án</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn hủy dự án <strong>@Model.Title</strong>?</p>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i> Khi xác nhận hủy:
+                    <ul class="mb-0 mt-2">
+                        <li>Phí dự án sẽ được chuyển cho quản trị viên</li>
+                        <li>Số tiền còn lại trong ví dự án sẽ được hoàn trả về ví của bạn</li>
+                        <li>Dự án sẽ không thể chỉnh sửa hoặc hoàn thành sau khi hủy</li>
+                    </ul>
+                </div>
+                <p class="text-danger"><strong>Lưu ý:</strong> Hành động này không thể hoàn tác sau khi xác nhận!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-2"></i> Đóng
+                </button>
+                <button type="button" id="confirmCancelBtn" class="btn btn-danger">
+                    <i class="bi bi-trash me-2"></i> Xác nhận hủy dự án
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 

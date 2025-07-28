@@ -35,7 +35,25 @@
         <div class="content-section">
             <!-- Header -->
             <div class="profile-header">
-                <h2 class="fw-bold mb-1">@Model.FullName</h2>
+                <h2 class="fw-bold mb-1">
+                    @Model.FullName
+                </h2>
+                <div class="d-flex align-items-center mb-3">
+                    @if (Model.AverageRating.HasValue)
+                    {
+                        <div class="rating-stars me-3">
+                            <i class="fas fa-star text-warning"></i>
+                            <span>@Model.AverageRating.Value.ToString("0.0")</span>
+                        </div>
+                    }
+                    @if (Model.IsVerified)
+                    {
+                        <div class="verified-badge" style="background-color: #4299e1; display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 6px; font-size: 0.9rem;">
+                            <i class="fas fa-check-circle" style="color: white !important; margin-right: 6px;"></i>
+                            <span style="color: white !important; font-weight: bold;">Verified</span>
+                        </div>
+                    }
+                </div>
             </div>
 
             <!-- Thông tin cá nhân -->
@@ -62,7 +80,6 @@
                         var fullAddress = string.Join(", ", addressParts.Where(p => !string.IsNullOrWhiteSpace(p)));
                     }
                     <div class="info-value">@fullAddress</div>
-
                 </div>
             </div>
 

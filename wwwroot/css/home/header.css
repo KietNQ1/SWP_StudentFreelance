@@ -414,6 +414,19 @@ body {
     overflow-y: auto;
 }
 
+.notification-item-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: background-color 0.2s ease;
+}
+
+.notification-item-link:hover {
+    background-color: #f8f9fa;
+    text-decoration: none;
+    color: inherit;
+}
+
 .notification-item {
     display: flex;
     align-items: flex-start;
@@ -436,12 +449,24 @@ body {
 .notification-text {
     flex: 1;
     font-size: 0.875rem;
+    min-width: 0; /* Cho phép text bị cắt */
 }
+
+    .notification-text p {
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
 
     .notification-text .time {
         font-size: 0.75rem;
         color: #6b7280;
         margin-top: 0.25rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
 .notification-footer {

@@ -25,6 +25,8 @@ namespace StudentFreelance.Models
         [Required(ErrorMessage = "Vui lòng nhập mô tả.")]
         public string Description { get; set; } = string.Empty;
 
+        /// Đường dẫn đến ảnh đại diện của category
+        public string? ImagePath { get; set; }
 
         /// FK → Category.CategoryID (parent)
         [ForeignKey(nameof(ParentCategory))]

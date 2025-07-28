@@ -876,7 +876,7 @@ namespace StudentFreelance.Controllers
 
             if (application.BusinessConfirmedCompletion && application.StudentConfirmedCompletion)
             {
-                TempData["SuccessMessage"] = "Dự án đã được xác nhận hoàn thành bởi cả hai bên. Thanh toán đã được chuyển.";
+                TempData["SuccessMessage"] = "Dự án đã được xác nhận hoàn thành bởi cả hai bên.";
                     }
                 }
                 else
@@ -1675,6 +1675,20 @@ namespace StudentFreelance.Controllers
                 TempData["ErrorMessage"] = "Có lỗi xảy ra khi gửi thư mời";
                 return RedirectToAction("InviteStudents", new { projectId });
             }
+        }
+
+        [Authorize(Roles = "Business")]
+        public async Task<IActionResult> MyProjects()
+        {
+            var currentUserId = int.Parse(User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier));
+            var projects = await _context.Projects
+                .Include(p => p.Category)
+                .Include(p => p.Status)
+                .Include(p => p.Type)
+                .Where(p => p.BusinessID == currentUserId)
+                .OrderByDescending(p => p.ProjectID)
+                .ToListAsync();
+            return View("MyProjects", projects);
         }
     }
 } 

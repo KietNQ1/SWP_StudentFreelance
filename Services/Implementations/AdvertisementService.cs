@@ -363,5 +363,24 @@ namespace StudentFreelance.Services.Implementations
             await _context.SaveChangesAsync();
             return true;
         }
+        
+        public async Task<bool> RequestRenewalAsync(int id)
+        {
+            var advertisement = await _context.Advertisements.FindAsync(id);
+            
+            if (advertisement == null)
+                return false;
+            
+            // Đánh dấu quảng cáo cần gia hạn và đợi phê duyệt
+            advertisement.StatusID = 1; // Pending approval
+            advertisement.IsActive = true;
+            advertisement.ApprovedById = null;
+            advertisement.ApprovedAt = null;
+            
+            _logger.LogInformation("Advertisement {Id} marked for renewal and pending approval", id);
+            
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 } 

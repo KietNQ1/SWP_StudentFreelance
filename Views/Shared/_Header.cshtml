@@ -23,7 +23,7 @@
                 ? currentUser.ProfilePicturePath
                 : "/image/default-avatar.png");
         notifications = (await NotificationService.GetNotificationsByUserIdAsync(currentUser.Id))
-            .OrderByDescending(n => n.NotificationDate).Take(2).ToList();
+            .OrderByDescending(n => n.NotificationDate).Take(5).ToList();
         unreadCount = (await NotificationService.GetUnreadNotificationsByUserIdAsync(currentUser.Id)).Count();
     }
 }
@@ -131,15 +131,17 @@
                                         {
                                             foreach (var n in notifications)
                                             {
-                                                <div class="notification-item">
-                                                    <img src="@(n.Sender?.Avatar ?? "/image/default-avatar.png")" style="width:32px;height:32px;border-radius:50%;" />
-                                                    <div class="notification-text">
-                                                        <p>
-                                                            <strong>@(n.Sender?.FullName ?? "Hệ thống")</strong>: @n.Title
-                                                        </p>
-                                                        <span class="time">@n.NotificationDate.ToString("dd/MM/yyyy HH:mm")</span>
+                                                <a href="@Url.Action("Details", "Notification", new { id = n.NotificationID })" class="notification-item-link">
+                                                    <div class="notification-item">
+                                                        <img src="@(n.Sender?.Avatar ?? "/image/default-avatar.png")" style="width:32px;height:32px;border-radius:50%;" />
+                                                        <div class="notification-text">
+                                                            <p>
+                                                                <strong>@(n.Sender?.FullName ?? "Hệ thống")</strong>: @n.Title
+                                                            </p>
+                                                            <span class="time">@n.NotificationDate.ToString("dd/MM/yyyy HH:mm")</span>
+                                                        </div>
                                                     </div>
-                                                </div>
+                                                </a>
                                             }
                                         }
                                         else
@@ -170,6 +172,10 @@
                                     @if (User.IsInRole("Admin"))
                                     {
                                         <a asp-controller="AdminUser" asp-action="Index"><i class="fas fa-chart-line"></i>Dashboard</a>
+                                    }
+                                    @if (User.IsInRole("Business"))
+                                    {
+                                        <a asp-controller="Project" asp-action="MyProjects"><i class="fas fa-folder-open"></i>My Project</a>
                                     }
                                 </div>
                             </div>

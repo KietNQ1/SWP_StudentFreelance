@@ -30,14 +30,54 @@ namespace StudentFreelance.Controllers
 
             var totalBusiness = await _context.UserRoles
                 .CountAsync(r => r.RoleId == 3); 
+                
+            var totalModerators = await _context.UserRoles
+                .CountAsync(r => r.RoleId == 2); 
 
             var totalProjects = await _context.Projects.CountAsync();
             var completedProjects = await _context.Projects.CountAsync(p => p.StatusID == 3); // Đã hoàn thành
             var ongoingProjects = await _context.Projects.CountAsync(p => p.StatusID == 1);   // Đang tuyển
+            var cancelledProjects = await _context.Projects.CountAsync(p => p.StatusID == 4); // Đã hủy
+            
+            // Tính tổng số giao dịch
+            var totalTransactions = await _context.Transactions
+                .Where(t => t.IsActive && t.StatusID == 2) // Chỉ đếm giao dịch thành công
+                .CountAsync();
 
-            var totalRevenue = await _context.Transactions
-                .Where(t => t.IsActive && t.TypeID == 1 && t.StatusID == 1)
+            // Tính tổng số tiền trong ví của tất cả người dùng trừ admin
+            var adminRoleId = await _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefaultAsync();
+            var adminUserIds = await _context.UserRoles
+                .Where(ur => ur.RoleId == adminRoleId)
+                .Select(ur => ur.UserId)
+                .ToListAsync();
+
+            var totalUserWalletBalance = await _context.Users
+                .Where(u => !adminUserIds.Contains(u.Id)) // Loại trừ admin
+                .SumAsync(u => (decimal?)u.WalletBalance) ?? 0;
+
+            // Tính toán thu nhập từ các nguồn khác nhau
+            var projectFeeIncome = await _context.Transactions
+                .Where(t => t.IsActive && t.TypeID == 8 && t.StatusID == 2) // TypeID 8 = Phí dự án
                 .SumAsync(t => (decimal?)t.Amount) ?? 0;
+
+            var vipSubscriptionIncome = await _context.Transactions
+                .Where(t => t.IsActive && t.TypeID == 5 && t.StatusID == 2) // TypeID 5 = Nâng cấp VIP
+                .SumAsync(t => (decimal?)t.Amount) ?? 0;
+
+            var advertisementIncome = await _context.Transactions
+                .Where(t => t.IsActive && t.TypeID == 6 && t.StatusID == 2) // TypeID 6 = Thanh toán quảng cáo
+                .SumAsync(t => (decimal?)t.Amount) ?? 0;
+
+            var totalIncome = projectFeeIncome + vipSubscriptionIncome + advertisementIncome;
+
+            // Lấy các giao dịch thu nhập gần đây
+            var recentIncomeTransactions = await _context.Transactions
+                .Where(t => t.IsActive && (t.TypeID == 8 || t.TypeID == 5 || t.TypeID == 6) && t.StatusID == 2)
+                .Include(t => t.User)
+                .Include(t => t.Type)
+                .OrderByDescending(t => t.TransactionDate)
+                .Take(10)
+                .ToListAsync();
 
             var recentUsers = await _context.Users
                 .OrderByDescending(u => u.CreatedAt)
@@ -76,7 +116,7 @@ namespace StudentFreelance.Controllers
             {
                 var label = month.ToString("MM/yyyy");
                 var total = await _context.Transactions
-                    .Where(t => t.IsActive && t.TypeID == 1 && t.StatusID == 1 &&
+                    .Where(t => t.IsActive && t.TypeID == 1 && t.StatusID == 2 &&
                                 t.TransactionDate.Year == month.Year &&
                                 t.TransactionDate.Month == month.Month)
                     .SumAsync(t => (decimal?)t.Amount) ?? 0;
@@ -89,10 +129,18 @@ namespace StudentFreelance.Controllers
                 TotalUsers = totalUsers,
                 TotalStudents = totalStudents,
                 TotalBusiness = totalBusiness,
+                TotalModerators = totalModerators,
                 TotalProjects = totalProjects,
                 CompletedProjects = completedProjects,
                 OngoingProjects = ongoingProjects,
-                TotalRevenue = totalRevenue,
+                CancelledProjects = cancelledProjects,
+                TotalUserWalletBalance = totalUserWalletBalance,
+                TotalTransactions = totalTransactions,
+                ProjectFeeIncome = projectFeeIncome,
+                VipSubscriptionIncome = vipSubscriptionIncome,
+                AdvertisementIncome = advertisementIncome,
+                TotalIncome = totalIncome,
+                RecentIncomeTransactions = recentIncomeTransactions,
                 RecentUsers = recentUsers,
                 RecentProjects = recentProjects,
                 ProjectStatusCounts = projectStatusCounts,

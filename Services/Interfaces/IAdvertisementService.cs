@@ -20,6 +20,7 @@ namespace StudentFreelance.Services.Interfaces
         Task<bool> DeleteAdvertisementAsync(int id);
         Task<bool> ActivateAdvertisementAsync(int id);
         Task<bool> RenewAdvertisementAsync(int id);
+        Task<bool> RequestRenewalAsync(int id);
         bool IsAdvertisementExpired(Advertisement advertisement);
         Task CleanupExpiredAdvertisementsAsync();
     }
