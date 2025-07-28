@@ -8,7 +8,14 @@
 @{
     ViewData["Title"] = "Gửi thông báo";
     var isAdmin = User.IsInRole("Admin");
-    Layout = "~/Views/Shared/_Dashboard.cshtml";
+    if(User.IsInRole("Admin"))
+    {
+        Layout = "~/Views/Shared/_Dashboard.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
 }
 
 <!-- Select2 CSS -->

@@ -4,7 +4,15 @@
 
 @{
     ViewData["Title"] = "Thông báo của tôi";
-    Layout = "~/Views/Shared/_Dashboard.cshtml";
+
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "~/Views/Shared/_Dashboard.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
 }
 
 <div class="notification-container">
