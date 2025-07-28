@@ -4,11 +4,13 @@
     ViewData["Title"] = "Xác nhận chấp nhận ứng viên";
 }
 
+<link rel="stylesheet" href="~/css/ConfirmAcceptStudent.css" />
+
 <div class="container mt-4">
     <div class="row">
         <div class="col-md-8 mx-auto">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
+            <div class="confirm-card shadow">
+                <div class="card-header">
                     <h5 class="mb-0">Xác nhận chấp nhận ứng viên</h5>
                 </div>
                 <div class="card-body">
@@ -20,8 +22,6 @@
                         </div>
                     }
                     
-
-                    
                     <div asp-validation-summary="All" class="text-danger"></div>
 
                     <div class="alert alert-warning">
@@ -29,21 +29,21 @@
                         <p>Ngân sách dự án hiện tại không đủ để chấp nhận ứng viên này.</p>
                     </div>
 
-                    <div class="mb-4">
-                        <h6 class="fw-bold">Thông tin dự án:</h6>
-                        <p class="mb-1">Tên dự án: <strong>@Model.ProjectTitle</strong></p>
+                    <div class="info-section">
+                        <h6 class="section-title">Thông tin dự án</h6>
+                        <p class="info-item">Tên dự án: <strong>@Model.ProjectTitle</strong></p>
                     </div>
 
-                    <div class="mb-4">
-                        <h6 class="fw-bold">Thông tin ứng viên:</h6>
-                        <p class="mb-1">Tên ứng viên: <strong>@Model.StudentName</strong></p>
-                        <p class="mb-1">Mức lương đề xuất: <strong>@Model.StudentSalary.ToString("N0") VNĐ</strong></p>
+                    <div class="info-section">
+                        <h6 class="section-title">Thông tin ứng viên</h6>
+                        <p class="info-item">Tên ứng viên: <strong>@Model.StudentName</strong></p>
+                        <p class="info-item">Mức lương đề xuất: <strong>@Model.StudentSalary.ToString("N0") VNĐ</strong></p>
                     </div>
 
-                    <div class="mb-4">
-                        <h6 class="fw-bold">Thông tin tài chính:</h6>
-                        <p class="mb-1">Số tiền thiếu: <strong class="text-danger">@Model.MissingAmount.ToString("N0") VNĐ</strong></p>
-                        <p class="mb-1">Số dư ví của bạn: <strong class="@(Model.WalletBalance >= Model.MissingAmount ? "text-success" : "text-danger")">@Model.WalletBalance.ToString("N0") VNĐ</strong></p>
+                    <div class="info-section">
+                        <h6 class="section-title">Thông tin tài chính</h6>
+                        <p class="info-item">Số tiền thiếu: <strong class="text-danger">@Model.MissingAmount.ToString("N0") VNĐ</strong></p>
+                        <p class="info-item">Số dư ví của bạn: <strong class="@(Model.WalletBalance >= Model.MissingAmount ? "text-success" : "text-danger")">@Model.WalletBalance.ToString("N0") VNĐ</strong></p>
                         
                         @if (Model.WalletBalance < Model.MissingAmount)
                         {
@@ -63,14 +63,14 @@
                         <input type="hidden" asp-for="BusinessNotes" />
                         <input type="hidden" asp-for="WalletBalance" />
 
-                        <div class="mb-3 form-check">
+                        <div class="form-check mb-3">
                             <input type="checkbox" class="form-check-input" asp-for="ConfirmAccept" id="confirmAccept" />
                             <label class="form-check-label" for="confirmAccept">
                                 Tôi xác nhận muốn chấp nhận ứng viên này
                             </label>
                         </div>
 
-                        <div class="mb-4 form-check">
+                        <div class="form-check mb-4">
                             <input type="checkbox" class="form-check-input" asp-for="ConfirmAddFunds" id="confirmAddFunds" disabled="@(Model.WalletBalance < Model.MissingAmount)" />
                             <label class="form-check-label" for="confirmAddFunds">
                                 Tôi đồng ý bổ sung @Model.MissingAmount.ToString("N0") VNĐ từ ví của tôi vào ngân sách dự án
@@ -103,8 +103,6 @@
 
 @section Scripts {
     <script>
-
-        
         // Initialize form state on page load
         function updateFormState() {
             var confirmAcceptCheckbox = document.getElementById('confirmAccept');

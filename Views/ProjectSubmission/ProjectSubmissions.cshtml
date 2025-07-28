@@ -93,10 +93,6 @@
                                     </td>
                                     <td>
                                         <a asp-action="Details" asp-route-id="@submission.SubmissionID" class="btn btn-sm btn-info">Chi tiết</a>
-                                        @if (submission.Status == "Pending" || submission.Status == "Rejected")
-                                        {
-                                            <a asp-action="Create" asp-route-applicationId="@Model.ApplicationID" class="btn btn-sm btn-warning ms-1">Yêu cầu nộp lại</a>
-                                        }
                                     </td>
                                 </tr>
                             }

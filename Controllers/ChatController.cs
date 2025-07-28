@@ -139,10 +139,11 @@ namespace StudentFreelance.Controllers
         }
 
         // GET: /Chat/Room/5
-        public async Task<IActionResult> Room(int id)
+        public async Task<IActionResult> Room(int id, int? projectId = null)
         {
             var userId = int.Parse(_userMgr.GetUserId(User));
 
+            // Lấy cuộc trò chuyện hiện tại
             var conv = await _db.Conversations
                 .Include(c => c.Messages)
                 .FirstOrDefaultAsync(c => c.ConversationID == id);
@@ -163,7 +164,7 @@ namespace StudentFreelance.Controllers
             var otherUserId = conv.ParticipantAID == userId ? conv.ParticipantBID : conv.ParticipantAID;
             var otherUser = await _userMgr.Users
                 .Where(u => u.Id == otherUserId)
-                .Select(u => new { u.UserName })
+                .Select(u => new { u.UserName, u.Avatar })
                 .FirstOrDefaultAsync();
 
             var senderIds = conv.Messages
@@ -189,12 +190,78 @@ namespace StudentFreelance.Controllers
                 })
                 .ToList();
 
-            var vm = new ChatRoomViewModel
+            // Lấy danh sách cuộc trò chuyện cho sidebar
+            var convs = await _db.Conversations
+                .Include(c => c.Messages)
+                .Where(c =>
+                    (c.ParticipantAID == userId || c.ParticipantBID == userId) &&
+                    (!projectId.HasValue || c.ProjectID == projectId)
+                )
+                .AsNoTracking()
+                .ToListAsync();
+
+            var conversationItems = convs.Select(c =>
+            {
+                var otherId = c.ParticipantAID == userId ? c.ParticipantBID : c.ParticipantAID;
+                var other = _userMgr.Users
+                    .Where(u => u.Id == otherId)
+                    .Select(u => new { u.UserName, u.Avatar })
+                    .FirstOrDefault();
+
+                var last = c.Messages.OrderByDescending(m => m.SentAt).FirstOrDefault();
+                var unreadCount = c.Messages.Count(m => !m.IsRead && m.SenderID != userId);
+
+                var title = _db.Projects
+                    .Where(p => p.ProjectID == c.ProjectID)
+                    .Select(p => p.Title)
+                    .FirstOrDefault();
+
+                return new ConversationDto
+                {
+                    ConversationID = c.ConversationID,
+                    OtherUserID = otherId,
+                    OtherUserName = other?.UserName,
+                    OtherUserAvatar = other?.Avatar,
+                    ProjectID = c.ProjectID,
+                    ProjectTitle = title,
+                    LastMessage = last?.Content,
+                    LastMessageAt = last?.SentAt ?? c.CreatedAt,
+                    UnreadCount = unreadCount
+                };
+            }).ToList();
+
+            // Lấy danh sách project liên quan
+            var bizProjects = await _db.Projects
+                .Where(p => p.BusinessID == userId && p.IsActive)
+                .ToListAsync();
+
+            var appliedProjectIds = await _db.StudentApplications
+                .Where(a => a.UserID == userId)
+                .Select(a => a.ProjectID)
+                .Distinct()
+                .ToListAsync();
+
+            var studentProjects = await _db.Projects
+                .Where(p => appliedProjectIds.Contains(p.ProjectID) && p.IsActive)
+                .ToListAsync();
+
+            var projects = bizProjects
+                .Concat(studentProjects)
+                .GroupBy(p => p.ProjectID)
+                .Select(g => g.First())
+                .ToList();
+
+            var vm = new ChatRoomWithSidebarViewModel
             {
                 ConversationID = conv.ConversationID,
                 Messages = messageDtos,
-                OtherUserName = otherUser?.UserName ?? "Invalid"
+                OtherUserName = otherUser?.UserName ?? "Invalid",
+                OtherUserAvatar = otherUser?.Avatar,
+                Conversations = conversationItems,
+                Projects = projects,
+                SelectedProjectID = projectId
             };
+            
             return View(vm);
         }
 

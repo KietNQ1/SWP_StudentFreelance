@@ -5,174 +5,17 @@
     ViewData["Title"] = "Admin Dashboard";
 }
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="utf-8" />
-    <title>@ViewData["Title"]</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+@section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --primary: #89AC46;
-            --accent1: #D3E671;
-            --accent2: #F8ED8C;
-            --accent3: #FF8989;
-        }
-
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #F8F8F8;
-        }
-
-        .layout {
-            display: flex;
-        }
-
-        .main {
-            flex: 1;
-            padding: 2rem;
-        }
-
-        .dashboard-header {
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--primary);
-            margin-bottom: 2rem;
-        }
-
-        .card-metric {
-            background-color: white;
-            border-left: 6px solid var(--primary);
-            border-radius: 10px;
-            padding: 1rem 1.5rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        }
-
-            .card-metric h5 {
-                font-size: 1rem;
-                color: #444;
-                margin-bottom: 0.5rem;
-            }
-
-            .card-metric .value {
-                font-size: 2rem;
-                font-weight: bold;
-                color: #222;
-            }
-
-        .section-title {
-            margin-top: 2rem;
-            font-weight: 600;
-            color: var(--primary);
-            font-size: 1.25rem;
-        }
-
-        .list-group-item {
-            background-color: white;
-            border: none;
-            border-bottom: 1px solid #eee;
-        }
-
-            .list-group-item strong {
-                color: #222;
-            }
-
-        .text-success {
-            color: #4CAF50 !important;
-        }
-
-        .text-warning {
-            color: #FFC107 !important;
-        }
-
-        canvas {
-            background: #fff;
-            border-radius: 12px;
-            padding: 1rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-
-    </style>
-</head>
-
-            <div class="dashboard-header">📊 Admin Dashboard</div>
-
-            <!-- Charts -->
-            <div class="row g-4 mb-4">
-                <div class="col-md-4">
-                    <h5 class="section-title">📊 Dự án theo trạng thái</h5>
-                    <canvas id="projectStatusChart" height="220"></canvas>
-                </div>
-                <div class="col-md-4">
-                    <h5 class="section-title">🍩 Người dùng theo vai trò</h5>
-                    <canvas id="userRoleChart" height="220"></canvas>
-                </div>
-                <div class="col-md-4">
-                    <h5 class="section-title">📈 Doanh thu theo tháng</h5>
-                    <canvas id="revenueChart" height="220"></canvas>
-                </div>
-            </div>
-
-            <!-- Metrics -->
-            <div class="row g-4">
-                <div class="col-md-3"><div class="card-metric"><h5>👥 Tổng người dùng</h5><div class="value">@Model.TotalUsers</div></div></div>
-                <div class="col-md-3"><div class="card-metric"><h5>🎓 Sinh viên</h5><div class="value">@Model.TotalStudents</div></div></div>
-                <div class="col-md-3"><div class="card-metric"><h5>🏢 Doanh nghiệp</h5><div class="value">@Model.TotalBusiness</div></div></div>
-                <div class="col-md-3"><div class="card-metric"><h5>💰 Doanh thu (VNĐ)</h5><div class="value">@Model.TotalRevenue.ToString("N0")</div></div></div>
-            </div>
-            <div class="row g-4">
-                <div class="col-md-4"><div class="card-metric"><h5>📁 Tổng dự án</h5><div class="value">@Model.TotalProjects</div></div></div>
-                <div class="col-md-4"><div class="card-metric"><h5>✅ Hoàn thành</h5><div class="value text-success">@Model.CompletedProjects</div></div></div>
-                <div class="col-md-4"><div class="card-metric"><h5>📌 Đang tuyển</h5><div class="value text-warning">@Model.OngoingProjects</div></div></div>
-            </div>
-
-            <!-- New Users -->
-            <div class="section-title">🆕 Người dùng mới</div>
-            <ul class="list-group mb-4">
-                @foreach (var user in Model.RecentUsers)
-                {
-                    <li class="list-group-item d-flex justify-content-between">
-                        <strong>@(user.FullName ?? user.Email)</strong>
-                        <span class="text-muted">@user.CreatedAt.ToString("dd/MM/yyyy")</span>
-                    </li>
-                }
-            </ul>
-
-            <!-- Recent Projects -->
-            <div class="section-title">📁 Dự án gần đây</div>
-            <ul class="list-group mb-5">
-                @foreach (var project in Model.RecentProjects)
-                {
-                    <li class="list-group-item d-flex justify-content-between">
-                        <strong>@project.Title</strong>
-                        <span class="text-muted">@project.CreatedAt.ToString("dd/MM/yyyy")</span>
-                    </li>
-                }
-            </ul>
-      
-   
-
     <script>
-        function toggleDropdown(button) {
-            button.closest(".dropdown").classList.toggle("open");
-        }
-
-        const palette = ['#89AC46', '#D3E671', '#F8ED8C', '#FF8989'];
-
-        function generateColors(count) {
-            const colors = [];
-            for (let i = 0; i < count; i++) {
-                colors.push(palette[i % palette.length]);
-            }
-            return colors;
-        }
-
         const projectLabels = @Html.Raw(JsonSerializer.Serialize(Model.ProjectStatusCounts.Keys));
         const projectData = @Html.Raw(JsonSerializer.Serialize(Model.ProjectStatusCounts.Values));
-        const projectColors = generateColors(projectLabels.length);
+        const projectColors = [
+            'rgba(52, 152, 219, 0.7)',
+            'rgba(46, 204, 113, 0.7)',
+            'rgba(231, 76, 60, 0.7)',
+            'rgba(243, 156, 18, 0.7)'
+        ];
 
         new Chart(document.getElementById('projectStatusChart'), {
             type: 'bar',
@@ -181,21 +24,68 @@
                 datasets: [{
                     label: 'Số lượng dự án',
                     data: projectData,
-                    backgroundColor: projectColors
+                    backgroundColor: projectColors,
+                    borderColor: projectColors.map(color => color.replace('0.7', '1')),
+                    borderWidth: 1
                 }]
             },
-            options: { responsive: true, plugins: { legend: { display: false } } }
+            options: { 
+                responsive: true, 
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        padding: 10,
+                        titleFont: { size: 14 },
+                        bodyFont: { size: 14 }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
         });
 
         const roleLabels = @Html.Raw(JsonSerializer.Serialize(Model.UserRoleCounts.Keys));
         const roleData = @Html.Raw(JsonSerializer.Serialize(Model.UserRoleCounts.Values));
-        const roleColors = generateColors(roleLabels.length);
+        const roleColors = [
+            'rgba(52, 152, 219, 0.7)',
+            'rgba(155, 89, 182, 0.7)',
+            'rgba(46, 204, 113, 0.7)',
+            'rgba(243, 156, 18, 0.7)'
+        ];
 
         new Chart(document.getElementById('userRoleChart'), {
             type: 'doughnut',
             data: {
                 labels: roleLabels,
-                datasets: [{ data: roleData, backgroundColor: roleColors }]
+                datasets: [{ 
+                    data: roleData, 
+                    backgroundColor: roleColors,
+                    borderColor: roleColors.map(color => color.replace('0.7', '1')),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        padding: 10,
+                        titleFont: { size: 14 },
+                        bodyFont: { size: 14 }
+                    }
+                }
             }
         });
 
@@ -206,12 +96,523 @@
                 datasets: [{
                     label: 'Doanh thu theo tháng',
                     data: @Html.Raw(JsonSerializer.Serialize(Model.MonthlyRevenue.Values)),
-                    borderColor: '#FF8989',
-                    backgroundColor: 'rgba(255,137,137,0.2)',
+                    borderColor: 'rgba(231, 76, 60, 0.7)',
+                    backgroundColor: 'rgba(231, 76, 60, 0.2)',
                     fill: true,
-                    tension: 0.3
+                    tension: 0.3,
+                    pointBackgroundColor: 'rgba(231, 76, 60, 1)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4
                 }]
             },
-            options: { responsive: true }
+            options: { 
+                responsive: true,
+                plugins: {
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        padding: 10,
+                        titleFont: { size: 14 },
+                        bodyFont: { size: 14 },
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += new Intl.NumberFormat('vi-VN').format(context.parsed.y) + ' ₫';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return new Intl.NumberFormat('vi-VN', { notation: 'compact', compactDisplay: 'short' }).format(value) + ' ₫';
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
         });
     </script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2ecc71;
+            --accent: #e74c3c;
+            --warning: #f39c12;
+            --info: #9b59b6;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --gray: #6c757d;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f5f7fa;
+        }
+
+        .dashboard-header {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 0.5rem;
+        }
+
+        .stats-card {
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.1);
+        }
+
+        .stats-card h5 {
+                font-size: 1rem;
+            color: var(--gray);
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            }
+
+        .stats-card .value {
+                font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .stats-card .icon {
+            font-size: 2.5rem;
+            color: var(--primary);
+            opacity: 0.8;
+            }
+
+        .section-title {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title i {
+            margin-right: 0.5rem;
+            color: var(--primary);
+        }
+
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+        .card-header {
+            background-color: rgba(52, 152, 219, 0.1);
+            border-bottom: 1px solid rgba(52, 152, 219, 0.2);
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .list-group-item {
+            background-color: white;
+            border: none;
+            border-bottom: 1px solid #eee;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .list-group-item:last-child {
+            border-bottom: none;
+        }
+
+            .list-group-item strong {
+            color: var(--dark);
+            }
+
+        .text-success {
+            color: var(--secondary) !important;
+        }
+
+        .text-warning {
+            color: var(--warning) !important;
+        }
+
+        .text-danger {
+            color: var(--accent) !important;
+        }
+
+        .text-info {
+            color: var(--info) !important;
+        }
+
+        .chart-container {
+            background: #fff;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            height: 100%;
+        }
+
+        .income-card {
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+            border-left: 4px solid var(--secondary);
+        }
+
+        .income-card h5 {
+            font-size: 1rem;
+            color: var(--gray);
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .income-card .value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+
+        .badge-income {
+            background-color: rgba(46, 204, 113, 0.1);
+            color: var(--secondary);
+            font-weight: 500;
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+        }
+
+        .badge-transaction {
+            font-size: 0.75rem;
+            padding: 0.35rem 0.65rem;
+            border-radius: 8px;
+        }
+
+        .badge-project-fee {
+            background-color: rgba(52, 152, 219, 0.1);
+            color: var(--primary);
+        }
+
+        .badge-vip {
+            background-color: rgba(155, 89, 182, 0.1);
+            color: var(--info);
+        }
+
+        .badge-ad {
+            background-color: rgba(243, 156, 18, 0.1);
+            color: var(--warning);
+        }
+    </style>
+}
+
+<div class="dashboard-header">
+    <i class="fas fa-chart-line me-2"></i> Admin Dashboard
+</div>
+
+<!-- Metrics Overview -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stats-card d-flex justify-content-between align-items-center">
+            <div>
+                <h5>Tổng người dùng</h5>
+                <div class="value">@Model.TotalUsers</div>
+            </div>
+            <div class="icon">
+                <i class="fas fa-users"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card d-flex justify-content-between align-items-center">
+            <div>
+                <h5>Sinh viên</h5>
+                <div class="value">@Model.TotalStudents</div>
+            </div>
+            <div class="icon">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card d-flex justify-content-between align-items-center">
+            <div>
+                <h5>Doanh nghiệp</h5>
+                <div class="value">@Model.TotalBusiness</div>
+            </div>
+            <div class="icon">
+                <i class="fas fa-building"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card d-flex justify-content-between align-items-center">
+            <div>
+                <h5>Kiểm duyệt viên</h5>
+                <div class="value">@Model.TotalModerators</div>
+            </div>
+            <div class="icon">
+                <i class="fas fa-user-shield"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stats-card d-flex justify-content-between align-items-center">
+            <div>
+                <h5>Tổng dự án</h5>
+                <div class="value">@Model.TotalProjects</div>
+            </div>
+            <div class="icon">
+                <i class="fas fa-folder-open"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card d-flex justify-content-between align-items-center">
+            <div>
+                <h5>Hoàn thành</h5>
+                <div class="value text-success">@Model.CompletedProjects</div>
+            </div>
+            <div class="icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card d-flex justify-content-between align-items-center">
+            <div>
+                <h5>Đang tuyển</h5>
+                <div class="value text-warning">@Model.OngoingProjects</div>
+            </div>
+            <div class="icon">
+                <i class="fas fa-bullhorn"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card d-flex justify-content-between align-items-center">
+            <div>
+                <h5>Đã hủy</h5>
+                <div class="value text-danger">@Model.CancelledProjects</div>
+            </div>
+            <div class="icon">
+                <i class="fas fa-ban"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="stats-card d-flex justify-content-between align-items-center">
+            <div>
+                <h5>Tổng số dư ví người dùng</h5>
+                <div class="value">@Model.TotalUserWalletBalance.ToString("N0") ₫</div>
+            </div>
+            <div class="icon">
+                <i class="fas fa-wallet"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="stats-card d-flex justify-content-between align-items-center">
+            <div>
+                <h5>Tổng số giao dịch</h5>
+                <div class="value">@Model.TotalTransactions</div>
+            </div>
+            <div class="icon">
+                <i class="fas fa-exchange-alt"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Income Section -->
+<div class="section-title">
+    <i class="fas fa-hand-holding-usd"></i> Thu nhập của hệ thống
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="income-card">
+            <h5>Tổng thu nhập</h5>
+            <div class="value">@Model.TotalIncome.ToString("N0") ₫</div>
+            <div class="mt-2">
+                <span class="badge-income">
+                    <i class="fas fa-chart-line me-1"></i> Tổng hợp
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="income-card">
+            <h5>Phí dự án</h5>
+            <div class="value">@Model.ProjectFeeIncome.ToString("N0") ₫</div>
+            <div class="mt-2">
+                <span class="badge-income">
+                    <i class="fas fa-percentage me-1"></i> @(Model.TotalIncome > 0 ? Math.Round(Model.ProjectFeeIncome / Model.TotalIncome * 100, 1) : 0)%
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="income-card">
+            <h5>Nâng cấp VIP</h5>
+            <div class="value">@Model.VipSubscriptionIncome.ToString("N0") ₫</div>
+            <div class="mt-2">
+                <span class="badge-income">
+                    <i class="fas fa-percentage me-1"></i> @(Model.TotalIncome > 0 ? Math.Round(Model.VipSubscriptionIncome / Model.TotalIncome * 100, 1) : 0)%
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="income-card">
+            <h5>Quảng cáo</h5>
+            <div class="value">@Model.AdvertisementIncome.ToString("N0") ₫</div>
+            <div class="mt-2">
+                <span class="badge-income">
+                    <i class="fas fa-percentage me-1"></i> @(Model.TotalIncome > 0 ? Math.Round(Model.AdvertisementIncome / Model.TotalIncome * 100, 1) : 0)%
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Income Transactions -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="fas fa-money-check-alt me-2"></i> Giao dịch thu nhập gần đây
+    </div>
+    <ul class="list-group list-group-flush">
+        @if (Model.RecentIncomeTransactions != null && Model.RecentIncomeTransactions.Any())
+        {
+            foreach (var transaction in Model.RecentIncomeTransactions)
+            {
+                string badgeClass = transaction.TypeID == 8 ? "badge-project-fee" : 
+                                   transaction.TypeID == 5 ? "badge-vip" : 
+                                   "badge-ad";
+                
+                <li class="list-group-item">
+                    <div>
+                        <span class="badge badge-transaction @badgeClass me-2">
+                            @transaction.Type.TypeName
+                        </span>
+                        <strong>@transaction.Amount.ToString("N0") ₫</strong> - 
+                        @transaction.Description
+                    </div>
+                    <div class="text-muted">
+                        <small>@transaction.User.FullName</small> - 
+                        <small>@transaction.TransactionDate.ToString("dd/MM/yyyy HH:mm")</small>
+                    </div>
+                </li>
+            }
+        }
+        else
+        {
+            <li class="list-group-item text-center">Không có giao dịch thu nhập nào gần đây</li>
+        }
+    </ul>
+</div>
+
+            <!-- Charts -->
+<div class="section-title">
+    <i class="fas fa-chart-pie"></i> Thống kê và biểu đồ
+</div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-4">
+        <div class="chart-container">
+            <h5 class="mb-3">Dự án theo trạng thái</h5>
+                    <canvas id="projectStatusChart" height="220"></canvas>
+        </div>
+                </div>
+                <div class="col-md-4">
+        <div class="chart-container">
+            <h5 class="mb-3">Người dùng theo vai trò</h5>
+                    <canvas id="userRoleChart" height="220"></canvas>
+        </div>
+                </div>
+                <div class="col-md-4">
+        <div class="chart-container">
+            <h5 class="mb-3">Doanh thu theo tháng</h5>
+                    <canvas id="revenueChart" height="220"></canvas>
+                </div>
+            </div>
+            </div>
+
+            <div class="row g-4">
+    <!-- Recent Users -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-user-plus me-2"></i> Người dùng mới
+            </div>
+            <ul class="list-group list-group-flush">
+                @foreach (var user in Model.RecentUsers)
+                {
+                    <li class="list-group-item">
+                        <strong>@(user.FullName ?? user.Email)</strong>
+                        <span class="text-muted">@user.CreatedAt.ToString("dd/MM/yyyy")</span>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+
+            <!-- Recent Projects -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-folder-plus me-2"></i> Dự án gần đây
+            </div>
+            <ul class="list-group list-group-flush">
+                @foreach (var project in Model.RecentProjects)
+                {
+                    <li class="list-group-item">
+                        <strong>@project.Title</strong>
+                        <span class="text-muted">@project.CreatedAt.ToString("dd/MM/yyyy")</span>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</div>
