@@ -5,127 +5,11 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<style>
-    :root {
-        --primary: #89AC46;
-        --accent1: #D3E671;
-        --accent2: #F8ED8C;
-        --accent3: #FF8989;
-    }
+<link rel="stylesheet" href="~/css/user/profile.css" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
 
-    body {
-        background-color: #F8F8F8;
-        color: #222;
-        font-family: 'Segoe UI', sans-serif;
-    }
-
-    .card {
-        border-radius: 10px;
-        border-left: 5px solid var(--primary);
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        background-color: #fff;
-    }
-
-    .card-header {
-        background-color: var(--accent1);
-        font-weight: 600;
-        color: #222;
-        font-size: 1.1rem;
-    }
-
-    .form-label {
-        font-weight: 600;
-        color: #000;
-    }
-
-    .form-control, .form-select {
-        border-radius: 6px;
-    }
-
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 0.2rem rgba(137, 172, 70, 0.25);
-        }
-
-    .btn-primary {
-        background-color: var(--accent3);
-        border-color: var(--accent3);
-        font-weight: 600;
-        color: white;
-    }
-
-        .btn-primary:hover {
-            background-color: #e35a5a;
-            border-color: #e35a5a;
-            color: white;
-        }
-
-    .btn-outline-secondary {
-        background-color: white;
-        color: #222;
-        border: 1px solid var(--accent1);
-        font-weight: 500;
-    }
-
-        .btn-outline-secondary:hover {
-            background-color: var(--accent1);
-            color: black;
-            border-color: var(--accent1);
-        }
-
-    .btn-danger {
-        background-color: var(--accent3);
-        border-color: var(--accent3);
-        color: white;
-    }
-
-        .btn-danger:hover {
-            background-color: #e35a5a;
-            border-color: #e35a5a;
-            color: white;
-        }
-
-    .avatar-preview img {
-        border: 4px solid var(--accent1);
-        border-radius: 50%;
-        width: 200px;
-        height: 200px;
-        object-fit: cover;
-    }
-
-    .skill-item {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .w-45 {
-        width: 45%;
-    }
-
-    @@media (max-width: 768px) {
-        .skill-item
-
-    {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .w-45 {
-        width: 100%;
-    }
-
-    .avatar-preview img {
-        width: 120px;
-        height: 120px;
-    }
-
-    }
-</style>
-
-<div class="container py-5">
-    <h2 class="mb-4">@ViewData["Title"]</h2>
+<div class="edit-container">
+    <h2>@ViewData["Title"]</h2>
 
     <form asp-action="Edit" method="post" enctype="multipart/form-data">
         @Html.AntiForgeryToken()
@@ -134,20 +18,20 @@
         <div class="row">
             <!-- Avatar -->
             <div class="col-md-4 text-center mb-4">
-                <div class="avatar-preview mb-3">
+                <div class="avatar-preview-container">
                     <img id="avatarPreviewImg" src="@(!string.IsNullOrEmpty(Model.AvatarPath) ? Model.AvatarPath : "/image/default-avatar.png")" />
-                </div>
-                <div class="form-group">
-                    <label asp-for="AvatarImage" class="form-label">Chọn ảnh đại diện</label>
-                    <input asp-for="AvatarImage" type="file" class="form-control" accept="image/*" onchange="previewAvatar(event)" />
+                    <div class="form-group">
+                        <label asp-for="AvatarImage" class="form-label">Chọn ảnh đại diện</label>
+                        <input asp-for="AvatarImage" type="file" class="form-control" accept="image/*" onchange="previewAvatar(event)" />
+                    </div>
                 </div>
             </div>
 
             <!-- Thông tin -->
             <div class="col-md-8">
-                <div class="card mb-4">
-                    <div class="card-header">Thông tin cá nhân</div>
-                    <div class="card-body">
+                <div class="edit-card">
+                    <div class="edit-card-header">Thông tin cá nhân</div>
+                    <div class="edit-card-body">
                         <div class="mb-3">
                             <label asp-for="FullName" class="form-label">Họ tên</label>
                             <input asp-for="FullName" class="form-control" />
@@ -160,38 +44,71 @@
                             <span asp-validation-for="PhoneNumber" class="text-danger"></span>
                         </div>
 
-                        @if (Model.RoleId != 3) // Show for non-business users
+                        @if (Model.RoleId == 4) // Student
                         {
                             <div class="mb-3">
                                 <label asp-for="University" class="form-label">Trường đại học</label>
                                 <input asp-for="University" class="form-control" />
                             </div>
-
                             <div class="mb-3">
-                                <label asp-for="Major" class="form-label">Ngành học</label>
+                                <label asp-for="Major" class="form-label">Chuyên ngành</label>
                                 <input asp-for="Major" class="form-control" />
                             </div>
+                            
+                            <!-- Buyer Persona Fields -->
+                            <div class="mb-3">
+                                <label asp-for="AgeRange" class="form-label">Độ tuổi</label>
+                                <select asp-for="AgeRange" class="form-select">
+                                    <option value="">-- Chọn độ tuổi --</option>
+                                    <option value="18-24">18-24 tuổi</option>
+                                    <option value="25-35">25-35 tuổi</option>
+                                    <option value="36-45">36-45 tuổi</option>
+                                    <option value="46+">46+ tuổi</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="Gender" class="form-label">Giới tính</label>
+                                <select asp-for="Gender" class="form-select">
+                                    <option value="">-- Chọn giới tính --</option>
+                                    <option value="Nam">Nam</option>
+                                    <option value="Nữ">Nữ</option>
+                                    <option value="Khác">Khác</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="GoalsAndPainPoints" class="form-label">Goals And Pain Points</label>
+                                <textarea asp-for="GoalsAndPainPoints" class="form-control" rows="4" 
+                                          placeholder="Mô tả mục tiêu và khó khăn của bạn..."></textarea>
+                            </div>
                         }
-
-                        @if (Model.RoleId != 4) // Show for non-student users
+                        else if (Model.RoleId == 3) // Business
                         {
                             <div class="mb-3">
-                                <label asp-for="CompanyName" class="form-label">Công ty</label>
+                                <label asp-for="CompanyName" class="form-label">Tên công ty</label>
                                 <input asp-for="CompanyName" class="form-control" />
                             </div>
-
                             <div class="mb-3">
-                                <label asp-for="Industry" class="form-label">Lĩnh vực</label>
+                                <label asp-for="Industry" class="form-label">Ngành nghề</label>
                                 <input asp-for="Industry" class="form-control" />
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="Website" class="form-label">Website</label>
+                                <input asp-for="Website" class="form-control" placeholder="https://example.com" />
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="BusinessActivities" class="form-label">Lĩnh vực hoạt động</label>
+                                <textarea asp-for="BusinessActivities" class="form-control" rows="3" 
+                                          placeholder="Nhập các lĩnh vực hoạt động, phân cách bằng dấu phẩy (,)"></textarea>
+                                <small class="form-text text-muted">Ví dụ: Thiết kế đồ họa, Marketing, Quảng cáo, Truyền thông</small>
                             </div>
                         }
                     </div>
                 </div>
 
                 <!-- Địa chỉ -->
-                <div class="card mb-4">
-                    <div class="card-header">Địa chỉ</div>
-                    <div class="card-body">
+                <div class="edit-card">
+                    <div class="edit-card-header">Địa chỉ</div>
+                    <div class="edit-card-body">
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <label asp-for="ProvinceCode" class="form-label">Tỉnh/Thành</label>
@@ -204,8 +121,8 @@
                                             <option value="@p.ID" selected>@p.Name</option>
                                         }
                                         else
-                                    {
-                                        <option value="@p.ID">@p.Name</option>
+                                        {
+                                            <option value="@p.ID">@p.Name</option>
                                         }
                                     }
                                 </select>
@@ -222,8 +139,8 @@
                                             <option value="@d.ID" selected>@d.Name</option>
                                         }
                                         else
-                                    {
-                                        <option value="@d.ID">@d.Name</option>
+                                        {
+                                            <option value="@d.ID">@d.Name</option>
                                         }
                                     }
                                 </select>
@@ -240,8 +157,8 @@
                                             <option value="@w.ID" selected>@w.Name</option>
                                         }
                                         else
-                                    {
-                                        <option value="@w.ID">@w.Name</option>
+                                        {
+                                            <option value="@w.ID">@w.Name</option>
                                         }
                                     }
                                 </select>
@@ -260,16 +177,16 @@
                 <!-- Kỹ năng -->
                 @if (Model.RoleId != 3) // Hide Skills section for business users
                 {
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
+                    <div class="edit-card">
+                        <div class="edit-card-header d-flex justify-content-between align-items-center">
                             Kỹ năng
                             <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addSkill()">+ Thêm</button>
                         </div>
-                        <div class="card-body" id="skills-container">
+                        <div class="edit-card-body" id="skills-container">
                             @for (int i = 0; i < Model.Skills.Count; i++)
                             {
                                 <div class="skill-item">
-                                    <select name="Skills[@i].SkillID" class="form-select w-45">
+                                    <select name="Skills[@i].SkillID" class="form-select">
                                         @foreach (var s in Model.AvailableSkills)
                                         {
                                             if (Model.Skills[i].SkillID.ToString() == s.ID)
@@ -282,7 +199,7 @@
                                             }
                                         }
                                     </select>
-                                    <select name="Skills[@i].ProficiencyLevelID" class="form-select w-45">
+                                    <select name="Skills[@i].ProficiencyLevelID" class="form-select">
                                         @foreach (var l in Model.AvailableProficiencyLevels)
                                         {
                                             if (Model.Skills[i].ProficiencyLevelID.ToString() == l.ID)
@@ -296,7 +213,7 @@
                                         }
                                     </select>
                                     <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">
-                                        <i class="bi bi-trash"></i>
+                                        <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
                             }
@@ -343,7 +260,7 @@
 
                 const skillSelect = document.createElement("select");
                 skillSelect.name = `Skills[${skillIndex}].SkillID`;
-                skillSelect.className = "form-select w-45";
+                skillSelect.className = "form-select";
                 skillList.forEach(s => {
                     const opt = document.createElement("option");
                     opt.value = s.ID;
@@ -353,7 +270,7 @@
 
                 const levelSelect = document.createElement("select");
                 levelSelect.name = `Skills[${skillIndex}].ProficiencyLevelID`;
-                levelSelect.className = "form-select w-45";
+                levelSelect.className = "form-select";
                 levelList.forEach(l => {
                     const opt = document.createElement("option");
                     opt.value = l.ID;
@@ -364,7 +281,7 @@
                 const removeBtn = document.createElement("button");
                 removeBtn.type = "button";
                 removeBtn.className = "btn btn-danger btn-sm";
-                removeBtn.innerHTML = '<i class="bi bi-trash"></i>';
+                removeBtn.innerHTML = '<i class="fas fa-trash"></i>';
                 removeBtn.onclick = () => div.remove();
 
                 div.appendChild(skillSelect);
@@ -404,7 +321,7 @@
                 </div>`);
                 
                 // Add alert to the top of the form
-                $('.container.py-5').prepend(alertDiv);
+                $('.edit-container form').prepend(alertDiv);
                 
                 // Auto dismiss after 5 seconds
                 setTimeout(() => {
