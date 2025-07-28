@@ -35,7 +35,7 @@ namespace StudentFreelance.Controllers
         }
 
         // Hiển thị form tạo mới
-        [Authorize(Roles = "Admin,Moderator")]
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             ViewData["ParentCategoryID"] = GetCategorySelectList(null, null);
@@ -55,7 +55,7 @@ namespace StudentFreelance.Controllers
             return View(new Category());
         }
 
-        [HttpPost, Authorize(Roles = "Admin,Moderator")]
+        [HttpPost, Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Category category)
         {
@@ -88,7 +88,7 @@ namespace StudentFreelance.Controllers
         }
 
         // GET: /Categories/Edit/5
-        [Authorize(Roles = "Admin,Moderator")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -118,7 +118,7 @@ namespace StudentFreelance.Controllers
             return View(c);
         }
         
-        [HttpPost, Authorize(Roles = "Admin,Moderator")]
+        [HttpPost, Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id,
             [Bind("CategoryID,CategoryName,CategoryType,ParentCategoryID,Description,ImagePath")] Category category,
@@ -152,7 +152,7 @@ namespace StudentFreelance.Controllers
 
 
         // GET: /Categories/Hide/5
-        [Authorize(Roles = "Admin,Moderator")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Hide(int? id)
         {
             if (id == null) return NotFound();
@@ -164,7 +164,7 @@ namespace StudentFreelance.Controllers
         }
 
         // POST /Categories/Hide/5
-        [HttpPost, ActionName("Hide"), Authorize(Roles = "Admin,Moderator")]
+        [HttpPost, ActionName("Hide"), Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> HideConfirmed(int id)
         {
@@ -180,7 +180,7 @@ namespace StudentFreelance.Controllers
         }
 
         // **MỚI**: GET /Categories/Unhide/5
-        [Authorize(Roles = "Admin,Moderator")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Unhide(int? id)
         {
             if (id == null) return NotFound();
@@ -192,7 +192,7 @@ namespace StudentFreelance.Controllers
         }
 
         // **MỚI**: POST /Categories/Unhide/5
-        [HttpPost, ActionName("Unhide"), Authorize(Roles = "Admin,Moderator")]
+        [HttpPost, ActionName("Unhide"), Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UnhideConfirmed(int id)
         {
@@ -229,7 +229,7 @@ namespace StudentFreelance.Controllers
         }
 
         // GET: /Categories/GetIcons
-        [Authorize(Roles = "Admin,Moderator")]
+        [Authorize(Roles = "Admin")]
         public IActionResult GetIcons()
         {
             var iconPath = Path.Combine(_hostEnvironment.WebRootPath, "image", "Icon");

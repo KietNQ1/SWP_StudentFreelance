@@ -175,6 +175,11 @@
                                     {
                                         <a asp-controller="AdminUser" asp-action="Index"><i class="fas fa-chart-line"></i>Dashboard</a>
                                     }
+                                    @if (User.IsInRole("Moderator"))
+                                    {
+                                        <a asp-controller="UserVerification" asp-action="Index"><i class="fas fa-chart-line"></i>Dashboard</a>
+                                    }
+
                                     @if (User.IsInRole("Business"))
                                     {
                                         <a asp-controller="Project" asp-action="MyProjects"><i class="fas fa-folder-open"></i>My Project</a>
