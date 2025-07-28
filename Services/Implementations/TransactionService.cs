@@ -166,6 +166,37 @@ namespace StudentFreelance.Services.Implementations
             if (transaction == null)
                 return false;
 
+            // Nếu là giao dịch rút tiền và đang cập nhật thành Thành công (StatusID = 2)
+            if (transaction.TypeID == 2 && statusId == 2)
+            {
+                // Tìm WithdrawalRequest tương ứng
+                var withdrawalRequest = await _context.WithdrawalRequests
+                    .FirstOrDefaultAsync(w => w.TransactionID == transactionId);
+                
+                if (withdrawalRequest != null)
+                {
+                    // Tìm user
+                    var user = await _context.Users.FindAsync(transaction.UserID);
+                    if (user == null)
+                        return false;
+                    
+                    // Kiểm tra số dư
+                    if (user.WalletBalance < transaction.Amount)
+                        return false;
+                    
+                    // Trừ tiền từ ví người dùng
+                    user.WalletBalance -= transaction.Amount;
+                    
+                    // Cập nhật trạng thái WithdrawalRequest
+                    withdrawalRequest.Status = "Approved";
+                    withdrawalRequest.ProcessedAt = DateTime.Now;
+                    
+                    // Lưu thay đổi
+                    _context.Users.Update(user);
+                    _context.WithdrawalRequests.Update(withdrawalRequest);
+                }
+            }
+
             transaction.StatusID = statusId;
             await _context.SaveChangesAsync();
             return true;
