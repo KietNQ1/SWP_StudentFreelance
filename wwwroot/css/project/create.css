@@ -1,0 +1,269 @@
+/* --- Create Project Style: Matching with Edit.cshtml --- */
+:root {
+    --primary-color: #89AC46;
+    --secondary-color: #D3E671;
+    --accent-color: #F8ED8C;
+    --highlight-color: #FF8989;
+}
+
+body {
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #F8F8F8;
+    color: #333;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.card {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(137, 172, 70, 0.10), 0 1.5px 4px rgba(0,0,0,0.04);
+    border: none;
+    margin-bottom: 32px;
+}
+
+.card-header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: #fff;
+    border-radius: 18px 18px 0 0;
+    padding: 24px 32px;
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(137, 172, 70, 0.08);
+}
+
+.card-body {
+    padding: 32px;
+}
+
+.breadcrumb {
+    background: none;
+    padding: 0 0 16px 0;
+    margin-bottom: 0.5rem;
+}
+
+.breadcrumb-item a, .breadcrumb-item.active {
+    color: var(--primary-color) !important;
+    text-decoration: none !important;
+    font-weight: 500;
+    font-size: 1.05rem;
+}
+
+.breadcrumb-item a:hover {
+    color: var(--highlight-color) !important;
+    text-decoration: underline !important;
+}
+
+.form-group label, .form-label {
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.form-control, .form-select {
+    border: 1.5px solid #dbe8c6;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 1rem;
+    background: #fff;
+    transition: border 0.2s, box-shadow 0.2s;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.15rem rgba(137, 172, 70, 0.15);
+    background: #f7fbed;
+}
+
+input[type="file"].form-control {
+    padding: 8px 12px;
+}
+
+.btn-primary {
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 12px 28px;
+    box-shadow: 0 2px 8px rgba(137, 172, 70, 0.13);
+    transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(137, 172, 70, 0.18);
+}
+
+.btn-outline-secondary {
+    background: #fff;
+    color: var(--primary-color);
+    border: 1.5px solid var(--primary-color);
+    border-radius: 8px;
+    padding: 12px 28px;
+    font-weight: 600;
+    transition: background 0.2s, color 0.2s, border 0.2s;
+}
+
+.btn-outline-secondary:hover, .btn-outline-secondary:focus {
+    background: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+}
+
+.list-group-item, .category-item, .subcategory-item, .skill-item {
+    border: none;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    color: #333;
+    background: #f7fbed;
+    text-decoration: none !important;
+    transition: background 0.2s, color 0.2s;
+}
+
+.list-group-item.active, .category-item.active, .subcategory-item.active, .skill-item.selected {
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none !important;
+}
+
+.list-group-item:hover, .category-item:hover, .subcategory-item:hover, .skill-item:hover {
+    background: #e9f5d3;
+    color: var(--primary-color);
+    text-decoration: none !important;
+}
+
+.selected-skills-list a {
+    text-decoration: none !important;
+    color: var(--primary-color) !important;
+}
+
+input[type="date"].form-control {
+    min-width: 180px;
+}
+
+.alert {
+    border-radius: 8px;
+    font-size: 1rem;
+    padding: 12px 18px;
+    margin-bottom: 18px;
+}
+
+/* Category Skills Dropdown Specific Styles */
+.category-skills-dropdown {
+    position: relative;
+}
+
+.category-skills-container {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    margin-top: 4px;
+}
+
+.category-skills-container.show {
+    display: block;
+}
+
+.category-list, .subcategory-list, .skill-list {
+    max-height: 400px;
+    overflow-y: auto;
+    border-right: 1px solid #eee;
+}
+
+.category-list:last-child {
+    border-right: none;
+}
+
+#dropdownCategorySkillsBtn {
+    text-align: left;
+    width: 100%;
+    position: relative;
+    padding-right: 2rem;
+}
+
+#dropdownCategorySkillsBtn.active {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+.selected-skills-container {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    background: #f7fbed;
+}
+
+.selected-skills-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.selected-skill-item {
+    background: #fff;
+    padding: 4px 12px;
+    border-radius: 16px;
+    border: 1px solid var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+@media (max-width: 900px) {
+    .container {
+        max-width: 98vw;
+        padding: 0 8px;
+    }
+    .card-body {
+        padding: 18px;
+    }
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 0 2px;
+    }
+    .card-header {
+        padding: 14px 10px;
+        font-size: 1.1rem;
+    }
+    .card-body {
+        padding: 8px;
+    }
+    .btn, .btn-primary, .btn-outline-secondary {
+        width: 100%;
+        padding: 12px 0;
+        margin-bottom: 8px;
+    }
+}
+
+/* Remove text decoration for all links */
+a, a:visited, a:active {
+    text-decoration: none !important;
+    color: inherit;
+}
+
+/* Input group styling */
+.input-group-text {
+    background: #f7fbed;
+    border: 1.5px solid #dbe8c6;
+    border-right: none;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.input-group .form-control {
+    border-left: none;
+}
