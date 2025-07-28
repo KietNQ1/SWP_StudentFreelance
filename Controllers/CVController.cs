@@ -13,10 +13,11 @@ namespace StudentFreelance.Controllers
     public class CVController : Controller
     {
         private readonly IConverter _converter;
-
-        public CVController(IConverter converter)
+        private readonly IConfiguration _configuration;
+        public CVController(IConverter converter, IConfiguration configuration)
         {
             _converter = converter;
+            _configuration = configuration;
         }
         [HttpGet]
         public IActionResult inputInfo()
@@ -76,7 +77,7 @@ Projects:
 
         private async Task<string> CallGeminiAPI(string prompt)
         {
-            string apiKey = "AIzaSyCoiQgI47KSy0wALt9EKaklCSkM-0lYRGU"; 
+            string apiKey = _configuration["Gemini:ApiKey"];
             string url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={apiKey}";
 
             var requestBody = new
@@ -98,12 +99,12 @@ Projects:
             var response = await httpClient.PostAsync(url, content);
             var responseContent = await response.Content.ReadAsStringAsync();
 
-            // Lấy text kết quả từ response JSON
             var json = JObject.Parse(responseContent);
             var text = json["candidates"]?[0]?["content"]?["parts"]?[0]?["text"]?.ToString();
 
             return text ?? "Không có phản hồi từ Gemini.";
         }
+
 
 
 
