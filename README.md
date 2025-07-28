@@ -95,7 +95,7 @@ dotnet run
 dotnet run
 ```
 
-Truy cập: [http://localhost:5000](http://localhost:5000) hoặc cổng được hiển thị trên terminal.
+Truy cập: [https://localhost:7100](https://localhost:7100) hoặc cổng được hiển thị trên terminal.
 
 ---
 
