@@ -744,7 +744,7 @@ namespace StudentFreelance.Services.Implementations
                 else
                 {
                     Console.WriteLine($"CompleteProjectByBusinessAsync: Ví dự án không còn tiền. ProjectID: {projectId}");
-                }
+            }
             
             await _context.SaveChangesAsync();
                 await dbTransaction.CommitAsync();
