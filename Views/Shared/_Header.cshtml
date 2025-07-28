@@ -91,11 +91,20 @@
                     <div class="nav-item dropdown explore-dropdown" id="exploreDropdownBtn">
                         <span>Explore</span>
                         <div class="dropdown-menu" id="exploreDropdownMenu">
-                            <a href="#">STJobs VIP <span class="new-label">New</span></a>
-                            <a href="#">Q&A</a>
-                            <a href="#">Guides</a>
-                            <a asp-controller="Report" asp-action="ListReport">Report</a>
-                            <a asp-controller="Report" asp-action="Create">Create Report</a>
+                            <a asp-controller="User" asp-action="VipSubscription">STJobs VIP <span class="new-label">New</span></a>                           
+                            <a asp-controller="Report" asp-action="Create">Báo Cáo</a>
+                            @if (User.IsInRole("Business"))
+                            {
+                                <a asp-controller="Advertisement" asp-action="MyAdvertisements">Quảng Cáo</a>
+                            }
+                            @if (User.IsInRole("Student"))
+                            {
+                                <a asp-controller="CV" asp-action="InputInfo">
+                                    AI CV <span class="vip-label">VIP</span>
+                                </a>
+
+
+                            }
                         </div>
                     </div>
                     <div class="nav-item dropdown explore-dropdown">
