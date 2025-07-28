@@ -1,5 +1,8 @@
-﻿@{
+﻿@using Microsoft.AspNetCore.Identity
+@inject UserManager<StudentFreelance.Models.ApplicationUser> UserManager
+@{
     Layout = null;
+    var user = await UserManager.GetUserAsync(User);
 }
 <!DOCTYPE html>
 <html lang="vi">
@@ -36,6 +39,8 @@
             cursor: pointer;
             width: 100%;
             text-align: left;
+            display: flex;
+            align-items: center;
         }
         
         /* Đảm bảo không có border hoặc background không mong muốn */
@@ -62,111 +67,105 @@
     </style>
 </head>
 <body>
-    <div class="layout">
-
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="logo">
-                <a asp-area="" asp-controller="Home" asp-action="Index" class="logo-link">
-                    Home<span class="logo-dot">.</span>
-                </a>
-            </div>
-            <nav class="sidebar-menu">
-                <a asp-controller="Dashboard" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Dashboard" ? "active" : "")">
-                    <i class="fas fa-tachometer-alt"></i> Dashboard
-                </a>
-                <div class="dropdown">
-                    <button class="dropdown-toggle" onclick="toggleDropdown(this)">
-                        <i class="fas fa-user-cog"></i> Quản lý người dùng
-                    </button>
-                    <div class="dropdown-menu">
-                        <a asp-controller="AdminUser" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "AdminUser" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")">
-                            Danh sách người dùng
-                        </a>
-                        <a asp-controller="UserVerification" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "UserVerification" ? "active" : "")">
-                            Xác thực người dùng
-                        </a>
-                    </div>
-                </div>
-                <div class="dropdown">
-                    <button class="dropdown-toggle" onclick="toggleDropdown(this)">
-                        <i class="fas fa-project-diagram"></i> Quản lý dự án
-                    </button>
-                    <div class="dropdown-menu">
-                        <a asp-controller="Project" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Project" ? "active" : "")">
-                            Danh sách dự án
-                        </a>
-                        <a asp-controller="Categories" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Categories" ? "active" : "")">
-                            Danh mục dự án
-                        </a>
-                    </div>
-                </div>
-                <div class="dropdown">
-                    <button class="dropdown-toggle" onclick="toggleDropdown(this)">
-                        <i class="fas fa-file-alt"></i> Quản lý hồ sơ
-                    </button>
-                    <div class="dropdown-menu">
-                        <a asp-controller="Application" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Application" ? "active" : "")">
-                            Đơn ứng tuyển
-                        </a>
-                        <a asp-controller="Skills" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Skills" ? "active" : "")">
-                            Kỹ năng
-                        </a>
-                    </div>
-                </div>
-                <a asp-controller="AdminUser" asp-action="Payments" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "AdminUser" && ViewContext.RouteData.Values["Action"].ToString() == "Payments" ? "active" : "")">
-                    <i class="fas fa-money-bill-wave"></i> Thanh toán
-                </a>
-                <div class="dropdown">
-                    <button class="dropdown-toggle" onclick="toggleDropdown(this)">
-                        <i class="fas fa-exclamation-circle"></i> Báo cáo & Đánh giá
-                    </button>
-                    <div class="dropdown-menu">
-                        <a asp-controller="Report" asp-action="ListReport" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Report" ? "active" : "")">
-                            Danh sách báo cáo
-                        </a>
-                        <a asp-controller="Rating" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Rating" ? "active" : "")">
-                            Đánh giá
-                        </a>
-                    </div>
-                </div>
-                <a asp-controller="Advertisement" asp-action="ManageAdvertisements" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Advertisement" && ViewContext.RouteData.Values["Action"].ToString() == "ManageAdvertisements" ? "active" : "")">
-                    <i class="fas fa-ad"></i> Quản lý quảng cáo
-                </a>
-                <a asp-controller="Notification" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Notification" ? "active" : "")">
-                    <i class="fas fa-bell"></i> Thông báo
-                </a>
-            </nav>
-        </aside>
-
-        <!-- Content area with header and main content -->
-        <div class="content-container">
-            <!-- Admin Header -->
-            <header class="admin-header">
-                <div class="page-title">
-                    <i class="fas fa-@(ViewData["HeaderIcon"] ?? "tachometer-alt")"></i>
-                    @ViewData["Title"]
-                </div>
-                <div class="admin-profile">
-                    <div class="admin-notifications">
-                        <i class="fas fa-bell notification-icon"></i>
-                        <span class="notification-badge">3</span>
-                    </div>
-                    <div class="admin-avatar">
-                        <img src="https://via.placeholder.com/40" alt="Admin Avatar">
-                    </div>
-                    <div>
-                        <div class="admin-name">Admin User</div>
-                        <div class="admin-role">Administrator</div>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Main content area -->
-            <main class="main-container">
-                @RenderBody()
-            </main>
+    <!-- Sidebar - bây giờ ở bên ngoài .layout -->
+    <aside class="sidebar">
+        <div class="logo">
+            <a asp-area="" asp-controller="Home" asp-action="Index" class="logo-link">
+                Home<span class="logo-dot">.</span>
+            </a>
         </div>
+        <nav class="sidebar-menu">
+            <a asp-controller="Dashboard" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Dashboard" ? "active" : "")">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <div class="dropdown">
+                <button class="dropdown-toggle" onclick="toggleDropdown(this)">
+                    <i class="fas fa-user-cog"></i> <span>Quản lý người dùng</span>
+                </button>
+                <div class="dropdown-menu">
+                    <a asp-controller="AdminUser" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "AdminUser" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")">
+                        Danh sách người dùng
+                    </a>
+                    <a asp-controller="UserVerification" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "UserVerification" ? "active" : "")">
+                        Xác thực người dùng
+                    </a>
+                </div>
+            </div>
+            <div class="dropdown">
+                <button class="dropdown-toggle" onclick="toggleDropdown(this)">
+                    <i class="fas fa-project-diagram"></i> <span>Quản lý dự án</span>
+                </button>
+                <div class="dropdown-menu">
+                    <a asp-controller="Project" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Project" ? "active" : "")">
+                        Danh sách dự án
+                    </a>
+                    <a asp-controller="Categories" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Categories" ? "active" : "")">
+                        Danh mục dự án
+                    </a>
+                    <a asp-controller="Skills" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Skills" ? "active" : "")">
+                        Kỹ năng
+                    </a>
+                </div>
+            </div>
+            <a asp-controller="AdminUser" asp-action="Payments" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "AdminUser" && ViewContext.RouteData.Values["Action"].ToString() == "Payments" ? "active" : "")">
+                <i class="fas fa-money-bill-wave"></i> Thanh toán
+            </a>
+            <div class="dropdown">
+                <button class="dropdown-toggle" onclick="toggleDropdown(this)">
+                    <i class="fas fa-exclamation-circle"></i> <span>Báo cáo & Đánh giá</span>
+                </button>
+                <div class="dropdown-menu">
+                    <a asp-controller="Report" asp-action="ListReport" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Report" ? "active" : "")">
+                        Danh sách báo cáo
+                    </a>
+                    <a asp-controller="Rating" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Rating" ? "active" : "")">
+                        Đánh giá
+                    </a>
+                </div>
+            </div>
+            <a asp-controller="Advertisement" asp-action="ManageAdvertisements" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Advertisement" && ViewContext.RouteData.Values["Action"].ToString() == "ManageAdvertisements" ? "active" : "")">
+                <i class="fas fa-ad"></i> Quản lý quảng cáo
+            </a>
+            <a asp-controller="Notification" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Notification" ? "active" : "")">
+                <i class="fas fa-bell"></i> Thông báo
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Content area with header and main content -->
+    <div class="content-container">
+        <!-- Admin Header -->
+        <header class="admin-header">
+            <div class="page-title">
+                <i class="fas fa-@(ViewData["HeaderIcon"] ?? "tachometer-alt")"></i>
+                @ViewData["Title"]
+            </div>
+            <div class="admin-profile">
+                <div class="admin-notifications">
+                    <i class="fas fa-bell notification-icon"></i>
+                    <span class="notification-badge">3</span>
+                </div>
+                <div class="admin-avatar">
+                    @if (user != null && !string.IsNullOrEmpty(user.Avatar))
+                    {
+                        <img src="@Url.Content(user.Avatar)" alt="@(user.FullName ?? user.UserName)">
+                    }
+                    else
+                    {
+                        <img src="~/image/default-avatar.png" alt="Admin Avatar">
+                    }
+                </div>
+                <div>
+                    <div class="admin-name">@(user?.FullName ?? "Admin User")</div>
+                    <div class="admin-role">@(user?.UserName ?? "Administrator")</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main content area -->
+        <main class="main-container">
+            @RenderBody()
+        </main>
     </div>
 
     <!-- Scripts -->
