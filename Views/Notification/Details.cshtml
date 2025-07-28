@@ -4,7 +4,14 @@
 
 @{
     ViewData["Title"] = "Chi tiết thông báo";
-    Layout = "~/Views/Shared/_Dashboard.cshtml";
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "~/Views/Shared/_Dashboard.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
 }
 
 <div class="card mt-4">
