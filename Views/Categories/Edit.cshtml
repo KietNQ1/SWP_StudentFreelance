@@ -3,6 +3,8 @@
 <link rel="stylesheet" href="~/css/category/edit.css" asp-append-version="true" />
 @{
     ViewData["Title"] = "Chỉnh sửa danh mục";
+    ViewData["HeaderIcon"] = "edit";
+    Layout = "~/Views/Shared/_Dashboard.cshtml";
     bool isParent = ViewBag.IsParent as bool? ?? false;
     bool isChild = ViewBag.IsChild as bool? ?? false;
     bool isEditable = isChild;
@@ -14,12 +16,16 @@
     var parentItems = ViewData["ParentCategoryID"] as List<SelectListItem> ?? new List<SelectListItem>();
 }
 
-<h2 class="text-center">@ViewData["Title"]</h2>
-
-<div class="row justify-content-center mt-4">
-    <div class="col-md-8">
-        <div class="card shadow-sm">
-            <div class="card-body">
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Chỉnh sửa thông tin danh mục</h5>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Quay lại
+        </a>
+    </div>
+    <div class="card-body">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
                 <form asp-action="Edit" method="post">
                     <input type="hidden" asp-for="CategoryID" />
                     <input type="hidden" name="confirm" value="yes" />
@@ -72,7 +78,7 @@
                                     @(parentItems.FirstOrDefault(x => x.Value == Model.ParentCategoryID?.ToString())?.Text ?? "-")
                                 </p>
                                 <input type="hidden" asp-for="ParentCategoryID" />
-                                <small class="text-muted">Danh mục cha không áp dụng với loại “Lĩnh vực”.</small>
+                                <small class="text-muted">Danh mục cha không áp dụng với loại "Lĩnh vực".</small>
                             }
                             else
                             {
@@ -92,16 +98,62 @@
                         </div>
                     </div>
 
+                    <!-- Ảnh đại diện -->
+                    <div class="row mb-3">
+                        <label class="col-sm-4 col-form-label fw-bold text-end">Ảnh đại diện</label>
+                        <div class="col-sm-8">
+                            <div class="input-group">
+                                <input type="text" asp-for="ImagePath" class="form-control" readonly />
+                                <button type="button" class="btn btn-primary" id="selectImageBtn">
+                                    <i class="fas fa-image"></i> Chọn ảnh
+                                </button>
+                            </div>
+                            <div class="mt-2">
+                                <img id="selectedImage" src="@Model.ImagePath" alt="Preview" style="max-width: 100px; max-height: 100px; @(string.IsNullOrEmpty(Model.ImagePath) ? "display: none;" : "")" />
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Nút -->
                     <div class="text-center mt-4">
                         <button type="submit" class="btn btn-primary me-2">
-                            <i class="bi bi-save"></i> Lưu thay đổi
+                            <i class="fas fa-save"></i> Lưu thay đổi
                         </button>
                         <a asp-action="Index" class="btn btn-secondary">
-                            <i class="bi bi-arrow-left"></i> Quay về
+                            <i class="fas fa-arrow-left"></i> Quay về
                         </a>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal chọn ảnh -->
+<div class="modal fade" id="imageSelectionModal" tabindex="-1" aria-labelledby="imageSelectionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageSelectionModalLabel">Chọn ảnh</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="image-grid">
+                    <div class="row">
+                        @foreach (var icon in ViewBag.Icons)
+                        {
+                            <div class="col-md-4 col-6 mb-3">
+                                <div class="image-item @(icon.Value == Model.ImagePath ? "selected" : "")" data-img-path="@icon.Value">
+                                    <img src="@icon.Value" alt="@icon.Text" class="img-thumbnail" />
+                                    <div class="image-name">@icon.Text</div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
             </div>
         </div>
     </div>
@@ -123,6 +175,48 @@
                 ct.addEventListener("change", toggleParent);
                 toggleParent();
             }
+            
+            // Xử lý hiển thị modal chọn ảnh
+            const imagePathInput = document.getElementById("ImagePath");
+            const selectedImage = document.getElementById("selectedImage");
+            const selectImageBtn = document.getElementById("selectImageBtn");
+            const imageSelectionModal = new bootstrap.Modal(document.getElementById('imageSelectionModal'));
+
+            // Xử lý hiển thị modal chọn ảnh
+            selectImageBtn.addEventListener("click", function() {
+                imageSelectionModal.show();
+            });
+
+            // Xử lý khi chọn ảnh từ modal
+            document.querySelectorAll('.image-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    // Bỏ chọn tất cả các ảnh khác
+                    document.querySelectorAll('.image-item').forEach(el => {
+                        el.classList.remove('selected');
+                    });
+                    
+                    // Chọn ảnh hiện tại
+                    this.classList.add('selected');
+                    
+                    const imgPath = this.getAttribute('data-img-path');
+                    imagePathInput.value = imgPath;
+                    
+                    if (imgPath) {
+                        selectedImage.src = imgPath;
+                        selectedImage.style.display = "block";
+                    } else {
+                        selectedImage.style.display = "none";
+                    }
+                    
+                    imageSelectionModal.hide();
+                });
+            });
+
+            // Hiển thị ảnh đã chọn nếu có
+            if (imagePathInput.value) {
+                selectedImage.src = imagePathInput.value;
+                selectedImage.style.display = "block";
+            }
         });
     </script>
     <style>
@@ -132,6 +226,53 @@
             font-size: 1rem;
             line-height: 1.5;
         }
+        
+        .image-grid {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .image-item {
+            cursor: pointer;
+            text-align: center;
+            border: 2px solid transparent;
+            padding: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .image-item:hover {
+            border-color: #89AC46;
+            background-color: rgba(137, 172, 70, 0.1);
+        }
+        
+        .image-item.selected {
+            border-color: #89AC46;
+            background-color: rgba(137, 172, 70, 0.2);
+        }
+        
+        .image-item img {
+            height: 80px;
+            width: 80px;
+            object-fit: contain;
+        }
+        
+        .image-name {
+            margin-top: 5px;
+            font-size: 12px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        /* Điều chỉnh vị trí của modal */
+        .modal-dialog {
+            margin-top: 100px;
+        }
+        
+        @@media (max-width: 768px) {
+            .modal-dialog {
+                margin-top: 80px;
+            }
+        }
     </style>
-
 }

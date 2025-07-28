@@ -375,7 +375,7 @@
                         </div>
 
                         <div class="form-group mt-4">
-                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <button type="submit" class="btn btn-primary" id="saveProjectBtn">Save Changes</button>
                             <a asp-action="Details" asp-route-id="@Model.ProjectID" class="btn btn-outline-secondary ms-2">Cancel</a>
                         </div>
                     </form>
@@ -389,6 +389,83 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Xác nhận trước khi cập nhật dự án
+            const editForm = document.querySelector('form[action^="/Project/Edit"]');
+            const saveProjectBtn = document.getElementById('saveProjectBtn');
+            const budgetInput = document.getElementById('Budget');
+            
+            if (editForm && budgetInput) {
+                const originalBudget = parseFloat(budgetInput.value.replace(/,/g, ''));
+                
+                editForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Kiểm tra form validation trước
+                    if (!editForm.checkValidity()) {
+                        editForm.reportValidity();
+                        return;
+                    }
+                    
+                    const newBudget = parseFloat(budgetInput.value.replace(/,/g, ''));
+                    if (isNaN(newBudget)) {
+                        alert('Vui lòng nhập ngân sách hợp lệ.');
+                        return;
+                    }
+                    
+                    // So sánh ngân sách cũ và mới
+                    const budgetDifference = newBudget - originalBudget;
+                    
+                    let confirmMessage = 'Xác nhận cập nhật dự án?';
+                    
+                    if (budgetDifference > 0) {
+                        // Tính phí cho phần ngân sách tăng thêm
+                        let fee = 0;
+                        let feeRate = 0;
+                        
+                        if (budgetDifference <= 100000) {
+                            feeRate = 5;
+                            fee = budgetDifference * 0.05;
+                            if (fee < 5000) fee = 5000;
+                        } else if (budgetDifference <= 500000) {
+                            feeRate = 4;
+                            fee = budgetDifference * 0.04;
+                        } else if (budgetDifference <= 1000000) {
+                            feeRate = 3;
+                            fee = budgetDifference * 0.03;
+                        } else if (budgetDifference <= 5000000) {
+                            feeRate = 2.5;
+                            fee = budgetDifference * 0.025;
+                        } else {
+                            feeRate = 2;
+                            fee = budgetDifference * 0.02;
+                            if (fee > 200000) fee = 200000;
+                        }
+                        
+                        // Làm tròn lên đến 1.000 VND
+                        fee = Math.ceil(fee / 1000) * 1000;
+                        
+                        const totalAmount = budgetDifference + fee;
+                        
+                        // Ngân sách tăng, tiền sẽ bị trừ từ ví
+                        const formattedDifference = new Intl.NumberFormat('vi-VN').format(budgetDifference);
+                        const formattedFee = new Intl.NumberFormat('vi-VN').format(fee);
+                        const formattedTotal = new Intl.NumberFormat('vi-VN').format(totalAmount);
+                        
+                        confirmMessage += `\n\nTăng ngân sách: ${formattedDifference} VND\nPhí bổ sung (${feeRate}%): ${formattedFee} VND\nTổng cộng: ${formattedTotal} VND\n\nKhi thực hiện hành động này, số tiền ${formattedTotal} VND sẽ được trừ từ ví của bạn.`;
+                    } else if (budgetDifference < 0) {
+                        // Ngân sách giảm, tiền sẽ được hoàn lại vào ví
+                        const formattedDifference = new Intl.NumberFormat('vi-VN').format(Math.abs(budgetDifference));
+                        confirmMessage += `\n\nKhi thực hiện hành động này, số tiền ${formattedDifference} VND sẽ được hoàn lại vào ví của bạn do giảm ngân sách dự án.`;
+                    }
+                    
+                    confirmMessage += '\n\nBạn có chắc chắn muốn tiếp tục?';
+                    
+                    if (confirm(confirmMessage)) {
+                        editForm.submit();
+                    }
+                });
+            }
+            
             // Các phần tử DOM
             const dropdownBtn = document.getElementById('dropdownCategorySkillsBtn');
             const container = document.getElementById('categorySkillsContainer');

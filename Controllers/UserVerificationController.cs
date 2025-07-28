@@ -30,11 +30,15 @@ namespace StudentFreelance.Controllers
         }
 
         // GET: UserVerification
-        public async Task<IActionResult> Index(string searchString, string roleFilter, string statusFilter)
+        public async Task<IActionResult> Index(string searchString, string roleFilter, string statusFilter, int? pageNumber)
         {
             ViewData["CurrentFilter"] = searchString;
             ViewData["RoleFilter"] = roleFilter;
             ViewData["StatusFilter"] = statusFilter;
+            
+            // Đặt giá trị mặc định cho pageNumber
+            int currentPageNumber = pageNumber ?? 1;
+            int pageSize = 10;
 
             var query = _context.Users.AsQueryable();
 
@@ -88,8 +92,20 @@ namespace StudentFreelance.Controllers
                 }
             }
 
+            // Đếm tổng số bản ghi để phân trang
+            int totalRecords = await query.CountAsync();
+            int totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+            
+            // Lưu thông tin phân trang vào ViewData
+            ViewData["TotalPages"] = totalPages;
+            ViewData["CurrentPage"] = currentPageNumber;
+            ViewData["TotalRecords"] = totalRecords;
+
+            // Lấy dữ liệu cho trang hiện tại
             var users = await query
                 .OrderBy(u => u.UserName)
+                .Skip((currentPageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .Select(u => new UserVerificationViewModel
                 {
                     UserID = u.Id,
