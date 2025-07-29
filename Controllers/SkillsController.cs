@@ -49,6 +49,7 @@ public class SkillsController : Controller
 
     // GET: Skills/Create
     [HttpGet]
+    [Authorize(Roles = "Admin")]
     public IActionResult Create()
     {
         ViewData["CategoryID"] = new SelectList(
@@ -60,6 +61,7 @@ public class SkillsController : Controller
     // POST: Skills/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create([Bind("SkillName,CategoryID")] Skill skill)
     {
         if (ModelState.IsValid)
@@ -77,6 +79,7 @@ public class SkillsController : Controller
     }
 
     // GET: Skills/Edit/5
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Edit(int? id)
     {
 
@@ -97,6 +100,7 @@ public class SkillsController : Controller
     // POST: Skills/Edit/5
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Edit(int id, Skill skill)
     {
 
@@ -127,6 +131,7 @@ public class SkillsController : Controller
 
 
     // GET: Skills/Delete/5
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int? id)
     {
         if (id == null) return NotFound();
@@ -143,6 +148,7 @@ public class SkillsController : Controller
     // POST: Skills/DeleteConfirmed/5 => Ẩn kỹ năng
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var skill = await _context.Skills.FindAsync(id);
@@ -157,6 +163,7 @@ public class SkillsController : Controller
 
     // GET: Skills/Unhide/5
     [HttpGet]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Unhide(int? id)
     {
         if (id == null) return NotFound();
@@ -173,6 +180,7 @@ public class SkillsController : Controller
     // POST: Skills/Unhide/5
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Unhide(int id)
     {
         var skill = await _context.Skills.FindAsync(id);

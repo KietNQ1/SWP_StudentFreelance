@@ -6,6 +6,20 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/wallet/transaction-detail.css" asp-append-version="true" />
+    <style>
+        .qr-code-container {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .qr-code-image {
+            max-width: 200px;
+            max-height: 200px;
+            margin-top: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+        }
+    </style>
 }
 
 <div class="container mt-4">
@@ -90,6 +104,40 @@
                               Model.Description?.Contains("Wallet") == true ? "E-Wallet" : "External Account")
                         </span>
                     </li>
+                    
+                    @if (Model.TypeID == 2) // Nếu là rút tiền, hiển thị thông tin ngân hàng hoặc QR
+                    {
+                        if (ViewBag.WithdrawalRequest != null)
+                        {
+                            var withdrawalRequest = ViewBag.WithdrawalRequest;
+                            
+                            if (!string.IsNullOrEmpty(withdrawalRequest.BankName))
+                            {
+                                <li>
+                                    <span class="detail-label">Bank Name</span>
+                                    <span class="detail-value">@withdrawalRequest.BankName</span>
+                                </li>
+                                <li>
+                                    <span class="detail-label">Account Number</span>
+                                    <span class="detail-value">@withdrawalRequest.AccountNumber</span>
+                                </li>
+                                <li>
+                                    <span class="detail-label">Account Holder</span>
+                                    <span class="detail-value">@withdrawalRequest.AccountHolderName</span>
+                                </li>
+                            }
+                            
+                            if (!string.IsNullOrEmpty(withdrawalRequest.QRCodeUrl))
+                            {
+                                <li class="qr-code-container">
+                                    <span class="detail-label">QR Code</span>
+                                    <span class="detail-value">
+                                        <img src="@withdrawalRequest.QRCodeUrl" alt="QR Code" class="qr-code-image" />
+                                    </span>
+                                </li>
+                            }
+                        }
+                    }
                 }
                 else if (Model.TypeID == 3 && Model.Project != null) // Payment (thanh toán dự án)
                 {
@@ -161,17 +209,17 @@
                     @if (Model.StatusID == 2) // Thành công
                     {
                         <i class="bi bi-check-circle-fill me-2"></i>
-                        <span>This transaction has been completed successfully.</span>
+                        <span>Giao dịch này đã được hoàn thành thành công.</span>
                     }
                     else if (Model.StatusID == 3) // Thất bại
                     {
                         <i class="bi bi-x-circle-fill me-2"></i>
-                        <span>This transaction has failed. Please contact support if you need assistance.</span>
+                        <span>Giao dịch này đã thất bại. Vui lòng liên hệ hỗ trợ nếu bạn cần trợ giúp.</span>
                     }
                     else // Đang xử lý or other status
                     {
                         <i class="bi bi-hourglass-split me-2"></i>
-                        <span>This transaction is currently being processed.</span>
+                        <span>Giao dịch này đang được xử lý.</span>
                     }
                 </div>
             </div>
