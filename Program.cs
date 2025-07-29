@@ -43,9 +43,9 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
 builder.Services.Configure<IdentityOptions>(options =>
 {
     // Cấu hình khóa tài khoản
-    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30); // Khóa trong 5 phút
-    options.Lockout.MaxFailedAccessAttempts = 5; // Sau 5 lần sai sẽ khóa
-    options.Lockout.AllowedForNewUsers = true;  // Áp dụng cho cả tài khoản mới
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30); 
+    options.Lockout.MaxFailedAccessAttempts = 5; 
+    options.Lockout.AllowedForNewUsers = true;  
 });
 
 

@@ -1,22 +1,22 @@
 @model StudentFreelance.ViewModels.AdvertisementViewModel
 
 @{
-    ViewData["Title"] = "Delete Advertisement";
+    ViewData["Title"] = "Xóa Qu?ng Cáo";
 }
 
 <link rel="stylesheet" href="~/css/AdvertisementManage.css" />
 
 <div class="topbar">
-    <h1><i class="fas fa-trash"></i> Delete Advertisement</h1>
+    <h1><i class="fas fa-trash"></i>Xóa Qu?ng Cáo</h1>
     <div class="filter-row">
         <div class="filter-group" style="background-color: #fff3cd; padding: 15px; border-radius: 10px; border-left: 5px solid #ffc107;">
             @if (Model.StatusID == 1) 
             {
-                <p><strong>Note:</strong> Pending advertisements will be marked as canceled and will not be processed for approval. You can renew this advertisement later if desired.</p>
+                <p><strong>Note:</strong> Qu?ng cáo ?ang ch? duy?t s? b? ?ánh d?u là ?ã h?y và s? không ???c x? lý ?? phê duy?t. B?n có th? gia h?n qu?ng cáo này sau n?u mu?n.</p>
             }
             else
             {
-                <p><strong>Note:</strong> The advertisement will be marked as canceled and will no longer be displayed. You can renew this advertisement later if desired.</p>
+                <p><strong>Note:</strong> Qu?ng cáo s? b? ?ánh d?u là ?ã h?y và s? không còn hi?n th?. B?n có th? gia h?n qu?ng cáo này sau n?u mu?n.</p>
             }
         </div>
     </div>
@@ -25,60 +25,60 @@
 <div class="table-container">
     <div style="display: flex; gap: 30px; flex-wrap: wrap;">
         <div style="flex: 0 0 300px;">
-            <img src="~/uploads/advertisements/@Model.ImagePath" alt="Advertisement" class="ad-image" style="width: 100%; height: auto; max-height: 300px;" />
+            <img src="~/uploads/advertisements/@Model.ImagePath" alt="?nh Qu?ng Cáo" class="ad-image" style="width: 100%; height: auto; max-height: 300px;" />
         </div>
         <div style="flex: 1; min-width: 300px;">
             <div style="margin-bottom: 20px;">
-                <h3>Advertisement Details</h3>
+                <h3>Chi Ti?t Qu?ng Cáo</h3>
             </div>
             
             <div style="display: grid; grid-template-columns: 180px 1fr; row-gap: 15px; align-items: center;">
-                <div><strong>Package Type:</strong></div>
+                <div><strong>Gói Qu?ng Cáo:</strong></div>
                 <div>
                     @if (Model.PackageTypeID == 2)
                     {
-                        <span class="package-type package-premium">Premium Package</span>
+                        <span class="package-type package-premium">Gói N?i B?t</span>
                     }
                     else
                     {
-                        <span class="package-type package-basic">Basic Package</span>
+                        <span class="package-type package-basic">Gói C? B?n</span>
                     }
                 </div>
 
-                <div><strong>Current Status:</strong></div>
+                <div><strong>Tr?ng Thái Hi?n T?i:</strong></div>
                 <div>
                     @if (Model.StatusID == 1)
                     {
-                        <span class="status-pending">Pending</span>
+                        <span class="status-pending">?ang ch? duy?t</span>
                     }
                     else if (Model.StatusID == 2)
                     {
-                        <span class="status-approved">Approved</span>
+                        <span class="status-approved">?ã phê duy?t</span>
                     }
                     else if (Model.StatusID == 3)
                     {
-                        <span class="status-rejected">Rejected</span>
+                        <span class="status-rejected">B? t? ch?i</span>
                     }
                     else if (Model.StatusID == 4)
                     {
-                        <span class="status-expired">Expired</span>
+                        <span class="status-expired">?ã h?t h?n</span>
                     }
                 </div>
 
-                <div><strong>Status After Deletion:</strong></div>
+                <div><strong>Tr?ng Thái Sau Khi Xóa:</strong></div>
                 <div>
-                    <span class="status-rejected">Canceled</span>
+                    <span class="status-rejected">?ã h?y</span>
                 </div>
 
-                <div><strong>Created Date:</strong></div>
+                <div><strong>Ngày T?o:</strong></div>
                 <div>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
             </div>
 
             <form asp-action="Delete" method="post" style="margin-top: 30px;">
                 <input type="hidden" asp-for="Id" />
                 <div style="display: flex; gap: 15px; justify-content: flex-end;">
-                    <a asp-action="MyAdvertisements" class="btn-secondary" style="text-decoration: none;">Back to List</a>
-                    <button type="submit" class="action-btn delete" style="padding: 14px 24px;">Confirm Delete</button>
+                    <a asp-action="MyAdvertisements" class="btn-secondary" style="text-decoration: none;">Quay L?i Danh Sách</a>
+                    <button type="submit" class="action-btn delete" style="padding: 14px 24px;">Quay L?i Danh Sách</button>
                 </div>
             </form>
         </div>

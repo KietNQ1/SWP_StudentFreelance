@@ -176,8 +176,8 @@ namespace StudentFreelance.Data
             var usersToSeed = new List<(string Email, string Password, string Role, string FullName)>
             {
                 ("admin@example.com", "Admin@123", "Admin", "Admin"),
-                ("moderator@example.com", "Moderator@123", "Moderator", "Moderator"),
-                ("business@example.com", "Business@123", "Business", "Công ty TNHH ABC"),
+                ("moderator@example.com","Moderator@123","Moderator", "Moderator"),
+                ("business@example.com","Business@123", "Business", "Công ty TNHH ABC"),
                 ("student@example.com", "Student@123", "Student", "Nguyễn Văn A"),
                 
                 // Additional business accounts
