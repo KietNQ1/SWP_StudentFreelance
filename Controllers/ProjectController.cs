@@ -1696,7 +1696,8 @@ namespace StudentFreelance.Controllers
         [Authorize(Roles = "Business")]
         public async Task<IActionResult> MyProjects()
         {
-            var currentUserId = int.Parse(System.Security.Claims.ClaimTypes.NameIdentifier);
+            var userIdStr = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+            var currentUserId = int.Parse(userIdStr);
             var projects = await _context.Projects
                 .Include(p => p.Category)
                 .Include(p => p.Status)
