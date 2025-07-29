@@ -269,9 +269,16 @@
             {
                 <a asp-controller="Project" asp-action="Details" asp-route-id="@project.ProjectID" class="text-decoration-none text-dark">
                     <div class="project-card">
-                        <div class="project-image">
-                            <img src="~/image/project-default.jpg" alt="@project.Business?.FullName" />
-                        </div>
+<div class="project-image">
+    @if (project.Business != null && !string.IsNullOrEmpty(project.Business.Avatar))
+    {
+        <img src="@project.Business.Avatar" alt="@project.Business?.FullName" onerror="this.onerror=null; this.src='/image/default-avatar.png';" />
+    }
+    else
+    {
+        <img src="/image/default-avatar.png" alt="@project.Business?.FullName" />
+    }
+</div>
                         <div class="project-content">
                             <h3 class="project-title">@project.Title</h3>
                             <p class="company-name">@project.Business?.FullName</p>
