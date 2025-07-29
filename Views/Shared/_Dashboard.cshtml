@@ -78,16 +78,19 @@
             <a asp-controller="Dashboard" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Dashboard" ? "active" : "")">
                 <i class="fas fa-tachometer-alt"></i> Dashboard
             </a>
-            @if (User.IsInRole("Admin"))
+            @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
             {
                 <div class="dropdown">
                     <button class="dropdown-toggle" onclick="toggleDropdown(this)">
                         <i class="fas fa-user-cog"></i> <span>Quản lý người dùng</span>
                     </button>
                     <div class="dropdown-menu">
-                        <a asp-controller="AdminUser" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "AdminUser" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")">
-                            Danh sách người dùng
-                        </a>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <a asp-controller="AdminUser" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "AdminUser" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")">
+                                Danh sách người dùng
+                            </a>
+                        }
                         <a asp-controller="UserVerification" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "UserVerification" ? "active" : "")">
                             Xác thực người dùng
                         </a>

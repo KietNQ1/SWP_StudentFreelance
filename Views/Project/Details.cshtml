@@ -88,7 +88,7 @@
 
         <div class="col-md-4 text-end mt-md-0 mt-3">
             @if (User.Identity != null && User.Identity.IsAuthenticated &&
-            (User.IsInRole("Admin") ||
+            (User.IsInRole("Admin") || User.IsInRole("Moderator") ||
             User.FindFirst(ClaimTypes.NameIdentifier)?.Value == Model.BusinessID.ToString()))
             {
                 <div class="btn-group d-flex flex-wrap justify-content-end">
@@ -142,6 +142,10 @@
                             </form>
                         }
                     }
+
+                    <a asp-action="Delete" asp-route-id="@Model.ProjectID" class="btn btn-rect btn-rect-danger" title="Xóa dự án">
+                        <i class="fas fa-trash"></i>
+                    </a>
                 </div>
             }
             else if (User.Identity != null && User.Identity.IsAuthenticated &&

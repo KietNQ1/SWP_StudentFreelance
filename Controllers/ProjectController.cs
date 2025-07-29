@@ -693,8 +693,9 @@ namespace StudentFreelance.Controllers
             if (project == null)
                 return NotFound();
 
-            // Check if current user is the owner of the project
-            if (project.BusinessID != int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)) && !User.IsInRole("Admin"))
+            // Check if current user is the owner of the project or has admin/moderator role
+            if (project.BusinessID != int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)) 
+                && !User.IsInRole("Admin") && !User.IsInRole("Moderator"))
             {
                 return Forbid();
             }
@@ -713,8 +714,9 @@ namespace StudentFreelance.Controllers
             if (project == null)
                 return NotFound();
 
-            // Check if current user is the owner of the project
-            if (project.BusinessID != int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)) && !User.IsInRole("Admin"))
+            // Check if current user is the owner of the project or has admin/moderator role
+            if (project.BusinessID != int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)) 
+                && !User.IsInRole("Admin") && !User.IsInRole("Moderator"))
             {
                 return Forbid();
             }
@@ -739,8 +741,9 @@ namespace StudentFreelance.Controllers
             if (project == null)
                 return NotFound();
 
-            // Check if current user is the owner of the project
-            if (project.BusinessID != int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)) && !User.IsInRole("Admin"))
+            // Check if current user is the owner of the project or has admin/moderator role
+            if (project.BusinessID != int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)) 
+                && !User.IsInRole("Admin") && !User.IsInRole("Moderator"))
             {
                 return Forbid();
             }
@@ -820,10 +823,11 @@ namespace StudentFreelance.Controllers
             if (application.ProjectID != projectId)
                 return NotFound();
 
-            // Check if user is authorized (either business owner or the student)
+            // Check if user is authorized (either business owner, the student, admin or moderator)
             bool isBusinessConfirmation = false;
+            bool isAdmin = User.IsInRole("Admin") || User.IsInRole("Moderator");
 
-            if (project.BusinessID == currentUserId)
+            if (project.BusinessID == currentUserId || isAdmin)
             {
                 isBusinessConfirmation = true;
             }
@@ -833,7 +837,7 @@ namespace StudentFreelance.Controllers
             }
             else
             {
-                // User is neither the business owner nor the student
+                // User is neither the business owner, admin, moderator nor the student
                 return Forbid();
             }
 
@@ -924,10 +928,11 @@ namespace StudentFreelance.Controllers
             if (application.ProjectID != projectId)
                 return NotFound();
 
-            // Check if user is authorized (either business owner or the student)
+            // Check if user is authorized (either business owner, the student, admin or moderator)
             bool isBusinessCancellation = false;
+            bool isAdmin = User.IsInRole("Admin") || User.IsInRole("Moderator");
 
-            if (project.BusinessID == currentUserId)
+            if (project.BusinessID == currentUserId || isAdmin)
             {
                 isBusinessCancellation = true;
 
@@ -957,7 +962,7 @@ namespace StudentFreelance.Controllers
             }
             else
             {
-                // User is neither the business owner nor the student
+                // User is neither the business owner, admin, moderator nor the student
                 return Forbid();
             }
 
@@ -1004,7 +1009,7 @@ namespace StudentFreelance.Controllers
         // POST: Projects/CompleteProject
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Business,Admin")]
+        [Authorize(Roles = "Business,Admin,Moderator")]
         public async Task<IActionResult> CompleteProject(int id)
         {
             if (id <= 0)
@@ -1018,8 +1023,8 @@ namespace StudentFreelance.Controllers
             if (project == null)
                 return NotFound();
 
-            // Check if user is authorized (business owner or admin)
-            bool isAdmin = User.IsInRole("Admin");
+            // Check if user is authorized (business owner or admin/moderator)
+            bool isAdmin = User.IsInRole("Admin") || User.IsInRole("Moderator");
             if (project.BusinessID != currentUserId && !isAdmin)
             {
                 return Forbid();
@@ -1037,7 +1042,7 @@ namespace StudentFreelance.Controllers
                     // Gửi thông báo cho tất cả sinh viên đã tham gia dự án
                     var completedApplications = await _context.StudentApplications
                         .Where(a => a.ProjectID == id && a.Status == "Completed")
-                .Include(a => a.User)
+                        .Include(a => a.User)
                         .ToListAsync();
 
                     foreach (var application in completedApplications)
@@ -1069,7 +1074,7 @@ namespace StudentFreelance.Controllers
         // POST: Projects/CancelProject
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Business,Admin")]
+        [Authorize(Roles = "Business,Admin,Moderator")]
         public async Task<IActionResult> CancelProject(int id)
         {
             if (id <= 0)
@@ -1083,8 +1088,8 @@ namespace StudentFreelance.Controllers
             if (project == null)
                 return NotFound();
 
-            // Check if user is authorized (business owner or admin)
-            bool isAdmin = User.IsInRole("Admin");
+            // Check if user is authorized (business owner or admin/moderator)
+            bool isAdmin = User.IsInRole("Admin") || User.IsInRole("Moderator");
             if (project.BusinessID != currentUserId && !isAdmin)
             {
                 return Forbid();
@@ -1099,7 +1104,7 @@ namespace StudentFreelance.Controllers
                 {
                     TempData["SuccessMessage"] = "Dự án đã được hủy thành công.";
 
-                    // Gửi thông báo cho tất cả sinh viên đã ứng tuyển vào dự án
+                    // Gửi thông báo cho tất cả sinh viên đã tham gia dự án
                     var applications = await _context.StudentApplications
                         .Where(a => a.ProjectID == id)
                         .Include(a => a.User)
@@ -1691,7 +1696,7 @@ namespace StudentFreelance.Controllers
         [Authorize(Roles = "Business")]
         public async Task<IActionResult> MyProjects()
         {
-            var currentUserId = int.Parse(User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier));
+            var currentUserId = int.Parse(System.Security.Claims.ClaimTypes.NameIdentifier);
             var projects = await _context.Projects
                 .Include(p => p.Category)
                 .Include(p => p.Status)

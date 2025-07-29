@@ -11,7 +11,7 @@ using StudentFreelance.DbContext;
 
 namespace StudentFreelance.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Moderator")]
     public class AdminUserController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
