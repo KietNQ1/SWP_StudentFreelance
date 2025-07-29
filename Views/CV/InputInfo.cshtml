@@ -82,7 +82,28 @@
         margin-top: 30px;
         margin-bottom: 15px;
     }
+
+    .form-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .form-col {
+        flex: 1;
+        min-width: 48%;
+    }
+
+    @@media (max-width: 768px) {
+        .form-col
+
+    {
+        min-width: 100%;
+    }
+
+    }
 </style>
+
 
 <div class="cv-form-container">
     <h2>Nhập thông tin để tạo CV</h2>
@@ -90,29 +111,40 @@
     <form asp-controller="CV" asp-action="Preview" method="post" enctype="multipart/form-data">
         <input type="hidden" asp-for="Template" />
 
-        <div class="form-group">
-            <label>Họ tên</label>
-            <input asp-for="FullName" class="form-control" required />
+        <div class="form-row">
+            <div class="form-group form-col">
+                <label>Họ tên</label>
+                <input asp-for="FullName" class="form-control" required />
+            </div>
+
+            <div class="form-group form-col">
+                <label>Ngành nghề</label>
+                <input asp-for="Industry" class="form-control" />
+            </div>
         </div>
 
-        <div class="form-group">
-            <label>Ngành nghề</label>
-            <input asp-for="Industry" class="form-control" />
+        <div class="form-row">
+            <div class="form-group form-col">
+                <label>Vị trí ứng tuyển</label>
+                <input asp-for="JobTitle" class="form-control" />
+            </div>
+
+            <div class="form-group form-col">
+                <label>Trường Đại học</label>
+                <input asp-for="University" class="form-control" />
+            </div>
         </div>
 
-        <div class="form-group">
-            <label>Vị trí ứng tuyển</label>
-            <input asp-for="JobTitle" class="form-control" />
-        </div>
+        <div class="form-row">
+            <div class="form-group form-col">
+                <label>GPA</label>
+                <input asp-for="GPA" class="form-control" />
+            </div>
 
-        <div class="form-group">
-            <label>Trường Đại học</label>
-            <input asp-for="University" class="form-control" />
-        </div>
-
-        <div class="form-group">
-            <label>GPA</label>
-            <input asp-for="GPA" class="form-control" />
+            <div class="form-group form-col">
+                <label for="avatar">Ảnh đại diện (JPG/PNG):</label>
+                <input type="file" name="AvatarFile" accept=".jpg,.jpeg,.png" class="form-control" />
+            </div>
         </div>
 
         <div class="section-title">Thông tin chi tiết</div>
@@ -135,11 +167,6 @@
         <div class="form-group">
             <label>Mục tiêu nghề nghiệp</label>
             <textarea asp-for="CareerGoal" class="form-control"></textarea>
-        </div>
-
-        <div class="form-group">
-            <label for="avatar">Ảnh đại diện (JPG/PNG):</label>
-            <input type="file" name="AvatarFile" accept=".jpg,.jpeg,.png" class="form-control" />
         </div>
 
         <div style="text-align: center;">

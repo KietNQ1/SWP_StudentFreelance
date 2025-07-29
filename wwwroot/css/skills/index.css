@@ -1,151 +1,245 @@
-﻿/* CSS cho bảng Skills */
-.table {
-    border-collapse: collapse;
-    width: 100%;
+﻿/* Skills Index Page Styles */
+body {
     background-color: #ffffff;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+h2 {
+    color: #89ac46;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+    h2::after {
+        content: "";
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        width: 80px;
+        height: 3px;
+        background: linear-gradient(90deg, #89ac46, #d3e671);
+        border-radius: 2px;
+    }
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
     border-radius: 8px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #89ac46, #d3e671);
+    color: white;
+    box-shadow: 0 4px 15px rgba(137, 172, 70, 0.3);
+}
+
+    .btn-success:hover {
+        background: linear-gradient(135deg, #7a9a3e, #c5d965);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(137, 172, 70, 0.4);
+        text-decoration: none;
+        color: white;
+    }
+
+.table-container {
+    background: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(137, 172, 70, 0.1);
+    border: 1px solid rgba(137, 172, 70, 0.1);
     overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.table-bordered {
-    border: 2px solid #89AC46;
-}
-
-.table thead {
-    background: linear-gradient(135deg, #89AC46 0%, #D3E671 100%);
+.table {
+    margin-bottom: 0;
+    background-color: transparent;
 }
 
     .table thead th {
-        background-color: #89AC46;
+        background: linear-gradient(135deg, #89ac46, #d3e671);
         color: white;
         font-weight: 600;
+        padding: 1rem;
+        border: none;
         text-align: center;
-        padding: 15px 12px;
-        border: 1px solid #7A9C3E;
-        font-size: 14px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        font-size: 0.95rem;
     }
 
-.table tbody tr {
-    transition: all 0.3s ease;
-    border-bottom: 1px solid #e0e0e0;
-}
+    .table tbody td {
+        padding: 1rem;
+        border-bottom: 1px solid rgba(137, 172, 70, 0.1);
+        vertical-align: middle;
+        text-align: center;
+    }
 
-    .table tbody tr:nth-child(even) {
-        background-color: #f8f9fa;
+    .table tbody tr:last-child td {
+        border-bottom: none;
     }
 
     .table tbody tr:hover {
-        background-color: #F8ED8C;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(137, 172, 70, 0.2);
+        background-color: rgba(248, 237, 140, 0.1);
+        transform: scale(1.01);
+        transition: all 0.3s ease;
     }
 
-.table tbody td {
-    padding: 12px 15px;
-    border: 1px solid #dee2e6;
-    vertical-align: middle;
-    font-size: 14px;
+    .table tbody tr.text-muted {
+        opacity: 0.6;
+        background-color: rgba(108, 117, 125, 0.05);
+    }
+
+.btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    margin: 0 0.2rem;
+    border-radius: 6px;
 }
 
-/* Styling cho trạng thái hoạt động */
-.table tbody tr:not(.text-muted) td:nth-child(3) {
-    color: #89AC46;
+.btn-info {
+    background: linear-gradient(135deg, #89ac46, #d3e671);
+    color: white;
+    border: none;
+}
+
+    .btn-info:hover {
+        background: linear-gradient(135deg, #7a9a3e, #c5d965);
+        transform: translateY(-1px);
+        text-decoration: none;
+        color: white;
+    }
+
+.btn-warning {
+    background: linear-gradient(135deg, #f8ed8c, #fff3a0);
+    color: #333;
+    border: none;
+}
+
+    .btn-warning:hover {
+        background: linear-gradient(135deg, #f5e676, #fff199);
+        transform: translateY(-1px);
+        text-decoration: none;
+        color: #333;
+    }
+
+.btn-danger {
+    background: linear-gradient(135deg, #ff8989, #ffb3b3);
+    color: white;
+    border: none;
+}
+
+    .btn-danger:hover {
+        background: linear-gradient(135deg, #ff7575, #ff9999);
+        transform: translateY(-1px);
+        text-decoration: none;
+        color: white;
+    }
+
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+/* Status indicators */
+.status-active {
+    color: #89ac46;
     font-weight: 600;
 }
 
-/* Styling cho trạng thái không hoạt động */
-.table tbody tr.text-muted {
-    opacity: 0.6;
-    background-color: #f5f5f5;
+.status-inactive {
+    color: #6c757d;
+    font-weight: 600;
 }
 
-    .table tbody tr.text-muted td:nth-child(3) {
-        color: #FF8989;
-        font-weight: 600;
-    }
-
-/* Styling cho các action links */
-.table tbody td a {
-    color: #89AC46;
-    text-decoration: none;
-    font-weight: 500;
-    padding: 6px 12px;
-    border-radius: 4px;
-    transition: all 0.3s ease;
-    display: inline-block;
-    margin: 0 2px;
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #6c757d;
 }
 
-    .table tbody td a:hover {
-        background-color: #89AC46;
-        color: white;
-        text-decoration: none;
-        transform: translateY(-1px);
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #d3e671;
     }
 
-    /* Styling riêng cho link "Sửa" */
-    .table tbody td a[asp-action="Edit"] {
-        background-color: #D3E671;
-        color: #5a6c2a;
-    }
+/* Badge styles */
+.badge {
+    padding: 0.4em 0.6em;
+    font-size: 85%;
+    border-radius: 6px;
+}
 
-        .table tbody td a[asp-action="Edit"]:hover {
-            background-color: #89AC46;
-            color: white;
-        }
+.bg-success {
+    background-color: #89ac46 !important;
+}
 
-    /* Styling riêng cho link "Chi tiết" */
-    .table tbody td a[asp-action="Details"] {
-        background-color: #F8ED8C;
-        color: #6b5d0a;
-    }
+.bg-danger {
+    background-color: #ff8989 !important;
+}
 
-        .table tbody td a[asp-action="Details"]:hover {
-            background-color: #89AC46;
-            color: white;
-        }
-
-    /* Styling riêng cho link "Ẩn" */
-    .table tbody td a[asp-action="Delete"] {
-        background-color: #FF8989;
-        color: #8b0000;
-    }
-
-        .table tbody td a[asp-action="Delete"]:hover {
-            background-color: #e74c3c;
-            color: white;
-        }
-
-    /* Styling riêng cho link "Hiện" */
-    .table tbody td a[asp-action="Unhide"] {
-        background-color: #D3E671;
-        color: #5a6c2a;
-    }
-
-        .table tbody td a[asp-action="Unhide"]:hover {
-            background-color: #89AC46;
-            color: white;
-        }
-
-/* Responsive design */
-@media (max-width: 768px) {
+/* Responsive Design */
+@media (max-width: 1200px) {
     .table {
-        font-size: 12px;
+        font-size: 0.9rem;
     }
 
-        .table thead th,
-        .table tbody td {
-            padding: 8px 6px;
-        }
+    .btn-sm {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.75rem;
+    }
+}
 
-            .table tbody td a {
-                padding: 4px 8px;
-                font-size: 12px;
-                margin: 1px;
-            }
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .table {
+        min-width: 800px;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .btn-sm {
+        width: 100%;
+        margin: 0.1rem 0;
+    }
+}
+
+@media (max-width: 576px) {
+    .table thead th,
+    .table tbody td {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
 }
 
 /* Animation khi load trang */
@@ -161,37 +255,6 @@
     }
 }
 
-.table {
+.card {
     animation: fadeInUp 0.6s ease-out;
-}
-
-/* Styling cho text-center */
-.text-center {
-    text-align: center;
-}
-
-/* Hiệu ứng loading cho bảng */
-.table-loading {
-    position: relative;
-}
-
-    .table-loading::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(137, 172, 70, 0.2), transparent);
-        animation: loading 1.5s infinite;
-    }
-
-@keyframes loading {
-    0% {
-        transform: translateX(-100%);
-    }
-
-    100% {
-        transform: translateX(100%);
-    }
 }

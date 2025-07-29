@@ -287,10 +287,10 @@
                         const data = await res.json();
                         const fileUrl = data.fileUrl;
 
-                        // Gửi SignalR
+                        
                         await connection.invoke("SendMessage", convId, currentUserId, fileUrl);
 
-                        // Gửi về server
+                       
                         await fetch('@Url.Action("Send", "Chat")', {
                             method: 'POST',
                             headers: {
@@ -308,7 +308,7 @@
                     return;
                 }
 
-                // Nếu là tin nhắn văn bản
+                
                 if (!text) return;
 
                 try {

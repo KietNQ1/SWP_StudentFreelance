@@ -1,13 +1,13 @@
 @model StudentFreelance.ViewModels.AdvertisementViewModel
 
 @{
-    ViewData["Title"] = "Edit Advertisement";
+    ViewData["Title"] = "Chỉnh sửa Quảng Cáo";
 }
 
 <link rel="stylesheet" href="~/css/AdvertisementManage.css" />
 
 <div class="topbar">
-    <h1><i class="fas fa-edit"></i> Edit Advertisement</h1>
+    <h1><i class="fas fa-edit"></i> Chỉnh sửa Quảng Cáo</h1>
 </div>
 
 <div class="table-container">
@@ -16,47 +16,49 @@
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
         <div class="form-group">
-            <label asp-for="PackageTypeID" class="form-label">Advertisement Package Type</label>
+            <label asp-for="PackageTypeID" class="form-label">Chọn Gói Quảng Cáo</label>
             <div class="form-check" style="margin-bottom: 15px;">
-                <input class="form-check-input" type="radio" name="PackageTypeID" id="basic" value="1" 
-                        @(Model.PackageTypeID == 1 ? "checked" : "")>
+                <input class="form-check-input" type="radio" name="PackageTypeID" id="basic" value="1"
+                @(Model.PackageTypeID == 1 ? "checked" : "")>
                 <label class="form-check-label" for="basic">
-                    Basic Package - 100,000đ
-                    <span class="form-text">Display 1 image in slideshow at any position</span>
+                    Gói Cơ Bản - 100.000đ
+                    <span class="form-text">Hiển thị 1 hình ảnh trong trình chiếu ở bất kỳ vị trí nào</span>
                 </label>
             </div>
             <div class="form-check">
-                <input class="form-check-input" type="radio" name="PackageTypeID" id="featured" value="2" 
-                        @(Model.PackageTypeID == 2 ? "checked" : "")>
+                <input class="form-check-input" type="radio" name="PackageTypeID" id="featured" value="2"
+                @(Model.PackageTypeID == 2 ? "checked" : "")>
                 <label class="form-check-label" for="featured">
-                    Premium Package - 200,000đ
-                    <span class="form-text">Display image in premium positions in slideshow</span>
+                    Gói Nổi Bật - 200.000đ
+                    <span class="form-text">Hiển thị hình ảnh ở vị trí nổi bật trong trình chiếu</span>
                 </label>
             </div>
             <span asp-validation-for="PackageTypeID" class="text-danger"></span>
         </div>
 
         <div class="form-group">
-            <label class="form-label">Current Advertisement Image</label>
+            <label class="form-label">Ảnh Quảng Cáo Hiện Tại</label>
             <div style="margin-bottom: 15px;">
                 <img src="~/uploads/advertisements/@Model.ImagePath" alt="Advertisement" style="max-width: 100%; max-height: 300px; border-radius: 10px;" />
             </div>
         </div>
 
         <div class="form-group">
-            <label asp-for="ImageFile" class="form-label">Change Advertisement Image (optional)</label>
+            <label asp-for="ImageFile" class="form-label">Thay Đổi Ảnh Quảng Cáo (không bắt buộc)</label>
             <input asp-for="ImageFile" class="form-control" type="file" accept="image/*" />
             <span asp-validation-for="ImageFile" class="text-danger"></span>
-            <span class="form-text">Recommended size: 1920x1080 pixels. Maximum 2MB.</span>
+            <span class="form-text">Kích thước đề xuất: 1920x1080 pixels. Dung lượng tối đa 2MB.</span>
         </div>
 
         <div style="display: flex; gap: 15px; margin-top: 30px;">
-            <button type="submit" class="btn-primary">Update Advertisement</button>
-            <a asp-action="MyAdvertisements" class="btn-secondary" style="text-decoration: none;">Back to List</a>
+            <button type="submit" class="btn-primary">Cập Nhật Quảng Cáo</button>
+            <a asp-action="MyAdvertisements" class="btn-secondary" style="text-decoration: none;">Quay Lại Danh Sách</a>
         </div>
     </form>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-} 
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

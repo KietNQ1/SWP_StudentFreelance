@@ -15,6 +15,7 @@ using StudentFreelance.Services.Interfaces;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
 // Load native library libwkhtmltox.dll
 var context = new CustomAssemblyLoadContext();
 context.LoadUnmanagedLibrary(Path.Combine(Directory.GetCurrentDirectory(), "DinkToPdfLib", "libwkhtmltox.dll"));
@@ -35,16 +36,16 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequiredLength = 6;
 })
-
+  
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
 builder.Services.Configure<IdentityOptions>(options =>
 {
     // Cấu hình khóa tài khoản
-    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30); // Khóa trong 5 phút
-    options.Lockout.MaxFailedAccessAttempts = 5; // Sau 5 lần sai sẽ khóa
-    options.Lockout.AllowedForNewUsers = true;  // Áp dụng cho cả tài khoản mới
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30); 
+    options.Lockout.MaxFailedAccessAttempts = 5; 
+    options.Lockout.AllowedForNewUsers = true;  
 });
 
 

@@ -18,6 +18,15 @@ namespace StudentFreelance.ViewModels
         public string? Major { get; set; }
         public string? CompanyName { get; set; }
         public string? Industry { get; set; }
+        
+        // Buyer Persona fields
+        public string? AgeRange { get; set; }
+        public string? Gender { get; set; }
+        public string? GoalsAndPainPoints { get; set; }
+        
+        // Business fields
+        public string? Website { get; set; }
+        public string? BusinessActivities { get; set; }
 
         // API location IDs
         public string? ProvinceCode { get; set; }
@@ -72,6 +81,9 @@ namespace StudentFreelance.ViewModels
 
         // 👤 Xác định người dùng hiện tại
         public bool IsCurrentUser { get; set; }
+        
+        // Verification status
+        public bool IsVerified { get; set; }
     }
 
     public class SkillItem

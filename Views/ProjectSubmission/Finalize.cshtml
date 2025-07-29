@@ -4,46 +4,105 @@
     ViewData["Title"] = "Xác nhận thanh toán";
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/projectsubmission/finalize.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+}
+
 <div class="container mt-4">
-    <h2>Xác nhận thanh toán</h2>
-    <hr />
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h2 class="mb-4"><i class="fas fa-money-bill-wave me-2"></i> Xác nhận thanh toán</h2>
 
-    <div class="card mb-4">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">Thông tin dự án</h5>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <p><strong>Tên dự án:</strong> @Model.Project.Title</p>
-                    <p><strong>Sinh viên:</strong> @Model.User.FullName</p>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle me-2"></i> Thông tin dự án</h5>
                 </div>
-                <div class="col-md-6">
-                    <p><strong>Trạng thái:</strong> <span class="badge bg-success">@Model.Status</span></p>
-                    <p><strong>Số tiền thanh toán:</strong> @Model.Salary.ToString("N0") VNĐ</p>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="info-row">
+                                <span class="info-label">Tên dự án:</span>
+                                <span class="info-value">@Model.Project.Title</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Sinh viên:</span>
+                                <span class="info-value">@Model.User.FullName</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-row">
+                                <span class="info-label">Trạng thái:</span>
+                                <span class="badge bg-success">@Model.Status</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Số tiền thanh toán:</span>
+                                <span class="badge bg-primary">@Model.Salary.ToString("N0") VNĐ</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-exclamation-circle"></i> Thông tin quan trọng</h5>
+                        <p><i class="fas fa-info-circle"></i> Bạn đang chuẩn bị thanh toán cho sinh viên sau khi dự án đã hoàn thành.</p>
+                        <p><i class="fas fa-wallet"></i> Số tiền sẽ được chuyển từ ví dự án đến tài khoản của sinh viên.</p>
+                        <p><i class="fas fa-exclamation-triangle"></i> <strong>Lưu ý:</strong> Hành động này không thể hoàn tác sau khi xác nhận.</p>
+                    </div>
+
+                    <form id="paymentForm" asp-action="FinalizeConfirmed" method="post" class="mt-4">
+                        <input type="hidden" name="applicationId" value="@Model.ApplicationID" />
+                        <div class="d-flex justify-content-between">
+                            <a asp-controller="Project" asp-action="Details" asp-route-id="@ViewBag.ProjectId" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i> Quay lại
+                            </a>
+                            <button type="button" id="confirmPaymentBtn" class="btn btn-success">
+                                <i class="fas fa-check-circle me-2"></i> Xác nhận thanh toán
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="card">
-        <div class="card-header bg-warning text-dark">
-            <h5 class="mb-0">Xác nhận thanh toán</h5>
-        </div>
-        <div class="card-body">
-            <div class="alert alert-info">
-                <p><i class="fas fa-info-circle"></i> Bạn đang chuẩn bị thanh toán cho sinh viên sau khi dự án đã hoàn thành.</p>
-                <p>Số tiền sẽ được chuyển từ tài khoản của bạn đến tài khoản của sinh viên.</p>
-                <p><strong>Lưu ý:</strong> Hành động này không thể hoàn tác.</p>
+<!-- Modal xác nhận thanh toán -->
+<div class="modal fade" id="confirmPaymentModal" tabindex="-1" aria-labelledby="confirmPaymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="confirmPaymentModalLabel"><i class="fas fa-exclamation-triangle me-2"></i> Xác nhận thanh toán</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-
-            <form asp-action="FinalizeConfirmed" method="post">
-                <input type="hidden" name="applicationId" value="@Model.ApplicationID" />
-                <div class="form-group mt-4">
-                    <button type="submit" class="btn btn-success">Xác nhận thanh toán</button>
-                    <a asp-controller="Project" asp-action="Details" asp-route-id="@ViewBag.ProjectId" class="btn btn-secondary">Hủy</a>
-                </div>
-            </form>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn thực hiện thanh toán cho sinh viên <strong>@Model.User.FullName</strong>?</p>
+                <p>Số tiền <strong>@Model.Salary.ToString("N0") VNĐ</strong> sẽ được chuyển từ ví dự án đến tài khoản của sinh viên.</p>
+                <p class="text-danger"><strong>Lưu ý:</strong> Hành động này không thể hoàn tác sau khi xác nhận!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i> Hủy
+                </button>
+                <button type="button" id="processPaymentBtn" class="btn btn-success">
+                    <i class="fas fa-check-circle me-2"></i> Xác nhận thanh toán
+                </button>
+            </div>
         </div>
     </div>
-</div> 
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Khi nhấn nút xác nhận thanh toán, hiển thị modal xác nhận
+            $("#confirmPaymentBtn").click(function() {
+                $("#confirmPaymentModal").modal("show");
+            });
+            
+            // Khi nhấn nút xác nhận trong modal, submit form
+            $("#processPaymentBtn").click(function() {
+                $("#paymentForm").submit();
+            });
+        });
+    </script>
+} 

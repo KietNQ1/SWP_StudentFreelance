@@ -146,6 +146,11 @@ namespace StudentFreelance.Controllers
                     Major = user.Major,
                     CompanyName = user.CompanyName,
                     Industry = user.Industry,
+                    AgeRange = user.AgeRange,
+                    Gender = user.Gender,
+                    GoalsAndPainPoints = user.GoalsAndPainPoints,
+                    Website = user.Website,
+                    BusinessActivities = user.BusinessActivities,
                     ProvinceCode = user.Address?.ProvinceCode,
                     ProvinceName = user.Address?.ProvinceName,
                     DistrictCode = user.Address?.DistrictCode,
@@ -217,6 +222,11 @@ namespace StudentFreelance.Controllers
                     Major = user.Major,
                     CompanyName = user.CompanyName,
                     Industry = user.Industry,
+                    AgeRange = user.AgeRange,
+                    Gender = user.Gender,
+                    GoalsAndPainPoints = user.GoalsAndPainPoints,
+                    Website = user.Website,
+                    BusinessActivities = user.BusinessActivities,
                     
                     // API location data
                     ProvinceCode = user.Address?.ProvinceCode,
@@ -390,6 +400,14 @@ namespace StudentFreelance.Controllers
                     user.CompanyName = model.CompanyName;
                     user.Industry = model.Industry;
                 }
+                
+                user.AgeRange = model.AgeRange;
+                user.Gender = model.Gender;
+                user.GoalsAndPainPoints = model.GoalsAndPainPoints;
+                
+                // Business fields
+                user.Website = model.Website;
+                user.BusinessActivities = model.BusinessActivities;
                 
                 user.UpdatedAt = DateTime.Now;
 
@@ -702,6 +720,43 @@ namespace StudentFreelance.Controllers
                 {
                     // New subscription
                     user.VipExpiryDate = DateTime.Now.AddMonths(months);
+                }
+                
+                // Find admin user to add funds
+                var admin = await _context.Users
+                    .FirstOrDefaultAsync(u => u.NormalizedUserName == "ADMIN");
+                
+                if (admin != null)
+                {
+                    // Add funds to admin wallet
+                    admin.WalletBalance += finalPrice;
+                    _context.Users.Update(admin);
+                    
+                    Console.WriteLine($"VIP Subscription: Added {finalPrice:N0} VND to admin wallet. User: {userId}");
+                }
+                else
+                {
+                    Console.WriteLine($"VIP Subscription: Admin user not found. Cannot add funds. User: {userId}");
+                    
+                    // Try to find any admin by role
+                    var adminRoleId = await _context.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstOrDefaultAsync();
+                    var adminUserId = await _context.UserRoles
+                        .Where(ur => ur.RoleId == adminRoleId)
+                        .Select(ur => ur.UserId)
+                        .FirstOrDefaultAsync();
+                    
+                    if (adminUserId > 0)
+                    {
+                        var adminByRole = await _context.Users.FindAsync(adminUserId);
+                        if (adminByRole != null)
+                        {
+                            // Add funds to admin wallet
+                            adminByRole.WalletBalance += finalPrice;
+                            _context.Users.Update(adminByRole);
+                            
+                            Console.WriteLine($"VIP Subscription: Added {finalPrice:N0} VND to admin (by role) wallet. User: {userId}");
+                        }
+                    }
                 }
                 
                 // Create transaction record

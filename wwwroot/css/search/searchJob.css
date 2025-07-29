@@ -1,4 +1,4 @@
-﻿/* Palette color variables */
+﻿/* Palette color variables - Updated from UserVerification.css */
 :root {
     --primary-color: #89AC46;
     --secondary-color: #D3E671;
@@ -6,6 +6,19 @@
     --highlight-color: #FF8989;
     --orange-accent: #FF8989;
     --blue-accent: #89AC46;
+    --verified-blue: #4299e1;
+    
+    /* Additional colors from UserVerification.css */
+    --success-color: #38a169;
+    --danger-color: #e53e3e;
+    --warning-color: #d69e2e;
+    --info-color: #3182ce;
+    --secondary-gray: #718096;
+    --text-dark: #2d3748;
+    --text-medium: #4a5568;
+    --text-light: #718096;
+    --border-color: #e2e8f0;
+    --bg-light: #f7fbed;
 }
 
 body {
@@ -16,6 +29,251 @@ body {
     padding: 0;
 }
 
+/* Topbar Filter Section */
+.topbar {
+    background: rgba(255, 255, 255, 0.95);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    padding: 30px;
+    border-radius: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.topbar h1 {
+    color: #2d3748;
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 0;
+    background: linear-gradient(135deg, #89AC46 0%, #D3E671 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Filter Row */
+.filter-row {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 200px;
+    position: relative;
+}
+
+.filter-group input[type="text"],
+.filter-group select {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 1rem;
+    background: rgba(255, 255, 255, 0.8);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.filter-group input[type="text"]:focus,
+.filter-group select:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Filter Button */
+.filter-btn {
+    padding: 14px 24px;
+    background: linear-gradient(135deg, #D3E671 0%, #89AC46 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+    position: relative;
+    overflow: hidden;
+    min-width: 150px;
+}
+
+.filter-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.filter-btn:hover::before {
+    left: 100%;
+}
+
+.filter-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+/* Reset Button */
+.reset-btn {
+    padding: 14px 24px;
+    background: linear-gradient(135deg, #a0aec0 0%, #718096 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 6px 20px rgba(113, 128, 150, 0.3);
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+    min-width: 150px;
+    text-align: center;
+    display: inline-block;
+}
+
+.reset-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.reset-btn:hover::before {
+    left: 100%;
+}
+
+.reset-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(113, 128, 150, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+/* Make container styling specific to the main content and not affect footer */
+.container:not(.footer .container) {
+    background-color: rgb(251 237 189 / 29%);
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-top: 4px solid var(--primary-color);
+    margin-top: 20px;
+    overflow: visible !important;
+    animation: slideUp 0.8s ease-out;
+}
+
+/* Container for SearchJob page */
+.search-job-container {
+    width: 90% !important;
+    max-width: 90% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* Ensure child elements are properly aligned */
+.search-job-container .topbar,
+.search-job-container .top-projects,
+.search-job-container .results-container {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Adjust the category-skills-container width for larger container */
+.search-job-container .category-skills-container {
+    width: 800px;
+    max-width: 90vw;
+    z-index: 1050;
+    position: absolute;
+    top: 100%;
+    left: 0;
+}
+
+/* Adjust projects grid for larger container */
+.search-job-container .projects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    .search-job-container {
+        width: 95% !important;
+        max-width: 95% !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .search-job-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Custom select styling for filter-group */
+.filter-group .custom-select {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 1rem;
+    background: rgba(255, 255, 255, 0.8);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2389AC46' class='bi bi-chevron-down' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 16px;
+    padding-right: 40px;
+}
+
+.filter-group .custom-select:focus {
+    outline: none;
+    border-color: #667eea;
+    background-color: white;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    transform: translateY(-2px);
+}
+
 /* Search header styling */
 .search-header {
     background-color: var(--primary-color);
@@ -24,6 +282,7 @@ body {
     margin-bottom: 0;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     position: relative;
+    display: none; /* Hide the old header */
 }
 
 .header-container {
@@ -74,18 +333,117 @@ body {
     /* Remove the transform that's causing the overflow */
 }
 
+/* Results Container Styling */
 .results-container {
-    background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.95), rgba(248, 237, 140, 0.15));
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 3px 15px rgba(0,0,0,0.08);
-    margin-bottom: 20px;
-    border: 1px solid rgba(211, 230, 113, 0.4);
+    background: rgba(255, 255, 255, 0.95);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 30px;
+    animation: slideUp 0.8s ease-out;
+    animation-delay: 0.2s;
 }
 
+.results-header {
+    margin-bottom: 25px;
+}
+
+.results-heading {
+    color: var(--text-dark);
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #89AC46 0%, #D3E671 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: inline-block;
+}
+
+.results-count {
+    font-size: 1.1rem;
+    color: var(--text-medium);
+    margin-bottom: 0.5rem;
+}
+
+.search-criteria {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.criteria-tag {
+    background: rgba(137, 172, 70, 0.1);
+    color: var(--text-medium);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    border: 1px solid rgba(137, 172, 70, 0.2);
+    display: inline-flex;
+    align-items: center;
+}
+
+.sort-btn {
+    background: linear-gradient(135deg, #a0aec0 0%, #718096 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 10px rgba(113, 128, 150, 0.2);
+}
+
+.sort-btn:hover {
+    box-shadow: 0 6px 15px rgba(113, 128, 150, 0.3);
+    transform: translateY(-2px);
+    color: white;
+}
+
+/* Category Skills Dropdown Styling */
 .category-skills-dropdown {
     position: relative;
     width: 100%;
+    z-index: 1100;
+}
+
+#dropdownCategorySkillsBtn {
+    height: auto;
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 2px solid var(--border-color);
+    color: var(--text-medium);
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 14px 18px;
+    padding-right: 40px;
+    font-size: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#dropdownCategorySkillsBtn .bi-chevron-down {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--primary-color);
+}
+
+#dropdownCategorySkillsBtn:hover, 
+#dropdownCategorySkillsBtn:focus {
+    border-color: #667eea;
+    outline: none;
+    background-color: white;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    transform: translateY(-2px);
 }
 
 .category-skills-container {
@@ -93,28 +451,43 @@ body {
     top: 100%;
     left: 0;
     right: 0;
-    z-index: 1000;
+    z-index: 1100 !important;
     display: none;
-    margin-top: 0.125rem;
+    margin-top: 0.5rem;
     width: 800px;
     max-width: 90vw;
 }
 
 .category-skills-container.show {
     display: block;
+    z-index: 9999 !important;
+}
+
+/* Ensure dropdown is visible over other elements */
+.filter-group {
+    position: relative;
+    z-index: 1100;
+}
+
+/* Ensure the dropdown button stays on top */
+#dropdownCategorySkillsBtn {
+    position: relative;
+    z-index: 1100;
 }
 
 .category-skills-container .card {
-    border-radius: 0.375rem;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
     width: 100%;
     background: white;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .category-list, .subcategory-list, .skill-list {
     height: 350px;
     overflow-y: auto;
-    border-right: 1px solid #dee2e6;
+    border-right: 1px solid var(--border-color);
 }
 
 .skill-list {
@@ -122,87 +495,90 @@ body {
 }
 
 .list-group-item.active {
-    background-color: #f7fbed;
+    background-color: var(--bg-light);
     border-color: var(--primary-color);
-    color: var(--highlight-color);
-    font-weight: bold;
+    color: var(--primary-color);
+    font-weight: 600;
 }
 
 .list-group-item:hover {
-    background-color: #f7fbed;
+    background-color: var(--bg-light);
 }
 
 .category-item, .subcategory-item, .skill-item {
     cursor: pointer;
-    transition: all 0.2s;
-    padding: 0.75rem 1rem;
+    transition: all 0.3s;
+    padding: 12px 16px;
+    border-left: 3px solid transparent;
+}
+
+.category-item:hover, .subcategory-item:hover, .skill-item:hover {
+    border-left: 3px solid var(--primary-color);
+    background-color: var(--bg-light);
 }
 
 .list-group-item.fw-bold {
-    padding: 0.75rem 1rem;
+    padding: 10px 16px;
     margin-bottom: 0;
-    background-color: var(--primary-color) !important;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%) !important;
     color: white !important;
     font-size: 0.9rem;
     text-align: center;
     letter-spacing: 0.5px;
-}
-
-#dropdownCategorySkillsBtn {
-    height: 38px;
-    border-radius: 0.375rem;
-    background-color: #fff;
-    border-color: #dbe8c6;
-    color: #555;
-    text-align: left;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    padding-right: 25px;
-}
-
-#dropdownCategorySkillsBtn .bi-chevron-down {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-}
-
-#dropdownCategorySkillsBtn:hover {
-    border-color: var(--primary-color);
+    border: none;
 }
 
 .card-footer {
-    border-top: 1px solid #dee2e6;
+    border-top: 1px solid var(--border-color);
     background-color: #f8f9fa;
+    padding: 12px 16px;
 }
 
 .card-footer .btn {
-    min-width: 80px;
+    min-width: 100px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
 }
 
 .card-footer .btn-primary {
-    background: linear-gradient(to right, var(--primary-color), var(--secondary-color)) !important;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%) !important;
     border-color: var(--primary-color) !important;
-    box-shadow: 0 2px 4px rgba(137, 172, 70, 0.3);
+    box-shadow: 0 4px 12px rgba(137, 172, 70, 0.3);
     color: white;
-    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-footer .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.card-footer .btn-primary:hover::before {
+    left: 100%;
 }
 
 .card-footer .btn-primary:hover {
-    background: linear-gradient(to right, var(--secondary-color), var(--primary-color)) !important;
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%) !important;
     border-color: var(--secondary-color) !important;
-    box-shadow: 0 4px 8px rgba(137, 172, 70, 0.4);
-    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(137, 172, 70, 0.4);
+    transform: translateY(-2px);
 }
 
 .skill-item.selected {
-    background-color: #f0f9ff;
+    background-color: rgba(137, 172, 70, 0.1);
     border-left: 3px solid var(--primary-color);
 }
 
 .selected-skills-list {
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 1px solid var(--border-color);
     margin-bottom: 10px;
 }
     
@@ -232,211 +608,208 @@ body {
     color: var(--primary-color);
 }
 
-/* Job list styling */
+/* Job List Styling */
 .job-list .card {
-    transition: transform 0.3s, box-shadow 0.3s;
+    transition: all 0.3s ease;
     border-left: 4px solid var(--primary-color);
-    border-radius: 8px;
+    border-radius: 20px;
     overflow: hidden;
-    margin-bottom: 15px;
-    background: linear-gradient(to bottom right, white, rgba(211, 230, 113, 0.15));
+    background: rgba(255, 255, 255, 0.95);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: slideUp 0.5s ease-out;
+    animation-fill-mode: both;
 }
 
+.job-list .card:nth-child(1) { animation-delay: 0.1s; }
+.job-list .card:nth-child(2) { animation-delay: 0.2s; }
+.job-list .card:nth-child(3) { animation-delay: 0.3s; }
+.job-list .card:nth-child(4) { animation-delay: 0.4s; }
+.job-list .card:nth-child(5) { animation-delay: 0.5s; }
+
 .job-list .card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 15px rgba(137, 172, 70, 0.25);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(137, 172, 70, 0.15);
     border-color: var(--primary-color);
 }
 
 .job-list .card-title {
+    font-weight: 700;
+    color: var(--text-dark);
+    font-size: 1.3rem;
+}
+
+.job-list .card-subtitle {
+    color: var(--text-medium);
+    font-size: 0.95rem;
+}
+
+.job-list .card-text {
+    color: var(--text-medium);
+    font-size: 0.95rem;
+    margin-top: 12px;
+    line-height: 1.5;
+}
+
+.badge {
     font-weight: 600;
-    color: var(--highlight-color);
+    padding: 6px 12px;
+    border-radius: 8px;
 }
 
-.job-list .badge {
-    font-weight: 500;
-}
-
-.badge.bg-primary {
-    background-color: var(--primary-color) !important;
-}
-
-.badge.bg-success {
-    background-color: var(--secondary-color) !important;
-    color: #333;
-}
-
-.badge.bg-info {
-    background-color: var(--accent-color) !important;
-    color: #333;
-}
-
-.badge.rounded-pill.bg-light {
-    background-color: #f7fbed !important;
-    color: var(--primary-color) !important;
-    border: 1px solid var(--secondary-color);
-}
-
-.btn-primary {
-    background: linear-gradient(to right, var(--primary-color), var(--secondary-color)) !important;
-    border-color: var(--primary-color) !important;
-    box-shadow: 0 2px 4px rgba(137, 172, 70, 0.3);
+.budget-badge {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
     color: white;
-    font-weight: 500;
-    padding: 10px 20px;
-    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(137, 172, 70, 0.2);
 }
 
-.btn-primary:hover, .btn-primary:focus {
-    background: linear-gradient(to right, var(--secondary-color), var(--primary-color)) !important;
-    border-color: var(--secondary-color) !important;
-    box-shadow: 0 4px 8px rgba(137, 172, 70, 0.4);
-    transform: translateY(-1px);
-}
-
-.btn-primary .bi {
+.status-badge {
+    background-color: var(--secondary-gray);
     color: white;
-    margin-right: 5px;
 }
 
-.btn-outline-primary {
-    color: var(--primary-color);
-    border-color: var(--primary-color);
-    background-color: white;
-    font-weight: 500;
-    padding: 8px 16px;
-    border-radius: 4px;
+.status-badge.active-status {
+    background-color: var(--success-color);
 }
 
-.btn-outline-primary:hover, .btn-outline-primary:focus {
-    background-color: var(--primary-color);
-    color: white;
-    border-color: var(--primary-color);
-    box-shadow: 0 2px 4px rgba(137, 172, 70, 0.3);
-}
-
-.btn-outline-secondary {
-    border-color: #dbe8c6;
-    color: #555;
-}
-
-.btn-outline-secondary:hover {
-    background-color: #f7fbed;
-    color: var(--primary-color);
-    border-color: var(--primary-color);
-}
-
-.bi {
-    color: var(--primary-color);
-}
-
-.alert-info {
+.remote-badge {
     background-color: var(--accent-color);
-    border-color: #e0d87d;
-    color: #6b6219;
-    border-left: 4px solid var(--primary-color);
+    color: var(--text-dark);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
 }
 
-.dropdown-menu {
-    border-color: #dbe8c6;
+.skills-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
 }
 
-.dropdown-item:hover, .dropdown-item:focus {
-    background-color: #f7fbed;
-    color: var(--primary-color);
+.skill-tag {
+    background-color: rgba(211, 230, 113, 0.2);
+    border: 1px solid rgba(137, 172, 70, 0.2);
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 0.85rem;
+    display: inline-block;
+    color: var(--text-medium);
+    transition: all 0.3s ease;
 }
 
-.dropdown-item.active, .dropdown-item:active {
-    background-color: var(--primary-color);
+.skill-tag:hover {
+    background-color: rgba(211, 230, 113, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(137, 172, 70, 0.2);
+}
+
+.skill-tag .importance-level {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+.skill-tag .importance-level.required {
+    color: var(--danger-color);
+}
+
+.more-skills {
+    background-color: var(--secondary-gray);
     color: white;
 }
 
-.main-container .container {
-    background-color: rgba(255, 255, 255, 0.9);
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    border-top: 4px solid var(--primary-color);
-    margin-top: 20px;
-}
-
-h2 {
-    color: var(--highlight-color);
+.deadline-text {
+    color: var(--text-medium);
     font-weight: 600;
-    margin-bottom: 1.5rem;
-    border-bottom: 2px solid var(--primary-color);
-    padding-bottom: 10px;
-    display: inline-block;
 }
 
-.results-container {
-    background-color: rgba(255, 255, 255, 0.9);
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    border-top: 4px solid var(--primary-color);
+.company-text {
+    color: var(--text-medium);
 }
 
-h2.results-heading {
-    color: var(--highlight-color);
+.btn-view-profile {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    border: none;
+    transition: all 0.3s ease;
     font-weight: 600;
-    margin-bottom: 1.5rem;
-    border-bottom: 2px solid var(--primary-color);
-    padding-bottom: 10px;
-    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 25px;
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(137, 172, 70, 0.3);
 }
 
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+.btn-view-profile::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
 }
 
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f8f9fa;
+.btn-view-profile:hover::before {
+    left: 100%;
 }
 
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
+.btn-view-profile:hover, .btn-view-profile:focus {
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(137, 172, 70, 0.4);
+}
+
+.alert-warning {
+    background: rgba(236, 201, 75, 0.1);
+    color: var(--warning-color);
+    border-left: 4px solid var(--warning-color);
+    padding: 20px;
+    border-radius: 12px;
+    border: none;
+    text-align: center;
+    font-weight: 500;
+    margin-bottom: 30px;
 }
 
 /* Top Projects Section */
 .top-projects {
-    padding: 60px 0;
-    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    padding: 30px 0;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
 }
 
 .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 40px;
+    margin-bottom: 30px;
+    position: relative;
+    z-index: 1;
 }
 
-    .section-header h2 {
-        font-size: 2.2rem;
-        font-weight: 700;
-        color: #333;
-        position: relative;
-    }
-
-        .section-header h2::after {
-            content: '';
-            position: absolute;
-            bottom: -8px;
-            left: 0;
-            width: 60px;
-            height: 3px;
-            background: linear-gradient(135deg, #89AC46 0%, #D3E671 100%);
-            border-radius: 2px;
-        }
+.section-header h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    position: relative;
+    background: linear-gradient(135deg, #89AC46 0%, #D3E671 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0;
+}
 
 .view-all-btn {
-    background: linear-gradient(135deg, #89AC46 0%, #D3E671 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
     color: white;
     padding: 12px 24px;
     border-radius: 25px;
@@ -445,13 +818,14 @@ body {
     font-size: 0.9rem;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(137, 172, 70, 0.2);
+    display: inline-block;
 }
 
-    .view-all-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(137, 172, 70, 0.3);
-        color: white;
-    }
+.view-all-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(137, 172, 70, 0.3);
+    color: white;
+}
 
 /* Projects Grid */
 .projects-grid {
@@ -459,24 +833,34 @@ body {
     grid-template-columns: repeat(3, 1fr);
     gap: 25px;
     margin-bottom: 30px;
+    position: relative;
+    z-index: 1; /* Giảm z-index xuống thấp */
 }
 
 .project-card {
     background: white;
-    border-radius: 12px;
+    border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
     transition: all 0.3s ease;
-    height: 300px; /* Fixed height for all cards */
+    height: 300px;
     display: flex;
     flex-direction: column;
     position: relative;
+    z-index: 1; /* Đảm bảo thấp hơn dropdown */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: slideUp 0.5s ease-out;
+    animation-fill-mode: both;
 }
 
-    .project-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-    }
+.projects-grid .project-card:nth-child(1) { animation-delay: 0.1s; }
+.projects-grid .project-card:nth-child(2) { animation-delay: 0.2s; }
+.projects-grid .project-card:nth-child(3) { animation-delay: 0.3s; }
+
+.project-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(137, 172, 70, 0.15);
+}
 
 .project-image {
     height: 160px;
@@ -484,12 +868,12 @@ body {
     position: relative;
 }
 
-    .project-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.3s ease;
-    }
+.project-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
 
 .project-card:hover .project-image img {
     transform: scale(1.05);
@@ -506,10 +890,10 @@ body {
 .project-title {
     font-size: 1.1rem;
     font-weight: 700;
-    color: #333;
+    color: var(--text-dark);
     margin-bottom: 8px;
     line-height: 1.3;
-    height: 2.6em; /* Fixed height for 2 lines */
+    height: 2.6em;
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -517,10 +901,10 @@ body {
 }
 
 .company-name {
-    color: #666;
+    color: var(--text-medium);
     font-size: 0.9rem;
     margin-bottom: 12px;
-    height: 1.2em; /* Fixed height for 1 line */
+    height: 1.2em;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -534,28 +918,28 @@ body {
 }
 
 .salary {
-    color: #89AC46;
+    color: var(--primary-color);
     font-weight: 700;
     font-size: 1rem;
 }
 
 .location {
-    color: #666;
+    color: var(--text-medium);
     font-size: 0.85rem;
     display: flex;
     align-items: center;
 }
 
-    .location::before {
-        content: "📍";
-        margin-right: 4px;
-    }
+.location::before {
+    content: "📍";
+    margin-right: 4px;
+}
 
 .project-status {
     position: absolute;
     top: 12px;
     right: 12px;
-    background: #ff4757;
+    background: var(--highlight-color);
     color: white;
     padding: 4px 12px;
     border-radius: 12px;
@@ -563,6 +947,7 @@ body {
     font-weight: 600;
     text-transform: uppercase;
     z-index: 2;
+    box-shadow: 0 4px 8px rgba(255, 137, 137, 0.3);
 }
 
 .project-link {
@@ -602,4 +987,607 @@ body {
         height: auto;
         min-height: 280px;
     }
+}
+
+/* Select2 styling for dropdowns */
+.select2-container {
+    width: 100% !important;
+    z-index: 9999 !important;
+}
+
+.select2-dropdown {
+    z-index: 9999 !important;
+    border-color: #dbe8c6 !important;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important;
+}
+
+.select2-selection {
+    height: 42px !important;
+    min-height: 42px !important;
+    border-color: #dbe8c6 !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.select2-selection__rendered {
+    line-height: 42px !important;
+    padding-left: 12px !important;
+}
+
+.select2-selection__arrow {
+    height: 42px !important;
+}
+
+.select2-search__field {
+    border-color: #dbe8c6 !important;
+}
+
+.select2-results__option--highlighted {
+    background-color: #89AC46 !important;
+}
+
+.select2-container--open {
+    z-index: 9999 !important;
+}
+
+/* Đảm bảo parent elements không che khuất dropdown */
+.container, .card, .card-body, .row, .col-md-2, .search-card {
+    overflow: visible !important;
+}
+
+/* Province dropdown styling */
+.province-dropdown {
+    z-index: 10000 !important;
+    max-height: 300px !important;
+    overflow-y: auto !important;
+}
+
+.province-dropdown .select2-results__option {
+    padding: 8px 12px !important;
+    font-size: 0.9rem !important;
+}
+
+.province-dropdown .select2-results__option--highlighted {
+    background-color: #89AC46 !important;
+    color: white !important;
+}
+
+/* No results found styling */
+.select2-results__message {
+    padding: 10px !important;
+    color: #666 !important;
+    font-style: italic !important;
+    text-align: center !important;
+    background-color: #f8f9fa !important;
+}
+
+/* Placeholder styling */
+.select2-selection__placeholder {
+    color: #6c757d !important;
+}
+
+/* Added from SearchJob.cshtml inline styles */
+.search-header {
+    background-color: #89AC46 !important;
+}
+
+.filter-header {
+    background-color: #89AC46 !important;
+    color: white;
+}
+
+.list-group-item.fw-bold.bg-primary {
+    background-color: #89AC46 !important;
+}
+
+/* Fix for layout issues */
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 100vh !important;
+    height: auto !important;
+    overflow-x: hidden !important;
+}
+
+body {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+main {
+    flex: 1 !important;
+}
+
+.main-container {
+    margin-bottom: 0 !important;
+}
+
+.footer {
+    margin-top: auto !important;
+    margin-bottom: 0 !important;
+    background-color: #F8F8F8 !important;
+}
+
+/* Override any container styles that might affect the footer */
+.footer .container {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border-top: none !important;
+    padding-top: 3rem !important;
+    padding-bottom: 0 !important;
+}
+
+/* Fix for search form container */
+.search-form-container {
+    margin-top: 0 !important;
+    transform: none !important;
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+.search-form-container:hover {
+    transform: none !important;
+}
+
+.search-header {
+    padding-bottom: 1.5rem !important;
+}
+
+/* Fix dropdown display issues */
+body.dropdown-open {
+    overflow: visible !important;
+}
+
+/* Ensure the dropdown is above all other elements */
+.category-skills-dropdown {
+    position: relative;
+    width: 100%;
+    z-index: 10000 !important; /* Tăng z-index lên cao nhất */
+}
+
+.category-skills-container {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 10000 !important; /* Tăng z-index lên cao nhất */
+    display: none;
+    margin-top: 0.5rem;
+    width: 800px;
+    max-width: 90vw;
+}
+
+/* Fix for dropdown being hidden */
+.category-skills-container.show {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 10000 !important;
+    position: absolute !important;
+}
+
+/* Ensure the dropdown card has proper stacking context */
+.category-skills-container .card {
+    position: relative;
+    z-index: 10000 !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* Styles for dropdown when moved to body */
+.category-skills-container.moved-to-body {
+    position: absolute !important;
+    z-index: 10000 !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+    background-color: white !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    max-width: 95vw !important;
+    margin-top: 0 !important;
+    transform: none !important;
+    transition: none !important;
+}
+
+/* Ensure dropdown is visible */
+.category-skills-container.moved-to-body.show {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Add overlay when dropdown is open */
+body.dropdown-open::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    pointer-events: none;
+}
+
+/* Mobile styles for dropdown */
+@media (max-width: 768px) {
+    .category-skills-container.moved-to-body {
+        width: 95vw !important;
+        left: 2.5vw !important;
+        max-height: 80vh !important;
+    }
+    
+    .category-skills-container .card {
+        height: auto !important;
+    }
+    
+    .category-list, .subcategory-list, .skill-list {
+        height: auto !important;
+        max-height: 200px !important;
+    }
+}
+
+/* Điều chỉnh chiều cao của card-body trong project-card */
+.job-list .project-card .card-body {
+    padding: 1.25rem;
+    height: auto;
+    min-height: auto;
+}
+
+.job-list .project-card {
+    margin-bottom: 1.5rem !important;
+}
+
+/* Đảm bảo nội dung bên trong card-body không bị tràn */
+.job-list .project-card .card-body .row {
+    margin: 0;
+    align-items: stretch;
+}
+
+/* Điều chỉnh khoảng cách giữa các phần tử trong card */
+.job-list .project-card .card-text {
+    margin-bottom: 0.5rem;
+}
+
+/* Đảm bảo các cột trong card có chiều cao phù hợp */
+.job-list .project-card .col-md-7,
+.job-list .project-card .col-md-3,
+.job-list .project-card .col-md-2 {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Điều chỉnh khoảng cách giữa các phần tử trong cột */
+.job-list .project-card .col-md-2 .d-flex {
+    height: 100%;
+    justify-content: space-between;
+}
+
+/* Tinh chỉnh thêm cho card dự án */
+.project-card {
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-radius: 8px;
+    border: none;
+    overflow: hidden;
+}
+
+.project-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.job-list .project-card .card-body {
+    padding: 1rem;
+}
+
+.job-list .project-card .card-title {
+    font-size: 1.1rem;
+    line-height: 1.3;
+    font-weight: 600;
+    color: var(--text-dark);
+    max-width: 90%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.job-list .project-card .card-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-medium);
+}
+
+.job-list .project-card .card-text {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: var(--text-medium);
+    max-height: 2.8rem;
+    overflow: hidden;
+}
+
+.job-list .project-card .small {
+    font-size: 0.85rem;
+}
+
+.job-list .project-card .btn-view-profile {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.85rem;
+}
+
+.job-list .project-card .skills-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-top: 0.3rem;
+}
+
+.job-list .project-card .skill-tag {
+    font-size: 0.75rem;
+    padding: 0.15rem 0.4rem;
+}
+
+.job-list .project-card .importance-level {
+    font-size: 0.7rem;
+}
+
+.job-list .project-card .deadline-text,
+.job-list .project-card .company-text {
+    font-size: 0.8rem;
+    color: var(--text-medium);
+}
+
+/* Đảm bảo các cột có khoảng cách phù hợp */
+.job-list .project-card .row.g-2 {
+    --bs-gutter-x: 0.75rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+    .job-list .project-card .card-body {
+        padding: 0.75rem;
+    }
+    
+    .job-list .project-card .col-md-7,
+    .job-list .project-card .col-md-3,
+    .job-list .project-card .col-md-2 {
+        margin-bottom: 0.75rem;
+    }
+    
+    .job-list .project-card .col-md-2 .d-flex {
+        align-items: flex-start;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}
+
+/* Xóa phần CSS trùng lặp và thêm CSS mới để sửa lỗi */
+
+/* Sửa lại phần CSS cho card-body trong project-card */
+.job-list .project-card .card-body {
+    padding: 1rem !important;
+    height: auto !important;
+    min-height: auto !important;
+    box-sizing: border-box !important;
+}
+
+/* Thêm CSS mới để đảm bảo chiều cao phù hợp */
+.job-list .project-card .card-body .row.g-2 {
+    --bs-gutter-x: 0.75rem;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    min-height: auto !important;
+}
+
+/* Sửa lại các style cho card-text để tránh khoảng trống dư */
+.job-list .project-card .card-text.small {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: var(--text-medium);
+    max-height: 2.8rem;
+    overflow: hidden;
+    margin-bottom: 0 !important;
+}
+
+/* Sửa lại style cho các cột để tránh khoảng trống dư */
+.job-list .project-card .col-md-7,
+.job-list .project-card .col-md-3,
+.job-list .project-card .col-md-2 {
+    padding: 0.5rem !important;
+    display: flex;
+    flex-direction: column;
+    height: auto !important;
+}
+
+/* Điều chỉnh khoảng cách giữa các phần tử trong cột */
+.job-list .project-card .col-md-2 .d-flex {
+    height: 100%;
+    justify-content: space-between;
+}
+
+/* Đảm bảo nút Chi tiết nằm ở dưới cùng */
+.job-list .project-card .col-md-2 .d-flex .mt-auto {
+    margin-top: auto !important;
+}
+
+/* Thêm CSS mới để giải quyết vấn đề trong ảnh */
+.job-list .project-card {
+    margin-bottom: 1rem !important;
+    height: auto !important;
+}
+
+/* Đảm bảo các phần tử con không bị tràn */
+.job-list .project-card .mb-1.small {
+    margin-bottom: 0.25rem !important;
+}
+
+/* Fix cho phần skills container */
+.job-list .project-card .skills-container {
+    margin-top: 0.2rem !important;
+    margin-bottom: 0 !important;
+}
+
+/* Đảm bảo chiều cao của card phù hợp với nội dung */
+.job-list .project-card .card {
+    height: fit-content !important;
+}
+
+/* Thêm CSS mới để giải quyết vấn đề card-body.p-3 */
+.job-list .project-card .card-body.p-3 {
+    padding: 0.75rem !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+}
+
+/* Đảm bảo row không có margin/padding dư */
+.job-list .project-card .card-body.p-3 .row {
+    margin: 0 !important;
+    padding: 0 !important;
+    flex-grow: 1 !important;
+    height: auto !important;
+}
+
+/* Sửa lại style cho các cột */
+.job-list .project-card .card-body.p-3 .col-md-7,
+.job-list .project-card .card-body.p-3 .col-md-3,
+.job-list .project-card .card-body.p-3 .col-md-2 {
+    padding: 0.25rem !important;
+}
+
+/* Đảm bảo nội dung không bị tràn */
+.job-list .project-card .card-body.p-3 .card-title,
+.job-list .project-card .card-body.p-3 .card-subtitle,
+.job-list .project-card .card-body.p-3 .card-text {
+    margin-bottom: 0.25rem !important;
+}
+
+/* Đảm bảo nút chi tiết nằm đúng vị trí */
+.job-list .project-card .card-body.p-3 .btn-view-profile {
+    margin-top: auto !important;
+    align-self: flex-end !important;
+}
+
+/* Thêm CSS cho class project-card-body mới */
+.project-card-body {
+    padding: 0.75rem !important;
+    height: auto !important;
+    min-height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+}
+
+.project-card-body .row {
+    margin: 0 !important;
+    padding: 0 !important;
+    flex-grow: 1 !important;
+    height: auto !important;
+    align-items: stretch !important;
+}
+
+.project-card-body .col-md-7,
+.project-card-body .col-md-3,
+.project-card-body .col-md-2 {
+    padding: 0.25rem !important;
+    height: auto !important;
+}
+
+.project-card-body .col-md-2 .d-flex {
+    height: 100% !important;
+}
+
+/* Đảm bảo không có margin dư */
+.project-card-body .card-title,
+.project-card-body .card-subtitle,
+.project-card-body .card-text {
+    margin-bottom: 0.25rem !important;
+}
+
+/* Đảm bảo nút chi tiết nằm đúng vị trí */
+.project-card-body .btn-view-profile {
+    margin-top: 0.5rem !important;
+}
+
+/* Đảm bảo không có padding dư */
+.job-list .project-card {
+    padding: 0 !important;
+    margin-bottom: 1rem !important;
+}
+
+/* Fix cho g-0 */
+.row.g-0 {
+    --bs-gutter-x: 0 !important;
+    --bs-gutter-y: 0 !important;
+}
+
+/* Thêm CSS cho phân trang từ UserVerification.css */
+
+/* Pagination styling */
+.pagination-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 2rem;
+    gap: 1rem;
+}
+
+@media (min-width: 768px) {
+    .pagination-container {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}
+
+.pagination-info {
+    color: var(--text-medium);
+    font-size: 0.9rem;
+}
+
+.pagination {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.pagination-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 0.75rem;
+    border-radius: 8px;
+    background: white;
+    color: var(--text-medium);
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.pagination-btn:hover {
+    background-color: var(--bg-light);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.pagination-btn.active {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    font-weight: 600;
+    border: none;
+    box-shadow: 0 4px 10px rgba(137, 172, 70, 0.3);
+}
+
+.pagination-ellipsis {
+    color: var(--text-medium);
+    font-weight: bold;
+    padding: 0 0.5rem;
 }

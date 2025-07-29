@@ -1,6 +1,6 @@
 ﻿@model StudentFreelance.Models.Skill
 @{
-    ViewData["Title"] = "Disable Skill";
+    ViewData["Title"] = "Ẩn kỹ năng";
 }
 
 <link rel="stylesheet" href="~/css/skills/hide.css" />
@@ -12,17 +12,17 @@
     </div>
 
     <div class="confirmation-card">
-        <h4>Are you sure you want to disable this skill?</h4>
+        <h4>Bạn có chắc chắn muốn ẩn kỹ năng này?</h4>
         <p class="info-text">
-            The skill will not be deleted from the system but will no longer be available for recruitment,
-            project creation, or assignment to students.
+            Kỹ năng sẽ không bị xóa khỏi hệ thống nhưng sẽ không còn được dùng để tuyển dụng,
+            tạo dự án hoặc gán cho sinh viên nữa.
         </p>
 
         <div class="skill-details">
             <dl class="row">
-                <dt class="col-sm-3">Skill Name</dt>
+                <dt class="col-sm-3">Tên kỹ năng</dt>
                 <dd class="col-sm-9">@Model.SkillName</dd>
-                <dt class="col-sm-3">Category</dt>
+                <dt class="col-sm-3">Nhóm nghề</dt>
                 <dd class="col-sm-9">@Model.Category?.CategoryName</dd>
             </dl>
         </div>
@@ -31,8 +31,8 @@
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="SkillID" />
             <div class="action-buttons">
-                <button type="submit" class="btn btn-danger">Confirm Disable</button>
-                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-danger">Xác nhận ẩn</button>
+                <a asp-action="Index" class="btn btn-secondary">Hủy</a>
             </div>
         </form>
     </div>

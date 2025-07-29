@@ -59,6 +59,7 @@ namespace StudentFreelance.ViewModels
         public string ReporterName { get; set; }
         public string ReportedUserName { get; set; }
         public string ProjectTitle { get; set; }
+        public int? ProjectID { get; set; }
         public DateTime ReportDate { get; set; }
         public string TypeName { get; set; }
         public string Description { get; set; }

@@ -1,40 +1,57 @@
 ﻿@model StudentFreelance.Models.Skill
 @{
-    ViewData["Title"] = "Skill Details";
+    ViewData["Title"] = "Chi tiết kỹ năng";
+    ViewData["HeaderIcon"] = "code-branch";
+    Layout = "~/Views/Shared/_Dashboard.cshtml";
 }
 
 <link rel="stylesheet" href="~/css/skills/details.css" />
 
-<div class="skill-details-container">
-    <div class="header-section">
-        <h2>@ViewData["Title"]</h2>
-        <span class="details-icon">📋</span>
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Chi tiết kỹ năng</h5>
+        <div>
+            @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+            {
+                <a asp-action="Edit" asp-route-id="@Model.SkillID" class="btn btn-warning">
+                    <i class="fas fa-edit"></i> Chỉnh sửa
+                </a>
+            }
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+        </div>
     </div>
-
-    <div class="card">
-        <div class="card-body">
-            <dl class="row">
-                <dt class="col-sm-3">Skill ID</dt>
-                <dd class="col-sm-9">@Model.SkillID</dd>
-                <dt class="col-sm-3">Skill Name</dt>
-                <dd class="col-sm-9">@Model.SkillName</dd>
-                <dt class="col-sm-3">Category</dt>
-                <dd class="col-sm-9">@Model.Category?.CategoryName</dd>
-                <dt class="col-sm-3">Status</dt>
-                <dd class="col-sm-9">
-                    @if (Model.IsActive)
-                    {
-                        <span class="badge bg-success">Active</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-secondary">Hidden</span>
-                    }
-                </dd>
-            </dl>
-            <div class="mt-3">
-                <a asp-action="Edit" asp-route-id="@Model.SkillID" class="btn btn-primary">Edit</a>
-                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <table class="table table-bordered">
+                    <tr>
+                        <th style="width: 30%">ID Kỹ năng</th>
+                        <td>@Model.SkillID</td>
+                    </tr>
+                    <tr>
+                        <th>Tên kỹ năng</th>
+                        <td>@Model.SkillName</td>
+                    </tr>
+                    <tr>
+                        <th>Danh mục</th>
+                        <td>@Model.Category?.CategoryName</td>
+                    </tr>
+                    <tr>
+                        <th>Trạng thái</th>
+                        <td>
+                            @if (Model.IsActive)
+                            {
+                                <span class="badge bg-success">Đang hoạt động</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Đã bị ẩn</span>
+                            }
+                        </td>
+                    </tr>
+                </table>
             </div>
         </div>
     </div>

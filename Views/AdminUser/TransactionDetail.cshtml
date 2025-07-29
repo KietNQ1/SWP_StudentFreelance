@@ -1,7 +1,7 @@
 @model StudentFreelance.Models.Transaction
 
 @{
-    ViewData["Title"] = "Transaction Detail";
+    ViewData["Title"] = "Chi tiết giao dịch";
     Layout = "_Dashboard";
 }
 
@@ -107,18 +107,65 @@
             margin-top: 30px;
             gap: 15px;
         }
+        
+        .qr-code-container {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .qr-code-image {
+            max-width: 200px;
+            max-height: 200px;
+            margin-top: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+        }
+        
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+        }
+        
+        .alert-success {
+            background-color: rgba(56, 161, 105, 0.1);
+            color: #38a169;
+            border: 1px solid rgba(56, 161, 105, 0.2);
+        }
+        
+        .alert-danger {
+            background-color: rgba(229, 62, 62, 0.1);
+            color: #e53e3e;
+            border: 1px solid rgba(229, 62, 62, 0.2);
+        }
     </style>
 }
 
 <div class="container-fluid">
     <div class="topbar">
-        <h1><i class="fas fa-receipt"></i> Transaction Detail</h1>
+        <h1><i class="fas fa-receipt"></i> Chi tiết Giao dịch</h1>
         <div class="filter-row">
             <a asp-action="Payments" class="filter-btn">
-                <i class="fas fa-arrow-left"></i> Back to Payments
+                <i class="fas fa-arrow-left"></i> Quay lại danh sách giao dịch
             </a>
         </div>
     </div>
+    
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            @TempData["ErrorMessage"]
+        </div>
+    }
+    
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle me-2"></i>
+            @TempData["SuccessMessage"]
+        </div>
+    }
     
     <div class="transaction-detail-card">
         <div class="transaction-header">
@@ -145,7 +192,7 @@
         
         <ul class="detail-list">
             <li>
-                <span class="detail-label">Transaction ID</span>
+                <span class="detail-label">Mã giao dịch</span>
                 <span class="detail-value">@Model.TransactionID</span>
             </li>
             <li>
@@ -153,11 +200,11 @@
                 <span class="detail-value">@(string.IsNullOrEmpty(Model.OrderCode) ? "N/A" : Model.OrderCode)</span>
             </li>
             <li>
-                <span class="detail-label">Description</span>
+                <span class="detail-label">Mô tả</span>
                 <span class="detail-value">@(string.IsNullOrEmpty(Model.Description) ? "No description provided" : Model.Description)</span>
             </li>
             <li>
-                <span class="detail-label">User</span>
+                <span class="detail-label">Người dùng</span>
                 <span class="detail-value">
                     <span class="user-info">
                         <i class="fas fa-user-circle me-2"></i>
@@ -166,10 +213,44 @@
                 </span>
             </li>
             
+            @if (Model.TypeID == 2) // Nếu là rút tiền, hiển thị thông tin ngân hàng hoặc QR
+            {
+                if (ViewBag.WithdrawalRequest != null)
+                {
+                    var withdrawalRequest = ViewBag.WithdrawalRequest;
+                    
+                    if (!string.IsNullOrEmpty(withdrawalRequest.BankName))
+                    {
+                        <li>
+                            <span class="detail-label">Tên ngân hàng</span>
+                            <span class="detail-value">@withdrawalRequest.BankName</span>
+                        </li>
+                        <li>
+                            <span class="detail-label">Số tài khoản</span>
+                            <span class="detail-value">@withdrawalRequest.AccountNumber</span>
+                        </li>
+                        <li>
+                            <span class="detail-label">Chủ tài khoản</span>
+                            <span class="detail-value">@withdrawalRequest.AccountHolderName</span>
+                        </li>
+                    }
+                    
+                    if (!string.IsNullOrEmpty(withdrawalRequest.QRCodeUrl))
+                    {
+                        <li class="qr-code-container">
+                            <span class="detail-label">Mã QR</span>
+                            <span class="detail-value">
+                                <img src="@withdrawalRequest.QRCodeUrl" alt="QR Code" class="qr-code-image" style="max-width: 200px; max-height: 200px;" />
+                            </span>
+                        </li>
+                    }
+                }
+            }
+            
             @if (Model.Project != null)
             {
                 <li>
-                    <span class="detail-label">Related Project</span>
+                    <span class="detail-label">Dự án liên quan</span>
                     <span class="detail-value">
                         <a asp-controller="Project" asp-action="Details" asp-route-id="@Model.ProjectID" class="action-btn edit">
                             <i class="fas fa-project-diagram"></i> @Model.Project.Title
@@ -182,11 +263,11 @@
             @if (ViewBag.TransactionHistory != null)
             {
                 <li>
-                    <span class="detail-label">IP Address</span>
+                    <span class="detail-label">Địa chỉ IP</span>
                     <span class="detail-value">@ViewBag.TransactionHistory.IPAddress</span>
                 </li>
                 <li>
-                    <span class="detail-label">Device</span>
+                    <span class="detail-label">Thiết bị</span>
                     <span class="detail-value">@ViewBag.TransactionHistory.UserAgent</span>
                 </li>
             }
@@ -197,14 +278,14 @@
             <div class="action-buttons">
                 <form asp-action="ProcessTransaction" method="post">
                     <input type="hidden" name="transactionId" value="@Model.TransactionID" />
-                    <button type="submit" class="action-btn restore" onclick="return confirm('Are you sure you want to process this transaction?')">
-                        <i class="fas fa-check-circle"></i> Process Transaction
+                    <button type="submit" class="action-btn restore" onclick="return confirm('Bạn có chắc chắn muốn xử lý giao dịch này không?')">
+                        <i class="fas fa-check-circle"></i> Xử lý giao dịch
                     </button>
                 </form>
                 <form asp-action="CancelTransaction" method="post">
                     <input type="hidden" name="transactionId" value="@Model.TransactionID" />
-                    <button type="submit" class="action-btn delete" onclick="return confirm('Are you sure you want to cancel this transaction?')">
-                        <i class="fas fa-times-circle"></i> Cancel Transaction
+                    <button type="submit" class="action-btn delete" onclick="return confirm('Bạn có chắc chắn muốn hủy giao dịch này không?')">
+                        <i class="fas fa-times-circle"></i> Hủy giao dịch
                     </button>
                 </form>
             </div>

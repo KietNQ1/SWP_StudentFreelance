@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using StudentFreelance.DbContext;
 using StudentFreelance.Models;
+using System.IO;
 
 namespace StudentFreelance.Controllers
 {
@@ -11,8 +12,13 @@ namespace StudentFreelance.Controllers
     public class CategoriesController : Controller
     {
         private readonly ApplicationDbContext _context;
-        public CategoriesController(ApplicationDbContext context)
-            => _context = context;
+        private readonly IWebHostEnvironment _hostEnvironment;
+
+        public CategoriesController(ApplicationDbContext context, IWebHostEnvironment hostEnvironment)
+        {
+            _context = context;
+            _hostEnvironment = hostEnvironment;
+        }
 
         // GET: /Categories
         public async Task<IActionResult> Index()
@@ -29,14 +35,27 @@ namespace StudentFreelance.Controllers
         }
 
         // Hiển thị form tạo mới
-        [Authorize(Roles = "Admin,Moderator")]
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             ViewData["ParentCategoryID"] = GetCategorySelectList(null, null);
+            
+            // Lấy danh sách các ảnh trong thư mục Icon
+            var iconPath = Path.Combine(_hostEnvironment.WebRootPath, "image", "Icon");
+            var icons = Directory.Exists(iconPath) 
+                ? Directory.GetFiles(iconPath).Select(path => Path.GetFileName(path))
+                : new List<string>();
+            
+            ViewBag.Icons = icons.Select(icon => new SelectListItem
+            {
+                Value = $"/image/Icon/{icon}",
+                Text = icon
+            }).ToList();
+            
             return View(new Category());
         }
 
-        [HttpPost, Authorize(Roles = "Admin,Moderator")]
+        [HttpPost, Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Category category)
         {
@@ -52,11 +71,24 @@ namespace StudentFreelance.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewData["ParentCategoryID"] = GetCategorySelectList(null, category.CategoryType);
+            
+            // Lấy lại danh sách ảnh nếu validation thất bại
+            var iconPath = Path.Combine(_hostEnvironment.WebRootPath, "image", "Icon");
+            var icons = Directory.Exists(iconPath) 
+                ? Directory.GetFiles(iconPath).Select(path => Path.GetFileName(path))
+                : new List<string>();
+            
+            ViewBag.Icons = icons.Select(icon => new SelectListItem
+            {
+                Value = $"/image/Icon/{icon}",
+                Text = icon
+            }).ToList();
+            
             return View(category);
         }
 
         // GET: /Categories/Edit/5
-        [Authorize(Roles = "Admin,Moderator")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -69,12 +101,27 @@ namespace StudentFreelance.Controllers
             ViewBag.IsParent = isParent;
             ViewBag.IsChild = isChild;
             ViewData["ParentCategoryID"] = GetCategorySelectList(c.CategoryID, c.CategoryType);
+            
+            // Lấy danh sách các ảnh trong thư mục Icon
+            var iconPath = Path.Combine(_hostEnvironment.WebRootPath, "image", "Icon");
+            var icons = Directory.Exists(iconPath) 
+                ? Directory.GetFiles(iconPath).Select(path => Path.GetFileName(path))
+                : new List<string>();
+            
+            ViewBag.Icons = icons.Select(icon => new SelectListItem
+            {
+                Value = $"/image/Icon/{icon}",
+                Text = icon,
+                Selected = $"/image/Icon/{icon}" == c.ImagePath
+            }).ToList();
+            
             return View(c);
         }
-        [HttpPost, Authorize(Roles = "Admin,Moderator")]
+        
+        [HttpPost, Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id,
-            [Bind("CategoryID,CategoryName,CategoryType,ParentCategoryID,Description")] Category category,
+            [Bind("CategoryID,CategoryName,CategoryType,ParentCategoryID,Description,ImagePath")] Category category,
             string confirm)
         {
             if (id != category.CategoryID) return NotFound();
@@ -86,6 +133,7 @@ namespace StudentFreelance.Controllers
             // ✅ Thêm đoạn cập nhật giá trị:
             original.CategoryName = category.CategoryName;
             original.Description = category.Description;
+            original.ImagePath = category.ImagePath;
 
             // ✅ Chỉ cho sửa CategoryType/Parent nếu là child (Skill)
             bool isParent = await _context.Categories.AnyAsync(x => x.ParentCategoryID == id);
@@ -104,7 +152,7 @@ namespace StudentFreelance.Controllers
 
 
         // GET: /Categories/Hide/5
-        [Authorize(Roles = "Admin,Moderator")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Hide(int? id)
         {
             if (id == null) return NotFound();
@@ -116,7 +164,7 @@ namespace StudentFreelance.Controllers
         }
 
         // POST /Categories/Hide/5
-        [HttpPost, ActionName("Hide"), Authorize(Roles = "Admin,Moderator")]
+        [HttpPost, ActionName("Hide"), Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> HideConfirmed(int id)
         {
@@ -132,7 +180,7 @@ namespace StudentFreelance.Controllers
         }
 
         // **MỚI**: GET /Categories/Unhide/5
-        [Authorize(Roles = "Admin,Moderator")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Unhide(int? id)
         {
             if (id == null) return NotFound();
@@ -144,7 +192,7 @@ namespace StudentFreelance.Controllers
         }
 
         // **MỚI**: POST /Categories/Unhide/5
-        [HttpPost, ActionName("Unhide"), Authorize(Roles = "Admin,Moderator")]
+        [HttpPost, ActionName("Unhide"), Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UnhideConfirmed(int id)
         {
@@ -180,6 +228,25 @@ namespace StudentFreelance.Controllers
             return View(category); // sẽ render Views/Categories/Details.cshtml
         }
 
+        // GET: /Categories/GetIcons
+        [Authorize(Roles = "Admin")]
+        public IActionResult GetIcons()
+        {
+            var iconPath = Path.Combine(_hostEnvironment.WebRootPath, "image", "Icon");
+            if (!Directory.Exists(iconPath))
+            {
+                return Json(new List<string>());
+            }
+            
+            var icons = Directory.GetFiles(iconPath)
+                .Select(path => new {
+                    path = $"/image/Icon/{Path.GetFileName(path)}",
+                    name = Path.GetFileName(path)
+                })
+                .ToList();
+                
+            return Json(icons);
+        }
 
         // Helper tạo select list
         private List<SelectListItem> GetCategorySelectList(int? currentId, string? type)

@@ -11,18 +11,18 @@
     @Html.AntiForgeryToken()
 
     <div class="form-group">
-        @Html.LabelFor(m => m.CategoryName)
+        @Html.LabelFor(m => m.CategoryName, "Tên danh mục")
         @Html.TextBoxFor(m => m.CategoryName, new { @class = "form-control" })
         @Html.ValidationMessageFor(m => m.CategoryName, "", new { @class = "text-danger" })
     </div>
 
     <div class="form-group">
-        @Html.LabelFor(m => m.CategoryType)
+        @Html.LabelFor(m => m.CategoryType, "Loại danh mục")
         @Html.DropDownListFor(m => m.CategoryType,
                 new SelectList(new[] {
-    new { Value = "field", Text = "Field" },
-    new { Value = "skill", Text = "Skill" }
-    }, "Value", "Text", Model.CategoryType),
+                    new { Value = "field", Text = "Lĩnh vực" },
+                    new { Value = "skill", Text = "Kỹ năng" }
+                }, "Value", "Text", Model.CategoryType),
                 "-- chọn loại --",
                 new { @class = "form-control", id = "categoryTypeSelect" })
         @Html.ValidationMessageFor(m => m.CategoryType, "", new { @class = "text-danger" })
@@ -35,14 +35,55 @@
     </div>
 
     <div class="form-group">
-        @Html.LabelFor(m => m.Description)
+        @Html.LabelFor(m => m.Description, "Mô tả")
         @Html.TextAreaFor(m => m.Description, new { @class = "form-control" })
         @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        <label for="ImagePath">Ảnh đại diện</label>
+        <div class="input-group">
+            <input type="text" id="ImagePath" name="ImagePath" class="form-control" readonly value="" />
+            <button type="button" class="btn btn-primary" id="selectImageBtn">Chọn ảnh</button>
+        </div>
+        <div class="mt-2">
+            <img id="selectedImage" src="" alt="Xem trước" style="max-width: 100px; max-height: 100px; display: none;" />
+        </div>
     </div>
 
     <button type="submit" class="btn btn-primary">Tạo mới</button>
     <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
 }
+
+<!-- Modal chọn ảnh -->
+<div class="modal fade" id="imageSelectionModal" tabindex="-1" aria-labelledby="imageSelectionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageSelectionModalLabel">Chọn ảnh</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <div class="image-grid">
+                    <div class="row">
+                        @foreach (var icon in ViewBag.Icons)
+                        {
+                            <div class="col-md-4 col-6 mb-3">
+                                <div class="image-item" data-img-path="@icon.Value">
+                                    <img src="@icon.Value" alt="@icon.Text" class="img-thumbnail" />
+                                    <div class="image-name">@icon.Text</div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
     <script>
@@ -50,6 +91,10 @@
             const typeSelect = document.getElementById("categoryTypeSelect");
             const parentGroup = document.getElementById("parentCategoryGroup");
             const parentSelect = document.getElementById("parentSelect");
+            const imagePathInput = document.getElementById("ImagePath");
+            const selectedImage = document.getElementById("selectedImage");
+            const selectImageBtn = document.getElementById("selectImageBtn");
+            const imageSelectionModal = new bootstrap.Modal(document.getElementById('imageSelectionModal'));
 
             function toggleParentVisibility(type) {
                 if (type === "field") {
@@ -91,6 +136,72 @@
 
             typeSelect.addEventListener("change", onTypeChanged);
             onTypeChanged(); // Gọi khi trang load lần đầu
+
+            // Xử lý hiển thị modal chọn ảnh
+            selectImageBtn.addEventListener("click", function() {
+                imageSelectionModal.show();
+            });
+
+            // Xử lý khi chọn ảnh từ modal
+            document.querySelectorAll('.image-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const imgPath = this.getAttribute('data-img-path');
+                    imagePathInput.value = imgPath;
+                    selectedImage.src = imgPath;
+                    selectedImage.style.display = "block";
+                    imageSelectionModal.hide();
+                });
+            });
+
+            // Hiển thị ảnh đã chọn nếu có
+            if (imagePathInput.value) {
+                selectedImage.src = imagePathInput.value;
+                selectedImage.style.display = "block";
+            }
         });
     </script>
-}
+    <style>
+        .image-grid {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .image-item {
+            cursor: pointer;
+            text-align: center;
+            border: 2px solid transparent;
+            padding: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .image-item:hover {
+            border-color: #89AC46;
+            background-color: rgba(137, 172, 70, 0.1);
+        }
+        
+        .image-item img {
+            height: 80px;
+            width: 80px;
+            object-fit: contain;
+        }
+        
+        .image-name {
+            margin-top: 5px;
+            font-size: 12px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        /* Điều chỉnh vị trí của modal */
+        .modal-dialog {
+            margin-top: 100px;
+        }
+        
+        @@media (max-width: 768px) {
+            .modal-dialog {
+                margin-top: 80px;
+            }
+        }
+    </style>
+    }

@@ -29,7 +29,7 @@
                 <div class="form-card">
                     <div class="form-title">
                         <h2><i class="fas fa-user-plus"></i> Register</h2>
-                        <p class="subtitle">Create your new account below.</p>
+                        <p class="subtitle">Tạo tài khoản mới</p>
                     </div>
 
                     <form asp-controller="Account" asp-action="Register" method="post" class="login-form">
@@ -38,10 +38,10 @@
                         <!-- Full Name -->
                         <div class="form-group">
                             <label for="FullName" class="form-label">
-                                <i class="fas fa-user"></i> Full Name
+                                <i class="fas fa-user"></i> Họ và tên
                             </label>
                             <div class="input-wrapper">
-                                <input asp-for="FullName" id="FullName" class="form-control with-icon" placeholder="Enter your full name" required />
+                                <input asp-for="FullName" id="FullName" class="form-control with-icon" placeholder="Nhập họ và tên" required />
                                 <i class="fas fa-user input-icon"></i>
                             </div>
                             <span asp-validation-for="FullName" class="text-danger"></span>
@@ -50,10 +50,10 @@
                         <!-- Email -->
                         <div class="form-group">
                             <label for="Email" class="form-label">
-                                <i class="fas fa-envelope"></i> Email Address
+                                <i class="fas fa-envelope"></i> Địa chỉ email
                             </label>
                             <div class="input-wrapper">
-                                <input asp-for="Email" id="Email" type="email" class="form-control with-icon" placeholder="Enter your email" required />
+                                <input asp-for="Email" id="Email" type="email" class="form-control with-icon" placeholder="Địa chỉ email" required />
                                 <i class="fas fa-envelope input-icon"></i>
                             </div>
                             <span asp-validation-for="Email" class="text-danger"></span>
@@ -65,7 +65,7 @@
                                 <i class="fas fa-lock"></i> Password
                             </label>
                             <div class="input-wrapper">
-                                <input asp-for="Password" id="Password" type="password" class="form-control with-icon" placeholder="Enter your password" required />
+                                <input asp-for="Password" id="Password" type="password" class="form-control with-icon" placeholder="Nhập mật khẩu" required />
                                 <i class="fas fa-lock input-icon"></i>
                             </div>
                             <span asp-validation-for="Password" class="text-danger"></span>
@@ -74,10 +74,10 @@
                         <!-- Confirm Password -->
                         <div class="form-group">
                             <label for="ConfirmPassword" class="form-label">
-                                <i class="fas fa-lock"></i> Confirm Password
+								<i class="fas fa-lock"></i> Xác nhận mật khẩu
                             </label>
                             <div class="input-wrapper">
-                                <input asp-for="ConfirmPassword" id="ConfirmPassword" type="password" class="form-control with-icon" placeholder="Confirm your password" required />
+                                <input asp-for="ConfirmPassword" id="ConfirmPassword" type="password" class="form-control with-icon" placeholder=" Xác nhận mật khẩu" required />
                                 <i class="fas fa-lock input-icon"></i>
                             </div>
                             <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
@@ -90,9 +90,9 @@
                             </label>
                             <div class="input-wrapper">
                                 <select asp-for="Role" id="Role" class="form-control" required>
-                                    <option value="" disabled selected>--- Select Role --</option>
-                                    <option value="Student">----Student---</option>
-                                    <option value="Business">----Business---</option>
+                                    <option value="" disabled selected>--- Chọn vai trò --</option>
+                                    <option value="Student">----Học sinh---</option>
+                                    <option value="Business">----Doanh nghiệp---</option>
                                 </select>
                                 <i class="fas fa-user-tag input-icon"></i>
                             </div>
@@ -106,7 +106,7 @@
 
                         <div class="back-link">
                             <a asp-controller="Account" asp-action="Login">
-                                <i class="fas fa-arrow-left"></i> Back to Login
+								<i class="fas fa-arrow-left"></i> Về đăng nhập
                             </a>
                         </div>
                     </form>

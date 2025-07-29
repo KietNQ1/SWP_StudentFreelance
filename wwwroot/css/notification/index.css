@@ -19,7 +19,7 @@ body {
 
 /* Khung chứa thông báo */
 .notification-container {
-    max-width: 700px;
+    width: 70%;
     margin: 0 auto;
     padding: 32px 20px;
 }

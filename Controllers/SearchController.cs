@@ -20,6 +20,7 @@ namespace StudentFreelance.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole<int>> _roleManager;
         private readonly ILocationApiService _locationApiService;
+        private const int PageSize = 5; // Changed from default 10 to 5 items per page
 
         public SearchController(
             ApplicationDbContext context,
@@ -48,7 +49,7 @@ namespace StudentFreelance.Controllers
             return PartialView("_ProvinceDropdown", provinceOptions);
         }
 
-        public async Task<IActionResult> SearchJob(string query, string location, int? categoryId, List<int> skillIds, int? userId, string provinceCode)
+        public async Task<IActionResult> SearchJob(string query, string location, int? categoryId, List<int> skillIds, int? userId, string provinceCode, int pageNumber = 1)
         {
             List<Project> topProjects;
 
@@ -93,14 +94,11 @@ namespace StudentFreelance.Controllers
 
             ViewBag.TopProjects = topProjects;
 
-
-            ViewBag.TopProjects = topProjects;
-
-
             Console.WriteLine($"[DEBUG] SearchJob called with provinceCode: {provinceCode}");
             
             // Lấy danh sách dự án
             var projects = _context.Projects
+                .Where(p => p.IsActive)
                 .Include(p => p.Business)
                 .Include(p => p.Category)
                 .Include(p => p.Status)
@@ -110,12 +108,11 @@ namespace StudentFreelance.Controllers
                     .ThenInclude(ps => ps.Skill)
                 .Include(p => p.ProjectSkillsRequired)
                     .ThenInclude(ps => ps.ImportanceLevel)
-                .Where(p => p.IsActive)
                 .AsQueryable();
 
             // Debug: Hiển thị thông tin địa chỉ của tất cả dự án
-            var allProjects = await projects.ToListAsync();
-            foreach (var project in allProjects)
+            Console.WriteLine($"[DEBUG] Total projects before filtering: {projects.Count()}");
+            foreach (var project in projects.Take(10))
             {
                 Console.WriteLine($"[DEBUG] Project: {project.Title}, Address: {project.Address?.ProvinceName ?? "NULL"}, ProvinceCode: {project.Address?.ProvinceCode ?? "NULL"}");
             }
@@ -185,17 +182,41 @@ namespace StudentFreelance.Controllers
             {
                 Console.WriteLine($"[DEBUG] Filtering projects by provinceCode: {provinceCode}");
                 
-                projects = projects.Where(p => 
-                    p.Address != null && 
-                    p.Address.ProvinceCode == provinceCode);
+                // Lấy danh sách các dự án có địa chỉ
+                var projectsWithAddress = projects.Where(p => p.Address != null).ToList();
+                Console.WriteLine($"[DEBUG] Projects with address: {projectsWithAddress.Count}");
                 
-                // Debug: Hiển thị số lượng kết quả sau khi lọc
-                var filteredProjects = await projects.ToListAsync();
-                Console.WriteLine($"[DEBUG] Filtered projects count: {filteredProjects.Count}");
-                foreach (var project in filteredProjects)
+                // Kiểm tra từng dự án để tìm những dự án có ProvinceCode khớp
+                var filteredProjects = projectsWithAddress.Where(p => 
+                    p.Address != null && 
+                    !string.IsNullOrEmpty(p.Address.ProvinceCode) &&
+                    p.Address.ProvinceCode == provinceCode).ToList();
+                
+                Console.WriteLine($"[DEBUG] Projects matching provinceCode exactly: {filteredProjects.Count}");
+                
+                // Nếu không tìm thấy dự án nào khớp chính xác, thử tìm theo ProvinceName
+                if (!filteredProjects.Any() && !string.IsNullOrEmpty(provinceCode))
                 {
-                    Console.WriteLine($"[DEBUG] Filtered Project: {project.Title}, ProvinceCode: {project.Address?.ProvinceCode ?? "NULL"}");
+                    // Lấy tên tỉnh từ API để so sánh
+                    var provinces = await _locationApiService.GetProvincesAsync();
+                    var selectedProvince = provinces.FirstOrDefault(p => p.Id == provinceCode);
+                    
+                    if (selectedProvince != null)
+                    {
+                        Console.WriteLine($"[DEBUG] Selected province name: {selectedProvince.Name}");
+                        
+                        // Tìm dự án có ProvinceName khớp với tên tỉnh đã chọn
+                        filteredProjects = projectsWithAddress.Where(p => 
+                            p.Address != null && 
+                            !string.IsNullOrEmpty(p.Address.ProvinceName) &&
+                            p.Address.ProvinceName.Contains(selectedProvince.Name)).ToList();
+                        
+                        Console.WriteLine($"[DEBUG] Projects matching province name: {filteredProjects.Count}");
+                    }
                 }
+                
+                // Cập nhật danh sách dự án
+                projects = filteredProjects.AsQueryable();
             }
 
             // Lấy danh sách danh mục từ model Category
@@ -242,10 +263,29 @@ namespace StudentFreelance.Controllers
             ViewBag.UserId = userId;
             ViewBag.ProvinceCode = provinceCode;
 
-            return View(await projects.ToListAsync());
+            // Calculate pagination
+            int totalRecords = projects.Count();
+            int totalPages = (int)Math.Ceiling(totalRecords / (double)PageSize);
+            
+            // Ensure pageNumber is valid
+            pageNumber = Math.Max(1, Math.Min(pageNumber, Math.Max(1, totalPages)));
+            
+            // Apply pagination
+            var pagedProjects = projects
+                .OrderByDescending(p => p.CreatedAt)
+                .Skip((pageNumber - 1) * PageSize)
+                .Take(PageSize)
+                .ToList();
+
+            // Set ViewBag values for pagination
+            ViewBag.CurrentPage = pageNumber;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalRecords = totalRecords;
+
+            return View(pagedProjects);
         }
 
-        public async Task<IActionResult> SearchStudents(string query, List<int> skillIds, string provinceCode)
+        public async Task<IActionResult> SearchStudents(string query, List<int> skillIds, string provinceCode, int pageNumber = 1)
         {
             // Lấy danh sách sinh viên
             var allStudents = await _userManager.GetUsersInRoleAsync("Student");
@@ -344,27 +384,52 @@ namespace StudentFreelance.Controllers
             ViewBag.Provinces = provinces;
             ViewBag.StudentSkills = studentSkillsDict;
 
+            // Calculate pagination
+            int totalRecords = students.Count();
+            int totalPages = (int)Math.Ceiling(totalRecords / (double)PageSize);
+            
+            // Ensure pageNumber is valid
+            pageNumber = Math.Max(1, Math.Min(pageNumber, Math.Max(1, totalPages)));
+            
+            // Apply pagination
+            var pagedStudents = students
+                .OrderByDescending(s => s.CreatedAt)
+                .Skip((pageNumber - 1) * PageSize)
+                .Take(PageSize)
+                .ToList();
+
+            // Set ViewBag values for pagination
+            ViewBag.CurrentPage = pageNumber;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalRecords = totalRecords;
+
+            // Update the Students property to use the paged results
+            viewModel.Students = pagedStudents;
+
             return View(viewModel);
         }
 
-        public async Task<IActionResult> SearchBusinesses(string query, string provinceCode)
+        public async Task<IActionResult> SearchBusinesses(string query, string provinceCode, int pageNumber = 1)
         {
             Console.WriteLine($"[DEBUG] SearchBusinesses called with provinceCode: {provinceCode}");
             
             // Lấy danh sách doanh nghiệp
-            var allBusinesses = await _userManager.GetUsersInRoleAsync("Business");
+            var businessRoleId = await _roleManager.Roles.Where(r => r.Name == "Business").Select(r => r.Id).FirstOrDefaultAsync();
             
-            // Lấy danh sách ID của tất cả doanh nghiệp
-            var businessIds = allBusinesses.Select(b => b.Id).ToList();
+            if (businessRoleId == null)
+            {
+                return View(new List<ApplicationUser>());
+            }
             
-            // Lấy thông tin chi tiết của doanh nghiệp bao gồm địa chỉ
-            var businessesWithAddress = await _context.Users
-                .Include(u => u.Address)
-                .Where(u => businessIds.Contains(u.Id) && u.IsActive)
-                .ToListAsync();
-                
-            var businesses = businessesWithAddress.AsQueryable();
-            
+            var businesses = _context.UserRoles
+                .Where(ur => ur.RoleId == businessRoleId)
+                .Join(_context.Users,
+                    ur => ur.UserId,
+                    u => u.Id,
+                    (ur, u) => u)
+                .Where(u => u.IsActive)
+                .AsQueryable();
+
             // Debug: Hiển thị thông tin địa chỉ của tất cả doanh nghiệp
             foreach (var business in businesses)
             {
@@ -433,7 +498,26 @@ namespace StudentFreelance.Controllers
             ViewBag.Query = query;
             ViewBag.ProvinceCode = provinceCode;
 
-            return View(businesses.ToList());
+            // Calculate pagination
+            int totalRecords = businesses.Count();
+            int totalPages = (int)Math.Ceiling(totalRecords / (double)PageSize);
+            
+            // Ensure pageNumber is valid
+            pageNumber = Math.Max(1, Math.Min(pageNumber, Math.Max(1, totalPages)));
+            
+            // Apply pagination
+            var pagedBusinesses = businesses
+                .OrderByDescending(b => b.CreatedAt)
+                .Skip((pageNumber - 1) * PageSize)
+                .Take(PageSize)
+                .ToList();
+
+            // Set ViewBag values for pagination
+            ViewBag.CurrentPage = pageNumber;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalRecords = totalRecords;
+
+            return View(pagedBusinesses);
         }
     }
 } 

@@ -2,231 +2,232 @@
 
 @{
     ViewData["Title"] = "Chi tiết báo cáo";
+    Layout = "_Dashboard";
 }
 
-<div class="container mt-4">
-    <div class="row mb-3">
-        <div class="col">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
-                    @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
-                    {
-                        <li class="breadcrumb-item"><a asp-controller="Report" asp-action="ListReport">Danh sách báo cáo</a></li>
-                    }
-                    <li class="breadcrumb-item active" aria-current="page">Chi tiết báo cáo #@Model.ReportID</li>
-                </ol>
-            </nav>
-        </div>
+@section Styles {
+    <link rel="stylesheet" href="~/css/report/listReport.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+}
+
+<div class="container-fluid">
+    <div class="topbar">
+        <h1><i class="fas fa-flag"></i> Chi tiết báo cáo #@Model.ReportID</h1>
+        
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Trang chủ</a></li>
+                @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+                {
+                    <li class="breadcrumb-item"><a href="@Url.Action("ListReport", "Report")">Danh sách báo cáo</a></li>
+                }
+                <li class="breadcrumb-item active">Chi tiết báo cáo #@Model.ReportID</li>
+            </ol>
+        </nav>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i> @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
     </div>
 
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
-    <div class="card mb-4">
-        <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">Chi tiết báo cáo #@Model.ReportID</h4>
-        </div>
-        <div class="card-body">
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <h5 class="border-bottom pb-2 text-secondary">Thông tin chung</h5>
-                    <div class="mb-3 row">
-                        <label class="col-sm-4 col-form-label fw-bold">Mã báo cáo:</label>
-                        <div class="col-sm-8">
-                            <p class="form-control-plaintext">@Model.ReportID</p>
-                        </div>
-                    </div>
-                    <div class="mb-3 row">
-                        <label class="col-sm-4 col-form-label fw-bold">Ngày báo cáo:</label>
-                        <div class="col-sm-8">
-                            <p class="form-control-plaintext">@Model.ReportDate.ToString("dd/MM/yyyy HH:mm")</p>
-                        </div>
-                    </div>
-                    <div class="mb-3 row">
-                        <label class="col-sm-4 col-form-label fw-bold">Loại báo cáo:</label>
-                        <div class="col-sm-8">
-                            <p class="form-control-plaintext">@Model.TypeName</p>
-                        </div>
-                    </div>
-                    <div class="mb-3 row">
-                        <label class="col-sm-4 col-form-label fw-bold">Trạng thái:</label>
-                        <div class="col-sm-8">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="table-container mb-4">
+                <h4 class="card-header mb-4">Thông tin chung</h4>
+                <div class="detail-row">
+                    <div class="detail-label">Mã báo cáo:</div>
+                    <div class="detail-value">@Model.ReportID</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Ngày báo cáo:</div>
+                    <div class="detail-value">@Model.ReportDate.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Loại báo cáo:</div>
+                    <div class="detail-value">@Model.TypeName</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Trạng thái:</div>
+                    <div class="detail-value">
+                        @if (Model.StatusName == "Đang xử lý")
+                        {
+                            <span class="status-pending">@Model.StatusName</span>
+                        }
+                        else if (Model.StatusName == "Đã xử lý")
+                        {
+                            <span class="status-active">@Model.StatusName</span>
+                        }
+                        else if (Model.StatusName == "Đã hủy")
+                        {
+                            <span class="status-inactive">@Model.StatusName</span>
+                        }
+                        else
+                        {
                             <span class="badge @(Model.StatusName == "Đang xử lý" ? "bg-warning" : 
                                                Model.StatusName == "Đã xử lý" ? "bg-success" : 
                                                Model.StatusName == "Đã hủy" ? "bg-danger" : "bg-secondary")">
                                 @Model.StatusName
                             </span>
-                        </div>
-                    </div>
-                    @if (Model.ResolvedAt.HasValue)
-                    {
-                        <div class="mb-3 row">
-                            <label class="col-sm-4 col-form-label fw-bold">Ngày xử lý:</label>
-                            <div class="col-sm-8">
-                                <p class="form-control-plaintext">@Model.ResolvedAt.Value.ToString("dd/MM/yyyy HH:mm")</p>
-                            </div>
-                        </div>
-                    }
-                </div>
-                <div class="col-md-6">
-                    <h5 class="border-bottom pb-2 text-secondary">Thông tin liên quan</h5>
-                    <div class="mb-3 row">
-                        <label class="col-sm-4 col-form-label fw-bold">Người báo cáo:</label>
-                        <div class="col-sm-8">
-                            <p class="form-control-plaintext">@Model.ReporterName</p>
-                        </div>
-                    </div>
-                    <div class="mb-3 row">
-                        <label class="col-sm-4 col-form-label fw-bold">Người bị báo cáo:</label>
-                        <div class="col-sm-8">
-                            <p class="form-control-plaintext">@Model.ReportedUserName</p>
-                        </div>
-                    </div>
-                    @if (!string.IsNullOrEmpty(Model.ProjectTitle) && Model.ProjectTitle != "Không có dự án")
-                    {
-                        <div class="mb-3 row">
-                            <label class="col-sm-4 col-form-label fw-bold">Dự án:</label>
-                            <div class="col-sm-8">
-                                <p class="form-control-plaintext">@Model.ProjectTitle</p>
-                            </div>
-                        </div>
-                    }
-                </div>
-            </div>
-
-            <h5 class="border-bottom pb-2 text-secondary">Nội dung báo cáo</h5>
-            <div class="mb-4">
-                <div class="card">
-                    <div class="card-body bg-light">
-                        <p class="mb-0">@Model.Description</p>
+                        }
                     </div>
                 </div>
-            </div>
-
-            @if (!string.IsNullOrEmpty(Model.AdminResponse))
-            {
-                <h5 class="border-bottom pb-2 text-secondary">Phản hồi từ quản trị viên</h5>
-                <div class="mb-4">
-                    <div class="card border-primary">
-                        <div class="card-header bg-primary bg-opacity-10">
-                            <strong>Phản hồi</strong>
-                        </div>
-                        <div class="card-body">
-                            <p class="mb-0">@Model.AdminResponse</p>
-                        </div>
-                    </div>
-                </div>
-            }
-
-            @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
-            {
-                <h5 class="border-bottom pb-2 text-secondary">Cập nhật trạng thái</h5>
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <form asp-action="UpdateStatus" method="post" class="needs-validation" novalidate>
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="reportId" value="@Model.ReportID" />
-                            
-                            <div class="row mb-3">
-                                <label class="col-sm-3 col-form-label">Trạng thái mới:</label>
-                                <div class="col-sm-9">
-                                    <select name="statusId" class="form-select" required>
-                                        <option value="">-- Chọn trạng thái --</option>
-                                        @if (ViewBag.ReportStatuses != null)
-                                        {
-                                            @foreach (var status in ViewBag.ReportStatuses)
-                                            {
-                                                if (status.Selected)
-                                                {
-                                                    <option value="@status.Value" selected>@status.Text</option>
-                                                }
-                                                else
-                                                {
-                                                    <option value="@status.Value">@status.Text</option>
-                                                }
-                                            }
-                                        }
-                                        else
-                                        {
-                                            if (Model.StatusName == "Đang xử lý")
-                                            {
-                                                <option value="1" selected>Đang xử lý</option>
-                                            }
-                                            else
-                                            {
-                                                <option value="1">Đang xử lý</option>
-                                            }
-                                            
-                                            if (Model.StatusName == "Đã xử lý")
-                                            {
-                                                <option value="2" selected>Đã xử lý</option>
-                                            }
-                                            else
-                                            {
-                                                <option value="2">Đã xử lý</option>
-                                            }
-                                            
-                                            if (Model.StatusName == "Đã hủy")
-                                            {
-                                                <option value="3" selected>Đã hủy</option>
-                                            }
-                                            else
-                                            {
-                                                <option value="3">Đã hủy</option>
-                                            }
-                                        }
-                                    </select>
-                                    <div class="invalid-feedback">Vui lòng chọn trạng thái</div>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <label class="col-sm-3 col-form-label">Phản hồi:</label>
-                                <div class="col-sm-9">
-                                    <textarea name="adminResponse" class="form-control" rows="4" placeholder="Nhập phản hồi của bạn (không bắt buộc)">@Model.AdminResponse</textarea>
-                                </div>
-                            </div>
-                            
-                            <div class="text-end">
-                                <button type="submit" class="btn btn-primary" id="updateStatusBtn">
-                                    <i class="bi bi-check2-circle"></i> Cập nhật trạng thái
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            }
-
-            <div class="d-flex justify-content-between mt-4">
-                @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+                @if (Model.ResolvedAt.HasValue)
                 {
-                    <a asp-action="ListReport" class="btn btn-secondary">
-                        <i class="bi bi-arrow-left"></i> Quay lại danh sách
-                    </a>
+                    <div class="detail-row">
+                        <div class="detail-label">Ngày xử lý:</div>
+                        <div class="detail-value">@Model.ResolvedAt.Value.ToString("dd/MM/yyyy HH:mm")</div>
+                    </div>
                 }
-                else
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="table-container mb-4">
+                <h4 class="card-header mb-4">Thông tin liên quan</h4>
+                <div class="detail-row">
+                    <div class="detail-label">Người báo cáo:</div>
+                    <div class="detail-value">@Model.ReporterName</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Người bị báo cáo:</div>
+                    <div class="detail-value">@Model.ReportedUserName</div>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.ProjectTitle) && Model.ProjectTitle != "Không có dự án")
                 {
-                    <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">
-                        <i class="bi bi-arrow-left"></i> Quay lại trang chủ
-                    </a>
+                    <div class="detail-row">
+                        <div class="detail-label">Dự án:</div>
+                        <div class="detail-value">
+                            @Model.ProjectTitle
+                            @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+                            {
+                                <a href="@Url.Action("Details", "Project", new { id = Model.ProjectID })" class="action-btn edit">
+                                    <i class="fas fa-eye"></i> Xem dự án
+                                </a>
+                            }
+                        </div>
+                    </div>
                 }
             </div>
         </div>
     </div>
+
+    <div class="table-container mb-4">
+        <h4 class="card-header mb-4">Nội dung báo cáo</h4>
+        <div class="report-content">
+            @Model.Description
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.AdminResponse))
+    {
+        <div class="table-container mb-4">
+            <h4 class="card-header mb-4">Phản hồi từ quản trị viên</h4>
+            <div class="admin-response">
+                @Model.AdminResponse
+            </div>
+        </div>
+    }
+
+    @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+    {
+        <div class="table-container mb-4">
+            <h4 class="card-header mb-4">Cập nhật trạng thái</h4>
+            <form asp-action="UpdateStatus" method="post" class="needs-validation" novalidate>
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="reportId" value="@Model.ReportID" />
+                
+                <div class="detail-row">
+                    <div class="detail-label">Trạng thái mới:</div>
+                    <div class="detail-value">
+                        <select name="statusId" class="form-select" required>
+                            <option value="">-- Chọn trạng thái --</option>
+                            @if (ViewBag.ReportStatuses != null)
+                            {
+                                @foreach (var status in ViewBag.ReportStatuses)
+                                {
+                                    if (status.Selected)
+                                    {
+                                        <option value="@status.Value" selected>@status.Text</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@status.Value">@status.Text</option>
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (Model.StatusName == "Đang xử lý")
+                                {
+                                    <option value="1" selected>Đang xử lý</option>
+                                }
+                                else
+                                {
+                                    <option value="1">Đang xử lý</option>
+                                }
+                                
+                                if (Model.StatusName == "Đã xử lý")
+                                {
+                                    <option value="2" selected>Đã xử lý</option>
+                                }
+                                else
+                                {
+                                    <option value="2">Đã xử lý</option>
+                                }
+                                
+                                if (Model.StatusName == "Đã hủy")
+                                {
+                                    <option value="3" selected>Đã hủy</option>
+                                }
+                                else
+                                {
+                                    <option value="3">Đã hủy</option>
+                                }
+                            }
+                        </select>
+                        <div class="invalid-feedback">Vui lòng chọn trạng thái</div>
+                    </div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Phản hồi:</div>
+                    <div class="detail-value">
+                        <textarea name="adminResponse" class="form-control" rows="4" placeholder="Nhập phản hồi của bạn (không bắt buộc)">@Model.AdminResponse</textarea>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button type="submit" class="filter-btn" id="updateStatusBtn">
+                        <i class="fas fa-check-circle"></i> Cập nhật trạng thái
+                    </button>
+                    
+                    <a asp-action="ListReport" class="action-btn edit">
+                        <i class="fas fa-arrow-left"></i> Quay lại danh sách
+                    </a>
+                </div>
+            </form>
+        </div>
+    }
+    else
+    {
+        <div class="action-buttons">
+            <a asp-controller="Home" asp-action="Index" class="action-btn edit">
+                <i class="fas fa-arrow-left"></i> Quay lại trang chủ
+            </a>
+        </div>
+    }
 </div>
 
 @section Scripts {

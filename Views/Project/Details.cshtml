@@ -4,14 +4,15 @@
 @{
     ViewData["Title"] = Model.Title;
 }
+
 <link rel="stylesheet" href="~/css/project/detail.css" />
 
 
 <div class="container mt-4">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-            <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Index">Projects</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Index">Dự án</a></li>
             <li class="breadcrumb-item active" aria-current="page">@Model.Title</li>
         </ol>
     </nav>
@@ -19,7 +20,7 @@
     @if (ViewBag.InactiveMessage != null)
     {
         <div class="alert alert-warning">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i> @ViewBag.InactiveMessage
+            <i class="fas fa-exclamation-triangle me-2"></i> @ViewBag.InactiveMessage
         </div>
     }
 
@@ -41,90 +42,110 @@
 
     <div class="row mb-4">
         <div class="col-md-8">
-            <h1 class="mb-3">
+            <h1 class="project-title">
                 @if (Model.IsHighlighted)
                 {
-                    <span class="badge bg-warning me-2">Featured</span>
+                    <span class="badge bg-warning me-2"><i class="fas fa-star me-1"></i>Nổi bật</span>
                 }
                 @if (!Model.IsActive)
                 {
-                    <span class="badge bg-danger me-2">Đã ẩn</span>
+                    <span class="badge bg-danger me-2"><i class="fas fa-eye-slash me-1"></i>Đã ẩn</span>
                 }
                 @if (Model.IsFlagged)
                 {
                     <span class="badge bg-danger me-2" title="@Model.FlagReason">
-                        <i class="fas fa-flag"></i> Flagged
+                        <i class="fas fa-flag me-1"></i> Đã báo cáo
                     </span>
                 }
                 @Model.Title
             </h1>
             <div class="d-flex flex-wrap mb-3 gap-2">
-                <span class="badge bg-primary">@Model.Category.CategoryName</span>
+                <span class="badge bg-primary"><i class="fas fa-folder me-1"></i>@Model.Category.CategoryName</span>
                 <span class="badge @(Model.StatusID == 1 ? "bg-success" : Model.StatusID == 2 ? "bg-warning" : "bg-danger")">
-                    @Model.Status.StatusName
+                    <i class="fas @(Model.StatusID == 1 ? "fa-check-circle" : Model.StatusID == 2 ? "fa-clock" : "fa-times-circle") me-1"></i>@Model.Status.StatusName
                 </span>
-                <span class="badge bg-info">@Model.Type.TypeName</span>
+                <span class="badge bg-info"><i class="fas fa-tag me-1"></i>@Model.Type.TypeName</span>
                 @if (Model.IsRemoteWork)
                 {
-                    <span class="badge bg-secondary">Remote Work</span>
+                    <span class="badge bg-secondary"><i class="fas fa-home me-1"></i>Làm việc từ xa</span>
                 }
             </div>
-            <div class="d-flex gap-4 text-muted mb-4">
-                <div><i class="bi bi-calendar-date"></i> Posted: @Model.CreatedAt.ToString("dd/MM/yyyy")</div>
-                <div><i class="bi bi-hourglass-split"></i> Deadline: @Model.Deadline.ToString("dd/MM/yyyy")</div>
-                <div><i class="bi bi-currency-dollar"></i> Budget: @Model.Budget.ToString("C")</div>
+            <div class="project-meta">
+                <div><i class="fas fa-calendar-alt"></i> Đăng: @Model.CreatedAt.ToString("dd/MM/yyyy")</div>
+                <div><i class="fas fa-calendar-day"></i> Hạn chót: @Model.Deadline.ToString("dd/MM/yyyy")</div>
+                <div><i class="fas fa-money-bill-wave"></i> Ngân sách: @Model.Budget.ToString("N0")đ</div>
             </div>
             @if (User.IsInRole("Admin") || User.IsInRole("Moderator") || User.FindFirstValue(ClaimTypes.NameIdentifier) == Model.BusinessID.ToString())
             {
-                <div class="mt-2">
-                    <i class="bi bi-wallet2"></i> Project Wallet: 
-                    <span class="badge bg-success">@Model.ProjectWallet.ToString("C")</span>
+                <div class="mt-3 mb-3">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-wallet text-success me-2"></i> Ví dự án: 
+                        <span class="badge bg-success ms-2 fs-6">@Model.ProjectWallet.ToString("N0")đ</span>
+                    </div>
                 </div>
             }
         </div>
 
-        <div class="col-md-4 text-end">
+        <div class="col-md-4 text-end mt-md-0 mt-3">
             @if (User.Identity != null && User.Identity.IsAuthenticated &&
-            (User.IsInRole("Admin") ||
+            (User.IsInRole("Admin") || User.IsInRole("Moderator") ||
             User.FindFirst(ClaimTypes.NameIdentifier)?.Value == Model.BusinessID.ToString()))
             {
-                <div class="btn-group">
-                    <a asp-action="Edit" asp-route-id="@Model.ProjectID" class="btn btn-outline-theme me-2">
-                        <i class="bi bi-pencil"></i> Chỉnh sửa
-                    </a>
-                    <a asp-action="Delete" asp-route-id="@Model.ProjectID" class="btn btn-outline-theme me-2">
-                        <i class="bi bi-trash"></i> Xoá
+                <div class="btn-group d-flex flex-wrap justify-content-end">
+                    <a asp-action="Edit" asp-route-id="@Model.ProjectID" class="btn btn-rect" title="Chỉnh sửa dự án">
+                        <i class="fas fa-edit"></i>
                     </a>
                     <a asp-controller="Application" asp-action="ProjectApplications" asp-route-projectId="@Model.ProjectID"
-                       class="btn btn-outline-theme me-2">
-                        <i class="bi bi-people"></i> Xem ứng viên (@Model.StudentApplications.Count)
+                       class="btn btn-rect btn-rect-primary" title="Xem ứng viên (@Model.StudentApplications.Count)">
+                        <i class="fas fa-users"></i>
                     </a>
                     <a asp-controller="Project" asp-action="InviteStudents" asp-route-projectId="@Model.ProjectID"
-                       class="btn btn-outline-theme">
-                        <i class="bi bi-person-plus"></i> Mời sinh viên
+                       class="btn btn-rect btn-rect-info" title="Mời sinh viên">
+                        <i class="fas fa-user-plus"></i>
                     </a>
-                </div>
-
-            }
-            @if (User.Identity != null && User.Identity.IsAuthenticated && 
-                 (User.IsInRole("Admin") || User.IsInRole("Moderator")))
-            {
-                <div class="mt-2">
-                    @if (!Model.IsFlagged)
+                    
+                    @if (Model.StatusID != 3 && Model.StatusID != 4) // Nếu dự án chưa hoàn thành và chưa bị hủy
                     {
-                        <a asp-action="FlagProject" asp-route-id="@Model.ProjectID" class="btn btn-outline-danger">
-                            <i class="fas fa-flag"></i> Flag Project
-                        </a>
-                    }
-                    else
-                    {
-                        <form asp-action="UnflagProject" method="post" class="d-inline">
+                        <form asp-controller="Project" asp-action="CompleteProject" method="post" id="completeProjectForm" class="btn-form">
                             <input type="hidden" name="id" value="@Model.ProjectID" />
-                            <button type="submit" class="btn btn-outline-warning">
-                                <i class="fas fa-flag-checkered"></i> Remove Flag
+                            <button type="button" id="completeProjectBtn" class="btn btn-rect btn-rect-success" title="Đánh dấu dự án đã hoàn thành">
+                                <i class="fas fa-check-circle"></i>
                             </button>
                         </form>
                     }
+
+                    @if (Model.StatusID != 3 && Model.StatusID != 4) // Nếu dự án chưa hoàn thành và chưa bị hủy
+                    {
+                        <form asp-controller="Project" asp-action="CancelProject" method="post" id="cancelProjectForm" class="btn-form">
+                            <input type="hidden" name="id" value="@Model.ProjectID" />
+                            <button type="button" id="cancelProjectBtn" class="btn btn-rect btn-rect-danger" title="Hủy dự án">
+                                <i class="fas fa-times-circle"></i>
+                            </button>
+                        </form>
+                    }
+                    
+                    @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
+                    {
+                        @if (!Model.IsFlagged)
+                        {
+                            <a asp-action="FlagProject" asp-route-id="@Model.ProjectID" class="btn btn-rect btn-rect-danger" title="Báo cáo dự án">
+                                <i class="fas fa-flag"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <form asp-action="UnflagProject" method="post" class="btn-form">
+                                <input type="hidden" name="id" value="@Model.ProjectID" />
+                                <button type="submit" class="btn btn-rect btn-rect-warning" title="Gỡ cờ báo cáo">
+                                    <i class="fas fa-flag-checkered"></i>
+                                </button>
+                            </form>
+                        }
+                    }
+
+                    <a asp-action="Delete" asp-route-id="@Model.ProjectID" class="btn btn-rect btn-rect-danger" title="Xóa dự án">
+                        <i class="fas fa-trash"></i>
+                    </a>
                 </div>
             }
             else if (User.Identity != null && User.Identity.IsAuthenticated &&
@@ -132,10 +153,24 @@
             {
                 @if (User.IsInRole("Student"))
                 {
-                    <a asp-controller="Application" asp-action="Apply" asp-route-projectId="@Model.ProjectID"
-                       class="btn-apply">
-                        <i class="bi bi-send"></i> Ứng tuyển vào dự án
-                    </a>
+                    var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                    var hasApplied = Model.StudentApplications?.Any(a => a.UserID == currentUserId) ?? false;
+                    
+                    if (!hasApplied && Model.StatusID != 3 && Model.StatusID != 4) // Chỉ hiển thị nút nếu sinh viên chưa ứng tuyển và dự án chưa hoàn thành/hủy
+                    {
+                        <a asp-controller="Application" asp-action="Apply" asp-route-projectId="@Model.ProjectID"
+                           class="btn btn-apply">
+                            <i class="fas fa-paper-plane me-2"></i> Ứng tuyển vào dự án
+                        </a>
+                    }
+                    else if (hasApplied)
+                    {
+                        var application = Model.StudentApplications.FirstOrDefault(a => a.UserID == currentUserId);
+                        <a asp-controller="Application" asp-action="ViewApplication" asp-route-id="@application.ApplicationID" 
+                           class="btn btn-info">
+                            <i class="fas fa-eye me-2"></i> Xem đơn ứng tuyển
+                        </a>
+                    }
                 }
             }
         </div>
@@ -146,7 +181,7 @@
             <!-- Mô tả dự án -->
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="mb-0">Project Description</h5>
+                    <h5 class="mb-0"><i class="fas fa-align-left"></i> Mô tả dự án</h5>
                 </div>
                 <div class="card-body">
                     <div class="formatted-content">
@@ -160,14 +195,13 @@
             {
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h5 class="mb-0">Required Skills</h5>
+                        <h5 class="mb-0"><i class="fas fa-code"></i> Kỹ năng yêu cầu</h5>
                     </div>
                     <div class="card-body">
                         <div class="d-flex flex-wrap gap-2">
                             @foreach (var skill in Model.ProjectSkillsRequired)
                             {
                                 <span class="badge skill-badge">@skill.Skill.SkillName</span>
-
                             }
                         </div>
                     </div>
@@ -179,7 +213,7 @@
             {
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h5 class="mb-0">Project Attachments</h5>
+                        <h5 class="mb-0"><i class="fas fa-paperclip"></i> Tập tin đính kèm</h5>
                     </div>
                     <div class="card-body">
                         <div class="list-group">
@@ -202,29 +236,35 @@
             <!-- Thông tin doanh nghiệp -->
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="mb-0">Business Information</h5>
+                    <h5 class="mb-0"><i class="fas fa-building"></i> Thông tin doanh nghiệp</h5>
                 </div>
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-3">
                         <div class="avatar me-3">
-                            <img src="@(!string.IsNullOrEmpty(Model.Business.Avatar)
-    ? Url.Content($"~/uploads/avatars/{Model.Business.Avatar}")
-    : Url.Content("~/image/default-avatar.png"))"
-                                 alt="Avatar"
-                                 class="img-fluid rounded-circle avatar-img" />
-
+                            @if (!string.IsNullOrEmpty(Model.Business.Avatar))
+                            {
+                                <img src="@Url.Content($"{Model.Business.Avatar}")"
+                                     alt="Avatar"
+                                     class="img-fluid rounded-circle avatar-img" />
+                            }
+                            else
+                            {
+                                <div class="avatar-placeholder">
+                                    @(Model.Business.FullName?.Substring(0, 1).ToUpper() ?? "U")
+                                </div>
+                            }
                         </div>
 
                         <div>
                             <h6 class="mb-0">@Model.Business.FullName</h6>
-                            <small class="text-muted">Member since @(Model.Business.CreatedAt.ToString("MMM yyyy"))</small>
+                            <small class="text-muted">Thành viên từ @(Model.Business.CreatedAt.ToString("MM/yyyy"))</small>
                         </div>
                     </div>
 
                     @if (Model.Address != null)
                     {
                         <div class="mb-2">
-                            <i class="bi bi-geo-alt"></i>
+                            <i class="fas fa-map-marker-alt text-primary"></i>
                             @Model.Address.DetailAddress, @Model.Address.WardName,
                             @Model.Address.DistrictName, @Model.Address.ProvinceName
                         </div>
@@ -234,13 +274,13 @@
                         <div class="d-flex justify-content-between gap-2 flex-wrap mt-3">
                             <a asp-controller="User" asp-action="Profile" asp-route-id="@Model.BusinessID"
                                class="btn btn-view-profile flex-fill">
-                                <i class="bi bi-person"></i> View Profile
+                                <i class="fas fa-user"></i> Xem hồ sơ
                             </a>
 
                             <form asp-controller="Chat" asp-action="StartProjectChat" method="post" class="flex-fill">
                                 <input type="hidden" name="projectId" value="@Model.ProjectID" />
                                 <button type="submit" class="btn btn-apply w-100">
-                                    <i class="bi bi-chat-dots"></i> Nhắn tin với chủ dự án
+                                    <i class="fas fa-comment"></i> Nhắn tin với chủ dự án
                                 </button>
                             </form>
                         </div>
@@ -252,29 +292,30 @@
             <!-- Chi tiết dự án -->
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="mb-0">Project Details</h5>
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Chi tiết dự án</h5>
                 </div>
                 <div class="card-body">
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <span>Start Date</span>
-                            <span>@Model.StartDate.ToString("dd/MM/yyyy")</span>
+                            <span><i class="fas fa-calendar-day text-primary me-2"></i>Ngày bắt đầu</span>
+                            <span class="badge bg-light text-dark">@Model.StartDate.ToString("dd/MM/yyyy")</span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <span>End Date</span>
-                            <span>@Model.EndDate.ToString("dd/MM/yyyy")</span>
+                            <span><i class="fas fa-calendar-check text-primary me-2"></i>Ngày kết thúc</span>
+                            <span class="badge bg-light text-dark">@Model.EndDate.ToString("dd/MM/yyyy")</span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <span>Duration</span>
-                            <span>@((Model.EndDate - Model.StartDate).Days) days</span>
+                            <span><i class="fas fa-hourglass-half text-primary me-2"></i>Thời gian</span>
+                            <span class="badge bg-light text-dark">@((Model.EndDate - Model.StartDate).Days) ngày</span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <span>Applications</span>
+                            <span><i class="fas fa-users text-primary me-2"></i>Số lượng ứng viên</span>
                             <span class="badge bg-primary rounded-pill">@Model.StudentApplications.Count</span>
                         </li>
                     </ul>
                 </div>
             </div>
+            
         </div>
     </div>
 @if (User.Identity.IsAuthenticated)
@@ -284,119 +325,103 @@
     var isAdmin = User.IsInRole("Admin") || User.IsInRole("Moderator");
     var isStudent = User.IsInRole("Student");
 
-    if (isOwner || isAdmin)
+    @if (isOwner || isAdmin)
     {
-        // Thêm nút hoàn thành và hủy dự án
-        <div class="card mb-3">
-                <div class="card-header project-header">
-                <h5 class="mb-0">Quản lý dự án</h5>
-            </div>
-            <div class="card-body">
-                <div class="d-flex gap-2">
-                    @if (Model.StatusID != 3 && Model.StatusID != 4) // Nếu dự án chưa hoàn thành và chưa bị hủy
-                    {
-                        <form asp-controller="Project" asp-action="CompleteProject" method="post" class="d-inline">
-                            <input type="hidden" name="id" value="@Model.ProjectID" />
-                            <button type="submit" class="btn btn-success">
-                                <i class="bi bi-check-circle"></i> Đánh dấu dự án đã hoàn thành
-                            </button>
-                        </form>
-                        
-                        <form asp-controller="Project" asp-action="CancelProject" method="post" class="d-inline">
-                            <input type="hidden" name="id" value="@Model.ProjectID" />
-                            <button type="submit" class="btn btn-danger" onclick="return confirm('Bạn có chắc chắn muốn hủy dự án này? Hành động này không thể hoàn tác.');">
-                                <i class="bi bi-x-circle"></i> Hủy dự án
-                            </button>
-                        </form>
-                    }
-                    else if (Model.StatusID == 3) // Dự án đã hoàn thành
-                    {
-                        <div class="alert alert-success mb-0">
-                            <i class="bi bi-check-circle"></i> Dự án đã được đánh dấu là hoàn thành.
-                        </div>
-                    }
-                    else if (Model.StatusID == 4) // Dự án đã bị hủy
-                    {
-                        <div class="alert alert-danger mb-0">
-                            <i class="bi bi-x-circle"></i> Dự án đã bị hủy.
-                        </div>
-                    }
-                </div>
-            </div>
-        </div>
-        
-        if (Model.StudentApplications != null && Model.StudentApplications.Any(a =>
+        @if (Model.StudentApplications != null && Model.StudentApplications.Any(a =>
             a.Status == "InProgress" || a.Status == "PendingReview" || a.Status == "Completed"))
         {
-            <div class="card mb-3">
-                    <div class="card-header project-header">
-                    <h5 class="mb-0">Kết quả dự án</h5>
-                </div>
-                <div class="card-body">
-                    <p>Xem kết quả dự án được nộp bởi sinh viên đã được chấp nhận:</p>
-                    <div class="list-group">
-                        @foreach (var app in Model.StudentApplications.Where(a =>
-                            a.Status == "InProgress" || a.Status == "PendingReview" || a.Status == "Completed"))
-                        {
-                            <div class="list-group-item d-flex flex-column">
-                                <div class="d-flex justify-content-between align-items-center w-100">
-                                    <div>
-                                        <strong>@app.User.FullName</strong>
-                                        <span class="badge @(app.Status == "Completed" ? "bg-success" : app.Status == "PendingReview" ? "bg-warning" : "bg-primary")">
-                                            @app.Status
-                                        </span>
-                                    </div>
-                                    <a href="@Url.Action("ProjectSubmissions", "ProjectSubmission", new { applicationId = app.ApplicationID })"
-                                       class="btn btn-sm btn-primary">Xem kết quả</a>
-                                </div>
-
-                                @if ((app.Status == "PendingReview" || app.Status == "InProgress" || app.Status == "Completed") &&
-                                     (Model.StatusID == 1 || Model.StatusID == 2))
+            <div class="container-fluid px-0">
+                <div class="project-management-container">
+                    <div class="card mb-3 animate__animated animate__fadeIn">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-clipboard-check"></i> Kết quả dự án</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Xem kết quả dự án được nộp bởi sinh viên đã được chấp nhận:</p>
+                            <div class="list-group">
+                                @foreach (var app in Model.StudentApplications.Where(a =>
+                                    a.Status == "InProgress" || a.Status == "PendingReview" || a.Status == "Completed"))
                                 {
-                                    <div class="mt-2">
-                                        @if (!app.BusinessConfirmedCompletion)
-                                        {
-                                            <form asp-controller="Project" asp-action="ConfirmCompletion" method="post" class="d-inline">
-                                                <input type="hidden" name="projectId" value="@Model.ProjectID" />
-                                                <input type="hidden" name="applicationId" value="@app.ApplicationID" />
-                                                <button type="submit" class="btn btn-success btn-sm">
-                                                    <i class="bi bi-check-circle"></i> Xác nhận hoàn thành
-                                                </button>
-                                            </form>
-                                        }
-                                        else
-                                        {
-                                            <form asp-controller="Project" asp-action="CancelConfirmation" method="post" class="d-inline">
-                                                <input type="hidden" name="projectId" value="@Model.ProjectID" />
-                                                <input type="hidden" name="applicationId" value="@app.ApplicationID" />
-                                                <button type="submit" class="btn btn-warning btn-sm">
-                                                    <i class="bi bi-x-circle"></i> Huỷ xác nhận
-                                                </button>
-                                            </form>
-
-                                            @if (app.BusinessConfirmedCompletion && !app.StudentConfirmedCompletion)
-                                            {
-                                                <div class="alert alert-info py-1 mt-2 mb-0">
-                                                    <small><i class="bi bi-info-circle"></i> Đã xác nhận. Đang chờ sinh viên xác nhận.</small>
-                                                </div>
-                                            }
-                                            else if (app.BusinessConfirmedCompletion && app.StudentConfirmedCompletion)
-                                            {
-                                                <div class="alert alert-success py-1 mt-2 mb-0">
-                                                    <small><i class="bi bi-check-circle"></i> Đã hoàn thành. Cả hai bên đã xác nhận.</small>
-                                                </div>
-                                            }
-                                        }
+                                    <div class="list-group-item d-flex flex-column w-100">
+                                        <div class="d-flex justify-content-between align-items-center w-100">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <strong>@app.User.FullName</strong>
+                                                <span class="badge @(app.Status == "Completed" ? "bg-success" : app.Status == "PendingReview" ? "bg-warning" : "bg-primary")">
+                                                    @app.Status
+                                                </span>
+                                                
+                                                @if ((app.Status == "PendingReview" || app.Status == "InProgress" || app.Status == "Completed") &&
+                                                    (Model.StatusID == 1 || Model.StatusID == 2))
+                                                {
+                                                    @if (app.BusinessConfirmedCompletion && !app.StudentConfirmedCompletion)
+                                                    {
+                                                        <span class="badge bg-info">
+                                                            <i class="fas fa-info-circle"></i> Đang chờ sinh viên xác nhận
+                                                        </span>
+                                                    }
+                                                    else if (app.BusinessConfirmedCompletion && app.StudentConfirmedCompletion)
+                                                    {
+                                                        <span class="badge bg-success">
+                                                            <i class="fas fa-check-circle"></i> Đã hoàn thành
+                                                        </span>
+                                                        
+                                                        @if (app.IsPaid)
+                                                        {
+                                                            <span class="badge bg-success">
+                                                                <i class="fas fa-check-circle"></i> Đã thanh toán
+                                                            </span>
+                                                        }
+                                                    }
+                                                }
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <a href="@Url.Action("ProjectSubmissions", "ProjectSubmission", new { applicationId = app.ApplicationID })"
+                                                   class="btn btn-sm btn-primary">Xem kết quả</a>
+                                                   
+                                                @if ((app.Status == "PendingReview" || app.Status == "InProgress" || app.Status == "Completed") &&
+                                                    (Model.StatusID == 1 || Model.StatusID == 2))
+                                                {
+                                                    @if (!app.BusinessConfirmedCompletion)
+                                                    {
+                                                        <form asp-controller="Project" asp-action="ConfirmCompletion" method="post" style="margin:0; padding:0; display:inline;">
+                                                            <input type="hidden" name="projectId" value="@Model.ProjectID" />
+                                                            <input type="hidden" name="applicationId" value="@app.ApplicationID" />
+                                                            <button type="submit" class="btn btn-success btn-sm">
+                                                                <i class="fas fa-check-circle"></i> Xác nhận hoàn thành
+                                                            </button>
+                                                        </form>
+                                                    }
+                                                    else
+                                                    {
+                                                        <form asp-controller="Project" asp-action="CancelConfirmation" method="post" style="margin:0; padding:0; display:inline;">
+                                                            <input type="hidden" name="projectId" value="@Model.ProjectID" />
+                                                            <input type="hidden" name="applicationId" value="@app.ApplicationID" />
+                                                            <button type="submit" class="btn btn-warning btn-sm">
+                                                                <i class="fas fa-times-circle"></i> Huỷ xác nhận
+                                                            </button>
+                                                        </form>
+                                                        
+                                                        @if (app.BusinessConfirmedCompletion && app.StudentConfirmedCompletion && !app.IsPaid)
+                                                        {
+                                                            <a asp-controller="ProjectSubmission" asp-action="Finalize" asp-route-applicationId="@app.ApplicationID" class="btn btn-primary btn-sm">
+                                                                <i class="fas fa-money-bill-wave"></i> Thanh toán
+                                                            </a>
+                                                        }
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
                                     </div>
                                 }
                             </div>
-                        }
+                        </div>
                     </div>
                 </div>
             </div>
         }
     }
-    else if (isStudent)
+
+    if (isStudent)
     {
         var hasApplied = Model.StudentApplications?.Any(a => a.UserID == currentUserId) ?? false;
 
@@ -405,61 +430,67 @@
             var application = Model.StudentApplications.FirstOrDefault(a => a.UserID == currentUserId);
 
             <div class="alert alert-info">
-                <i class="bi bi-info-circle"></i> Bạn đã ứng tuyển vào dự án này.
+                <i class="fas fa-info-circle"></i> Bạn đã ứng tuyển vào dự án này.
                 <a asp-controller="Application" asp-action="ViewApplication" asp-route-id="@application.ApplicationID" class="alert-link">
                     Xem đơn ứng tuyển
                 </a>
             </div>
 
-            @if (application.Status == "Accepted" || application.Status == "InProgress")
-            {
-                <a asp-controller="ProjectSubmission" asp-action="Create" asp-route-applicationId="@application.ApplicationID"
-                   class="btn btn-success mb-2">
-                    <i class="bi bi-upload"></i> Nộp kết quả dự án
-                </a>
-            }
-
-            @if (application.Status == "Accepted" || application.Status == "InProgress" ||
-                 application.Status == "PendingReview" || application.Status == "Completed")
-            {
-                <a asp-controller="ProjectSubmission" asp-action="MySubmissions" asp-route-applicationId="@application.ApplicationID"
-                   class="btn btn-info">
-                    <i class="bi bi-list-check"></i> Xem kết quả đã nộp
-                </a>
-
-                @if ((application.Status == "PendingReview" || application.Status == "InProgress" || application.Status == "Completed") &&
-                     !application.StudentConfirmedCompletion && (Model.StatusID == 1 || Model.StatusID == 2))
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                @if (application.Status == "Accepted" || application.Status == "InProgress")
                 {
-                    <form asp-controller="Project" asp-action="ConfirmCompletion" method="post" class="d-inline">
-                        <input type="hidden" name="projectId" value="@Model.ProjectID" />
-                        <input type="hidden" name="applicationId" value="@application.ApplicationID" />
-                        <button type="submit" class="btn btn-success ms-2">
-                            <i class="bi bi-check-circle"></i> Xác nhận hoàn thành
-                        </button>
-                    </form>
+                    <a asp-controller="ProjectSubmission" asp-action="Create" asp-route-applicationId="@application.ApplicationID"
+                       class="btn btn-success">
+                        <i class="fas fa-upload"></i> Nộp kết quả dự án
+                    </a>
                 }
-                else if (application.StudentConfirmedCompletion && (Model.StatusID == 1 || Model.StatusID == 2))
-                {
-                    <form asp-controller="Project" asp-action="CancelConfirmation" method="post" class="d-inline">
-                        <input type="hidden" name="projectId" value="@Model.ProjectID" />
-                        <input type="hidden" name="applicationId" value="@application.ApplicationID" />
-                        <button type="submit" class="btn btn-warning ms-2">
-                            <i class="bi bi-x-circle"></i> Huỷ xác nhận
-                        </button>
-                    </form>
 
-                    @if (!application.BusinessConfirmedCompletion)
+                @if (application.Status == "Accepted" || application.Status == "InProgress" ||
+                     application.Status == "PendingReview" || application.Status == "Completed")
+                {
+                    <a asp-controller="ProjectSubmission" asp-action="MySubmissions" asp-route-applicationId="@application.ApplicationID"
+                       class="btn btn-info">
+                        <i class="fas fa-list-check"></i> Xem kết quả đã nộp
+                    </a>
+
+                    @if ((application.Status == "PendingReview" || application.Status == "InProgress" || application.Status == "Completed") &&
+                         !application.StudentConfirmedCompletion && (Model.StatusID == 1 || Model.StatusID == 2))
                     {
-                        <div class="alert alert-info mt-2">
-                            <i class="bi bi-info-circle"></i> Bạn đã xác nhận hoàn thành. Đang chờ xác nhận từ doanh nghiệp.
-                        </div>
+                        <form asp-controller="Project" asp-action="ConfirmCompletion" method="post" style="margin:0; padding:0; display:inline;">
+                            <input type="hidden" name="projectId" value="@Model.ProjectID" />
+                            <input type="hidden" name="applicationId" value="@application.ApplicationID" />
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check-circle"></i> Xác nhận hoàn thành
+                            </button>
+                        </form>
                     }
-                    else if (application.BusinessConfirmedCompletion)
+                    else if (application.StudentConfirmedCompletion && (Model.StatusID == 1 || Model.StatusID == 2))
                     {
-                        <div class="alert alert-success mt-2">
-                            <i class="bi bi-check-circle"></i> Dự án đã hoàn thành. Cả hai bên đã xác nhận.
-                        </div>
+                        <form asp-controller="Project" asp-action="CancelConfirmation" method="post" style="margin:0; padding:0; display:inline;">
+                            <input type="hidden" name="projectId" value="@Model.ProjectID" />
+                            <input type="hidden" name="applicationId" value="@application.ApplicationID" />
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-times-circle"></i> Huỷ xác nhận
+                            </button>
+                        </form>
                     }
+                }
+            </div>
+
+            @if ((application.Status == "PendingReview" || application.Status == "InProgress" || application.Status == "Completed") &&
+                 application.StudentConfirmedCompletion && (Model.StatusID == 1 || Model.StatusID == 2))
+            {
+                @if (!application.BusinessConfirmedCompletion)
+                {
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> Bạn đã xác nhận hoàn thành. Đang chờ xác nhận từ doanh nghiệp.
+                    </div>
+                }
+                else if (application.BusinessConfirmedCompletion)
+                {
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i> Dự án đã hoàn thành. Cả hai bên đã xác nhận.
+                    </div>
                 }
             }
         }
@@ -468,10 +499,132 @@
 else
 {
     <div class="alert alert-info">
-        <i class="bi bi-info-circle"></i> Bạn cần
+        <i class="fas fa-info-circle"></i> Bạn cần
         <a asp-controller="Account" asp-action="Login" class="alert-link">đăng nhập</a> để ứng tuyển vào dự án này.
     </div>
 }
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Thiết lập animation cho các card
+            $('.card').addClass('animate__animated animate__fadeIn');
+            
+            // Điều chỉnh vị trí modal để không bị che bởi thanh header
+            $('.modal').on('show.bs.modal', function () {
+                setTimeout(function() {
+                    $('.modal-dialog').css({
+                        'margin-top': '80px'
+                    });
+                }, 100);
+            });
+            
+            // Xử lý nút hoàn thành dự án
+            $("#completeProjectBtn").click(function() {
+                // Hiển thị modal xác nhận hoàn thành dự án
+                $("#completeProjectModal").modal("show");
+            });
+            
+            // Xử lý nút xác nhận trong modal hoàn thành
+            $("#confirmCompleteBtn").click(function() {
+                // Hiển thị hiệu ứng loading
+                $(this).html('<i class="fas fa-spinner fa-spin me-2"></i> Đang xử lý...');
+                $(this).prop('disabled', true);
+                
+                // Gửi form hoàn thành dự án
+                $("#completeProjectForm").submit();
+            });
+            
+            // Xử lý nút hủy dự án
+            $("#cancelProjectBtn").click(function() {
+                // Hiển thị modal xác nhận hủy dự án
+                $("#cancelProjectModal").modal("show");
+            });
+            
+            // Xử lý nút xác nhận trong modal hủy
+            $("#confirmCancelBtn").click(function() {
+                // Hiển thị hiệu ứng loading
+                $(this).html('<i class="fas fa-spinner fa-spin me-2"></i> Đang xử lý...');
+                $(this).prop('disabled', true);
+                
+                // Gửi form hủy dự án
+                $("#cancelProjectForm").submit();
+            });
+            
+            // Hiệu ứng hover cho các nút
+            $(".btn").hover(function() {
+                $(this).css("transform", "translateY(-3px)");
+            }, function() {
+                $(this).css("transform", "translateY(0)");
+            });
+        });
+    </script>
+}
+
+<!-- Modal xác nhận hoàn thành dự án -->
+<div class="modal fade" id="completeProjectModal" tabindex="-1" aria-labelledby="completeProjectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="completeProjectModalLabel"><i class="fas fa-check-circle me-2"></i> Xác nhận hoàn thành dự án</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn đánh dấu dự án <strong>@Model.Title</strong> là đã hoàn thành?</p>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> Khi xác nhận hoàn thành:
+                    <ul class="mb-0 mt-2">
+                        <li>Phí dự án sẽ được chuyển cho quản trị viên</li>
+                        <li>Số tiền còn lại trong ví dự án sẽ được hoàn trả về ví của bạn</li>
+                        <li>Dự án sẽ không thể chỉnh sửa hoặc hủy sau khi hoàn thành</li>
+                    </ul>
+                </div>
+                <p class="text-danger"><strong>Lưu ý:</strong> Hành động này không thể hoàn tác sau khi xác nhận!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times-circle me-2"></i> Hủy
+                </button>
+                <button type="button" id="confirmCompleteBtn" class="btn btn-success">
+                    <i class="fas fa-check-circle me-2"></i> Xác nhận hoàn thành
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal xác nhận hủy dự án -->
+<div class="modal fade" id="cancelProjectModal" tabindex="-1" aria-labelledby="cancelProjectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="cancelProjectModalLabel"><i class="fas fa-times-circle me-2"></i> Xác nhận hủy dự án</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn hủy dự án <strong>@Model.Title</strong>?</p>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> Khi xác nhận hủy:
+                    <ul class="mb-0 mt-2">
+                        <li>Phí dự án sẽ được chuyển cho quản trị viên</li>
+                        <li>Số tiền còn lại trong ví dự án sẽ được hoàn trả về ví của bạn</li>
+                        <li>Dự án sẽ không thể chỉnh sửa hoặc hoàn thành sau khi hủy</li>
+                    </ul>
+                </div>
+                <p class="text-danger"><strong>Lưu ý:</strong> Hành động này không thể hoàn tác sau khi xác nhận!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times-circle me-2"></i> Đóng
+                </button>
+                <button type="button" id="confirmCancelBtn" class="btn btn-danger">
+                    <i class="fas fa-trash-alt me-2"></i> Xác nhận hủy dự án
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 

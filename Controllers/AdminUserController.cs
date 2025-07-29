@@ -11,7 +11,7 @@ using StudentFreelance.DbContext;
 
 namespace StudentFreelance.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Moderator")]
     public class AdminUserController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -32,7 +32,7 @@ namespace StudentFreelance.Controllers
         }
         
         [HttpGet]
-        public async Task<IActionResult> Index(string searchTerm, string selectedRole, string status)
+        public async Task<IActionResult> Index(string searchTerm, string selectedRole, string status, int pageNumber = 1, int pageSize = 10)
         {
             var users = _userManager.Users.AsQueryable();
 
@@ -54,10 +54,25 @@ namespace StudentFreelance.Controllers
                 users = users.Where(u => userIds.Contains(u.Id));
             }
 
+            var totalUsers = await users.CountAsync(); 
+
+            var pagedUsers = await users
+                .OrderBy(u => u.FullName) 
+                .Skip((pageNumber - 1) * pageSize) 
+                .Take(pageSize)
+                .ToListAsync();
+
+           
             var allRoles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
             ViewBag.AllRoles = allRoles;
+            ViewBag.CurrentPage = pageNumber;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalPages = (int)Math.Ceiling((double)totalUsers / pageSize);
 
-            return View(await users.ToListAsync()); 
+            return View(pagedUsers);
+
+
+          
         }
 
         // Sửa người dùng
@@ -133,6 +148,7 @@ namespace StudentFreelance.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin,Moderator")]
         public async Task<IActionResult> Payments(string searchUser, int? statusId)
         {
             var transactions = await _transactionService.GetAllTransactionsAsync();
@@ -159,6 +175,7 @@ namespace StudentFreelance.Controllers
         }
         
         [HttpPost]
+        [Authorize(Roles = "Admin,Moderator")]
         public async Task<IActionResult> CancelTransaction(int transactionId)
         {
             var transaction = await _transactionService.GetTransactionByIdAsync(transactionId);
@@ -167,7 +184,7 @@ namespace StudentFreelance.Controllers
                 return NotFound();
                 
             if (transaction.StatusID != 1) // Only pending transactions can be canceled
-                return BadRequest("Only pending transactions can be canceled");
+                return BadRequest("Chỉ có thể hủy các giao dịch đang chờ xử lý");
                 
             // Update status to Cancelled (assuming StatusID 3 is for Cancelled)
             await _transactionService.UpdateTransactionStatusAsync(transactionId, 3);
@@ -176,6 +193,7 @@ namespace StudentFreelance.Controllers
         }
         
         [HttpPost]
+        [Authorize(Roles = "Admin,Moderator")]
         public async Task<IActionResult> ProcessTransaction(int transactionId)
         {
             var transaction = await _transactionService.GetTransactionByIdAsync(transactionId);
@@ -184,7 +202,7 @@ namespace StudentFreelance.Controllers
                 return NotFound();
                 
             if (transaction.StatusID != 1) // Only pending transactions can be processed
-                return BadRequest("Only pending transactions can be processed");
+                return BadRequest("Chỉ có thể xử lý các giao dịch đang chờ xử lý");
             
             // For deposit transactions, we need to update the user's wallet balance
             if (transaction.TypeID == 1) // Deposit
@@ -194,14 +212,21 @@ namespace StudentFreelance.Controllers
             else
             {
                 // For other transaction types, just update the status to Completed (StatusID 2)
-                await _transactionService.UpdateTransactionStatusAsync(transactionId, 2);
+                bool success = await _transactionService.UpdateTransactionStatusAsync(transactionId, 2);
+                if (!success && transaction.TypeID == 2) // Nếu là giao dịch rút tiền và thất bại
+                {
+                    TempData["ErrorMessage"] = "Không thể xử lý giao dịch rút tiền. Số dư trong ví người dùng không đủ.";
+                    return RedirectToAction("TransactionDetail", new { id = transactionId });
+                }
             }
             
+            TempData["SuccessMessage"] = "Giao dịch đã được xử lý thành công";
             return RedirectToAction(nameof(Payments));
         }
 
         // GET: /AdminUser/TransactionDetail/5
         [HttpGet]
+        [Authorize(Roles = "Admin,Moderator")]
         public async Task<IActionResult> TransactionDetail(int id)
         {
             var transaction = await _transactionService.GetTransactionByIdAsync(id);
@@ -220,6 +245,18 @@ namespace StudentFreelance.Controllers
             if (transactionHistory != null)
             {
                 ViewBag.TransactionHistory = transactionHistory;
+            }
+            
+            // Nếu là giao dịch rút tiền, lấy thông tin WithdrawalRequest
+            if (transaction.TypeID == 2) // Rút tiền
+            {
+                var withdrawalRequest = await _context.WithdrawalRequests
+                    .FirstOrDefaultAsync(w => w.TransactionID == transaction.TransactionID);
+                    
+                if (withdrawalRequest != null)
+                {
+                    ViewBag.WithdrawalRequest = withdrawalRequest;
+                }
             }
             
             return View(transaction);
