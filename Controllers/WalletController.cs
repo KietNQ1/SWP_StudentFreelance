@@ -501,6 +501,11 @@ public class WalletController : Controller
             };
 
             _context.Transactions.Add(transaction);
+            await _context.SaveChangesAsync(); // Lưu để lấy TransactionID
+            
+            // Cập nhật TransactionID cho WithdrawalRequest
+            request.TransactionID = transaction.TransactionID;
+            _context.WithdrawalRequests.Update(request);
         }
 
         await _context.SaveChangesAsync();
@@ -626,6 +631,18 @@ public class WalletController : Controller
         if (transactionHistory != null)
         {
             ViewBag.TransactionHistory = transactionHistory;
+        }
+        
+        // Nếu là giao dịch rút tiền, lấy thông tin WithdrawalRequest
+        if (transaction.TypeID == 2) // Rút tiền
+        {
+            var withdrawalRequest = await _context.WithdrawalRequests
+                .FirstOrDefaultAsync(w => w.TransactionID == transaction.TransactionID);
+                
+            if (withdrawalRequest != null)
+            {
+                ViewBag.WithdrawalRequest = withdrawalRequest;
+            }
         }
         
         return View(transaction);

@@ -27,5 +27,11 @@ namespace StudentFreelance.Models
 
         public DateTime RequestedAt { get; set; } = DateTime.Now;
         public DateTime? ProcessedAt { get; set; }
+        
+        // Liên kết với Transaction
+        public int? TransactionID { get; set; }
+        
+        [ForeignKey(nameof(TransactionID))]
+        public Transaction? Transaction { get; set; }
     }
 }

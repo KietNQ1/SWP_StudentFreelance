@@ -1,7 +1,7 @@
 @model StudentFreelance.ViewModels.WalletViewModel
 
 @{
-    ViewData["Title"] = "My Wallet";
+    ViewData["Title"] = "Ví của tôi";
 }
 
 @section Styles {
@@ -11,33 +11,34 @@
             cursor: pointer;
             transition: background-color 0.2s;
         }
-        .transaction-row:hover {
-            background-color: rgba(211, 230, 113, 0.2);
-        }
+
+            .transaction-row:hover {
+                background-color: rgba(211, 230, 113, 0.2);
+            }
     </style>
 }
 
 <div class="container mt-4">
-    <h2>My Wallet</h2>
-    
+    <h2>Ví của tôi</h2>
+
     @if (TempData["SuccessMessage"] != null)
     {
         <div class="alert alert-success">
             @TempData["SuccessMessage"]
         </div>
     }
-    
+
     <div class="row mb-4">
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header bg-primary text-white">
-                    <h4>Wallet Balance</h4>
+                    <h4>Số dư ví</h4>
                 </div>
                 <div class="card-body">
                     <h2 class="display-4">@Model.WalletBalance.ToString("C")</h2>
                     <div class="mt-4">
-                        <a asp-action="Deposit" class="btn btn-success me-2">Deposit Funds</a>
-                        <a asp-action="Withdraw" class="btn btn-warning">Withdraw Funds</a>
+                        <a asp-action="Deposit" class="btn btn-success me-2">Nạp tiền</a>
+                        <a asp-action="Withdraw" class="btn btn-warning">Rút tiền</a>
                     </div>
                 </div>
             </div>
@@ -45,24 +46,24 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header bg-info text-white">
-                    <h4>Quick Actions</h4>
+                    <h4>Thao tác nhanh</h4>
                 </div>
                 <div class="card-body">
-                    <p>Manage your wallet and view your transaction history.</p>
+                    <p>Quản lý ví và xem lịch sử giao dịch của bạn.</p>
                     <ul class="list-group">
                         <li class="list-group-item">
                             <i class="bi bi-clock-history"></i>
-                            <a asp-action="TransactionHistory">View Full Transaction History</a>
+                            <a asp-action="TransactionHistory">Xem toàn bộ lịch sử giao dịch</a>
                         </li>
                     </ul>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <div class="card">
         <div class="card-header bg-secondary text-white">
-            <h4>Recent Transactions</h4>
+            <h4>Giao dịch gần đây</h4>
         </div>
         <div class="card-body">
             @if (Model.Transactions != null && Model.Transactions.Any())
@@ -71,11 +72,11 @@
                     <table class="table table-striped">
                         <thead>
                             <tr>
-                                <th>Date</th>
-                                <th>Type</th>
-                                <th>Amount</th>
-                                <th>Description</th>
-                                <th>Status</th>
+                                <th>Ngày</th>
+                                <th>Loại giao dịch</th>
+                                <th>Số tiền</th>
+                                <th>Mô tả</th>
+                                <th>Trạng thái</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -108,15 +109,15 @@
                     </table>
                 </div>
                 <div class="text-center mt-3">
-                    <a asp-action="TransactionHistory" class="btn btn-outline-primary">View All Transactions</a>
+                    <a asp-action="TransactionHistory" class="btn btn-outline-primary">Xem tất cả giao dịch</a>
                 </div>
             }
             else
             {
                 <div class="alert alert-info">
-                    You don't have any transactions yet.
+                    Bạn chưa có giao dịch nào.
                 </div>
             }
         </div>
     </div>
-</div> 
+</div>

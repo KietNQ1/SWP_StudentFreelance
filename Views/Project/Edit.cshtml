@@ -2,15 +2,15 @@
 <link rel="stylesheet" href="~/css/project/edit.css" />
 
 @{
-    ViewData["Title"] = "Edit Project";
+    ViewData["Title"] = "Chỉnh sửa dự án";
 }
 
 <div class="container mt-4">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-            <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Index">Projects</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Edit Project</li>
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Index">Dự án</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Chỉnh sửa dự án</li>
         </ol>
     </nav>
 
@@ -18,7 +18,7 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0">Edit Project</h5>
+                    <h5 class="mb-0">Chỉnh sửa dự án</h5>
                 </div>
                 <div class="card-body">
                     @if (TempData["AttachmentError"] != null)
@@ -42,22 +42,22 @@
                             <div class="col-md-8">
                                 <div class="form-group mb-3">
                                     <label asp-for="Title" class="control-label"></label>
-                                    <input asp-for="Title" class="form-control" />
+                                    <input asp-for="Title" class="form-control" placeholder="Nhập tiêu đề dự án" />
                                     <span asp-validation-for="Title" class="text-danger"></span>
                                 </div>
 
                                 <div class="form-group mb-3">
                                     <label asp-for="Description" class="control-label"></label>
-                                    <textarea asp-for="Description" class="form-control" rows="6"></textarea>
+                                    <textarea asp-for="Description" class="form-control" rows="6" placeholder="Nhập mô tả dự án"></textarea>
                                     <span asp-validation-for="Description" class="text-danger"></span>
                                 </div>
 
-                                <!-- Existing Attachments -->
+                                <!-- File đính kèm hiện tại -->
                                 @if (Model.ExistingAttachments != null && Model.ExistingAttachments.Any())
                                 {
                                     <div class="card mb-3">
                                         <div class="card-header">
-                                            <h6 class="mb-0">Current Attachments</h6>
+                                            <h6 class="mb-0">Tệp đính kèm hiện tại</h6>
                                         </div>
                                         <div class="card-body">
                                             <div class="list-group">
@@ -68,7 +68,7 @@
                                                             <i class="bi bi-file-earmark"></i> @attachment.FileName
                                                             <small>(@(attachment.FileSize / 1024) KB)</small>
                                                         </a>
-                                                        <form asp-action="DeleteAttachment" method="post" onsubmit="return confirm('Are you sure you want to delete this attachment?');">
+                                                        <form asp-action="DeleteAttachment" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa tệp này không?');">
                                                             <input type="hidden" name="attachmentId" value="@attachment.AttachmentID" />
                                                             <input type="hidden" name="projectId" value="@Model.ProjectID" />
                                                             <button type="submit" class="btn btn-sm btn-outline-danger">
@@ -82,14 +82,14 @@
                                     </div>
                                 }
 
-                                <!-- Upload New Attachments -->
+                                <!-- Tải lên file mới -->
                                 <div class="form-group mb-3">
-                                    <label asp-for="Attachments" class="control-label">Upload New Attachments</label>
+                                    <label asp-for="Attachments" class="control-label">Tải lên tệp mới</label>
                                     <input type="file" asp-for="Attachments" class="form-control" multiple />
-                                    <small class="form-text text-muted">You can upload multiple files (max 5MB per file)</small>
+                                    <small class="form-text text-muted">Bạn có thể tải lên nhiều file (tối đa 5MB mỗi file)</small>
                                 </div>
 
-                                <!-- Required Skills -->
+                                <!-- Kỹ năng bắt buộc -->
                                 <div class="form-group mb-3">
                                     <label class="control-label">Nhóm nghề, Nghề, Vị trí chuyên môn</label>
                                     <div class="category-skills-dropdown">
@@ -239,8 +239,8 @@
                                 <div class="form-group mb-3">
                                     <label asp-for="Budget" class="control-label"></label>
                                     <div class="input-group">
-                                        <span class="input-group-text">$</span>
-                                        <input asp-for="Budget" class="form-control" />
+                                        <span class="input-group-text">₫</span>
+                                        <input asp-for="Budget" class="form-control" placeholder="Nhập ngân sách dự án" />
                                     </div>
                                     <span asp-validation-for="Budget" class="text-danger"></span>
                                 </div>
@@ -318,8 +318,8 @@
                         </div>
 
                         <div class="form-group mt-4">
-                            <button type="submit" class="btn btn-primary" id="saveProjectBtn">Save Changes</button>
-                            <a asp-action="Details" asp-route-id="@Model.ProjectID" class="btn btn-outline-secondary ms-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary" id="saveProjectBtn">Lưu thay đổi</button>
+                            <a asp-action="Details" asp-route-id="@Model.ProjectID" class="btn btn-outline-secondary ms-2">Hủy</a>
                         </div>
                     </form>
                 </div>
@@ -327,6 +327,7 @@
         </div>
     </div>
 </div>
+
 
 @section Scripts {
     @{

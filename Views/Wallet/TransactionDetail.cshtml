@@ -1,68 +1,77 @@
 @model StudentFreelance.Models.Transaction
 
 @{
-    ViewData["Title"] = "Transaction Detail";
+    ViewData["Title"] = "Chi tiết giao dịch";
 }
 
 @section Styles {
     <link rel="stylesheet" href="~/css/wallet/transaction-detail.css" asp-append-version="true" />
+    <style>
+        .qr-code-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .qr-code-image {
+            max-width: 200px;
+            max-height: 200px;
+            margin-top: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+        }
+    </style>
 }
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Transaction Detail</h2>
+        <h2>Chi tiết giao dịch</h2>
         <a asp-action="TransactionHistory" class="btn btn-primary btn-back">
-            <i class="bi bi-arrow-left"></i> Back to History
+            <i class="bi bi-arrow-left"></i> Quay lại lịch sử
         </a>
     </div>
-    
+
     <div class="card transaction-detail-card">
         <div class="card-body">
             <div class="text-center mb-4">
                 @{
                     string typeClass = Model.TypeID == 1 || Model.Type.TypeName == "Hoàn tiền" ? "deposit" : "withdrawal";
-                    string statusClass = Model.StatusID == 1 ? "completed" : (Model.StatusID == 2 ? "failed" : "pending");
+                    string statusClass = Model.StatusID == 2 ? "completed" : (Model.StatusID == 3 ? "failed" : "pending");
                 }
-                
                 <div class="d-flex justify-content-center">
                     <span class="transaction-type @typeClass">@Model.Type.TypeName</span>
                     <span class="transaction-status @statusClass">@Model.Status.StatusName</span>
                 </div>
-                
                 <div class="transaction-amount @typeClass">
                     @(Model.TypeID == 1 || Model.Type.TypeName == "Hoàn tiền" ? "+" : "-")@Model.Amount.ToString("C")
                 </div>
-                
                 <div class="text-muted">
-                    @Model.TransactionDate.ToString("dddd, MMMM d, yyyy h:mm tt")
+                    @Model.TransactionDate.ToString("dddd, dd/MM/yyyy HH:mm")
                 </div>
             </div>
-            
             <hr>
-            
             <ul class="detail-list">
                 <li>
-                    <span class="detail-label">Transaction ID</span>
+                    <span class="detail-label">Mã giao dịch</span>
                     <span class="detail-value">@Model.TransactionID</span>
                 </li>
                 <li>
-                    <span class="detail-label">Description</span>
-                    <span class="detail-value">@(string.IsNullOrEmpty(Model.Description) ? "No description provided" : Model.Description)</span>
+                    <span class="detail-label">Nội dung</span>
+                    <span class="detail-value">@(string.IsNullOrEmpty(Model.Description) ? "Không có mô tả" : Model.Description)</span>
                 </li>
-                
+
                 <!-- Thông tin người gửi/người nhận -->
-                @if (Model.TypeID == 1) // Deposit (nạp tiền)
+                @if (Model.TypeID == 1) // Nạp tiền
                 {
                     <li>
-                        <span class="detail-label">From</span>
+                        <span class="detail-label">Từ</span>
                         <span class="detail-value">
-                            @(Model.Description?.Contains("Bank") == true ? "Bank Transfer" : 
-                              Model.Description?.Contains("Card") == true ? "Credit/Debit Card" : 
-                              Model.Description?.Contains("Wallet") == true ? "E-Wallet" : "External Account")
+                            @(Model.Description?.Contains("Bank") == true ? "Chuyển khoản ngân hàng" :
+                                Model.Description?.Contains("Card") == true ? "Thẻ tín dụng/Ghi nợ" :
+                                Model.Description?.Contains("Wallet") == true ? "Ví điện tử" : "Tài khoản ngoài")
                         </span>
                     </li>
                     <li>
-                        <span class="detail-label">To</span>
+                        <span class="detail-label">Đến</span>
                         <span class="detail-value">
                             <span class="user-info">
                                 <i class="bi bi-person-circle me-1"></i>
@@ -71,10 +80,10 @@
                         </span>
                     </li>
                 }
-                else if (Model.TypeID == 2) // Withdrawal (rút tiền)
+                else if (Model.TypeID == 2) // Rút tiền
                 {
                     <li>
-                        <span class="detail-label">From</span>
+                        <span class="detail-label">Từ</span>
                         <span class="detail-value">
                             <span class="user-info">
                                 <i class="bi bi-person-circle me-1"></i>
@@ -83,18 +92,50 @@
                         </span>
                     </li>
                     <li>
-                        <span class="detail-label">To</span>
+                        <span class="detail-label">Đến</span>
                         <span class="detail-value">
-                            @(Model.Description?.Contains("Bank") == true ? "Bank Account" : 
-                              Model.Description?.Contains("Card") == true ? "Credit/Debit Card" : 
-                              Model.Description?.Contains("Wallet") == true ? "E-Wallet" : "External Account")
+                            @(Model.Description?.Contains("Bank") == true ? "Tài khoản ngân hàng" :
+                                Model.Description?.Contains("Card") == true ? "Thẻ tín dụng/Ghi nợ" :
+                                Model.Description?.Contains("Wallet") == true ? "Ví điện tử" : "Tài khoản ngoài")
                         </span>
                     </li>
+
+                    @if (Model.TypeID == 2)
+                    {
+                        if (ViewBag.WithdrawalRequest != null)
+                        {
+                            var withdrawalRequest = ViewBag.WithdrawalRequest;
+                            if (!string.IsNullOrEmpty(withdrawalRequest.BankName))
+                            {
+                                <li>
+                                    <span class="detail-label">Ngân hàng</span>
+                                    <span class="detail-value">@withdrawalRequest.BankName</span>
+                                </li>
+                                <li>
+                                    <span class="detail-label">Số tài khoản</span>
+                                    <span class="detail-value">@withdrawalRequest.AccountNumber</span>
+                                </li>
+                                <li>
+                                    <span class="detail-label">Chủ tài khoản</span>
+                                    <span class="detail-value">@withdrawalRequest.AccountHolderName</span>
+                                </li>
+                            }
+                            if (!string.IsNullOrEmpty(withdrawalRequest.QRCodeUrl))
+                            {
+                                <li class="qr-code-container">
+                                    <span class="detail-label">Mã QR</span>
+                                    <span class="detail-value">
+                                        <img src="@withdrawalRequest.QRCodeUrl" alt="QR Code" class="qr-code-image" />
+                                    </span>
+                                </li>
+                            }
+                        }
+                    }
                 }
-                else if (Model.TypeID == 3 && Model.Project != null) // Payment (thanh toán dự án)
+                else if (Model.TypeID == 3 && Model.Project != null) // Thanh toán dự án
                 {
                     <li>
-                        <span class="detail-label">From</span>
+                        <span class="detail-label">Từ</span>
                         <span class="detail-value">
                             <span class="user-info">
                                 <i class="bi bi-person-circle me-1"></i>
@@ -103,7 +144,7 @@
                         </span>
                     </li>
                     <li>
-                        <span class="detail-label">To</span>
+                        <span class="detail-label">Đến</span>
                         <span class="detail-value">
                             <span class="user-info">
                                 <i class="bi bi-building me-1"></i>
@@ -112,15 +153,15 @@
                         </span>
                     </li>
                 }
-                
+
                 <li>
-                    <span class="detail-label">Status</span>
+                    <span class="detail-label">Trạng thái</span>
                     <span class="detail-value">
-                        @if (Model.StatusID == 1) // Assuming 1 is Completed
+                        @if (Model.StatusID == 2) // Thành công
                         {
                             <span class="badge bg-success">@Model.Status.StatusName</span>
                         }
-                        else if (Model.StatusID == 2) // Assuming 2 is Failed
+                        else if (Model.StatusID == 3) // Thất bại
                         {
                             <span class="badge bg-danger">@Model.Status.StatusName</span>
                         }
@@ -133,7 +174,7 @@
                 @if (Model.Project != null)
                 {
                     <li>
-                        <span class="detail-label">Related Project</span>
+                        <span class="detail-label">Dự án liên quan</span>
                         <span class="detail-value">
                             <a asp-controller="Project" asp-action="Details" asp-route-id="@Model.ProjectID" class="project-link">
                                 @Model.Project.Title
@@ -141,40 +182,38 @@
                         </span>
                     </li>
                 }
-                
-                <!-- Additional security information -->
                 @if (ViewBag.TransactionHistory != null)
                 {
                     <li>
-                        <span class="detail-label">IP Address</span>
+                        <span class="detail-label">IP thực hiện</span>
                         <span class="detail-value">@ViewBag.TransactionHistory.IPAddress</span>
                     </li>
                     <li>
-                        <span class="detail-label">Device</span>
+                        <span class="detail-label">Thiết bị</span>
                         <span class="detail-value">@ViewBag.TransactionHistory.UserAgent</span>
                     </li>
                 }
             </ul>
-            
+
             <div class="mt-4">
                 <div class="alert @(Model.StatusID == 2 ? "alert-success" : (Model.StatusID == 3 ? "alert-danger" : "alert-warning"))">
-                    @if (Model.StatusID == 2) // Thành công
+                    @if (Model.StatusID == 2)
                     {
                         <i class="bi bi-check-circle-fill me-2"></i>
-                        <span>This transaction has been completed successfully.</span>
+                        <span>Giao dịch này đã được thực hiện thành công.</span>
                     }
-                    else if (Model.StatusID == 3) // Thất bại
+                    else if (Model.StatusID == 3)
                     {
                         <i class="bi bi-x-circle-fill me-2"></i>
-                        <span>This transaction has failed. Please contact support if you need assistance.</span>
+                        <span>Giao dịch này thất bại. Vui lòng liên hệ hỗ trợ nếu cần trợ giúp.</span>
                     }
-                    else // Đang xử lý or other status
+                    else
                     {
                         <i class="bi bi-hourglass-split me-2"></i>
-                        <span>This transaction is currently being processed.</span>
+                        <span>Giao dịch này đang được xử lý.</span>
                     }
                 </div>
             </div>
         </div>
     </div>
-</div> 
+</div>

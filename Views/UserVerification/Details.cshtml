@@ -2,7 +2,7 @@
 
 @{
     Layout = "~/Views/Shared/_Dashboard.cshtml";
-    ViewData["Title"] = "User Details";
+    ViewData["Title"] = "Thông tin người dùng";
 }
 
 <link rel="stylesheet" href="~/css/UserVerification.css" />
@@ -14,118 +14,118 @@
             @TempData["SuccessMessage"]
         </div>
     }
-    
+
     @if (TempData["ErrorMessage"] != null)
     {
         <div class="alert alert-danger">
             @TempData["ErrorMessage"]
         </div>
     }
-    
+
     <div class="topbar">
         <h1>
-            <i class="fas fa-user-circle"></i> User Details 
+            <i class="fas fa-user-circle"></i> Thông tin người dùng
             @if (Model.User.IsVerified)
             {
                 <span class="details-verified-badge" style="background-color: #4299e1; color: white; display: inline-flex; align-items: center; padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; margin-left: 10px; gap: 6px; box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);">
                     <i class="fas fa-check-circle" style="color: white !important;"></i>
-                    <span style="color: white !important; font-weight: bold;">Verified</span>
+                    <span style="color: white !important; font-weight: bold;">Đã xác thực</span>
                 </span>
             }
             @if (Model.User.IsFlagged)
             {
                 <span class="flagged-badge">
                     <i class="fas fa-flag"></i>
-                    <span>Flagged</span>
+                    <span>Đã báo cáo</span>
                 </span>
             }
         </h1>
         <a asp-action="Index" class="filter-btn">
-            <i class="fas fa-arrow-left"></i> Back to List
+            <i class="fas fa-arrow-left"></i> Quay lại danh sách
         </a>
     </div>
-    
+
     <div class="row mt-4">
         <div class="col-md-6">
             <div class="table-container">
                 <div class="card-header">
-                    <h5>User Information</h5>
+                    <h5>Thông tin tài khoản</h5>
                 </div>
                 <div class="transaction-details">
                     <div class="transaction-detail">
-                        <div class="detail-label">Username:</div>
+                        <div class="detail-label">Tên đăng nhập:</div>
                         <div class="detail-value">@Model.User.UserName</div>
                     </div>
-                    
+
                     <div class="transaction-detail">
-                        <div class="detail-label">Full Name:</div>
+                        <div class="detail-label">Họ và tên:</div>
                         <div class="detail-value">@Model.User.FullName</div>
                     </div>
-                    
+
                     <div class="transaction-detail">
                         <div class="detail-label">Email:</div>
                         <div class="detail-value">@Model.User.Email</div>
                     </div>
-                    
+
                     <div class="transaction-detail">
-                        <div class="detail-label">Status:</div>
+                        <div class="detail-label">Trạng thái:</div>
                         <div class="detail-value">
                             @if (Model.User.IsActive)
                             {
-                                <span class="status-active">Active</span>
+                                <span class="status-active">Đang hoạt động</span>
                             }
                             else
                             {
-                                <span class="status-inactive">Inactive</span>
+                                <span class="status-inactive">Đã khóa</span>
                             }
                         </div>
                     </div>
-                    
+
                     <div class="transaction-detail">
-                        <div class="detail-label">Created:</div>
+                        <div class="detail-label">Ngày tạo:</div>
                         <div class="detail-value">@Model.User.CreatedAt.ToString("yyyy-MM-dd HH:mm")</div>
                     </div>
-                    
+
                     <div class="transaction-detail">
-                        <div class="detail-label">Role:</div>
+                        <div class="detail-label">Vai trò:</div>
                         <div class="detail-value">
                             @if (Model.User.University != null)
                             {
-                                <span>Student</span>
+                                <span>Sinh viên</span>
                             }
                             else if (Model.User.CompanyName != null)
                             {
-                                <span>Business</span>
+                                <span>Doanh nghiệp</span>
                             }
                         </div>
                     </div>
-                    
+
                     @if (Model.User.IsVerified)
                     {
                         <div class="transaction-detail">
-                            <div class="detail-label">Verified At:</div>
+                            <div class="detail-label">Thời gian xác thực:</div>
                             <div class="detail-value">@Model.User.VerifiedAt?.ToString("yyyy-MM-dd HH:mm")</div>
                         </div>
                     }
-                    
+
                     @if (Model.User.IsFlagged)
                     {
                         <div class="transaction-detail">
-                            <div class="detail-label">Flagged At:</div>
+                            <div class="detail-label">Thời gian bị báo cáo:</div>
                             <div class="detail-value">@Model.User.FlaggedAt?.ToString("yyyy-MM-dd HH:mm")</div>
                         </div>
-                        
+
                         <div class="transaction-detail">
-                            <div class="detail-label">Flag Reason:</div>
+                            <div class="detail-label">Lý do báo cáo:</div>
                             <div class="detail-value">@Model.User.FlagReason</div>
                         </div>
                     }
                 </div>
             </div>
-            
+
             <div class="table-container mt-4">
                 <div class="card-header">
-                    <h5>Actions</h5>
+                    <h5>Thao tác</h5>
                 </div>
                 <div class="action-container">
                     @if (!Model.User.IsVerified)
@@ -133,7 +133,7 @@
                         <form asp-action="Verify" method="post" class="action-form">
                             <input type="hidden" name="id" value="@Model.User.Id" />
                             <button type="submit" class="action-btn restore">
-                                <i class="fas fa-check-circle"></i> Verify User
+                                <i class="fas fa-check-circle"></i> Xác thực người dùng
                             </button>
                         </form>
                     }
@@ -142,15 +142,15 @@
                         <form asp-action="Unverify" method="post" class="action-form">
                             <input type="hidden" name="id" value="@Model.User.Id" />
                             <button type="submit" class="action-btn edit">
-                                <i class="fas fa-times-circle"></i> Unverify User
+                                <i class="fas fa-times-circle"></i> Hủy xác thực
                             </button>
                         </form>
                     }
-                    
+
                     @if (!Model.User.IsFlagged)
                     {
                         <a href="javascript:void(0)" class="action-btn delete" onclick="showFlagModal()">
-                            <i class="fas fa-flag"></i> Flag User
+                            <i class="fas fa-flag"></i> Báo cáo người dùng
                         </a>
                     }
                     else
@@ -158,18 +158,18 @@
                         <form asp-action="Unflag" method="post" class="action-form">
                             <input type="hidden" name="id" value="@Model.User.Id" />
                             <button type="submit" class="action-btn warning">
-                                <i class="fas fa-flag-checkered"></i> Remove Flag
+                                <i class="fas fa-flag-checkered"></i> Gỡ báo cáo
                             </button>
                         </form>
                     }
                 </div>
             </div>
         </div>
-        
+
         <div class="col-md-6">
             <div class="table-container">
                 <div class="card-header">
-                    <h5>Account History</h5>
+                    <h5>Lịch sử tài khoản</h5>
                 </div>
                 <div class="transaction-details">
                     @if (Model.History.Any())
@@ -177,10 +177,10 @@
                         <table class="styled-table history-table">
                             <thead>
                                 <tr>
-                                    <th>Date</th>
-                                    <th>Action</th>
-                                    <th>By</th>
-                                    <th>Description</th>
+                                    <th>Thời gian</th>
+                                    <th>Hành động</th>
+                                    <th>Người thực hiện</th>
+                                    <th>Ghi chú</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -191,19 +191,19 @@
                                         <td>
                                             @if (action.ActionType == "Verify")
                                             {
-                                                <span class="badge bg-success">Verify</span>
+                                                <span class="badge bg-success">Xác thực</span>
                                             }
                                             else if (action.ActionType == "Unverify")
                                             {
-                                                <span class="badge bg-info">Unverify</span>
+                                                <span class="badge bg-info">Hủy xác thực</span>
                                             }
                                             else if (action.ActionType == "Flag")
                                             {
-                                                <span class="badge bg-danger">Flag</span>
+                                                <span class="badge bg-danger">Báo cáo</span>
                                             }
                                             else if (action.ActionType == "Unflag")
                                             {
-                                                <span class="badge bg-warning">Unflag</span>
+                                                <span class="badge bg-warning">Gỡ báo cáo</span>
                                             }
                                             else
                                             {
@@ -219,7 +219,7 @@
                     }
                     else
                     {
-                        <p class="text-muted">No account history available.</p>
+                        <p class="text-muted">Chưa có lịch sử tài khoản.</p>
                     }
                 </div>
             </div>
@@ -231,20 +231,20 @@
 <div id="flagModal" class="custom-modal">
     <div class="custom-modal-content">
         <div class="custom-modal-header">
-            <h5>Flag User</h5>
+            <h5>Báo cáo người dùng</h5>
             <span class="custom-modal-close" onclick="hideFlagModal()">&times;</span>
         </div>
         <form asp-action="Flag" method="post">
             <div class="custom-modal-body">
                 <input type="hidden" name="id" value="@Model.User.Id" />
                 <div class="form-group">
-                    <label for="reason">Reason for flagging:</label>
+                    <label for="reason">Lý do báo cáo:</label>
                     <textarea name="reason" id="reason" class="form-control" rows="3" required></textarea>
                 </div>
             </div>
             <div class="custom-modal-footer">
-                <button type="button" class="btn-cancel" onclick="hideFlagModal()">Cancel</button>
-                <button type="submit" class="btn-flag">Flag User</button>
+                <button type="button" class="btn-cancel" onclick="hideFlagModal()">Hủy</button>
+                <button type="submit" class="btn-flag">Báo cáo người dùng</button>
             </div>
         </form>
     </div>
@@ -258,12 +258,12 @@
     function showFlagModal() {
         document.getElementById('flagModal').style.display = 'block';
     }
-    
+
     // Ẩn modal
     function hideFlagModal() {
         document.getElementById('flagModal').style.display = 'none';
     }
-    
+
     // Đóng modal khi click bên ngoài
     window.onclick = function(event) {
         var modal = document.getElementById('flagModal');
@@ -271,4 +271,4 @@
             hideFlagModal();
         }
     }
-</script> 
+</script>
