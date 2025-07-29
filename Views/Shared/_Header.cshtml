@@ -56,12 +56,12 @@
                     <div class="search-bar">
                         <div class="search-type-dropdown">
                             <select id="searchType" class="search-type-select">
-                                <option value="project">Projects</option>
-                                <option value="student">Students</option>
-                                <option value="business">Business</option>
+                                <option value="project">Dự Án</option>
+                                <option value="student">Sinh Viên</option>
+                                <option value="business">Doanh Nghiệp</option>
                             </select>
                         </div>
-                        <input type="text" id="searchInput" class="search-input" placeholder="Search...">
+                        <input type="text" id="searchInput" class="search-input" placeholder="Tìm kiếm...">
                         <button id="searchButton" class="search-btn">
                             <i class="fas fa-search"></i>
                         </button>
@@ -74,24 +74,13 @@
                 <!-- Navigation menu -->
                 <div class="nav-menu">
                     <div class="nav-item">
-                        <a asp-controller="Home" asp-action="About" class="nav-link">About Us</a>
+                        <a asp-controller="Home" asp-action="About" class="nav-link">Về Chúng Tôi</a>
                     </div>
 
-                    <div class="nav-item dropdown">
-                        <a asp-controller="Business" asp-action="Index" class="nav-link">Business</a>
-                        <div class="dropdown-menub">
-                            <a href="#">Công nghệ thông tin</a>
-                            <a href="#">Marketing</a>
-                            <a href="#">Thiết kế</a>
-                            <a href="#">Viết lách</a>
-                            <a href="#">Dịch thuật</a>
-                            <a href="#">Kinh doanh</a>
-                        </div>
-                    </div>
                     <div class="nav-item dropdown explore-dropdown" id="exploreDropdownBtn">
-                        <span>Explore</span>
+                        <span>Khám Phá</span>
                         <div class="dropdown-menu" id="exploreDropdownMenu">
-                            <a asp-controller="User" asp-action="VipSubscription">STJobs VIP <span class="new-label">New</span></a>                           
+                            <a asp-controller="User" asp-action="VipSubscription">STJobs VIP <span class="new-label">Mới</span></a>                           
                             <a asp-controller="Report" asp-action="Create">Báo Cáo</a>
                             @if (User.IsInRole("Business"))
                             {
@@ -102,17 +91,15 @@
                                 <a asp-controller="CV" asp-action="InputInfo">
                                     AI CV <span class="vip-label">VIP</span>
                                 </a>
-
-
                             }
                         </div>
                     </div>
                     <div class="nav-item dropdown explore-dropdown">
-                        <span>Search</span>
+                        <span>Tìm Kiếm</span>
                         <div class="dropdown-menu">
-                            <a asp-controller="Search" asp-action="SearchJob">Find Project</a>
-                            <a asp-controller="Search" asp-action="SearchStudents">Search Student</a>
-                            <a asp-controller="Search" asp-action="SearchBusinesses">Search Business</a>
+                            <a asp-controller="Search" asp-action="SearchJob">Tìm Dự Án</a>
+                            <a asp-controller="Search" asp-action="SearchStudents">Tìm Sinh Viên</a>
+                            <a asp-controller="Search" asp-action="SearchBusinesses">Tìm Doanh Nghiệp</a>
                         </div>
                     </div>
                     @if (SignInManager.IsSignedIn(User))
@@ -164,20 +151,20 @@
                                 <img src="@avatarPath" alt="Avatar" class="avatar-img" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" onerror="this.onerror=null;this.src='/image/default-avatar.png';" />
                                 <span class="user-name">@fullName</span>
                                 <div class="dropdown-menu">
-                                    <a href="/User/Profile"><i class="fas fa-user"></i>My Profile</a>
+                                    <a href="/User/Profile"><i class="fas fa-user"></i>Hồ Sơ Của Tôi</a>
                                     @if (User.IsInRole("Student"))
                                     {
-                                        <a asp-controller="Application" asp-action="MyApplications"><i class="fas fa-briefcase"></i>My Application</a>
+                                        <a asp-controller="Application" asp-action="MyApplications"><i class="fas fa-briefcase"></i>Đơn Ứng Tuyển</a>
                                     }
-                                    <a asp-controller="Wallet" asp-action="Index"><i class="fas fa-wallet"></i>My Wallet</a>
-                                    <a asp-controller="Chat" asp-action="Chat"><i class="fas fa-comments"></i>Chatting</a>
+                                    <a asp-controller="Wallet" asp-action="Index"><i class="fas fa-wallet"></i>Ví Của Tôi</a>
+                                    <a asp-controller="Chat" asp-action="Chat"><i class="fas fa-comments"></i>Trò Chuyện</a>
                                     @if (User.IsInRole("Admin"))
                                     {
-                                        <a asp-controller="AdminUser" asp-action="Index"><i class="fas fa-chart-line"></i>Dashboard</a>
+                                        <a asp-controller="AdminUser" asp-action="Index"><i class="fas fa-chart-line"></i>Bảng Điều Khiển</a>
                                     }
                                     @if (User.IsInRole("Business"))
                                     {
-                                        <a asp-controller="Project" asp-action="MyProjects"><i class="fas fa-folder-open"></i>My Project</a>
+                                        <a asp-controller="Project" asp-action="MyProjects"><i class="fas fa-folder-open"></i>Dự Án Của Tôi</a>
                                     }
                                 </div>
                             </div>
