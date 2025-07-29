@@ -56,12 +56,12 @@
                     <div class="search-bar">
                         <div class="search-type-dropdown">
                             <select id="searchType" class="search-type-select">
-                                <option value="project">Dự Án</option>
-                                <option value="student">Sinh Viên</option>
-                                <option value="business">Doanh Nghiệp</option>
+                                <option value="project">Projects</option>
+                                <option value="student">Students</option>
+                                <option value="business">Business</option>
                             </select>
                         </div>
-                        <input type="text" id="searchInput" class="search-input" placeholder="Tìm kiếm...">
+                        <input type="text" id="searchInput" class="search-input" placeholder="Search...">
                         <button id="searchButton" class="search-btn">
                             <i class="fas fa-search"></i>
                         </button>
@@ -74,11 +74,11 @@
                 <!-- Navigation menu -->
                 <div class="nav-menu">
                     <div class="nav-item">
-                        <a asp-controller="Home" asp-action="About" class="nav-link">Về Chúng Tôi</a>
+                        <a asp-controller="Home" asp-action="About" class="nav-link">Giới thiệu</a>
                     </div>
 
                     <div class="nav-item dropdown explore-dropdown" id="exploreDropdownBtn">
-                        <span>Khám Phá</span>
+                        <span>Explore</span>
                         <div class="dropdown-menu" id="exploreDropdownMenu">
                             <a asp-controller="User" asp-action="VipSubscription">STJobs VIP <span class="new-label">Mới</span></a>                           
                             <a asp-controller="Report" asp-action="Create">Báo Cáo</a>
@@ -91,15 +91,17 @@
                                 <a asp-controller="CV" asp-action="InputInfo">
                                     AI CV <span class="vip-label">VIP</span>
                                 </a>
+
+
                             }
                         </div>
                     </div>
                     <div class="nav-item dropdown explore-dropdown">
-                        <span>Tìm Kiếm</span>
+                        <span>Search</span>
                         <div class="dropdown-menu">
-                            <a asp-controller="Search" asp-action="SearchJob">Tìm Dự Án</a>
-                            <a asp-controller="Search" asp-action="SearchStudents">Tìm Sinh Viên</a>
-                            <a asp-controller="Search" asp-action="SearchBusinesses">Tìm Doanh Nghiệp</a>
+                            <a asp-controller="Search" asp-action="SearchJob">Tìm dự án</a>
+                            <a asp-controller="Search" asp-action="SearchStudents">Tìm kiếm sinh viên</a>
+                            <a asp-controller="Search" asp-action="SearchBusinesses">Tìm kiếm doanh nghiệp</a>
                         </div>
                     </div>
                     @if (SignInManager.IsSignedIn(User))
@@ -151,16 +153,16 @@
                                 <img src="@avatarPath" alt="Avatar" class="avatar-img" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" onerror="this.onerror=null;this.src='/image/default-avatar.png';" />
                                 <span class="user-name">@fullName</span>
                                 <div class="dropdown-menu">
-                                    <a href="/User/Profile"><i class="fas fa-user"></i>Hồ Sơ Của Tôi</a>
+                                    <a href="/User/Profile"><i class="fas fa-user"></i>Hồ sơ của tôi</a>
                                     @if (User.IsInRole("Student"))
                                     {
-                                        <a asp-controller="Application" asp-action="MyApplications"><i class="fas fa-briefcase"></i>Đơn Ứng Tuyển</a>
+                                        <a asp-controller="Application" asp-action="MyApplications"><i class="fas fa-briefcase"></i>Đơn xin việc của tôi</a>
                                     }
-                                    <a asp-controller="Wallet" asp-action="Index"><i class="fas fa-wallet"></i>Ví Của Tôi</a>
-                                    <a asp-controller="Chat" asp-action="Chat"><i class="fas fa-comments"></i>Trò Chuyện</a>
+                                    <a asp-controller="Wallet" asp-action="Index"><i class="fas fa-wallet"></i>Ví của tôi</a>
+                                    <a asp-controller="Chat" asp-action="Chat"><i class="fas fa-comments"></i>Nhắn tin</a>
                                     @if (User.IsInRole("Admin"))
                                     {
-                                        <a asp-controller="AdminUser" asp-action="Index"><i class="fas fa-chart-line"></i>Bảng Điều Khiển</a>
+                                        <a asp-controller="AdminUser" asp-action="Index"><i class="fas fa-chart-line"></i>Dashboard</a>
                                     }
                                     @if (User.IsInRole("Moderator"))
                                     {
@@ -169,20 +171,20 @@
 
                                     @if (User.IsInRole("Business"))
                                     {
-                                        <a asp-controller="Project" asp-action="MyProjects"><i class="fas fa-folder-open"></i>Dự Án Của Tôi</a>
+                                        <a asp-controller="Project" asp-action="MyProjects"><i class="fas fa-folder-open"></i>Dự án của tôi</a>
                                     }
                                 </div>
                             </div>
                             <form asp-controller="Account" asp-action="Logout" method="post" class="form-inline d-inline">
-                                <button type="submit" class="nav-link btn btn-link text-dark" style="border: none;">Logout</button>
+                                <button type="submit" class="nav-link btn btn-link text-dark" style="border: none;">Đăng xuất</button>
                             </form>
                         </div>
                     }
                     else
                     {
                         <div class="nav-user-actions">
-                            <a asp-controller="Account" asp-action="Login" class="nav-link">Sign in</a>
-                            <a asp-controller="Account" asp-action="Register" class="btn btn-primary">Join</a>
+                            <a asp-controller="Account" asp-action="Login" class="nav-link">Đăng nhập</a>
+                            <a asp-controller="Account" asp-action="Register" class="btn btn-primary">Tham gia</a>
                         </div>
                     }
                 </div> <!-- end nav-menu -->

@@ -1,6 +1,6 @@
 ﻿@model IEnumerable<StudentFreelance.Models.ApplicationUser>
 @{
-    ViewData["Title"] = "User Management";
+    ViewData["Title"] = "Quản lí người dùng";
     Layout = "~/Views/Shared/_Dashboard.cshtml";
 
     int currentPage = ViewBag.CurrentPage ?? 1;
@@ -13,16 +13,16 @@
 <link rel="stylesheet" href="~/css/UserManagest.css" />
 
 <form asp-action="Index" method="get" class="topbar">
-    <h1><i class="fas fa-users-cog"></i> User Management</h1>
+    <h1><i class="fas fa-users-cog"></i> Quản lí người dùng</h1>
 
     <div class="filter-row">
         <div class="filter-group">
-            <input type="text" name="searchTerm" placeholder="🔍 Search freelancer..." value="@query["searchTerm"]" />
+            <input type="text" name="searchTerm" placeholder="🔍 Tìm kiếm học sinh, doanh nghiệp ..." value="@query["searchTerm"]" />
         </div>
 
         <div class="filter-group">
             <select name="selectedRole">
-                <option value="">👥 All Roles</option>
+                <option value="">👥 Tất cả các vai trò</option>
                 @foreach (var role in (ViewBag.AllRoles as List<string> ?? new List<string>()))
                 {
                     <option value="@role" @@(role == query["selectedRole"] ? "selected" : "")>@role</option>
@@ -32,9 +32,9 @@
 
         <div class="filter-group">
             <select name="status">
-                <option value="">📊 All Status</option>
-                <option value="Active" @@(query["status"] == "Active" ? "selected" : "")>Active</option>
-                <option value="Inactive"@@(query["status"] == "Inactive" ? "selected" : "")>Inactive</option>
+                <option value="">📊 Tất cả các trạng thái</option>
+                <option value="Active" @@(query["status"] == "Active" ? "selected" : "")>Hoạt động</option>
+                <option value="Inactive"@@(query["status"] == "Inactive" ? "selected" : "")>Không hoạt động</option>
             </select>
         </div>
 
@@ -70,17 +70,17 @@
                         <td>@user.PhoneNumber</td>
                         <td class="@statusClass">@(user.IsActive ? "Active" : "Inactive")</td>
                         <td>
-                            <a href="@Url.Action("Edit", "AdminUser", new { id = user.Id })" class="action-btn edit"><i class="fas fa-edit"></i> Edit</a>
+                            <a href="@Url.Action("Edit", "AdminUser", new { id = user.Id })" class="action-btn edit"><i class="fas fa-edit"></i> Chỉnh sửa</a>
                             @if (user.IsActive)
                             {
                                 <form asp-action="Deactivate" asp-route-id="@user.Id" method="post" style="display:inline;">
-                                    <button type="submit" class="action-btn delete"><i class="fas fa-trash"></i> Delete</button>
+                                    <button type="submit" class="action-btn delete"><i class="fas fa-trash"></i> Xóa</button>
                                 </form>
                             }
                             else
                             {
                                 <form asp-action="Restore" asp-route-id="@user.Id" method="post" style="display:inline;">
-                                    <button type="submit" class="action-btn restore"><i class="fas fa-undo"></i> Restore</button>
+                                    <button type="submit" class="action-btn restore"><i class="fas fa-undo"></i> Khôi phục</button>
                                 </form>
                             }
                         </td>
@@ -90,7 +90,7 @@
             }
             else
             {
-                <tr><td colspan="6" class="no-data">No users found.</td></tr>
+                <tr><td colspan="6" class="no-data">Không tìm thấy người dùng.</td></tr>
             }
         </tbody>
     </table>

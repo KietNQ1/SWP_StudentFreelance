@@ -1,36 +1,36 @@
-@model StudentFreelance.ViewModels.AdvertisementListViewModel
+﻿@model StudentFreelance.ViewModels.AdvertisementListViewModel
 
 @{
-    ViewData["Title"] = "Advertisement Management";
+    ViewData["Title"] = "Quản Lý Quảng Cáo";
     Layout = "_Dashboard";
 }
 
 <link rel="stylesheet" href="~/css/AdvertisementManage.css" />
 
 <div class="topbar">
-    <h1><i class="fas fa-ad"></i> Advertisement Management</h1>
+    <h1><i class="fas fa-ad"></i> Quản Lý Quảng Cáo</h1>
 
     <div class="ad-tabs">
         <div class="ad-tab active" onclick="switchTab('pending')">
-            Pending
+            Đang chờ duyệt
             <span class="ad-badge ad-badge-warning">
                 @Model.Advertisements.Count(a => !a.IsApproved && a.IsActive)
             </span>
         </div>
         <div class="ad-tab" onclick="switchTab('active')">
-            Active
+            Đang hoạt động
             <span class="ad-badge ad-badge-success">
                 @Model.Advertisements.Count(a => a.IsApproved && a.IsActive && a.EndDate >= DateTime.Now)
             </span>
         </div>
         <div class="ad-tab" onclick="switchTab('inactive')">
-            Inactive
+            Không hoạt động
             <span class="ad-badge ad-badge-danger">
                 @Model.Advertisements.Count(a => !a.IsActive)
             </span>
         </div>
         <div class="ad-tab" onclick="switchTab('expired')">
-            Expired
+            Hết hạn
             <span class="ad-badge ad-badge-secondary">
                 @Model.Advertisements.Count(a => a.IsApproved && a.IsActive && a.EndDate < DateTime.Now)
             </span>
@@ -39,12 +39,12 @@
 </div>
 
 <div class="tab-content" id="advertisementTabsContent">
-    <!-- Pending Advertisements Tab -->
+    <!-- Tab Quảng Cáo Chờ Duyệt -->
     <div class="table-container" id="pending-tab">
         @if (!Model.Advertisements.Any(a => !a.IsApproved && a.IsActive))
         {
             <div class="no-data">
-                No pending advertisements found.
+                Không có quảng cáo đang chờ duyệt.
             </div>
         }
         else
@@ -53,11 +53,11 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Image</th>
-                        <th>Business</th>
-                        <th>Package Type</th>
-                        <th>Created Date</th>
-                        <th>Actions</th>
+                        <th>Hình ảnh</th>
+                        <th>Doanh nghiệp</th>
+                        <th>Gói</th>
+                        <th>Ngày tạo</th>
+                        <th>Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -68,27 +68,27 @@
                             <td>
                                 <img src="~/uploads/advertisements/@ad.ImagePath" alt="Advertisement" class="ad-image" style="width: 100px; height: 60px;" />
                             </td>
-                            <td>@(string.IsNullOrEmpty(ad.BusinessName) ? "N/A" : ad.BusinessName)</td>
+                            <td>@(string.IsNullOrEmpty(ad.BusinessName) ? "Không xác định" : ad.BusinessName)</td>
                             <td>
                                 @if (ad.PackageTypeID == 2)
                                 {
-                                    <span class="package-type package-premium">Premium Package</span>
+                                    <span class="package-type package-premium">Gói Nổi Bật</span>
                                 }
                                 else
                                 {
-                                    <span class="package-type package-basic">Basic Package</span>
+                                    <span class="package-type package-basic">Gói Cơ Bản</span>
                                 }
                             </td>
                             <td>@ad.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
                             <td>
                                 <form asp-action="Approve" asp-route-id="@ad.Id" method="post" style="display:inline;">
                                     <button type="submit" class="action-btn approve">
-                                        <i class="fas fa-check"></i> Approve
+                                        <i class="fas fa-check"></i> Duyệt
                                     </button>
                                 </form>
                                 <form asp-action="Reject" asp-route-id="@ad.Id" method="post" style="display:inline;">
                                     <button type="submit" class="action-btn reject">
-                                        <i class="fas fa-times"></i> Reject
+                                        <i class="fas fa-times"></i> Từ chối
                                     </button>
                                 </form>
                             </td>
@@ -99,12 +99,12 @@
         }
     </div>
 
-    <!-- Active Advertisements Tab -->
+    <!-- Tab Quảng Cáo Đang Hoạt Động -->
     <div class="table-container" id="active-tab" style="display: none;">
         @if (!Model.Advertisements.Any(a => a.IsApproved && a.IsActive && a.EndDate >= DateTime.Now))
         {
             <div class="no-data">
-                No active advertisements found.
+                Không có quảng cáo đang hoạt động.
             </div>
         }
         else
@@ -113,13 +113,13 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Image</th>
-                        <th>Business</th>
-                        <th>Package Type</th>
-                        <th>Start Date</th>
-                        <th>End Date</th>
-                        <th>Approved By</th>
-                        <th>Actions</th>
+                        <th>Hình ảnh</th>
+                        <th>Doanh nghiệp</th>
+                        <th>Gói</th>
+                        <th>Ngày bắt đầu</th>
+                        <th>Ngày kết thúc</th>
+                        <th>Người duyệt</th>
+                        <th>Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -130,15 +130,15 @@
                             <td>
                                 <img src="~/uploads/advertisements/@ad.ImagePath" alt="Advertisement" class="ad-image" style="width: 100px; height: 60px;" />
                             </td>
-                            <td>@(string.IsNullOrEmpty(ad.BusinessName) ? "N/A" : ad.BusinessName)</td>
+                            <td>@(string.IsNullOrEmpty(ad.BusinessName) ? "Không xác định" : ad.BusinessName)</td>
                             <td>
                                 @if (ad.PackageTypeID == 2)
                                 {
-                                    <span class="package-type package-premium">Premium Package</span>
+                                    <span class="package-type package-premium">Gói Nổi Bật</span>
                                 }
                                 else
                                 {
-                                    <span class="package-type package-basic">Basic Package</span>
+                                    <span class="package-type package-basic">Gói Cơ Bản</span>
                                 }
                             </td>
                             <td>@ad.StartDate.ToString("dd/MM/yyyy")</td>
@@ -147,7 +147,7 @@
                             <td>
                                 <form asp-action="Reject" asp-route-id="@ad.Id" method="post" style="display:inline;">
                                     <button type="submit" class="action-btn delete">
-                                        <i class="fas fa-ban"></i> Deactivate
+                                        <i class="fas fa-ban"></i> Vô hiệu hóa
                                     </button>
                                 </form>
                             </td>
@@ -158,12 +158,12 @@
         }
     </div>
 
-    <!-- Inactive Advertisements Tab -->
+    <!-- Tab Quảng Cáo Không Hoạt Động -->
     <div class="table-container" id="inactive-tab" style="display: none;">
         @if (!Model.Advertisements.Any(a => !a.IsActive))
         {
             <div class="no-data">
-                No inactive advertisements found.
+                Không có quảng cáo không hoạt động.
             </div>
         }
         else
@@ -172,13 +172,13 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Image</th>
-                        <th>Business</th>
-                        <th>Package Type</th>
-                        <th>Start Date</th>
-                        <th>End Date</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                        <th>Hình ảnh</th>
+                        <th>Doanh nghiệp</th>
+                        <th>Gói</th>
+                        <th>Ngày bắt đầu</th>
+                        <th>Ngày kết thúc</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -189,26 +189,26 @@
                             <td>
                                 <img src="~/uploads/advertisements/@ad.ImagePath" alt="Advertisement" class="ad-image" style="width: 100px; height: 60px;" />
                             </td>
-                            <td>@(string.IsNullOrEmpty(ad.BusinessName) ? "N/A" : ad.BusinessName)</td>
+                            <td>@(string.IsNullOrEmpty(ad.BusinessName) ? "Không xác định" : ad.BusinessName)</td>
                             <td>
                                 @if (ad.PackageTypeID == 2)
                                 {
-                                    <span class="package-type package-premium">Premium Package</span>
+                                    <span class="package-type package-premium">Gói Nổi Bật</span>
                                 }
                                 else
                                 {
-                                    <span class="package-type package-basic">Basic Package</span>
+                                    <span class="package-type package-basic">Gói Cơ Bản</span>
                                 }
                             </td>
                             <td>@ad.StartDate.ToString("dd/MM/yyyy")</td>
                             <td>@ad.EndDate.ToString("dd/MM/yyyy")</td>
                             <td>
-                                <span class="status-rejected">Inactive</span>
+                                <span class="status-rejected">Không hoạt động</span>
                             </td>
                             <td>
                                 <form asp-action="Activate" asp-route-id="@ad.Id" method="post" style="display:inline;">
                                     <button type="submit" class="action-btn approve">
-                                        <i class="fas fa-play"></i> Reactivate
+                                        <i class="fas fa-play"></i> Kích hoạt lại
                                     </button>
                                 </form>
                             </td>
@@ -219,12 +219,12 @@
         }
     </div>
 
-    <!-- Expired Advertisements Tab -->
+    <!-- Tab Quảng Cáo Hết Hạn -->
     <div class="table-container" id="expired-tab" style="display: none;">
         @if (!Model.Advertisements.Any(a => a.IsApproved && a.IsActive && a.EndDate < DateTime.Now))
         {
             <div class="no-data">
-                No expired advertisements found.
+                Không có quảng cáo đã hết hạn.
             </div>
         }
         else
@@ -233,13 +233,13 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Image</th>
-                        <th>Business</th>
-                        <th>Package Type</th>
-                        <th>Start Date</th>
-                        <th>End Date</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                        <th>Hình ảnh</th>
+                        <th>Doanh nghiệp</th>
+                        <th>Gói</th>
+                        <th>Ngày bắt đầu</th>
+                        <th>Ngày kết thúc</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -250,26 +250,26 @@
                             <td>
                                 <img src="~/uploads/advertisements/@ad.ImagePath" alt="Advertisement" class="ad-image" style="width: 100px; height: 60px;" />
                             </td>
-                            <td>@(string.IsNullOrEmpty(ad.BusinessName) ? "N/A" : ad.BusinessName)</td>
+                            <td>@(string.IsNullOrEmpty(ad.BusinessName) ? "Không xác định" : ad.BusinessName)</td>
                             <td>
                                 @if (ad.PackageTypeID == 2)
                                 {
-                                    <span class="package-type package-premium">Premium Package</span>
+                                    <span class="package-type package-premium">Gói Nổi Bật</span>
                                 }
                                 else
                                 {
-                                    <span class="package-type package-basic">Basic Package</span>
+                                    <span class="package-type package-basic">Gói Cơ Bản</span>
                                 }
                             </td>
                             <td>@ad.StartDate.ToString("dd/MM/yyyy")</td>
                             <td>@ad.EndDate.ToString("dd/MM/yyyy")</td>
                             <td>
-                                <span class="status-expired">Expired</span>
+                                <span class="status-expired">Đã hết hạn</span>
                             </td>
                             <td>
                                 <form asp-action="Renew" asp-route-id="@ad.Id" method="post" style="display:inline;">
                                     <button type="submit" class="action-btn renew">
-                                        <i class="fas fa-sync"></i> Renew
+                                        <i class="fas fa-sync"></i> Gia hạn
                                     </button>
                                 </form>
                             </td>
@@ -284,20 +284,16 @@
 @section Scripts {
     <script>
         function switchTab(tabId) {
-            // Hide all tabs
             document.querySelectorAll('.table-container').forEach(tab => {
                 tab.style.display = 'none';
             });
-            
-            // Remove active class from all tab buttons
+
             document.querySelectorAll('.ad-tab').forEach(tabBtn => {
                 tabBtn.classList.remove('active');
             });
-            
-            // Show the selected tab
+
             document.getElementById(tabId + '-tab').style.display = 'block';
-            
-            // Add active class to the clicked tab button
+
             document.querySelectorAll('.ad-tab').forEach(tabBtn => {
                 if (tabBtn.textContent.trim().toLowerCase().startsWith(tabId.toLowerCase())) {
                     tabBtn.classList.add('active');
@@ -305,4 +301,4 @@
             });
         }
     </script>
-} 
+}

@@ -177,8 +177,8 @@ namespace StudentFreelance.Data
             {
                 // Keep old example accounts as backup
                 ("admin@example.com", "Admin@123", "Admin", "Admin"),
-                ("moderator@example.com", "Moderator@123", "Moderator", "Moderator"),
-                ("business@example.com", "Business@123", "Business", "Công ty TNHH ABC"),
+                ("moderator@example.com","Moderator@123","Moderator", "Moderator"),
+                ("business@example.com","Business@123", "Business", "Công ty TNHH ABC"),
                 ("student@example.com", "Student@123", "Student", "Nguyễn Văn A"),
                 ("techsolutions@example.com", "Tech@123", "Business", "Tech Solutions"),
                 ("marketingpro@example.com", "Marketing@123", "Business", "Marketing Pro"),

@@ -1,17 +1,17 @@
 @model List<StudentFreelance.ViewModels.AdvertisementViewModel>
 
 @{
-    ViewData["Title"] = "My Advertisements";
+    ViewData["Title"] = "Quảng Cáo Của Tôi";
 }
 
 <link rel="stylesheet" href="~/css/AdvertisementManage.css" />
 
 <div class="topbar">
-    <h1><i class="fas fa-ad"></i> My Advertisements</h1>
+    <h1><i class="fas fa-ad"></i> Quảng Cáo Của Tôi</h1>
     <div class="filter-row">
         <div class="filter-group">
             <a asp-action="Create" class="btn-primary" style="display: inline-block; text-decoration: none;">
-                <i class="fas fa-plus me-2"></i>Create New Advertisement
+                <i class="fas fa-plus me-2"></i> Tạo Quảng Cáo Mới
             </a>
         </div>
     </div>
@@ -24,7 +24,7 @@
             @TempData["Success"]
         </div>
     }
-    
+
     @if (TempData["Error"] != null)
     {
         <div class="alert alert-danger">
@@ -35,7 +35,7 @@
     @if (Model.Count == 0)
     {
         <div class="no-data">
-            <p>You don't have any advertisements yet. Start creating advertisements to display on our homepage!</p>
+            <p>Bạn chưa có quảng cáo nào. Hãy bắt đầu tạo quảng cáo để hiển thị trên trang chủ!</p>
         </div>
     }
     else
@@ -43,12 +43,12 @@
         <table class="styled-table">
             <thead>
                 <tr>
-                    <th>Image</th>
-                    <th>Package Type</th>
-                    <th>Status</th>
-                    <th>Start Date</th>
-                    <th>End Date</th>
-                    <th>Actions</th>
+                    <th>Hình ảnh</th>
+                    <th>Gói</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày bắt đầu</th>
+                    <th>Ngày kết thúc</th>
+                    <th>Thao tác</th>
                 </tr>
             </thead>
             <tbody>
@@ -61,65 +61,61 @@
                         <td>
                             @if (ad.PackageTypeID == 2)
                             {
-                                <span class="package-type package-premium">Premium Package</span>
+                                <span class="package-type package-premium">Gói Nổi Bật</span>
                             }
                             else
                             {
-                                <span class="package-type package-basic">Basic Package</span>
+                                <span class="package-type package-basic">Gói Cơ Bản</span>
                             }
                         </td>
                         <td>
-                            @if (ad.StatusID == 2) @* 2 = Approved *@
+                            @if (ad.StatusID == 2)
                             {
                                 if (ad.EndDate < DateTime.Now)
                                 {
-                                    <span class="status-expired">Expired</span>
+                                    <span class="status-expired">Đã hết hạn</span>
                                 }
                                 else if (!ad.IsActive)
                                 {
-                                    <span class="status-rejected">Canceled</span>
+                                    <span class="status-rejected">Đã hủy</span>
                                 }
                                 else
                                 {
-                                    <span class="status-approved">Active</span>
+                                    <span class="status-approved">Đang hiển thị</span>
                                 }
                             }
-                            else if (ad.StatusID == 1) @* 1 = Pending *@
+                            else if (ad.StatusID == 1)
                             {
-                                <span class="status-pending">Pending</span>
+                                <span class="status-pending">Đang chờ duyệt</span>
                             }
-                            else if (ad.StatusID == 3) @* 3 = Rejected *@
+                            else if (ad.StatusID == 3)
                             {
-                                <span class="status-rejected">Rejected</span>
+                                <span class="status-rejected">Bị từ chối</span>
                             }
-                            else if (ad.StatusID == 4) @* 4 = Expired *@
+                            else if (ad.StatusID == 4)
                             {
-                                <span class="status-expired">Expired</span>
+                                <span class="status-expired">Đã hết hạn</span>
                             }
                         </td>
+                        <td>@(ad.StartDate.ToString("dd/MM/yyyy"))</td>
+                        <td>@(ad.EndDate.ToString("dd/MM/yyyy"))</td>
                         <td>
-                            @(ad.StartDate.ToString("dd/MM/yyyy"))
-                        </td>
-                        <td>
-                            @(ad.EndDate.ToString("dd/MM/yyyy"))
-                        </td>
-                        <td>
-                            @if (ad.StatusID == 1) @* Only show edit button for pending advertisements *@
+                            @if (ad.StatusID == 1)
                             {
                                 <a asp-action="Edit" asp-route-id="@ad.Id" class="action-btn edit">
-                                    <i class="fas fa-edit"></i> Edit
+                                    <i class="fas fa-edit"></i> Chỉnh sửa
                                 </a>
                             }
-                            @if ((ad.EndDate < DateTime.Now || (ad.StatusID == 2 && ad.IsActive)) && ad.StatusID != 1) @* Show renew button for expired or active approved ads, but not for pending ads *@
+                            @if ((ad.EndDate < DateTime.Now || (ad.StatusID == 2 && ad.IsActive)) && ad.StatusID != 1)
                             {
                                 <a href="#" class="action-btn renew" onclick="confirmRenew(@ad.Id); return false;">
-                                    <i class="fas fa-sync"></i> Renew
+                                    <i class="fas fa-sync"></i> Gia hạn
                                 </a>
                             }
-                            @if ((ad.IsActive || ad.StatusID != 2) && ad.StatusID != 3) @* Show delete button except for canceled ads and rejected ads *@
+                            @if ((ad.IsActive || ad.StatusID != 2) && ad.StatusID != 3)
                             {
                                 <a asp-action="Delete" asp-route-id="@ad.Id" class="action-btn delete">
-                                    <i class="fas fa-trash"></i> Delete
+                                    <i class="fas fa-trash"></i> Xóa
                                 </a>
                             }
                         </td>
@@ -134,23 +130,23 @@
     <div class="col-md-6">
         <div class="ad-card">
             <div class="ad-card-header">
-                <h5>Advertisement Package Information</h5>
+                <h5>Thông Tin Gói Quảng Cáo</h5>
             </div>
             <div class="ad-card-body">
                 <div class="mb-3">
-                    <h6>Basic Package</h6>
+                    <h6>Gói Cơ Bản</h6>
                     <ul>
-                        <li>Display 1 image in slideshow at any position</li>
-                        <li>Display duration: 7 days</li>
-                        <li>Price: 100,000đ</li>
+                        <li>Hiển thị 1 ảnh trong trình chiếu ở vị trí bất kỳ</li>
+                        <li>Thời gian hiển thị: 7 ngày</li>
+                        <li>Giá: 100.000đ</li>
                     </ul>
                 </div>
                 <div>
-                    <h6>Premium Package</h6>
+                    <h6>Gói Nổi Bật</h6>
                     <ul>
-                        <li>Display image in premium positions (first position is the first image when page loads)</li>
-                        <li>Display duration: 7 days</li>
-                        <li>Price: 200,000đ</li>
+                        <li>Hiển thị ảnh ở vị trí nổi bật (hình đầu tiên khi trang tải)</li>
+                        <li>Thời gian hiển thị: 7 ngày</li>
+                        <li>Giá: 200.000đ</li>
                     </ul>
                 </div>
             </div>
@@ -159,15 +155,15 @@
     <div class="col-md-6">
         <div class="ad-card">
             <div class="ad-card-header">
-                <h5>Important Notes</h5>
+                <h5>Lưu Ý Quan Trọng</h5>
             </div>
             <div class="ad-card-body">
                 <ul>
-                    <li>Advertisements need to be approved before being displayed on the homepage</li>
-                    <li>Each business can only have one advertisement displayed at a time</li>
-                    <li>Advertisements will be automatically hidden after expiration</li>
-                    <li>The most recently updated advertisement will be displayed</li>
-                    <li>You can renew expired advertisements for another 7 days at the same price</li>
+                    <li>Quảng cáo cần được phê duyệt trước khi hiển thị trên trang chủ</li>
+                    <li>Mỗi doanh nghiệp chỉ được hiển thị 1 quảng cáo tại một thời điểm</li>
+                    <li>Quảng cáo sẽ tự động ẩn sau khi hết hạn</li>
+                    <li>Quảng cáo được cập nhật gần nhất sẽ được ưu tiên hiển thị</li>
+                    <li>Bạn có thể gia hạn quảng cáo đã hết hạn thêm 7 ngày với cùng mức giá</li>
                 </ul>
             </div>
         </div>
@@ -177,9 +173,9 @@
 @section Scripts {
     <script>
         function confirmRenew(id) {
-            if (confirm("Are you sure you want to renew this advertisement?")) {
+            if (confirm("Bạn có chắc chắn muốn gia hạn quảng cáo này không?")) {
                 window.location.href = '@Url.Action("Renew")/' + id;
             }
         }
     </script>
-} 
+}

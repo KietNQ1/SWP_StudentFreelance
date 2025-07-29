@@ -1,28 +1,28 @@
 ﻿@model BankAccountViewModel
 @{
-    ViewData["Title"] = "Manage Bank Account";
+    ViewData["Title"] = "Quản lý tài khoản ngân hàng";
 }
 
 <h2>@ViewData["Title"]</h2>
 
 <form asp-action="ManageBankAccount" method="post">
     <div class="form-group">
-        <label asp-for="BankName"></label>
-        <input asp-for="BankName" class="form-control" />
+        <label asp-for="BankName">Tên ngân hàng</label>
+        <input asp-for="BankName" class="form-control" placeholder="Nhập tên ngân hàng" />
         <span asp-validation-for="BankName" class="text-danger"></span>
     </div>
 
     <div class="form-group">
-        <label asp-for="AccountNumber"></label>
-        <input asp-for="AccountNumber" class="form-control" />
+        <label asp-for="AccountNumber">Số tài khoản</label>
+        <input asp-for="AccountNumber" class="form-control" placeholder="Nhập số tài khoản" />
         <span asp-validation-for="AccountNumber" class="text-danger"></span>
     </div>
 
     <div class="form-group">
-        <label asp-for="AccountHolderName"></label>
-        <input asp-for="AccountHolderName" class="form-control" />
+        <label asp-for="AccountHolderName">Chủ tài khoản</label>
+        <input asp-for="AccountHolderName" class="form-control" placeholder="Nhập tên chủ tài khoản" />
         <span asp-validation-for="AccountHolderName" class="text-danger"></span>
     </div>
 
-    <button type="submit" class="btn btn-primary">Save</button>
+    <button type="submit" class="btn btn-primary">Lưu</button>
 </form>
