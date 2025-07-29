@@ -23,235 +23,64 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/search/searchStudents.css" asp-append-version="true" />
-    <style>
-        /* Override any conflicting styles with !important */
-        .filter-header {
-            background-color: #89AC46 !important;
-            color: white !important;
-        }
-        
-        /* Sử dụng Select2 cho cả "Chọn kỹ năng" */
-        .select2-container {
-            width: 100% !important;
-            z-index: 9999 !important;
-        }
-        
-        .select2-dropdown {
-            z-index: 9999 !important;
-            border-color: #dbe8c6 !important;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important;
-        }
-        
-        .select2-selection {
-            height: 42px !important;
-            min-height: 42px !important;
-            border-color: #dbe8c6 !important;
-            display: flex !important;
-            align-items: center !important;
-        }
-        
-        .select2-selection__rendered {
-            line-height: 42px !important;
-            padding-left: 12px !important;
-        }
-        
-        .select2-selection__arrow {
-            height: 42px !important;
-        }
-        
-        .select2-search__field {
-            border-color: #dbe8c6 !important;
-        }
-        
-        .select2-results__option--highlighted {
-            background-color: #89AC46 !important;
-        }
-        
-        .select2-container--open {
-            z-index: 9999 !important;
-        }
-        
-        /* Đảm bảo parent elements không che khuất dropdown */
-        .container, .card, .card-body, .row, .col-md-4, .search-card {
-            overflow: visible !important;
-        }
-        
-        /* Tùy chỉnh cho multi-select */
-        .select2-selection--multiple {
-            min-height: 42px !important;
-            max-height: 42px !important;
-            border-color: #dbe8c6 !important;
-            overflow: hidden !important;
-        }
-        
-        .select2-selection__choice {
-            background-color: #D3E671 !important;
-            border-color: #89AC46 !important;
-            color: #556b29 !important;
-            padding: 2px 8px !important;
-            margin: 5px 5px 0 0 !important;
-            max-width: calc(100% - 10px) !important;
-            overflow: hidden !important;
-            text-overflow: ellipsis !important;
-            white-space: nowrap !important;
-            float: left !important;
-        }
-        
-        .select2-selection__choice__remove {
-            color: #556b29 !important;
-            margin-right: 5px !important;
-        }
-        
-        /* Tùy chỉnh group header */
-        .select2-results__group {
-            padding: 8px 12px !important;
-            font-weight: bold !important;
-            color: #89AC46 !important;
-            background-color: #f8f9fa !important;
-            border-left: 3px solid #89AC46 !important;
-        }
-        
-        /* Fix for multi-selection dropdown */
-        .select2-container--default .select2-selection--multiple .select2-selection__rendered {
-            white-space: nowrap !important;
-            overflow: hidden !important;
-            text-overflow: ellipsis !important;
-            height: 42px !important;
-            line-height: 42px !important;
-            padding-right: 20px !important;
-        }
-        
-        /* Ensure the selection clear button is visible */
-        .select2-selection__clear {
-            position: absolute !important;
-            right: 10px !important;
-            top: 50% !important;
-            transform: translateY(-50%) !important;
-        }
-        
-        /* Style for selection/deselection buttons */
-        .select2-buttons-container {
-            padding: 8px !important;
-            border-bottom: 1px solid #dbe8c6 !important;
-            text-align: center !important;
-            background-color: #f8f9fa !important;
-        }
-        
-        .select2-select-all, .select2-deselect-all {
-            display: inline-block !important;
-            padding: 4px 8px !important;
-            margin: 0 4px !important;
-            border-radius: 4px !important;
-            cursor: pointer !important;
-            font-size: 12px !important;
-            transition: all 0.2s !important;
-        }
-        
-        .select2-select-all {
-            background-color: #89AC46 !important;
-            color: white !important;
-            border: 1px solid #89AC46 !important;
-        }
-        
-        .select2-deselect-all {
-            background-color: #f8f9fa !important;
-            color: #89AC46 !important;
-            border: 1px solid #89AC46 !important;
-        }
-        
-        .select2-select-all:hover {
-            background-color: #7a9a3e !important;
-        }
-        
-        .select2-deselect-all:hover {
-            background-color: #e9ecef !important;
-        }
-        
-        .select-count {
-            display: inline-block !important;
-            padding: 0 8px !important;
-            background-color: #D3E671 !important;
-            color: #556b29 !important;
-            border-radius: 20px !important;
-            margin-left: 5px !important;
-            font-size: 11px !important;
-            line-height: 20px !important;
-            height: 20px !important;
-        }
-    </style>
 }
 
-<div class="container my-5">
-    <div class="mb-4">
-        <h2 class="mb-4 text-primary">Tìm kiếm sinh viên</h2>
-    </div>
+<div class="container my-5 search-students-container">
+    <div class="topbar">
+        <h1><i class="bi bi-search"></i> Tìm kiếm sinh viên</h1>
+        
+        <form method="get" asp-action="SearchStudents" class="filter-row">
+            <div class="filter-group">
+                <input type="text" name="query" value="@ViewBag.Query" placeholder="🔍 Tìm kiếm sinh viên..." />
+            </div>
 
-    <div class="card mb-4 search-card">
-        <div class="card-header filter-header">
-            <i class="bi bi-funnel-fill me-2"></i>Bộ lọc tìm kiếm
-        </div>
-        <div class="card-body">
-            <form method="get" asp-action="SearchStudents">
-                <div class="row mb-4">
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Tên, Email hoặc Trường</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" name="query" value="@ViewBag.Query" class="form-control" placeholder="Nhập từ khóa tìm kiếm...">
-                        </div>
-                    </div>
-
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Kỹ năng</label>
-                        <select id="skillSelect" name="skillIds" class="form-select" multiple="multiple">
-                            @foreach (var category in categories)
+            <div class="filter-group">
+                <select id="skillSelect" name="skillIds" class="custom-select" multiple="multiple">
+                    <option value="">👨‍🎓 Chọn kỹ năng...</option>
+                    @foreach (var category in categories)
+                    {
+                        <optgroup label="@category.CategoryName">
+                            @foreach (var skill in skills.Where(s => s.CategoryID == category.CategoryID))
                             {
-                                <optgroup label="@category.CategoryName">
-                                    @foreach (var skill in skills.Where(s => s.CategoryID == category.CategoryID))
-                                    {
-                                        if (selectedSkillIds.Contains(skill.SkillID))
-                                        {
-                                            <option value="@skill.SkillID" selected>@skill.SkillName</option>
-                                        }
-                                        else
-                                        {
-                                            <option value="@skill.SkillID">@skill.SkillName</option>
-                                        }
-                                    }
-                                </optgroup>
-                            }
-                        </select>
-                    </div>
-
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Tỉnh/Thành phố</label>
-                        <select name="provinceCode" class="form-select">
-                            <option value="">-- Tất cả --</option>
-                            @foreach (var province in ViewBag.Provinces)
-                            {
-                                if (ViewBag.ProvinceCode != null && ViewBag.ProvinceCode == province.ID)
+                                if (selectedSkillIds.Contains(skill.SkillID))
                                 {
-                                    <option value="@province.ID" selected>@province.Name</option>
+                                    <option value="@skill.SkillID" selected>@skill.SkillName</option>
                                 }
                                 else
                                 {
-                                    <option value="@province.ID">@province.Name</option>
+                                    <option value="@skill.SkillID">@skill.SkillName</option>
                                 }
                             }
-                        </select>
-                    </div>
+                        </optgroup>
+                    }
+                </select>
+            </div>
 
-                    <div class="col-md-12 mt-2 text-center">
-                        <button type="submit" class="btn btn-primary px-4">
-                            <i class="bi bi-search me-2"></i>Tìm kiếm
-                        </button>
-                        <a href="@Url.Action("SearchStudents", "Search")" class="btn btn-outline-secondary ms-2">
-                            <i class="bi bi-x-circle me-2"></i>Xóa bộ lọc
-                        </a>
-                    </div>
-                </div>
-            </form>
-        </div>
+            <div class="filter-group">
+                <select name="provinceCode" class="custom-select">
+                    <option value="">📍 Tất cả tỉnh/thành</option>
+                    @foreach (var province in ViewBag.Provinces)
+                    {
+                        if (ViewBag.ProvinceCode != null && ViewBag.ProvinceCode == province.ID)
+                        {
+                            <option value="@province.ID" selected>@province.Name</option>
+                        }
+                        else
+                        {
+                            <option value="@province.ID">@province.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+            
+            <button type="submit" class="filter-btn">
+                <i class="bi bi-filter"></i> Tìm kiếm
+            </button>
+            
+            <a href="@Url.Action("SearchStudents", "Search")" class="reset-btn">
+                <i class="bi bi-x-circle"></i> Xóa bộ lọc
+            </a>
+        </form>
     </div>
 
     <div class="row student-list mt-4">
@@ -310,9 +139,9 @@
                                         </div>
                                         @if (student.IsVerified)
                                         {
-                                            <div class="info-badge verified-badge" style="background-color: #4299e1; margin-left: 5px;">
-                                                <i class="fas fa-check-circle me-1" style="color: white !important;"></i>
-                                                <span style="color: white !important;">Verified</span>
+                                            <div class="verified-badge">
+                                                <i class="fas fa-check-circle me-1"></i>
+                                                <span>Verified</span>
                                             </div>
                                         }
                                     </div>
@@ -387,7 +216,7 @@
             
             // Khởi tạo lại Select2 với tùy chọn mới
             $('select[name="provinceCode"]').select2({
-                placeholder: "Chọn tỉnh/thành phố...",
+                placeholder: "📍 Tất cả tỉnh/thành",
                 allowClear: true,
                 dropdownCssClass: 'province-dropdown',
                 width: '100%'
@@ -400,7 +229,7 @@
             
             // Skills dropdown using Select2
             $('#skillSelect').select2({
-                placeholder: "Chọn kỹ năng...",
+                placeholder: "👨‍🎓 Chọn kỹ năng...",
                 allowClear: true,
                 closeOnSelect: false,
                 width: '100%',

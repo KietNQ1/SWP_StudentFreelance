@@ -39,142 +39,20 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/search/searchJob.css" asp-append-version="true" />
-    <style>
-        .search-header {
-            background-color: #89AC46 !important;
-        }
-        
-        .filter-header {
-            background-color: #89AC46 !important;
-            color: white;
-        }
-        
-        .list-group-item.fw-bold.bg-primary {
-            background-color: #89AC46 !important;
-        }
-        
-        /* Fix for layout issues */
-        html, body {
-            margin: 0 !important;
-            padding: 0 !important;
-            min-height: 100vh !important;
-            height: auto !important;
-            overflow-x: hidden !important;
-        }
-        
-        body {
-            display: flex !important;
-            flex-direction: column !important;
-        }
-        
-        main {
-            flex: 1 !important;
-        }
-        
-        .main-container {
-            margin-bottom: 0 !important;
-        }
-        
-        .footer {
-            margin-top: auto !important;
-            margin-bottom: 0 !important;
-            background-color: #F8F8F8 !important;
-        }
-        
-        /* Override any container styles that might affect the footer */
-        .footer .container {
-            background-color: transparent !important;
-            box-shadow: none !important;
-            border-top: none !important;
-            padding-top: 3rem !important;
-            padding-bottom: 0 !important;
-        }
-        
-        /* Fix for search form container */
-        .search-form-container {
-            margin-top: 0 !important;
-            transform: none !important;
-            position: relative !important;
-            z-index: 10 !important;
-        }
-        
-        .search-form-container:hover {
-            transform: none !important;
-        }
-        
-        .search-header {
-            padding-bottom: 1.5rem !important;
-        }
-        
-        /* Select2 styling for dropdowns */
-        .select2-container {
-            width: 100% !important;
-            z-index: 9999 !important;
-        }
-        
-        .select2-dropdown {
-            z-index: 9999 !important;
-            border-color: #dbe8c6 !important;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important;
-        }
-        
-        .select2-selection {
-            height: 42px !important;
-            min-height: 42px !important;
-            border-color: #dbe8c6 !important;
-            display: flex !important;
-            align-items: center !important;
-        }
-        
-        .select2-selection__rendered {
-            line-height: 42px !important;
-            padding-left: 12px !important;
-        }
-        
-        .select2-selection__arrow {
-            height: 42px !important;
-        }
-        
-        .select2-search__field {
-            border-color: #dbe8c6 !important;
-        }
-        
-        .select2-results__option--highlighted {
-            background-color: #89AC46 !important;
-        }
-        
-        .select2-container--open {
-            z-index: 9999 !important;
-        }
-        
-        /* Đảm bảo parent elements không che khuất dropdown */
-        .container, .card, .card-body, .row, .col-md-2, .search-card {
-            overflow: visible !important;
-        }
-    </style>
 }
 
-<div class="search-header">
-    <div class="container header-container">
-        <h1>Tìm kiếm dự án</h1>
-        <p>Khám phá các dự án phù hợp với kỹ năng và sở thích của bạn</p>
-    </div>
-</div>
-
-<div class="container main-container">
-    <!-- Thanh tìm kiếm nâng cao -->
-    <div class="search-form-container">
-        <form asp-controller="Search" asp-action="SearchJob" method="get" class="row g-3">
-            <div class="col-md-4">
-                <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" class="form-control" name="query" placeholder="Tìm kiếm dự án..." value="@query">
-                </div>
+<div class="container my-5 search-job-container">
+    <div class="topbar">
+        <h1><i class="bi bi-search"></i> Tìm kiếm dự án</h1>
+        
+        <form asp-controller="Search" asp-action="SearchJob" method="get" class="filter-row">
+            <div class="filter-group">
+                <input type="text" name="query" value="@query" placeholder="🔍 Tìm kiếm dự án..." />
             </div>
             
-            <div class="col-md-4">
+            <div class="filter-group">
                 <div class="category-skills-dropdown">
-                    <button type="button" class="btn btn-outline-secondary w-100 text-start d-flex justify-content-between align-items-center" id="dropdownCategorySkillsBtn">
+                    <button type="button" class="custom-select w-100 text-start d-flex justify-content-between align-items-center" id="dropdownCategorySkillsBtn">
                         <span id="selectedCategorySkill" class="text-truncate pe-2">
                             @if (selectedSkills.Any())
                             {
@@ -196,12 +74,12 @@
                                 }
                                 else
                                 {
-                                    <span>Chọn Nhóm nghề, Nghề hoặc Chuyên môn</span>
+                                    <span>👨‍💼 Chọn Nhóm nghề, Nghề hoặc Chuyên môn</span>
                                 }
                             }
                             else
                             {
-                                <span>Chọn Nhóm nghề, Nghề hoặc Chuyên môn</span>
+                                <span>👨‍💼 Chọn Nhóm nghề, Nghề hoặc Chuyên môn</span>
                             }
                         </span>
                         <i class="bi bi-chevron-down"></i>
@@ -329,9 +207,9 @@
                 </div>
             </div>
             
-            <div class="col-md-2">
-                <select class="form-select" name="userId" id="companySelect">
-                    <option value="">-- Chọn công ty --</option>
+            <div class="filter-group">
+                <select class="custom-select" name="userId" id="companySelect">
+                    <option value="">🏢 Chọn công ty</option>
                     @foreach (var business in businessUsers.OrderBy(b => b.CompanyName))
                     {
                         if (userId == business.Id)
@@ -346,9 +224,9 @@
                 </select>
             </div>
             
-            <div class="col-md-2">
-                <select class="form-select" name="provinceCode" id="provinceSelect">
-                    <option value="">-- Chọn tỉnh/thành --</option>
+            <div class="filter-group">
+                <select class="custom-select" name="provinceCode" id="provinceSelect">
+                    <option value="">📍 Chọn tỉnh/thành</option>
                     @{
                         var orderedProvinces = ViewBag.Provinces as IEnumerable<dynamic>;
                         if (orderedProvinces != null)
@@ -369,90 +247,91 @@
                 </select>
             </div>
             
-            <div class="col-12 mt-3 text-center">
-                <button type="submit" class="btn btn-primary px-4 me-2" id="searchBtn">Tìm kiếm</button>
-                <a href="@Url.Action("SearchJob", "Search")" class="btn btn-outline-secondary">
-                    <i class="bi bi-x-circle me-2"></i>Xóa bộ lọc
-                </a>
-            </div>
+            <button type="submit" class="filter-btn" id="searchBtn">
+                <i class="bi bi-filter"></i> Tìm kiếm
+            </button>
+            
+            <a href="@Url.Action("SearchJob", "Search")" class="reset-btn">
+                <i class="bi bi-x-circle"></i> Xóa bộ lọc
+            </a>
         </form>
     </div>
 
     <!-- Top Projects Section -->
-    <section class="top-projects">
-        <div class="container">
-            <div class="section-header">
-                <h2>Recommend Project</h2>
-                <a asp-controller="Search" asp-action="SearchJob" class="view-all-btn">View all</a>
-            </div>
+    <section class="top-projects mt-4">
+        <div class="section-header">
+            <h2>Dự án đề xuất</h2>
+            <a asp-controller="Search" asp-action="SearchJob" class="view-all-btn">Xem tất cả</a>
+        </div>
 
-            <div class="projects-grid">
-                @foreach (var project in topProjects)
-                {
-                    <a asp-controller="Project" asp-action="Details" asp-route-id="@project.ProjectID" class="text-decoration-none text-dark">
-                        <div class="project-card">
-                            <div class="project-image">
-                                <img src="~/image/project-default.jpg" alt="@project.Business?.FullName" />
-                            </div>
-                            <div class="project-content">
-                                <h3 class="project-title">@project.Title</h3>
-                                <p class="company-name">@project.Business?.FullName</p>
-                                <div class="project-meta">
-                                    <span class="salary">@($"{project.Budget:N0} đ")</span>
-                                    <span class="location">
-                                        @(project.IsRemoteWork ? "Remote" : project.Address?.ProvinceName ?? "Unidentified location")
-                                    </span>
-                                </div>
-                                <div class="project-status hot">Hot</div>
-                            </div>
+        <div class="projects-grid">
+            @foreach (var project in topProjects)
+            {
+                <a asp-controller="Project" asp-action="Details" asp-route-id="@project.ProjectID" class="text-decoration-none text-dark">
+                    <div class="project-card">
+                        <div class="project-image">
+                            <img src="~/image/project-default.jpg" alt="@project.Business?.FullName" />
                         </div>
-                    </a>
-                }
-            </div>
+                        <div class="project-content">
+                            <h3 class="project-title">@project.Title</h3>
+                            <p class="company-name">@project.Business?.FullName</p>
+                            <div class="project-meta">
+                                <span class="salary">@($"{project.Budget:N0} đ")</span>
+                                <span class="location">
+                                    @(project.IsRemoteWork ? "Remote" : project.Address?.ProvinceName ?? "Unidentified location")
+                                </span>
+                            </div>
+                            <div class="project-status hot">Hot</div>
+                        </div>
+                    </div>
+                </a>
+            }
         </div>
     </section>
     
-    <div class="results-container">
-        <h2 class="results-heading">Kết quả tìm kiếm</h2>
-        
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <div>
-                <p>Tìm thấy @Model.Count() dự án</p>
-                @if (!string.IsNullOrEmpty(query) || !string.IsNullOrEmpty(location) || categoryId.HasValue || skillIds.Any() || userId.HasValue || !string.IsNullOrEmpty(provinceCode))
-                {
-                    <p class="text-muted small">
-                        Tiêu chí tìm kiếm: 
-                        @if (!string.IsNullOrEmpty(query)) { <span class="badge bg-secondary me-1">Từ khóa: @query</span> }
-                        @if (!string.IsNullOrEmpty(location)) { <span class="badge bg-secondary me-1">Địa điểm: @location</span> }
-                        @if (selectedCategory != null) { <span class="badge bg-secondary me-1">Danh mục: @selectedCategory.CategoryName</span> }
-                        @if (selectedSkills.Any()) 
-                        { 
-                            foreach (var skill in selectedSkills)
-                            {
-                                <span class="badge bg-secondary me-1">Kỹ năng: @skill.SkillName</span>
+    <div class="results-container mt-5">
+        <div class="results-header">
+            <h2 class="results-heading">Kết quả tìm kiếm</h2>
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <p class="results-count">Tìm thấy @Model.Count() dự án</p>
+                    @if (!string.IsNullOrEmpty(query) || !string.IsNullOrEmpty(location) || categoryId.HasValue || skillIds.Any() || userId.HasValue || !string.IsNullOrEmpty(provinceCode))
+                    {
+                        <div class="search-criteria">
+                            @if (!string.IsNullOrEmpty(query)) { <span class="criteria-tag">Từ khóa: @query</span> }
+                            @if (!string.IsNullOrEmpty(location)) { <span class="criteria-tag">Địa điểm: @location</span> }
+                            @if (selectedCategory != null) { <span class="criteria-tag">Danh mục: @selectedCategory.CategoryName</span> }
+                            @if (selectedSkills.Any()) 
+                            { 
+                                foreach (var skill in selectedSkills)
+                                {
+                                    <span class="criteria-tag">Kỹ năng: @skill.SkillName</span>
+                                }
                             }
-                        }
-                        @if (selectedBusiness != null) { <span class="badge bg-secondary me-1">Công ty: @selectedBusiness.CompanyName</span> }
-                        @if (!string.IsNullOrEmpty(selectedProvinceName)) { <span class="badge bg-secondary me-1">Địa điểm: @selectedProvinceName</span> }
-                    </p>
-                }
-            </div>
-            <div class="btn-group">
-                <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                    Sắp xếp
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="#" onclick="sortProjects('newest')">Mới nhất</a></li>
-                    <li><a class="dropdown-item" href="#" onclick="sortProjects('budget-desc')">Ngân sách cao nhất</a></li>
-                    <li><a class="dropdown-item" href="#" onclick="sortProjects('budget-asc')">Ngân sách thấp nhất</a></li>
-                    <li><a class="dropdown-item" href="#" onclick="sortProjects('deadline')">Gần hết hạn</a></li>
-                </ul>
+                            @if (selectedBusiness != null) { <span class="criteria-tag">Công ty: @selectedBusiness.CompanyName</span> }
+                            @if (!string.IsNullOrEmpty(selectedProvinceName)) { <span class="criteria-tag">Địa điểm: @selectedProvinceName</span> }
+                        </div>
+                    }
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="sort-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-sort-down"></i> Sắp xếp
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#" onclick="sortProjects('newest')">Mới nhất</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="sortProjects('budget-desc')">Ngân sách cao nhất</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="sortProjects('budget-asc')">Ngân sách thấp nhất</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="sortProjects('deadline')">Gần hết hạn</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
 
         @if (!Model.Any())
         {
-            <div class="alert alert-info mt-3">
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
                 Không tìm thấy dự án phù hợp với tiêu chí tìm kiếm.
             </div>
         }
@@ -461,7 +340,7 @@
             <div class="job-list" id="projects-container">
                 @foreach (var project in Model)
                 {
-                    <div class="card mb-3 project-card" 
+                    <div class="card mb-4 project-card" 
                          data-created="@project.CreatedAt.Ticks" 
                          data-budget="@project.Budget" 
                          data-deadline="@project.Deadline.Ticks">
@@ -471,8 +350,8 @@
                                     <div class="d-flex justify-content-between mb-2">
                                         <h5 class="card-title mb-0">@project.Title</h5>
                                         <div>
-                                            <span class="badge bg-primary me-1">@project.Budget.ToString("N0") VNĐ</span>
-                                            <span class="badge bg-@(project.Status.StatusName == "Đang tuyển" ? "success" : "secondary")">
+                                            <span class="badge budget-badge me-1">@project.Budget.ToString("N0") VNĐ</span>
+                                            <span class="badge status-badge @(project.Status.StatusName == "Đang tuyển" ? "active-status" : "")">
                                                 @project.Status.StatusName
                                             </span>
                                         </div>
@@ -494,7 +373,7 @@
                                         @if (project.Address != null && !string.IsNullOrEmpty(project.Address.ProvinceCode))
                                         {
                                             <p class="mb-2">
-                                                <i class="bi bi-geo-alt"></i>
+                                                <i class="bi bi-geo-alt-fill me-2"></i>
                                                 @if (!string.IsNullOrEmpty(project.Address.DetailAddress))
                                                 {
                                                     @(project.Address.DetailAddress)<text>, </text>
@@ -516,23 +395,23 @@
                                         else if (project.IsRemoteWork)
                                         {
                                             <p class="mb-2">
-                                                <i class="bi bi-laptop"></i> <span class="badge bg-info text-dark">Làm việc từ xa</span>
+                                                <i class="bi bi-laptop me-2"></i> <span class="remote-badge">Làm việc từ xa</span>
                                             </p>
                                         }
                                     </div>
                                     
                                     <div class="mb-2">
                                         <p class="mb-1"><small class="text-muted">Kỹ năng yêu cầu:</small></p>
-                                        <div>
+                                        <div class="skills-container">
                                             @if (project.ProjectSkillsRequired.Any())
                                             {
                                                 foreach (var skill in project.ProjectSkillsRequired.Take(3))
                                                 {
-                                                    <span class="badge rounded-pill bg-light text-dark me-1 mb-1">
+                                                    <span class="skill-tag">
                                                         @skill.Skill.SkillName
                                                         @if (skill.ImportanceLevel != null)
                                                         {
-                                                            <small class="text-@(skill.ImportanceLevel.LevelName == "Bắt buộc" ? "danger" : "primary")">
+                                                            <small class="importance-level @(skill.ImportanceLevel.LevelName == "Bắt buộc" ? "required" : "")">
                                                                 (@skill.ImportanceLevel.LevelName)
                                                             </small>
                                                         }
@@ -540,7 +419,7 @@
                                                 }
                                                 if (project.ProjectSkillsRequired.Count() > 3)
                                                 {
-                                                    <span class="badge rounded-pill bg-light text-dark">+@(project.ProjectSkillsRequired.Count() - 3)</span>
+                                                    <span class="skill-tag more-skills">+@(project.ProjectSkillsRequired.Count() - 3)</span>
                                                 }
                                             }
                                             else
@@ -554,14 +433,14 @@
                                 <div class="col-md-2">
                                     <div class="d-flex flex-column align-items-end">
                                         <p class="mb-2">
-                                            <small class="text-muted">Hạn nộp: @project.Deadline.ToString("dd/MM/yyyy")</small>
+                                            <small class="deadline-text">Hạn nộp: @project.Deadline.ToString("dd/MM/yyyy")</small>
                                         </p>
                                         <p class="mb-2">
-                                            <small class="text-muted">
-                                                <i class="bi bi-building"></i> @project.Business.CompanyName
+                                            <small class="company-text">
+                                                <i class="bi bi-building me-1"></i> @project.Business.CompanyName
                                             </small>
                                         </p>
-                                        <a href="@Url.Action("Details", "Project", new { id = project.ProjectID })" class="btn btn-outline-primary">Chi tiết</a>
+                                        <a href="@Url.Action("Details", "Project", new { id = project.ProjectID })" class="btn btn-view-profile">Chi tiết</a>
                                     </div>
                                 </div>
                             </div>
@@ -606,7 +485,7 @@
             
             // Select2 initialization for company and province dropdowns
             $('#companySelect').select2({
-                placeholder: "-- Chọn công ty --",
+                placeholder: "🏢 Chọn công ty",
                 allowClear: true,
                 dropdownCssClass: 'company-dropdown',
                 width: '100%'
@@ -618,7 +497,7 @@
             });
             
             $('#provinceSelect').select2({
-                placeholder: "-- Chọn tỉnh/thành --",
+                placeholder: "📍 Chọn tỉnh/thành",
                 allowClear: true,
                 dropdownCssClass: 'province-dropdown',
                 width: '100%',
@@ -656,6 +535,88 @@
                 $('#companySelect').trigger('select2:close');
                 $('#provinceSelect').trigger('select2:close');
             }, 100);
+            
+            // Đảm bảo dropdown category-skills hiển thị đúng
+            $('#dropdownCategorySkillsBtn').on('click', function() {
+                // Đặt z-index cao cho container
+                $('#categorySkillsContainer').css('z-index', '10000');
+                
+                // Di chuyển dropdown ra ngoài DOM flow để không bị che khuất
+                if (!$('#categorySkillsContainer').hasClass('moved-to-body')) {
+                    const container = $('#categorySkillsContainer');
+                    const dropdownBtn = $('#dropdownCategorySkillsBtn');
+                    const btnPosition = dropdownBtn.offset();
+                    const btnWidth = dropdownBtn.outerWidth();
+                    const btnHeight = dropdownBtn.outerHeight();
+                    const containerWidth = container.outerWidth();
+                    
+                    // Tính toán vị trí chính xác dựa trên nút dropdown
+                    const left = Math.max(10, btnPosition.left);
+                    const top = btnPosition.top + btnHeight + 5;
+                    
+                    // Đảm bảo dropdown không vượt quá màn hình bên phải
+                    const windowWidth = $(window).width();
+                    const rightEdge = left + containerWidth;
+                    const adjustedLeft = rightEdge > windowWidth ? Math.max(10, windowWidth - containerWidth - 10) : left;
+                    
+                    // Lưu vị trí ban đầu
+                    container.data('original-parent', container.parent());
+                    
+                    // Di chuyển ra body với vị trí chính xác
+                    container.appendTo('body')
+                        .addClass('moved-to-body')
+                        .css({
+                            'position': 'absolute',
+                            'top': top + 'px',
+                            'left': adjustedLeft + 'px',
+                            'width': Math.min(containerWidth, windowWidth - 20) + 'px',
+                            'z-index': '10000',
+                            'max-height': ($(window).height() - top - 20) + 'px',
+                            'overflow-y': 'auto'
+                        });
+                }
+                
+                // Đảm bảo dropdown hiển thị trên cùng
+                setTimeout(function() {
+                    if ($('#categorySkillsContainer').hasClass('show')) {
+                        $('#categorySkillsContainer').css({
+                            'z-index': '10000',
+                            'position': 'absolute'
+                        });
+                    }
+                }, 10);
+            });
+
+            // Cập nhật vị trí dropdown khi cửa sổ thay đổi kích thước
+            $(window).on('resize scroll', function() {
+                if ($('#categorySkillsContainer').hasClass('moved-to-body') && $('#categorySkillsContainer').hasClass('show')) {
+                    const container = $('#categorySkillsContainer');
+                    const dropdownBtn = $('#dropdownCategorySkillsBtn');
+                    
+                    if (dropdownBtn.length && container.length) {
+                        const btnPosition = dropdownBtn.offset();
+                        const btnHeight = dropdownBtn.outerHeight();
+                        const containerWidth = container.outerWidth();
+                        
+                        // Tính toán vị trí mới
+                        const left = Math.max(10, btnPosition.left);
+                        const top = btnPosition.top + btnHeight + 5;
+                        
+                        // Đảm bảo dropdown không vượt quá màn hình bên phải
+                        const windowWidth = $(window).width();
+                        const rightEdge = left + containerWidth;
+                        const adjustedLeft = rightEdge > windowWidth ? Math.max(10, windowWidth - containerWidth - 10) : left;
+                        
+                        // Cập nhật vị trí
+                        container.css({
+                            'top': top + 'px',
+                            'left': adjustedLeft + 'px',
+                            'width': Math.min(containerWidth, windowWidth - 20) + 'px',
+                            'max-height': ($(window).height() - top - 20) + 'px'
+                        });
+                    }
+                }
+            });
         });
         
         document.addEventListener('DOMContentLoaded', function() {
@@ -683,16 +644,81 @@
                 if (isDropdownOpen) {
                     container.classList.add('show');
                     dropdownBtn.classList.add('active');
+                    document.body.classList.add('dropdown-open');
+                    
+                    // Đảm bảo dropdown hiển thị trên cùng
+                    container.style.zIndex = '10000';
+                    
+                    // Đảm bảo dropdown không bị che khuất bởi các phần tử khác
+                    document.querySelectorAll('.top-projects, .results-container, .projects-grid, .project-card').forEach(el => {
+                        el.style.position = 'relative';
+                        el.style.zIndex = '1';
+                    });
+                    
+                    // Đưa dropdown lên trên cùng
+                    container.parentNode.appendChild(container);
                 } else {
                     container.classList.remove('show');
                     dropdownBtn.classList.remove('active');
+                    document.body.classList.remove('dropdown-open');
+                    
+                    // Nếu dropdown đã được di chuyển ra body, đưa nó về vị trí ban đầu
+                    if ($(container).hasClass('moved-to-body')) {
+                        const originalParent = $(container).data('original-parent');
+                        if (originalParent) {
+                            $(container).appendTo(originalParent)
+                                .removeClass('moved-to-body')
+                                .css({
+                                    'position': '',
+                                    'top': '',
+                                    'left': '',
+                                    'width': '',
+                                    'z-index': ''
+                                });
+                        }
+                    }
                 }
             }
             
             // Mở dropdown khi click vào button
             dropdownBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
+                
+                // Nếu dropdown đang mở, đóng nó
+                if (isDropdownOpen) {
+                    toggleDropdown();
+                    return;
+                }
+                
+                // Nếu dropdown đang đóng, mở nó
                 toggleDropdown();
+                
+                // Đảm bảo vị trí dropdown được tính toán lại
+                setTimeout(function() {
+                    if (isDropdownOpen && $(container).hasClass('moved-to-body')) {
+                        const dropdownBtn = $('#dropdownCategorySkillsBtn');
+                        const btnPosition = dropdownBtn.offset();
+                        const btnHeight = dropdownBtn.outerHeight();
+                        const containerWidth = $(container).outerWidth();
+                        
+                        // Tính toán vị trí
+                        const left = Math.max(10, btnPosition.left);
+                        const top = btnPosition.top + btnHeight + 5;
+                        
+                        // Đảm bảo dropdown không vượt quá màn hình bên phải
+                        const windowWidth = $(window).width();
+                        const rightEdge = left + containerWidth;
+                        const adjustedLeft = rightEdge > windowWidth ? Math.max(10, windowWidth - containerWidth - 10) : left;
+                        
+                        // Cập nhật vị trí
+                        $(container).css({
+                            'top': top + 'px',
+                            'left': adjustedLeft + 'px',
+                            'width': Math.min(containerWidth, windowWidth - 20) + 'px',
+                            'max-height': ($(window).height() - top - 20) + 'px'
+                        });
+                    }
+                }, 10);
             });
             
             // Ngăn dropdown đóng khi click vào nội dung dropdown
@@ -906,7 +932,7 @@
                 });
                 
                 // Cập nhật giá trị hiển thị
-                document.getElementById('selectedCategorySkill').innerText = 'Chọn Nhóm nghề, Nghề hoặc Chuyên môn';
+                document.getElementById('selectedCategorySkill').innerText = '👨‍💼 Chọn Nhóm nghề, Nghề hoặc Chuyên môn';
                 
                 // Cập nhật giá trị input hidden
                 document.getElementById('hiddenCategoryId').value = '';
@@ -924,7 +950,7 @@
                 document.getElementById('hiddenCategoryId').value = selectedCategoryId || '';
                 
                 // Cập nhật giá trị hiển thị
-                let displayText = 'Chọn Nhóm nghề, Nghề hoặc Chuyên môn';
+                let displayText = '👨‍💼 Chọn Nhóm nghề, Nghề hoặc Chuyên môn';
                 
                 if (selectedSkillIds.length > 0) {
                     if (selectedSkillIds.length === 1) {
@@ -984,11 +1010,28 @@
             updateSelectedSkillsList();
             
             // Đóng dropdown khi click ra ngoài
-            document.addEventListener('click', function() {
-                if (isDropdownOpen) {
+            document.addEventListener('click', function(event) {
+                if (isDropdownOpen && !container.contains(event.target) && event.target !== dropdownBtn && !dropdownBtn.contains(event.target)) {
                     isDropdownOpen = false;
                     container.classList.remove('show');
                     dropdownBtn.classList.remove('active');
+                    document.body.classList.remove('dropdown-open');
+                    
+                    // Nếu dropdown đã được di chuyển ra body, đưa nó về vị trí ban đầu
+                    if ($(container).hasClass('moved-to-body')) {
+                        const originalParent = $(container).data('original-parent');
+                        if (originalParent) {
+                            $(container).appendTo(originalParent)
+                                .removeClass('moved-to-body')
+                                .css({
+                                    'position': '',
+                                    'top': '',
+                                    'left': '',
+                                    'width': '',
+                                    'z-index': ''
+                                });
+                        }
+                    }
                 }
             });
         });

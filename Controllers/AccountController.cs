@@ -64,26 +64,6 @@ namespace StudentFreelance.Controllers
             if (result.Succeeded)
             {
                 await _userManager.AddToRoleAsync(user, model.Role);
-
-                var subject = "Chào mừng bạn đến với StudentFreelance!";
-                var body = $@"
-            <p>Xin chào <strong>{user.FullName}</strong>,</p>
-            <p>Cảm ơn bạn đã đăng ký tài khoản tại <strong>StudentFreelance</strong>.</p>
-            <p>Bạn có thể đăng nhập ngay tại đây: 
-                <a href='{Url.Action("Login", "Account", null, Request.Scheme)}'>Đăng nhập</a>.
-            </p>
-            <p>Chúc bạn một ngày tốt lành!</p>
-        ";
-
-                await _emailSender.SendEmailAsync(user.Email, subject, body);
-
-                await _notificationService.SendNotificationToUserAsync(
-                    user.Id,
-                    "Chào mừng bạn đến với StudentFreelance!",
-                    "Cảm ơn bạn đã đăng ký tài khoản. Hãy cập nhật hồ sơ để bắt đầu nhận dự án.",
-                    1
-                );
-
                 TempData["SuccessMessage"] = "Đăng ký thành công. Vui lòng đăng nhập.";
                 return RedirectToAction("Login");
             }
@@ -112,17 +92,6 @@ namespace StudentFreelance.Controllers
             if (result.Succeeded)
             {
                 var user = await _userManager.FindByEmailAsync(model.Email);
-
-                // Chỉ gửi email thông báo đăng nhập thành công
-                var subject = "Đăng nhập thành công";
-                var body = $@"
-                    <p>Xin chào <strong>{user.FullName}</strong>,</p>
-                    <p>Bạn vừa đăng nhập thành công vào hệ thống StudentFreelance lúc {DateTime.Now:HH:mm:ss dd/MM/yyyy}.</p>
-                    <p>Nếu không phải bạn, vui lòng đổi mật khẩu ngay lập tức.</p>";
-                //await _emailSender.SendEmailAsync(user.Email, subject, body);
-
-                // KHÔNG gọi notificationService ở đây nữa!
-
                 return RedirectToLocal(returnUrl);
             }
             else if (result.IsLockedOut)
@@ -214,7 +183,7 @@ namespace StudentFreelance.Controllers
             var result = await _userManager.ResetPasswordAsync(user, model.Token, model.Password);
             if (result.Succeeded)
             {
-                // 🔔 Notification: gửi khi đổi mật khẩu thành công
+               
                 var subject = "Mật khẩu đã được cập nhật";
                 var body = $@"
                     <p>Xin chào <strong>{user.FullName}</strong>,</p>
@@ -304,7 +273,7 @@ namespace StudentFreelance.Controllers
                 }
                 else
                 {
-                    await _userManager.AddLoginAsync(user, info);
+                    await _userManager.AddLoginAsync(user, info);   
                 }
 
                 if (user.AddressID == null)

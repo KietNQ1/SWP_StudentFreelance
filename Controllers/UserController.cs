@@ -146,6 +146,11 @@ namespace StudentFreelance.Controllers
                     Major = user.Major,
                     CompanyName = user.CompanyName,
                     Industry = user.Industry,
+                    AgeRange = user.AgeRange,
+                    Gender = user.Gender,
+                    GoalsAndPainPoints = user.GoalsAndPainPoints,
+                    Website = user.Website,
+                    BusinessActivities = user.BusinessActivities,
                     ProvinceCode = user.Address?.ProvinceCode,
                     ProvinceName = user.Address?.ProvinceName,
                     DistrictCode = user.Address?.DistrictCode,
@@ -217,6 +222,11 @@ namespace StudentFreelance.Controllers
                     Major = user.Major,
                     CompanyName = user.CompanyName,
                     Industry = user.Industry,
+                    AgeRange = user.AgeRange,
+                    Gender = user.Gender,
+                    GoalsAndPainPoints = user.GoalsAndPainPoints,
+                    Website = user.Website,
+                    BusinessActivities = user.BusinessActivities,
                     
                     // API location data
                     ProvinceCode = user.Address?.ProvinceCode,
@@ -390,6 +400,14 @@ namespace StudentFreelance.Controllers
                     user.CompanyName = model.CompanyName;
                     user.Industry = model.Industry;
                 }
+                
+                user.AgeRange = model.AgeRange;
+                user.Gender = model.Gender;
+                user.GoalsAndPainPoints = model.GoalsAndPainPoints;
+                
+                // Business fields
+                user.Website = model.Website;
+                user.BusinessActivities = model.BusinessActivities;
                 
                 user.UpdatedAt = DateTime.Now;
 
