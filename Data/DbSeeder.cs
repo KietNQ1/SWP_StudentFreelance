@@ -175,44 +175,163 @@ namespace StudentFreelance.Data
             // 3. Default Users
             var usersToSeed = new List<(string Email, string Password, string Role, string FullName)>
             {
+                // Keep old example accounts as backup
                 ("admin@example.com", "Admin@123", "Admin", "Admin"),
                 ("moderator@example.com", "Moderator@123", "Moderator", "Moderator"),
                 ("business@example.com", "Business@123", "Business", "Công ty TNHH ABC"),
                 ("student@example.com", "Student@123", "Student", "Nguyễn Văn A"),
-                
-                // Additional business accounts
                 ("techsolutions@example.com", "Tech@123", "Business", "Tech Solutions"),
                 ("marketingpro@example.com", "Marketing@123", "Business", "Marketing Pro"),
                 ("designstudio@example.com", "Design@123", "Business", "Design Studio"),
                 ("creativeagency@example.com", "Creative@123", "Business", "Creative Agency"),
                 ("itconsulting@example.com", "ITConsult@123", "Business", "IT Consulting Services"),
-                
-                // Additional student accounts
                 ("student1@example.com", "Student1@123", "Student", "Trần Thị B"),
                 ("student2@example.com", "Student2@123", "Student", "Lê Minh C"),
                 ("student3@example.com", "Student3@123", "Student", "Phạm Hoàng D"),
                 ("student4@example.com", "Student4@123", "Student", "Vũ Anh E"),
                 ("student5@example.com", "Student5@123", "Student", "Đỗ Thu F"),
                 ("student6@example.com", "Student6@123", "Student", "Hoàng Lan G"),
-                ("student7@example.com", "Student7@123", "Student", "Ngô Thanh H")
+                ("student7@example.com", "Student7@123", "Student", "Ngô Thanh H"),
+
+                // New Admin and Moderator accounts
+                ("admin@stjobs.com", "Admin@2024", "Admin", "STJobs Administrator"),
+                ("moderator@stjobs.com", "Moderator@2024", "Moderator", "STJobs Moderator"),
+
+                // New Business accounts
+                ("techvision@stjobs.com", "TechVision@2024", "Business", "Công ty TNHH Giải pháp Công nghệ TechVision"),
+                ("digimark@stjobs.com", "DigiMark@2024", "Business", "Công ty TNHH Giải pháp Marketing DigiMark"),
+                ("uixstudio@stjobs.com", "UIXStudio@2024", "Business", "Công ty TNHH Thiết kế UIX Studio"),
+                ("fintech@stjobs.com", "FinTech@2024", "Business", "Công ty Cổ phần Công nghệ Tài chính SmartPay"),
+                ("edtech@stjobs.com", "EdTech@2024", "Business", "Công ty TNHH Công nghệ Giáo dục EduTech"),
+
+                // New Student accounts
+                ("nguyenhoanganh@stjobs.com", "HoangAnh@2024", "Student", "Nguyễn Hoàng Anh"),
+                ("tranthiminh@stjobs.com", "ThiMinh@2024", "Student", "Trần Thị Minh"),
+                ("leductrung@stjobs.com", "DucTrung@2024", "Student", "Lê Đức Trung"),
+                ("phamthuhang@stjobs.com", "ThuHang@2024", "Student", "Phạm Thu Hằng"),
+                ("vuminhtam@stjobs.com", "MinhTam@2024", "Student", "Vũ Minh Tâm")
             };
 
             foreach (var (email, password, role, fullName) in usersToSeed)
             {
                 if (await userManager.FindByEmailAsync(email) == null)
                 {
-                    // Create address for user with default values
-                    var address = new Address
+                    // Create address for user
+                    var address = new Address();
+                    
+                    // Set specific addresses for new accounts
+                    if (email == "techvision@stjobs.com")
                     {
-                        ProvinceCode = "1",
-                        ProvinceName = "Hà Nội",
-                        DistrictCode = "001",
-                        DistrictName = "Quận Ba Đình",
-                        WardCode = "00001",
-                        WardName = "Phường Phúc Xá",
-                        DetailAddress = "Số nhà mặc định",
-                        FullAddress = "Số nhà mặc định, Phường Phúc Xá, Quận Ba Đình, Hà Nội",
-                        IsActive = true
+                        address = new Address
+                        {
+                            ProvinceCode = "79",
+                            ProvinceName = "TP Hồ Chí Minh",
+                            DistrictCode = "763",
+                            DistrictName = "Quận 12",
+                            WardCode = "26803",
+                            WardName = "Phường Tân Chánh Hiệp",
+                            DetailAddress = "Tòa nhà TMA, Công viên phần mềm Quang Trung",
+                            FullAddress = "Tòa nhà TMA, Công viên phần mềm Quang Trung, Phường Tân Chánh Hiệp, Quận 12, TP.HCM",
+                            IsActive = true
+                        };
+                    }
+                    else if (email == "digimark@stjobs.com")
+                    {
+                        address = new Address
+                        {
+                            ProvinceCode = "79",
+                            ProvinceName = "TP Hồ Chí Minh",
+                            DistrictCode = "760",
+                            DistrictName = "Quận 1",
+                            WardCode = "26734",
+                            WardName = "Phường Bến Nghé",
+                            DetailAddress = "Tòa nhà Bitexco, 2 Hải Triều",
+                            FullAddress = "Tòa nhà Bitexco, 2 Hải Triều, Phường Bến Nghé, Quận 1, TP.HCM",
+                            IsActive = true
+                        };
+                    }
+                    else if (email == "uixstudio@stjobs.com")
+                    {
+                        address = new Address
+                        {
+                            ProvinceCode = "79",
+                            ProvinceName = "TP Hồ Chí Minh",
+                            DistrictCode = "778",
+                            DistrictName = "Quận 7",
+                            WardCode = "27307",
+                            WardName = "Phường Tân Phú",
+                            DetailAddress = "Tòa nhà Mapletree, 1060 Nguyễn Văn Linh",
+                            FullAddress = "Tòa nhà Mapletree, 1060 Nguyễn Văn Linh, Phường Tân Phú, Quận 7, TP.HCM",
+                            IsActive = true
+                        };
+                    }
+                    else if (email == "fintech@stjobs.com")
+                    {
+                        address = new Address
+                        {
+                            ProvinceCode = "79",
+                            ProvinceName = "TP Hồ Chí Minh",
+                            DistrictCode = "769",
+                            DistrictName = "Quận 2",
+                            WardCode = "27154",
+                            WardName = "Phường Thảo Điền",
+                            DetailAddress = "Tòa nhà Sala, 33 Đường Mai Chí Thọ",
+                            FullAddress = "Tòa nhà Sala, 33 Đường Mai Chí Thọ, Phường Thảo Điền, Quận 2, TP.HCM",
+                            IsActive = true
+                        };
+                    }
+                    else if (email == "edtech@stjobs.com")
+                    {
+                        address = new Address
+                        {
+                            ProvinceCode = "1",
+                            ProvinceName = "Hà Nội",
+                            DistrictCode = "006",
+                            DistrictName = "Quận Cầu Giấy",
+                            WardCode = "00190",
+                            WardName = "Phường Dịch Vọng Hậu",
+                            DetailAddress = "Tòa nhà Hà Nội ICT, 17 Duy Tân",
+                            FullAddress = "Tòa nhà Hà Nội ICT, 17 Duy Tân, Phường Dịch Vọng Hậu, Quận Cầu Giấy, Hà Nội",
+                            IsActive = true
+                        };
+                    }
+                    else if (email.Contains("@stjobs.com") && role == "Student")
+                    {
+                        address = new Address
+                        {
+                            ProvinceCode = "79",
+                            ProvinceName = "TP Hồ Chí Minh",
+                            DistrictCode = "769",
+                            DistrictName = "TP Thủ Đức",
+                            WardCode = "26908",
+                            WardName = "Phường Linh Trung",
+                            DetailAddress = email switch
+                            {
+                                "nguyenhoanganh@stjobs.com" => "42/3 Đường số 7",
+                                "tranthiminh@stjobs.com" => "15 Đường số 12",
+                                "leductrung@stjobs.com" => "78 Đường số 5",
+                                "phamthuhang@stjobs.com" => "103 Đường số 9",
+                                "vuminhtam@stjobs.com" => "25 Đường số 3",
+                                _ => "Số nhà mặc định"
+                            },
+                            FullAddress = $"{address.DetailAddress}, Phường Linh Trung, TP Thủ Đức, TP.HCM",
+                            IsActive = true
+                        };
+                    }
+                    else 
+                    {
+                        address = new Address
+                        {
+                            ProvinceCode = "1",
+                            ProvinceName = "Hà Nội",
+                            DistrictCode = "001",
+                            DistrictName = "Quận Ba Đình",
+                            WardCode = "00001",
+                            WardName = "Phường Phúc Xá",
+                            DetailAddress = "Số nhà mặc định",
+                            FullAddress = "Số nhà mặc định, Phường Phúc Xá, Quận Ba Đình, Hà Nội",
+                            IsActive = true
+                        };
                     };
 
                     context.Addresses.Add(address); 
@@ -250,6 +369,71 @@ namespace StudentFreelance.Data
                     else if (email == "creativeagency@example.com")
                     {
                         avatarPath = "/uploads/avatars/2c8597a4-a89c-4865-8cb9-922166e8a5b9_360_F_1242285305_2aOiHPOURRD4SmXOFU3fV0OoUnNYEaTX.jpg";
+                        profilePicturePath = avatarPath;
+                    }
+                    // Add avatars for new businesses
+                    else if (email == "techvision@stjobs.com")
+                    {
+                        avatarPath = "/image/Icon/laptop-1.png";
+                        profilePicturePath = avatarPath;
+                    }
+                    else if (email == "digimark@stjobs.com")
+                    {
+                        avatarPath = "/image/Icon/get-money.png";
+                        profilePicturePath = avatarPath;
+                    }
+                    else if (email == "uixstudio@stjobs.com")
+                    {
+                        avatarPath = "/image/Icon/032-writing.png";
+                        profilePicturePath = avatarPath;
+                    }
+                    else if (email == "fintech@stjobs.com")
+                    {
+                        avatarPath = "/image/Icon/coins-1.png";
+                        profilePicturePath = avatarPath;
+                    }
+                    else if (email == "edtech@stjobs.com")
+                    {
+                        avatarPath = "/image/Icon/003-book.png";
+                        profilePicturePath = avatarPath;
+                    }
+                    // Add avatars for students using provided character images
+                    else if (email == "nguyenhoanganh@stjobs.com")
+                    {
+                        avatarPath = "/image/ic_001.png"; // X (Blue)
+                        profilePicturePath = avatarPath;
+                    }
+                    else if (email == "tranthiminh@stjobs.com")
+                    {
+                        avatarPath = "/image/ic_002.png"; // Zero (Red)
+                        profilePicturePath = avatarPath;
+                    }
+                    else if (email == "leductrung@stjobs.com")
+                    {
+                        avatarPath = "/image/ic_005.png"; // Roll (Orange)
+                        profilePicturePath = avatarPath;
+                    }
+                    else if (email == "phamthuhang@stjobs.com" || email == "vuminhtam@stjobs.com")
+                    {
+                        avatarPath = "/image/ic_007.png"; // Ciel (Yellow)
+                        profilePicturePath = avatarPath;
+                    }
+                    // For other students, use random existing avatars
+                    else if (role == "Student")
+                    {
+                        string[] studentAvatars = new[]
+                        {
+                            "/image/ic_001.png",
+                            "/image/ic_002.png",
+                            "/image/ic_005.png",
+                            "/image/ic_007.png",
+                            "/image/huan.jpg",
+                            "/image/huy.jpg",
+                            "/image/kiet.jpg",
+                            "/image/tan.jpg",
+                            "/image/vy.jpg"
+                        };
+                        avatarPath = studentAvatars[new Random().Next(studentAvatars.Length)];
                         profilePicturePath = avatarPath;
                     }
 
@@ -532,7 +716,27 @@ namespace StudentFreelance.Data
             // 6. Seed Project
             if (!context.Projects.Any())
             {
-                // Get business users
+                // Get business users for new projects
+                var techvision = await userManager.FindByEmailAsync("techvision@stjobs.com") 
+                    ?? throw new Exception("TechVision user not found");
+                var digimark = await userManager.FindByEmailAsync("digimark@stjobs.com")
+                    ?? throw new Exception("DigiMark user not found");
+                var uixstudio = await userManager.FindByEmailAsync("uixstudio@stjobs.com")
+                    ?? throw new Exception("UIXStudio user not found");
+                var fintech = await userManager.FindByEmailAsync("fintech@stjobs.com")
+                    ?? throw new Exception("FinTech user not found");
+                var edtech = await userManager.FindByEmailAsync("edtech@stjobs.com")
+                    ?? throw new Exception("EdTech user not found");
+
+                // Get student users for project assignments
+                var hoangAnh = await userManager.FindByEmailAsync("nguyenhoanganh@stjobs.com")
+                    ?? throw new Exception("Hoang Anh user not found");
+                var thiMinh = await userManager.FindByEmailAsync("tranthiminh@stjobs.com")
+                    ?? throw new Exception("Thi Minh user not found");
+                var ducTrung = await userManager.FindByEmailAsync("leductrung@stjobs.com")
+                    ?? throw new Exception("Duc Trung user not found");
+
+                // Get existing business users
                 var businesses = await userManager.GetUsersInRoleAsync("Business");
 
                 // Get categories
@@ -602,7 +806,7 @@ namespace StudentFreelance.Data
                     })
                 };
                 
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < 15; i++)
                 {
                     var random = new Random();
                     
@@ -642,7 +846,31 @@ namespace StudentFreelance.Data
                     new Project
                     {
                         Title = "Phát triển website bán hàng",
-                        Description = "Cần lập trình viên có kinh nghiệm về .NET và React để phát triển website thương mại điện tử với đầy đủ tính năng như giỏ hàng, thanh toán online, quản lý đơn hàng.",
+                        Description = "Chúng tôi đang tìm kiếm lập trình viên có kinh nghiệm về .NET và React để phát triển một website thương mại điện tử hoàn chỉnh. Dự án này là một phần trong chiến lược chuyển đổi số của công ty, nhằm mở rộng kênh bán hàng trực tuyến.\n\n" +
+                            "Yêu cầu kỹ thuật:\n" +
+                            "- Phát triển backend sử dụng .NET Core với kiến trúc microservices\n" +
+                            "- Xây dựng frontend sử dụng React với Redux để quản lý state\n" +
+                            "- Tích hợp thanh toán với các cổng như VNPay, Momo, ZaloPay\n" +
+                            "- Xây dựng hệ thống quản lý kho hàng real-time\n" +
+                            "- Tối ưu hiệu năng và khả năng mở rộng của hệ thống\n\n" +
+                            "Tính năng chính cần phát triển:\n" +
+                            "1. Hệ thống quản lý sản phẩm đa cấp với hỗ trợ SEO\n" +
+                            "2. Giỏ hàng thông minh với tính năng lưu và khôi phục\n" +
+                            "3. Thanh toán trực tuyến đa phương thức\n" +
+                            "4. Quản lý đơn hàng với tracking real-time\n" +
+                            "5. Hệ thống khuyến mãi và mã giảm giá linh hoạt\n" +
+                            "6. Tích hợp chatbot hỗ trợ khách hàng\n" +
+                            "7. Dashboard phân tích dữ liệu bán hàng\n\n" +
+                            "Yêu cầu về bảo mật:\n" +
+                            "- Tuân thủ các tiêu chuẩn bảo mật trong thanh toán\n" +
+                            "- Mã hóa dữ liệu người dùng\n" +
+                            "- Phòng chống tấn công CSRF, XSS\n" +
+                            "- Logging và monitoring hệ thống\n\n" +
+                            "Kinh nghiệm cần thiết:\n" +
+                            "- Tối thiểu 3 năm kinh nghiệm với .NET\n" +
+                            "- 2 năm kinh nghiệm với React\n" +
+                            "- Đã từng tham gia ít nhất 1 dự án thương mại điện tử\n" +
+                            "- Hiểu biết về cloud infrastructure và CI/CD",
                         Budget = 50000000,
                         ProjectWallet = 50000000,
                         StartDate = new DateTime(2025, 6, 22),
@@ -656,8 +884,34 @@ namespace StudentFreelance.Data
                     },
                     new Project
                     {
-                        Title = "Xây dựng blog cá nhân",
-                        Description = "Cần freelancer thiết kế và phát triển blog cá nhân sử dụng WordPress hoặc các nền tảng tương tự. Blog cần có giao diện đẹp, tối ưu SEO.",
+                        Title = "Xây dựng blog cá nhân chuyên nghiệp",
+                        Description = "Chúng tôi đang tìm kiếm một freelancer có khả năng thiết kế và phát triển một blog cá nhân chuyên nghiệp. Dự án này là cho một nhà văn và nhà báo tự do, với mục tiêu xây dựng một nền tảng trực tuyến để chia sẻ nội dung và xây dựng thương hiệu cá nhân.\n\n" +
+                            "Mục tiêu của dự án:\n" +
+                            "1. Tạo một platform chuyên nghiệp để trình bày portfolio\n" +
+                            "2. Tối ưu hóa khả năng tiếp cận độc giả\n" +
+                            "3. Xây dựng cộng đồng người đọc trung thành\n\n" +
+                            "Yêu cầu kỹ thuật:\n" +
+                            "- Sử dụng WordPress làm nền tảng chính\n" +
+                            "- Theme tùy chỉnh hoàn toàn với Gutenberg support\n" +
+                            "- Tối ưu hóa tốc độ tải trang\n" +
+                            "- Responsive design cho mọi thiết bị\n\n" +
+                            "Tính năng cần có:\n" +
+                            "- Trang chủ động với featured posts\n" +
+                            "- Hệ thống phân loại và tag thông minh\n" +
+                            "- Tích hợp newsletter và form đăng ký\n" +
+                            "- Bình luận và tương tác xã hội\n" +
+                            "- Gallery hình ảnh chuyên nghiệp\n" +
+                            "- Trang portfolio với layout sáng tạo\n\n" +
+                            "Yêu cầu SEO:\n" +
+                            "- Cấu trúc URL thân thiện\n" +
+                            "- Tối ưu hóa meta tags và schema markup\n" +
+                            "- Tích hợp Google Analytics và Search Console\n" +
+                            "- Sitemap tự động\n" +
+                            "- Tối ưu hóa hình ảnh và nội dung\n\n" +
+                            "Kinh nghiệm yêu cầu:\n" +
+                            "- Thành thạo WordPress development\n" +
+                            "- Hiểu biết sâu về SEO và content marketing\n" +
+                            "- Portfolio các dự án blog tương tự",
                         Budget = 5000000,
                         ProjectWallet = 5000000,
                         StartDate = new DateTime(2025, 7, 1),
@@ -672,7 +926,38 @@ namespace StudentFreelance.Data
                     new Project
                     {
                         Title = "Nâng cấp hệ thống quản lý nội bộ",
-                        Description = "Dự án nâng cấp hệ thống quản lý nội bộ hiện tại, bổ sung các tính năng báo cáo và thống kê. Sử dụng Laravel và VueJS.",
+                        Description = "Dự án này nhằm nâng cấp và mở rộng hệ thống quản lý nội bộ hiện tại của công ty, tập trung vào việc cải thiện hiệu suất làm việc và khả năng phân tích dữ liệu. Hệ thống hiện tại đã được sử dụng trong 2 năm và cần được hiện đại hóa để đáp ứng nhu cầu ngày càng tăng của công ty.\n\n" +
+                            "Hiện trạng hệ thống:\n" +
+                            "- Xây dựng trên Laravel 8.0\n" +
+                            "- Frontend sử dụng Vue.js 2.0\n" +
+                            "- Database: MySQL\n" +
+                            "- Đang phục vụ khoảng 200 người dùng\n\n" +
+                            "Yêu cầu nâng cấp:\n" +
+                            "1. Cập nhật framework:\n" +
+                            "   - Nâng cấp lên Laravel 10.x\n" +
+                            "   - Chuyển đổi sang Vue.js 3 với Composition API\n" +
+                            "   - Tối ưu hóa database schema\n\n" +
+                            "2. Tính năng mới cần phát triển:\n" +
+                            "   - Hệ thống báo cáo động với biểu đồ tương tác\n" +
+                            "   - Dashboard tùy chỉnh cho từng phòng ban\n" +
+                            "   - Export dữ liệu đa định dạng (PDF, Excel, CSV)\n" +
+                            "   - Tích hợp notification system realtime\n" +
+                            "   - Module quản lý tài sản và resources\n\n" +
+                            "3. Cải thiện hiệu năng:\n" +
+                            "   - Tối ưu hóa queries và indexing\n" +
+                            "   - Implement caching strategy\n" +
+                            "   - Lazy loading cho components\n" +
+                            "   - API rate limiting và optimization\n\n" +
+                            "4. Yêu cầu bảo mật:\n" +
+                            "   - Implement 2FA\n" +
+                            "   - Role-based access control chi tiết\n" +
+                            "   - Audit logging cho mọi thao tác\n" +
+                            "   - Mã hóa dữ liệu nhạy cảm\n\n" +
+                            "Yêu cầu ứng viên:\n" +
+                            "- Thành thạo Laravel và Vue.js\n" +
+                            "- Kinh nghiệm với hệ thống enterprise\n" +
+                            "- Hiểu biết về optimization và scaling\n" +
+                            "- Kỹ năng refactoring code tốt",
                         Budget = 35000000,
                         ProjectWallet = 35000000,
                         StartDate = new DateTime(2025, 5, 15),
@@ -689,7 +974,40 @@ namespace StudentFreelance.Data
                     new Project
                     {
                         Title = "Phát triển ứng dụng di động đặt đồ ăn",
-                        Description = "Cần phát triển ứng dụng đặt đồ ăn trên iOS và Android với tính năng tìm kiếm nhà hàng, đánh giá, thanh toán online.",
+                        Description = "Dự án phát triển ứng dụng di động đặt đồ ăn toàn diện cho cả nền tảng iOS và Android, nhằm tạo ra một hệ sinh thái kết nối nhà hàng và người dùng. Ứng dụng sẽ mang đến trải nghiệm đặt đồ ăn mượt mà và thuận tiện cho người dùng, đồng thời cung cấp công cụ quản lý hiệu quả cho nhà hàng.\n\n" +
+                            "Tính năng cho người dùng:\n" +
+                            "1. Tìm kiếm và khám phá:\n" +
+                            "   - Tìm kiếm thông minh với bộ lọc đa dạng\n" +
+                            "   - Gợi ý nhà hàng dựa trên vị trí và sở thích\n" +
+                            "   - Xem menu với hình ảnh chất lượng cao\n" +
+                            "   - Đánh giá và bình luận về món ăn\n\n" +
+                            "2. Đặt hàng và thanh toán:\n" +
+                            "   - Giỏ hàng thông minh với gợi ý món ăn kèm\n" +
+                            "   - Nhiều phương thức thanh toán (VNPay, Momo, COD)\n" +
+                            "   - Tích hợp mã giảm giá và loyalty points\n" +
+                            "   - Lịch sử đơn hàng và đặt lại nhanh\n\n" +
+                            "3. Theo dõi đơn hàng:\n" +
+                            "   - Tracking realtime vị trí người giao hàng\n" +
+                            "   - Thông báo push khi có cập nhật\n" +
+                            "   - Chat với người giao hàng\n" +
+                            "   - Đánh giá sau khi nhận hàng\n\n" +
+                            "Tính năng cho nhà hàng:\n" +
+                            "1. Quản lý đơn hàng:\n" +
+                            "   - Dashboard theo dõi đơn hàng realtime\n" +
+                            "   - Quản lý menu và tồn kho\n" +
+                            "   - Báo cáo doanh thu và analytics\n" +
+                            "   - Quản lý đánh giá và phản hồi\n\n" +
+                            "Yêu cầu kỹ thuật:\n" +
+                            "- Native development cho iOS (Swift) và Android (Kotlin)\n" +
+                            "- Backend với microservices architecture\n" +
+                            "- Real-time tracking với WebSocket\n" +
+                            "- Optimize performance và battery usage\n" +
+                            "- Offline support với local caching\n\n" +
+                            "Yêu cầu ứng viên:\n" +
+                            "- Kinh nghiệm phát triển app native\n" +
+                            "- Hiểu biết về UX/UI mobile\n" +
+                            "- Kinh nghiệm với realtime features\n" +
+                            "- Khả năng tối ưu hiệu năng ứng dụng",
                         Budget = 70000000,
                         ProjectWallet = 70000000,
                         StartDate = new DateTime(2025, 7, 10),
@@ -704,7 +1022,38 @@ namespace StudentFreelance.Data
                     new Project
                     {
                         Title = "Ứng dụng theo dõi sức khỏe",
-                        Description = "Phát triển ứng dụng theo dõi sức khỏe cá nhân với các tính năng theo dõi bước chân, nhịp tim, chế độ ăn uống, v.v.",
+                        Description = "Phát triển ứng dụng di động toàn diện về theo dõi và quản lý sức khỏe cá nhân, tích hợp với các thiết bị đeo thông minh và cung cấp những thông tin chi tiết về sức khỏe người dùng. Ứng dụng tập trung vào tính dễ sử dụng và khả năng cá nhân hóa cao.\n\n" +
+                            "Tính năng chính:\n" +
+                            "1. Theo dõi hoạt động thể chất:\n" +
+                            "   - Đếm bước chân và quãng đường đi bộ\n" +
+                            "   - Theo dõi các bài tập cardio\n" +
+                            "   - Đo cường độ hoạt động\n" +
+                            "   - Tính toán calories tiêu thụ\n\n" +
+                            "2. Theo dõi chỉ số sức khỏe:\n" +
+                            "   - Nhịp tim và biến thiên nhịp tim\n" +
+                            "   - Chất lượng giấc ngủ\n" +
+                            "   - Mức độ stress\n" +
+                            "   - Đo SpO2 (nếu thiết bị hỗ trợ)\n\n" +
+                            "3. Quản lý dinh dưỡng:\n" +
+                            "   - Nhật ký thực phẩm với cơ sở dữ liệu phong phú\n" +
+                            "   - Tính toán calories và chất dinh dưỡng\n" +
+                            "   - Lập kế hoạch bữa ăn\n" +
+                            "   - Gợi ý thực đơn cân bằng\n\n" +
+                            "4. Tính năng thông minh:\n" +
+                            "   - AI phân tích xu hướng sức khỏe\n" +
+                            "   - Cảnh báo sớm các vấn đề sức khỏe\n" +
+                            "   - Gợi ý tập luyện cá nhân hóa\n" +
+                            "   - Báo cáo sức khỏe định kỳ\n\n" +
+                            "Yêu cầu kỹ thuật:\n" +
+                            "- Phát triển bằng Flutter cho cross-platform\n" +
+                            "- Tích hợp HealthKit (iOS) và Google Fit (Android)\n" +
+                            "- Backend với ML cho phân tích dữ liệu\n" +
+                            "- Bảo mật dữ liệu theo HIPAA\n\n" +
+                            "Yêu cầu ứng viên:\n" +
+                            "- Kinh nghiệm với Flutter và native health APIs\n" +
+                            "- Hiểu biết về y tế và sức khỏe\n" +
+                            "- Khả năng xử lý dữ liệu lớn\n" +
+                            "- Kinh nghiệm với wearable devices",
                         Budget = 45000000,
                         ProjectWallet = 45000000,
                         StartDate = new DateTime(2025, 6, 15),
@@ -721,7 +1070,44 @@ namespace StudentFreelance.Data
                     new Project
                     {
                         Title = "Phân tích dữ liệu khách hàng",
-                        Description = "Cần chuyên gia phân tích dữ liệu để xử lý và phân tích dữ liệu khách hàng, xây dựng mô hình dự đoán hành vi mua hàng.",
+                        Description = "Dự án phân tích dữ liệu khách hàng chuyên sâu nhằm tối ưu hóa chiến lược kinh doanh và cải thiện trải nghiệm khách hàng. Dự án sẽ sử dụng các kỹ thuật phân tích dữ liệu tiên tiến và machine learning để tạo ra insights có giá trị cho doanh nghiệp.\n\n" +
+                            "Phạm vi dự án:\n" +
+                            "1. Phân tích hành vi khách hàng:\n" +
+                            "   - Pattern mua sắm và sử dụng sản phẩm\n" +
+                            "   - Phân tích customer journey\n" +
+                            "   - Segmentation khách hàng\n" +
+                            "   - Lifetime value prediction\n\n" +
+                            "2. Xây dựng mô hình dự đoán:\n" +
+                            "   - Dự đoán khả năng churn\n" +
+                            "   - Recommendation system\n" +
+                            "   - Dự báo nhu cầu mua hàng\n" +
+                            "   - Price optimization\n\n" +
+                            "3. Phân tích Marketing:\n" +
+                            "   - Attribution modeling\n" +
+                            "   - Campaign effectiveness\n" +
+                            "   - ROI analysis\n" +
+                            "   - Customer acquisition cost\n\n" +
+                            "4. Báo cáo và Visualization:\n" +
+                            "   - Interactive dashboards\n" +
+                            "   - Automated reporting system\n" +
+                            "   - Real-time monitoring\n" +
+                            "   - Custom KPI tracking\n\n" +
+                            "Yêu cầu kỹ thuật:\n" +
+                            "- Python ecosystem (pandas, sklearn, TensorFlow)\n" +
+                            "- SQL và data warehousing\n" +
+                            "- Visualization tools (Tableau, PowerBI)\n" +
+                            "- Cloud computing (AWS/GCP)\n\n" +
+                            "Deliverables:\n" +
+                            "1. Data preprocessing pipeline\n" +
+                            "2. ML models với documentation\n" +
+                            "3. Interactive dashboards\n" +
+                            "4. API cho real-time prediction\n" +
+                            "5. Báo cáo phân tích chi tiết\n\n" +
+                            "Yêu cầu ứng viên:\n" +
+                            "- Master/PhD trong Data Science\n" +
+                            "- 3+ năm kinh nghiệm phân tích dữ liệu\n" +
+                            "- Thành thạo ML và statistical modeling\n" +
+                            "- Kỹ năng truyền đạt phân tích tốt",
                         Budget = 40000000,
                         ProjectWallet = 40000000,
                         StartDate = new DateTime(2025, 7, 5),
@@ -738,7 +1124,47 @@ namespace StudentFreelance.Data
                     new Project
                     {
                         Title = "Thiết kế lại giao diện website công ty",
-                        Description = "Cần designer thiết kế lại giao diện website công ty theo phong cách hiện đại, tối giản, thân thiện với người dùng.",
+                        Description = "Dự án redesign toàn diện website công ty, chuyển đổi từ giao diện cũ sang một thiết kế hiện đại, tối giản và thân thiện với người dùng. Dự án nhằm cải thiện trải nghiệm người dùng, tăng tỷ lệ chuyển đổi và thể hiện đúng giá trị thương hiệu của công ty.\n\n" +
+                            "Phạm vi công việc:\n\n" +
+                            "1. Research & Planning:\n" +
+                            "   - Phân tích website hiện tại\n" +
+                            "   - Nghiên cứu đối thủ cạnh tranh\n" +
+                            "   - Khảo sát người dùng mục tiêu\n" +
+                            "   - Xác định user personas\n" +
+                            "   - Lập kế hoạch cải thiện UX\n\n" +
+                            "2. Information Architecture:\n" +
+                            "   - Tổ chức lại cấu trúc website\n" +
+                            "   - Thiết kế user flow mới\n" +
+                            "   - Tối ưu hóa navigation\n" +
+                            "   - Cải thiện content hierarchy\n\n" +
+                            "3. UI Design:\n" +
+                            "   - Design system hoàn chỉnh\n" +
+                            "   - Typography và color scheme\n" +
+                            "   - Component library\n" +
+                            "   - Responsive design cho mọi thiết bị\n" +
+                            "   - Dark mode (tùy chọn)\n\n" +
+                            "4. Tương tác và Animation:\n" +
+                            "   - Micro-interactions\n" +
+                            "   - Page transitions\n" +
+                            "   - Loading states\n" +
+                            "   - Scroll animations\n\n" +
+                            "5. Prototype và Testing:\n" +
+                            "   - Interactive prototypes\n" +
+                            "   - Usability testing\n" +
+                            "   - A/B testing proposals\n" +
+                            "   - Performance optimization\n\n" +
+                            "Deliverables:\n" +
+                            "1. Brand style guide cập nhật\n" +
+                            "2. UI kit đầy đủ\n" +
+                            "3. Prototype cho mọi màn hình\n" +
+                            "4. Documentation chi tiết\n" +
+                            "5. Design handoff cho developers\n\n" +
+                            "Yêu cầu ứng viên:\n" +
+                            "- Portfolio thiết kế ấn tượng\n" +
+                            "- Thành thạo Figma hoặc Adobe XD\n" +
+                            "- Kinh nghiệm với design systems\n" +
+                            "- Hiểu biết về web development\n" +
+                            "- Kỹ năng collaboration tốt",
                         Budget = 25000000,
                         ProjectWallet = 25000000,
                         StartDate = new DateTime(2025, 6, 10),
@@ -755,7 +1181,42 @@ namespace StudentFreelance.Data
                     new Project
                     {
                         Title = "Quản lý fanpage và chạy quảng cáo",
-                        Description = "Cần người có kinh nghiệm quản lý fanpage Facebook, lên kế hoạch nội dung, chạy quảng cáo Facebook Ads.",
+                        Description = "Tìm kiếm chuyên gia social media marketing để quản lý và phát triển toàn diện fanpage Facebook của công ty, bao gồm xây dựng chiến lược nội dung, tương tác cộng đồng và triển khai chiến dịch quảng cáo hiệu quả.\n\n" +
+                            "1. Quản lý Nội dung & Cộng đồng:\n" +
+                            "   - Lập kế hoạch nội dung hàng tháng\n" +
+                            "   - Sáng tạo content đa dạng (text, hình ảnh, video)\n" +
+                            "   - Thiết kế content calendar\n" +
+                            "   - Tương tác và phản hồi comment\n" +
+                            "   - Xây dựng cộng đồng người theo dõi\n" +
+                            "   - Tổ chức mini-game và event\n\n" +
+                            "2. Quảng cáo Facebook:\n" +
+                            "   - Phân tích và xây dựng target audience\n" +
+                            "   - Thiết kế creatives cho quảng cáo\n" +
+                            "   - Tối ưu hóa campaign structure\n" +
+                            "   - A/B testing các yếu tố quảng cáo\n" +
+                            "   - Quản lý ngân sách quảng cáo\n" +
+                            "   - Retargeting và remarketing\n\n" +
+                            "3. Analytics & Báo cáo:\n" +
+                            "   - Theo dõi các chỉ số KPI chính\n" +
+                            "   - Phân tích insight và đề xuất cải thiện\n" +
+                            "   - Báo cáo hiệu quả định kỳ\n" +
+                            "   - ROI analysis cho mỗi campaign\n\n" +
+                            "4. Chiến lược Phát triển:\n" +
+                            "   - Nghiên cứu thị trường và đối thủ\n" +
+                            "   - Xác định cơ hội tăng trưởng\n" +
+                            "   - Đề xuất chiến lược mới\n" +
+                            "   - Tối ưu hóa conversion rate\n\n" +
+                            "Yêu cầu Ứng viên:\n" +
+                            "- 2+ năm kinh nghiệm social media\n" +
+                            "- Chứng chỉ Facebook Blueprint\n" +
+                            "- Portfolio các campaign thành công\n" +
+                            "- Kỹ năng copywriting tốt\n" +
+                            "- Có con mắt thẩm mỹ\n\n" +
+                            "KPIs:\n" +
+                            "- Tăng trưởng follower: 20%/tháng\n" +
+                            "- Engagement rate: >5%\n" +
+                            "- Response time: <2 giờ\n" +
+                            "- ROAS cho quảng cáo: >200%",
                         Budget = 10000000,
                         ProjectWallet = 10000000,
                         StartDate = new DateTime(2025, 7, 1),
@@ -772,7 +1233,46 @@ namespace StudentFreelance.Data
                     new Project
                     {
                         Title = "Viết nội dung blog về công nghệ",
-                        Description = "Cần freelancer viết 20 bài blog về các chủ đề công nghệ như AI, blockchain, 5G, v.v. Mỗi bài từ 1000-1500 từ.",
+                        Description = "Tìm kiếm content writer chuyên nghiệp để sáng tạo series bài viết chuyên sâu về công nghệ cho blog công ty. Dự án nhằm xây dựng nguồn nội dung chất lượng cao, cung cấp thông tin giá trị cho độc giả và tăng cường SEO cho website.\n\n" +
+                            "Phạm vi công việc:\n\n" +
+                            "1. Nội dung yêu cầu:\n" +
+                            "   - 20 bài viết chuyên sâu\n" +
+                            "   - Độ dài: 1000-1500 từ/bài\n" +
+                            "   - Định dạng tối ưu cho SEO\n" +
+                            "   - Hình ảnh và infographic minh họa\n\n" +
+                            "2. Chủ đề chính:\n" +
+                            "   a) Trí tuệ nhân tạo:\n" +
+                            "      - Machine Learning applications\n" +
+                            "      - AI trong doanh nghiệp\n" +
+                            "      - Neural Networks và Deep Learning\n" +
+                            "      - Computer Vision và NLP\n\n" +
+                            "   b) Blockchain & Crypto:\n" +
+                            "      - Smart Contracts\n" +
+                            "      - DeFi và Web3\n" +
+                            "      - NFTs và metaverse\n" +
+                            "      - Blockchain trong enterprise\n\n" +
+                            "   c) Công nghệ 5G:\n" +
+                            "      - Infrastructure và deployment\n" +
+                            "      - Use cases trong IoT\n" +
+                            "      - Impact lên mobile computing\n" +
+                            "      - Security considerations\n\n" +
+                            "3. Yêu cầu chất lượng:\n" +
+                            "   - Research kỹ lưỡng và fact-checking\n" +
+                            "   - Trích dẫn nguồn uy tín\n" +
+                            "   - Tone of voice chuyên nghiệp\n" +
+                            "   - Cấu trúc bài viết rõ ràng\n" +
+                            "   - Keywords optimization\n\n" +
+                            "4. Quy trình làm việc:\n" +
+                            "   - Đề xuất outline cho mỗi bài\n" +
+                            "   - Draft và revision cycles\n" +
+                            "   - Chỉnh sửa theo feedback\n" +
+                            "   - Tối ưu hóa meta descriptions\n\n" +
+                            "Yêu cầu ứng viên:\n" +
+                            "- Background về công nghệ\n" +
+                            "- Portfolio bài viết tech\n" +
+                            "- Kỹ năng SEO content writing\n" +
+                            "- Khả năng giải thích technical concepts\n" +
+                            "- Tiếng Anh tốt để đọc tài liệu",
                         Budget = 15000000,
                         ProjectWallet = 15000000,
                         StartDate = new DateTime(2025, 7, 15),
@@ -788,8 +1288,41 @@ namespace StudentFreelance.Data
                     // Translation Projects
                     new Project
                     {
-                        Title = "Dịch tài liệu kỹ thuật",
-                        Description = "Cần dịch tài liệu kỹ thuật về phần mềm từ tiếng Anh sang tiếng Việt, khoảng 50 trang.",
+                        Title = "Dịch tài liệu kỹ thuật phần mềm",
+                        Description = "Tìm kiếm dịch giả chuyên nghiệp để dịch bộ tài liệu kỹ thuật về phần mềm từ tiếng Anh sang tiếng Việt. Dự án yêu cầu sự kết hợp giữa kỹ năng dịch thuật và hiểu biết về công nghệ để đảm bảo tính chính xác và nhất quán của bản dịch.\n\n" +
+                            "Thông tin tài liệu:\n" +
+                            "1. Khối lượng và nội dung:\n" +
+                            "   - Tổng cộng: 50 trang\n" +
+                            "   - Loại tài liệu: Technical documentation\n" +
+                            "   - Chủ đề: Enterprise software\n" +
+                            "   - Độ phức tạp: Cao\n\n" +
+                            "2. Các phần chính cần dịch:\n" +
+                            "   - System architecture (10 trang)\n" +
+                            "   - API documentation (15 trang)\n" +
+                            "   - Deployment guide (15 trang)\n" +
+                            "   - User manual (10 trang)\n\n" +
+                            "3. Yêu cầu chất lượng:\n" +
+                            "   - Tính chính xác kỹ thuật cao\n" +
+                            "   - Nhất quán về thuật ngữ\n" +
+                            "   - Đảm bảo format và styling\n" +
+                            "   - Giữ nguyên cấu trúc văn bản\n\n" +
+                            "4. Quy trình làm việc:\n" +
+                            "   - Review và làm rõ source content\n" +
+                            "   - Tạo glossary thuật ngữ\n" +
+                            "   - Dịch thử 2 trang mẫu\n" +
+                            "   - Phân đoạn công việc theo tuần\n" +
+                            "   - QA và review định kỳ\n\n" +
+                            "5. Công cụ và tài nguyên:\n" +
+                            "   - CAT tools (SDL Trados/MemoQ)\n" +
+                            "   - Term base có sẵn\n" +
+                            "   - Style guide\n" +
+                            "   - Reference materials\n\n" +
+                            "Yêu cầu ứng viên:\n" +
+                            "- Kinh nghiệm dịch tài liệu kỹ thuật\n" +
+                            "- Background IT/công nghệ\n" +
+                            "- Thành thạo CAT tools\n" +
+                            "- Portfolio dịch thuật tương tự\n" +
+                            "- Kỹ năng quản lý thời gian tốt",
                         Budget = 8000000,
                         ProjectWallet = 8000000,
                         StartDate = new DateTime(2025, 8, 1),
@@ -800,7 +1333,144 @@ namespace StudentFreelance.Data
                         TypeID = projectBasedType.TypeID,
                         AddressID = projectAddresses[9].AddressID,
                         IsActive = true
-                    }
+                    },
+
+                    // New Projects for New Businesses and Students
+                    
+// TechVision Projects (Completed with Hoang Anh)
+new Project
+{
+    Title = "Xây dựng Website Thương mại Điện tử",
+    Description = "Dự án phát triển một website thương mại điện tử toàn diện sử dụng .NET Core và React, nhằm tạo ra một nền tảng bán hàng trực tuyến hiện đại, hiệu quả và dễ sử dụng. Website sẽ bao gồm các tính năng quản lý sản phẩm đa dạng, giỏ hàng thông minh, thanh toán trực tuyến an toàn và hệ thống quản lý đơn hàng real-time.\n\n" +
+                  "Mục tiêu dự án:\n" +
+                  "- Xây dựng backend ổn định với kiến trúc microservices sử dụng .NET Core\n" +
+                  "- Phát triển frontend tương tác cao với React và Redux\n" +
+                  "- Tích hợp các cổng thanh toán phổ biến như VNPay, Momo, ZaloPay\n" +
+                  "- Tối ưu hóa hiệu năng và khả năng mở rộng của hệ thống\n\n" +
+                  "Yêu cầu kỹ thuật:\n" +
+                  "- Kinh nghiệm phát triển ứng dụng thương mại điện tử\n" +
+                  "- Hiểu biết về bảo mật và mã hóa dữ liệu\n" +
+                  "- Kỹ năng làm việc với API và hệ thống thanh toán\n\n" +
+                  "Tính năng chính:\n" +
+                  "1. Quản lý sản phẩm với phân loại đa cấp và hỗ trợ SEO\n" +
+                  "2. Giỏ hàng với tính năng lưu trữ và khôi phục\n" +
+                  "3. Thanh toán đa phương thức và bảo mật cao\n" +
+                  "4. Quản lý đơn hàng với tracking thời gian thực\n" +
+                  "5. Hệ thống khuyến mãi và mã giảm giá linh hoạt\n" +
+                  "6. Dashboard phân tích dữ liệu bán hàng\n\n" +
+                  "Kinh nghiệm yêu cầu:\n" +
+                  "- Ít nhất 3 năm kinh nghiệm với .NET Core\n" +
+                  "- 2 năm kinh nghiệm với React\n" +
+                  "- Đã tham gia các dự án thương mại điện tử quy mô\n",
+    Budget = 25000000,
+    ProjectWallet = 25000000,
+    StartDate = new DateTime(2025, 5, 1),
+    EndDate = new DateTime(2025, 6, 30),
+    BusinessID = techvision.Id,
+    CategoryID = webCategory.CategoryID,
+    StatusID = completedStatus.StatusID,
+    TypeID = projectBasedType.TypeID,
+    AddressID = projectAddresses[10].AddressID,
+    IsActive = true
+},
+
+// DigiMark Projects (In Progress with Thi Minh)
+new Project
+{
+    Title = "Xây dựng Hệ thống Phân tích Dữ liệu",
+    Description = "Dự án phát triển hệ thống phân tích dữ liệu chuyên sâu sử dụng Python và các thuật toán Machine Learning nhằm tối ưu hóa chiến lược kinh doanh và nâng cao trải nghiệm khách hàng. Hệ thống sẽ cung cấp các báo cáo phân tích, dự đoán xu hướng và hỗ trợ ra quyết định dựa trên dữ liệu lớn.\n\n" +
+                  "Phạm vi dự án:\n" +
+                  "- Thu thập và xử lý dữ liệu từ nhiều nguồn khác nhau\n" +
+                  "- Xây dựng pipeline tiền xử lý dữ liệu tự động\n" +
+                  "- Phát triển các mô hình dự đoán và phân loại\n" +
+                  "- Tích hợp dashboard tương tác để hiển thị kết quả phân tích\n\n" +
+                  "Yêu cầu kỹ thuật:\n" +
+                  "- Thành thạo Python và các thư viện như pandas, scikit-learn, TensorFlow\n" +
+                  "- Kinh nghiệm với data warehousing và SQL\n" +
+                  "- Kỹ năng trực quan hóa dữ liệu với Tableau hoặc PowerBI\n\n" +
+                  "Tính năng chính:\n" +
+                  "1. Phân tích hành vi khách hàng và phân khúc thị trường\n" +
+                  "2. Mô hình dự đoán churn và recommendation system\n" +
+                  "3. Báo cáo ROI và hiệu quả chiến dịch marketing\n" +
+                  "4. Hệ thống cảnh báo sớm và đề xuất chiến lược\n\n" +
+                  "Kinh nghiệm yêu cầu:\n" +
+                  "- 3 năm kinh nghiệm trong lĩnh vực phân tích dữ liệu\n" +
+                  "- Hiểu biết sâu về machine learning và statistical modeling\n" +
+                  "- Kỹ năng truyền đạt kết quả phân tích hiệu quả\n",
+    Budget = 40000000,
+    ProjectWallet = 40000000,
+    StartDate = new DateTime(2025, 6, 1),
+    EndDate = new DateTime(2025, 9, 30),
+    BusinessID = digimark.Id,
+    CategoryID = dataCategory.CategoryID,
+    StatusID = inProgressStatus.StatusID,
+    TypeID = projectBasedType.TypeID,
+    AddressID = projectAddresses[11].AddressID,
+    IsActive = true
+},
+
+// UIX Studio Projects (In Progress with Duc Trung)
+new Project
+{
+    Title = "Thiết kế UI/UX cho Ứng dụng Giáo dục",
+    Description = "Dự án thiết kế giao diện người dùng cho nền tảng học trực tuyến với mục tiêu tạo ra trải nghiệm học tập thân thiện, trực quan và hiệu quả. Thiết kế sẽ tập trung vào việc tối ưu hóa user flow, responsive design và khả năng tương tác cao.\n\n" +
+                  "Phạm vi công việc:\n" +
+                  "- Nghiên cứu người dùng và phân tích yêu cầu\n" +
+                  "- Thiết kế wireframes và prototypes tương tác\n" +
+                  "- Xây dựng design system và component library\n" +
+                  "- Tối ưu hóa trải nghiệm trên các thiết bị di động và desktop\n" +
+                  "- Hỗ trợ testing và cải tiến dựa trên phản hồi người dùng\n\n" +
+                  "Yêu cầu kỹ thuật:\n" +
+                  "- Thành thạo các công cụ thiết kế như Figma, Adobe XD\n" +
+                  "- Kinh nghiệm với design systems và UI kits\n" +
+                  "- Hiểu biết về phát triển web và mobile\n\n" +
+                  "Kinh nghiệm yêu cầu:\n" +
+                  "- Portfolio thiết kế UI/UX ấn tượng\n" +
+                  "- Kỹ năng collaboration và giao tiếp tốt\n" +
+                  "- Khả năng làm việc độc lập và theo nhóm\n",
+    Budget = 28000000,
+    ProjectWallet = 28000000,
+    StartDate = new DateTime(2025, 7, 1),
+    EndDate = new DateTime(2025, 8, 31),
+    BusinessID = uixstudio.Id,
+    CategoryID = uiuxCategory.CategoryID,
+    StatusID = inProgressStatus.StatusID,
+    TypeID = projectBasedType.TypeID,
+    AddressID = projectAddresses[12].AddressID,
+    IsActive = true
+},
+
+// Fintech Projects (Recruiting)
+new Project
+{
+    Title = "Phát triển Ứng dụng Quản lý Tài chính",
+    Description = "Dự án phát triển ứng dụng quản lý tài chính cá nhân và doanh nghiệp với mục tiêu cung cấp công cụ quản lý chi tiêu, đầu tư và báo cáo tài chính hiệu quả. Ứng dụng sẽ hỗ trợ đa nền tảng và tích hợp các tính năng bảo mật cao.\n\n" +
+                  "Tính năng chính:\n" +
+                  "- Quản lý thu chi cá nhân và doanh nghiệp\n" +
+                  "- Theo dõi đầu tư và danh mục tài sản\n" +
+                  "- Báo cáo tài chính chi tiết và trực quan\n" +
+                  "- Tích hợp các phương thức thanh toán và ngân hàng\n" +
+                  "- Cảnh báo và nhắc nhở thông minh\n\n" +
+                  "Yêu cầu kỹ thuật:\n" +
+                  "- Phát triển đa nền tảng với Flutter hoặc native\n" +
+                  "- Backend ổn định và bảo mật cao\n" +
+                  "- Tích hợp API ngân hàng và thanh toán\n\n" +
+                  "Kinh nghiệm yêu cầu:\n" +
+                  "- Kinh nghiệm phát triển ứng dụng fintech\n" +
+                  "- Hiểu biết về bảo mật và quy định tài chính\n" +
+                  "- Kỹ năng tối ưu hiệu năng và UX\n",
+    Budget = 35000000,
+    ProjectWallet = 35000000,
+    StartDate = new DateTime(2025, 8, 1),
+    EndDate = new DateTime(2025, 10, 31),
+    BusinessID = fintech.Id,
+    CategoryID = webCategory.CategoryID,
+    StatusID = recruitingStatus.StatusID,
+    TypeID = projectBasedType.TypeID,
+    AddressID = projectAddresses[13].AddressID,
+    IsActive = true
+},
+
                 };
 
                 context.Projects.AddRange(projects);
@@ -1007,51 +1677,110 @@ namespace StudentFreelance.Data
                 var projects = context.Projects.ToList();
                 var random = new Random();
 
+                // Get the new students
+                var hoangAnh = await userManager.FindByEmailAsync("nguyenhoanganh@stjobs.com") 
+                    ?? throw new Exception("Student Hoang Anh not found");
+                var thiMinh = await userManager.FindByEmailAsync("tranthiminh@stjobs.com")
+                    ?? throw new Exception("Student Thi Minh not found");
+                var ducTrung = await userManager.FindByEmailAsync("leductrung@stjobs.com")
+                    ?? throw new Exception("Student Duc Trung not found");
+
                 var applications = new List<StudentApplication>
                 {
+                    // Hoang Anh's completed applications
                     new StudentApplication
                     {
-                        UserID = students[0].Id,
-                        ProjectID = projects[0].ProjectID,
-                        Status = "Pending",
-                        CoverLetter = "Tôi rất quan tâm đến dự án của bạn và có kinh nghiệm trong lĩnh vực này.",
+                        UserID = hoangAnh.Id,
+                        ProjectID = projects[0].ProjectID, // Website Thương mại Điện tử
+                        Status = "Completed",
+                        CoverLetter = "Tôi có kinh nghiệm phát triển website với .NET Core và React, và đã từng làm nhiều dự án thương mại điện tử.",
+                        Salary = 25000000,
+                        DateApplied = DateTime.Now.AddDays(-180),
+                        LastStatusUpdate = DateTime.Now.AddDays(-120),
+                        Notes = "Dự án đã hoàn thành thành công",
+                        ResumeLink = "https://stjobs.com/resume/hoanganh.pdf",
+                        BusinessConfirmedCompletion = true,
+                        StudentConfirmedCompletion = true,
+                        IsActive = true
+                    },
+                    new StudentApplication
+                    {
+                        UserID = hoangAnh.Id,
+                        ProjectID = projects[1].ProjectID, // Blog cá nhân
+                        Status = "Completed",
+                        CoverLetter = "Tôi đã có nhiều kinh nghiệm trong việc phát triển và tối ưu hóa WordPress.",
                         Salary = 5000000,
-                        DateApplied = DateTime.Now.AddDays(-5),
-                        LastStatusUpdate = DateTime.Now.AddDays(-5),
-                        Notes = "Ghi chú ban đầu",
-                        ResumeLink = "https://example.com/resume1.pdf",
-                        BusinessConfirmedCompletion = false,
-                        StudentConfirmedCompletion = false,
+                        DateApplied = DateTime.Now.AddDays(-120),
+                        LastStatusUpdate = DateTime.Now.AddDays(-90),
+                        Notes = "Hoàn thành dự án đúng hạn, khách hàng hài lòng",
+                        ResumeLink = "https://stjobs.com/resume/hoanganh.pdf",
+                        BusinessConfirmedCompletion = true,
+                        StudentConfirmedCompletion = true,
                         IsActive = true
                     },
                     new StudentApplication
                     {
-                        UserID = students[1].Id,
-                        ProjectID = projects[0].ProjectID,
-                        Status = "Accepted",
-                        CoverLetter = "Tôi có nhiều kinh nghiệm với các dự án tương tự và mong muốn được hợp tác.",
-                        Salary = 5500000,
-                        DateApplied = DateTime.Now.AddDays(-4),
+                        UserID = hoangAnh.Id,
+                        ProjectID = projects[2].ProjectID, // Nâng cấp hệ thống quản lý nội bộ
+                        Status = "Completed",
+                        CoverLetter = "Tôi thành thạo Laravel và VueJS, đã từng làm nhiều dự án tương tự.",
+                        Salary = 35000000,
+                        DateApplied = DateTime.Now.AddDays(-90),
+                        LastStatusUpdate = DateTime.Now.AddDays(-60),
+                        Notes = "Dự án hoàn thành xuất sắc, vượt kỳ vọng khách hàng",
+                        ResumeLink = "https://stjobs.com/resume/hoanganh.pdf",
+                        BusinessConfirmedCompletion = true,
+                        StudentConfirmedCompletion = true,
+                        IsActive = true
+                    },
+                    // Thi Minh's applications
+                    new StudentApplication
+                    {
+                        UserID = thiMinh.Id,
+                        ProjectID = projects[1].ProjectID, // Hệ thống Phân tích Dữ liệu
+                        Status = "In Progress",
+                        CoverLetter = "Tôi có kinh nghiệm với Python và Machine Learning, đã từng làm nhiều dự án phân tích dữ liệu.",
+                        Salary = 40000000,
+                        DateApplied = DateTime.Now.AddDays(-30),
+                        LastStatusUpdate = DateTime.Now.AddDays(-25),
+                        BusinessNotes = "Ứng viên có kiến thức sâu về ML và xử lý dữ liệu",
+                        Notes = "Dự án đang được thực hiện tốt",
+                        ResumeLink = "https://stjobs.com/resume/thiminh.pdf",
+                        BusinessConfirmedCompletion = false,
+                        StudentConfirmedCompletion = false,
+                        IsActive = true
+                    },
+                    
+                    // Duc Trung's applications
+                    new StudentApplication
+                    {
+                        UserID = ducTrung.Id,
+                        ProjectID = projects[2].ProjectID, // UI/UX cho Ứng dụng Giáo dục
+                        Status = "In Progress",
+                        CoverLetter = "Tôi có kinh nghiệm thiết kế UI/UX cho các ứng dụng giáo dục và thành thạo các công cụ thiết kế.",
+                        Salary = 28000000,
+                        DateApplied = DateTime.Now.AddDays(-20),
+                        LastStatusUpdate = DateTime.Now.AddDays(-15),
+                        BusinessNotes = "Ứng viên có portfolio ấn tượng và kinh nghiệm phù hợp",
+                        Notes = "Dự án đang được thực hiện đúng tiến độ",
+                        ResumeLink = "https://stjobs.com/resume/ductrung.pdf",
+                        BusinessConfirmedCompletion = false,
+                        StudentConfirmedCompletion = false,
+                        IsActive = true
+                    },
+                    // Application for new recruiting project
+                    new StudentApplication
+                    {
+                        UserID = thiMinh.Id,
+                        ProjectID = projects[3].ProjectID, // Phát triển Ứng dụng Quản lý Tài chính
+                        Status = "Pending",
+                        CoverLetter = "Tôi đã có kinh nghiệm phát triển các ứng dụng fintech và rất quan tâm đến dự án này.",
+                        Salary = 35000000,
+                        DateApplied = DateTime.Now.AddDays(-2),
                         LastStatusUpdate = DateTime.Now.AddDays(-2),
-                        BusinessNotes = "Ứng viên có kinh nghiệm tốt, phù hợp với yêu cầu dự án.",
-                        Notes = "Đã được chấp nhận",
-                        ResumeLink = "https://example.com/resume2.pdf",
-                        BusinessConfirmedCompletion = false,
-                        StudentConfirmedCompletion = false,
-                        IsActive = true
-                    },
-                    new StudentApplication
-                    {
-                        UserID = students[0].Id,
-                        ProjectID = projects[1].ProjectID,
-                        Status = "Rejected",
-                        CoverLetter = "Tôi muốn ứng tuyển vào vị trí này để phát triển kỹ năng của mình.",
-                        Salary = 4800000,
-                        DateApplied = DateTime.Now.AddDays(-3),
-                        LastStatusUpdate = DateTime.Now.AddDays(-1),
-                        BusinessNotes = "Ứng viên chưa đáp ứng đủ yêu cầu kỹ năng cho dự án.",
-                        Notes = "Đã bị từ chối",
-                        ResumeLink = "https://example.com/resume3.pdf",
+                        BusinessNotes = "",
+                        Notes = "Đang chờ phản hồi",
+                        ResumeLink = "https://stjobs.com/resume/thiminh_latest.pdf",
                         BusinessConfirmedCompletion = false,
                         StudentConfirmedCompletion = false,
                         IsActive = true
