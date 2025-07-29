@@ -44,18 +44,18 @@
         <!-- Nội dung - will be shown/hidden based on slide type -->
         <div id="hero-container" class="hero-container" style="display: none;">
             <div class="hero-content">
-                <h1 class="hero-title">Let top talent bring your ideas to life</h1>
+                <h1 class="hero-title">Để những tài năng hàng đầu biến ý tưởng của bạn thành hiện thực</h1>
 
                 <div class="popular-searches">
-                    <a asp-controller="Search" asp-action="SearchJob" asp-route-query="website development" class="tag">website development</a>
-                    <a asp-controller="Search" asp-action="SearchJob" asp-route-query="architecture & interior design" class="tag">architecture & interior design</a>
-                    <a asp-controller="Search" asp-action="SearchJob" asp-route-query="UGC videos" class="tag">UGC videos</a>
-                    <a asp-controller="Search" asp-action="SearchJob" asp-route-query="video editing" class="tag">video editing</a>
+                    <a asp-controller="Search" asp-action="SearchJob" asp-route-query="phát triển website" class="tag">phát triển website</a>
+                    <a asp-controller="Search" asp-action="SearchJob" asp-route-query="kiến trúc & thiết kế nội thất" class="tag">kiến trúc & thiết kế nội thất</a>
+                    <a asp-controller="Search" asp-action="SearchJob" asp-route-query="video UGC" class="tag">video UGC</a>
+                    <a asp-controller="Search" asp-action="SearchJob" asp-route-query="chỉnh sửa video" class="tag">chỉnh sửa video</a>
                 </div>
 
                 <!-- Trusted By -->
                 <div class="trusted-by">
-                    <span class="trusted-text">Trusted by:</span>
+                    <span class="trusted-text">Được tin dùng bởi:</span>
                     <div class="trusted-companies">
                         <span>Meta</span>
                         <span>Google</span>
@@ -99,8 +99,8 @@
 <section class="top-projects">
     <div class="container">
         <div class="section-header">
-            <h2>Top Projects</h2>
-            <a asp-controller ="Search" asp-action="SearchJob" class="view-all-btn">View all</a>
+            <h2>Dự Án Nổi Bật</h2>
+            <a asp-controller ="Search" asp-action="SearchJob" class="view-all-btn">Xem tất cả</a>
         </div>
 
         <div class="projects-grid">
@@ -184,7 +184,7 @@
 <section class="categories">
     <div class="container">
         <div class="section-header">
-            <h2>Categories</h2>
+            <h2>Danh Mục</h2>
         </div>
         <div class="categories-grid">
             @{
@@ -299,8 +299,8 @@
 <section class="popular-services">
     <div class="container">
         <div class="section-header">
-            <h2>Popular Business</h2>
-            <a href="@Url.Action("SearchBusinesses", "Search")" class="view-all-btn">View all</a>
+            <h2>Doanh Nghiệp Nổi Bật</h2>
+            <a href="@Url.Action("SearchBusinesses", "Search")" class="view-all-btn">Xem tất cả</a>
         </div>
         <div class="services-grid">
             @if (popularBusinesses != null && popularBusinesses.Any())
@@ -344,35 +344,32 @@
     <div class="container">
         <div class="enterprise-content">
             <div class="enterprise-text">
-                <button class="btn btn-secondary">Enterprise Suite</button>
+                <button class="btn btn-secondary">Giải Pháp Doanh Nghiệp</button>
                 @* <button  class="enterprise-tag"></button> *@
                 <h2 class="enterprise-title">
-                    This is how<br />
-                    <span class="highlight">good companies</span><br />
-                    find good company.
+                    Đây là cách<br />
+                    <span class="highlight">những công ty tốt</span><br />
+                    tìm được đối tác tốt.
                 </h2>
                 <p class="enterprise-description">
-                    Access the top 1% of talent on STJobs, and a full suite of hybrid
-                    workforce management tools. This is how innovation works now.
+                    Tiếp cận 1% người tài năng hàng đầu trên STJobs, cùng bộ công cụ quản lý nhân sự toàn diện. 
+                    Đây là cách làm việc sáng tạo hiện đại.
                 </p>
                 <div class="enterprise-features">
                     <div class="feature">
                         <i class="fas fa-check"></i>
-                        <span>Access expert talent to fill your skill gaps</span>
+                        <span>Tiếp cận nhân tài chuyên môn bổ sung kỹ năng còn thiếu</span>
                     </div>
                     <div class="feature">
                         <i class="fas fa-check"></i>
-                        <span>
-                            Control your workflow: hire, classify and pay your
-                            talent
-                        </span>
+                        <span>Kiểm soát quy trình: tuyển dụng, phân loại và trả lương cho nhân tài</span>
                     </div>
                     <div class="feature">
                         <i class="fas fa-check"></i>
-                        <span>Partner with Upwork for end-to-end support</span>
+                        <span>Hợp tác với STJobs để được hỗ trợ toàn diện</span>
                     </div>
                 </div>
-                <button class="btn btn-secondary">Learn more</button>
+                <button class="btn btn-secondary">Tìm hiểu thêm</button>
             </div>
             <div class="enterprise-image">
                 <img src="https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
@@ -381,14 +378,14 @@
                     <i class="fas fa-users"></i>
                     <div>
                         <div class="stat-number">500+</div>
-                        <div class="stat-label">Enterprise clients</div>
+                        <div class="stat-label">Khách hàng doanh nghiệp</div>
                     </div>
                 </div>
                 <div class="stat-card stat-card-2">
                     <i class="fas fa-briefcase"></i>
                     <div>
                         <div class="stat-number">10M+</div>
-                        <div class="stat-label">Projects completed</div>
+                        <div class="stat-label">Dự án đã hoàn thành</div>
                     </div>
                 </div>
             </div>
@@ -400,12 +397,12 @@
 <section class="find-talent">
     <div class="container">
         <div class="find-talent-card">
-            <button class="btn btn-secondary">For client</button>
+            <a asp-controller="Account" asp-action="Login" class="btn btn-secondary">Dành cho khách hàng</a>
             <div class="find-talent-content">
-                <h2>Find talent<br />your way</h2>
+                <h2>Tìm nhân tài<br />theo cách của bạn</h2>
                 <p>
-                    Work with the largest network of independent professionals and get
-                    things done—from quick turnarounds to big transformations.
+                    Làm việc với mạng lưới chuyên gia độc lập lớn nhất và hoàn thành công việc 
+                    - từ những dự án ngắn hạn đến những dự án chuyển đổi lớn.
                 </p>
             </div>
         </div>
