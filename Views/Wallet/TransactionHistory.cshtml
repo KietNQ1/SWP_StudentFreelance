@@ -1,7 +1,7 @@
 @model IEnumerable<StudentFreelance.Models.Transaction>
 
 @{
-    ViewData["Title"] = "Transaction History";
+    ViewData["Title"] = "Lịch sử giao dịch";
 }
 
 @section Styles {
@@ -11,29 +11,30 @@
             cursor: pointer;
             transition: background-color 0.2s;
         }
-        .transaction-row:hover {
-            background-color: rgba(211, 230, 113, 0.2);
-        }
+
+            .transaction-row:hover {
+                background-color: rgba(211, 230, 113, 0.2);
+            }
     </style>
 }
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Transaction History</h2>
-        <a asp-action="Index" class="btn btn-primary">Back to Wallet</a>
+        <h2>Lịch sử giao dịch</h2>
+        <a asp-action="Index" class="btn btn-primary">Về trang ví</a>
     </div>
-    
+
     <div class="card">
         <div class="card-header">
             <div class="row">
                 <div class="col-md-6">
-                    <h4>All Transactions</h4>
+                    <h4>Tất cả giao dịch</h4>
                 </div>
                 <div class="col-md-6">
                     <div class="input-group">
-                        <input type="text" id="searchInput" class="form-control" placeholder="Search transactions...">
+                        <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm giao dịch...">
                         <button class="btn btn-outline-secondary" type="button">
-                            <i class="bi bi-search"></i> Search
+                            <i class="bi bi-search"></i> Tìm kiếm
                         </button>
                     </div>
                 </div>
@@ -46,12 +47,12 @@
                     <table class="table table-striped" id="transactionsTable">
                         <thead>
                             <tr>
-                                <th>Date</th>
-                                <th>Type</th>
-                                <th>Amount</th>
-                                <th>Description</th>
-                                <th>Status</th>
-                                <th>Project</th>
+                                <th>Ngày</th>
+                                <th>Loại giao dịch</th>
+                                <th>Số tiền</th>
+                                <th>Nội dung</th>
+                                <th>Trạng thái</th>
+                                <th>Dự án</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -95,18 +96,18 @@
                         </tbody>
                     </table>
                 </div>
-                
+
                 <div class="mt-4">
                     <nav aria-label="Transaction history pagination">
                         <ul class="pagination justify-content-center">
                             <li class="page-item disabled">
-                                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Trước</a>
                             </li>
                             <li class="page-item active"><a class="page-link" href="#">1</a></li>
                             <li class="page-item"><a class="page-link" href="#">2</a></li>
                             <li class="page-item"><a class="page-link" href="#">3</a></li>
                             <li class="page-item">
-                                <a class="page-link" href="#">Next</a>
+                                <a class="page-link" href="#">Tiếp</a>
                             </li>
                         </ul>
                     </nav>
@@ -115,7 +116,7 @@
             else
             {
                 <div class="alert alert-info">
-                    You don't have any transactions yet.
+                    Bạn chưa có giao dịch nào.
                 </div>
             }
         </div>
@@ -133,4 +134,4 @@
             });
         });
     </script>
-} 
+}

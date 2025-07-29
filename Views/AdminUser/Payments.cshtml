@@ -2,7 +2,7 @@
 @using StudentFreelance.Models.Enums
 
 @{
-    ViewData["Title"] = "Payment Management";
+    ViewData["Title"] = "Quản lí thanh toán";
     Layout = "_Dashboard";
 }
 
@@ -14,16 +14,16 @@
 
 <div class="container-fluid">
     <form asp-action="Payments" method="get" class="topbar">
-        <h1><i class="fas fa-money-bill-wave"></i> Payment Management</h1>
+        <h1><i class="fas fa-money-bill-wave"></i> Quản lí thanh toán</h1>
 
         <div class="filter-row">
             <div class="filter-group">
-                <input type="text" name="searchUser" placeholder="🔍 Search by user..." value="@Context.Request.Query["searchUser"]" />
+                <input type="text" name="searchUser" placeholder="🔍 Tìm kiếm học sinh, nhà tuyển dụng..." value="@Context.Request.Query["searchUser"]" />
             </div>
 
             <div class="filter-group">
                 <select name="statusId" onchange="this.form.submit()">
-                    <option value="">📊 All Statuses</option>
+                    <option value="">📊 Tất cả các trạng thái</option>
                     @foreach (var status in ViewBag.Statuses)
                     {
                         <option value="@status.StatusID" selected="@(Context.Request.Query["statusId"] == status.StatusID.ToString())">
@@ -38,7 +38,7 @@
             </button>
             
             <a asp-action="Index" class="filter-btn">
-                <i class="fas fa-arrow-left"></i> Back to Users
+				<i class="fas fa-arrow-left"></i> Quay về người dùng
             </a>
         </div>
     </form>
@@ -49,13 +49,13 @@
             <table class="styled-table" id="transactionsTable">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Date</th>
-                        <th>User</th>
-                        <th>Type</th>
-                        <th>Amount</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                        <th>Mã số</th>
+                        <th>Ngày</th>
+                        <th>Người dùng</th>
+                        <th>Thể loại</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        <th>Hoạt động</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -92,14 +92,14 @@
                                 {
                                     <form asp-action="ProcessTransaction" method="post" style="display: inline;">
                                         <input type="hidden" name="transactionId" value="@transaction.TransactionID" />
-                                        <button type="submit" class="action-btn restore" onclick="return confirm('Are you sure you want to process this transaction?')">
-                                            <i class="fas fa-check-circle"></i> Process
+                                        <button type="submit" class="action-btn restore" onclick="return confirm('Bạn có chắc chắn muốn xử lý giao dịch này không?')">
+                                            <i class="fas fa-check-circle"></i> Xử lý
                                         </button>
                                     </form>
                                     <form asp-action="CancelTransaction" method="post" style="display: inline;">
                                         <input type="hidden" name="transactionId" value="@transaction.TransactionID" />
-                                        <button type="submit" class="action-btn delete" onclick="return confirm('Are you sure you want to cancel this transaction?')">
-                                            <i class="fas fa-times-circle"></i> Cancel
+                                        <button type="submit" class="action-btn delete" onclick="return confirm('Bạn có chắc chắn muốn hủy giao dịch này không?')">
+                                            <i class="fas fa-times-circle"></i> Hủy
                                         </button>
                                     </form>
                                 }
